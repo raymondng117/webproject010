@@ -1,0 +1,25 @@
+﻿@model SheltersViewModel
+
+<div class="table-responsive">
+    <table id="shelterRoomsTable" class="wb-tables table table-striped table-hover" 
+        data-wb-tables='{ "serverSide": true,
+                          "columns": [
+                            { "width": "20%", "data": "room", "orderable": false },
+                            { "width": "20%", "data": "bedcount", "orderable": false },
+                            { "width": "20%", "data": "active", "orderable": false },
+                            { "width": "40%", "data": "action", "orderable": false }
+                          ],
+                          "bFilter": false,           
+                          "ajax": "@Url.Action("RoomsListJson", "Organization", new { id = Model.Shelters.First().ID, shelterName = ViewBag.ShelterName, isAdminView = ViewBag.IsAdminView })"                       
+                    }'>
+        <thead>
+            <tr>
+                <th class="align-text-center">@Labels.Room</th>
+                <th class="align-text-center">@Labels.BedCount</th>
+                <th class="align-text-center">@Labels.Active</th>
+                <th class="align-text-center">@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>

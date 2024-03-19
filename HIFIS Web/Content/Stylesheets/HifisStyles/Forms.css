@@ -1,0 +1,116 @@
+﻿/********************************************************************************************
+*
+*                                   Specific Input Styles
+*
+*********************************************************************************************/
+
+.commentBoxSize 
+{
+    /*width: 225px;*/
+    min-width: 520px;
+    min-height: 180px;
+}
+
+.largeCommentBox 
+{
+    width: 450px;
+    min-height: 150px;
+}
+
+.selectListMaxWidth 
+{
+    max-width: 450px;
+}
+
+
+.saveButtonCommentBox
+{
+    clear:left;
+    padding-top: 25px;
+}
+
+.inputTextOnly {
+    border: 0;
+    outline: none;
+    margin-bottom: 0px !important;
+    background-color: transparent;
+}
+
+label.color-accent {
+    font-weight: 400; 
+    color: black;
+}
+
+
+/********************************************************************************************
+*
+*                                   Inputs
+*
+*********************************************************************************************/
+/* decreases space between inputs (because that's how Octavian likes 'em) */
+input, textarea, select, .form-uneditable-input, .chosen-container {
+    margin-bottom: 7px;
+}
+
+/********************************************************************************************
+*
+*                                   Input Types
+*
+*********************************************************************************************/
+/*remove the border around checkboxes*/
+    input[type="checkbox"] {
+        border: 0px;
+    }
+/* this allows buttons to be beside each other by default */
+input[type="button"], input[type="reset"], input[type="submit"] {
+    display: inline-block !important;
+}
+/* decreases width of time input boxes */
+input[type="time"]
+{
+   width: 5em;
+}
+
+/********************************************************************************************
+*
+*                                   Labels
+*
+*********************************************************************************************/
+label
+{
+    /* This allows labels to be on the same line as their inputs*/
+    display: inline-block;
+
+    /* This gives labels that beautiful blue colour */
+    color: #145E91;
+    /*Charbel added to remove the white space between label and value in the ROVitals*/
+    margin-bottom: 0px;
+
+    vertical-align: top;
+    /*margin-top: 4px;*/
+}
+
+
+/********************************************************************************************
+*
+*                                   Modal Dialogs
+*
+*********************************************************************************************/
+/*This fixes the size of a modal dialog to 800px when the width reaches 768px*/
+@media (min-width: 768px) {
+    .modal-dialog-800 {
+        width: 800px !important;
+        margin: 30px auto;
+    }
+}
+
+
+
+
+/*commentBox for modal have specials needs input[id^='id_']*/
+.modal-body .commentBoxSize {
+    min-width: initial; /*remove the 520px, which is too long for modals*/
+    resize: vertical;
+    display: inline;
+
+}

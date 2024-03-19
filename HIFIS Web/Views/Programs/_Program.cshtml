@@ -1,0 +1,103 @@
+﻿@model ProgramViewModel
+
+@Html.HiddenFor(model => model.ProgramID)
+@Html.HiddenFor(model => model.IsStayIncluded)
+
+<div>
+    @Html.HifisEditorFor(m => m.Name)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.ProgramTypeID, CachedTableTypes.HIFIS_ProgramTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.OwnerOrganizationID, Model.OrgList)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(m => m.ServiceTypeIDs, CachedTableTypes.HIFIS_ServiceTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.DateEnd)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.MaxBedsPerPeriod, null, new { @class = "stay-required" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.MaxFundingPerPeriod, "Money", new { @class = "money wdth-strct-150 stay-required" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.TimeUnitTypeID, CachedTableTypes.HIFIS_TimeUnitTypes, new { @class = "stay-required" })
+</div>
+
+
+<div>
+    @Html.HifisEditorFor(m => m.Rate, "Money", new { @class = "money wdth-strct-150 stay-required" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.IsActive, "YesNo")
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(m => m.Comments, new { @class = "commentBoxSize" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $(function () {
+                 if ($("#IsStayIncluded").val() == "False") {
+                     $(".stay-required").siblings(".glyphicon-star").addClass("hide");
+                     $("#MaxBedsPerPeriod").parents(".form-group").hide();
+                 }
+             });
+
+             /***************************************************************************
+             *
+             * - select event on the service type multi-select/auto-complete control.
+             *
+             ****************************************************************************/
+             $("#ServiceTypeIDs").on("select2:select", function (event) {
+                 console.log(event.params.data.id);
+                 var id = event.params.data.id;
+                 if (id == 1) {
+                     $(".stay-required").siblings(".glyphicon-star").removeClass("hide");
+                     $("#IsStayIncluded").attr("value", "True");
+                     $("#MaxBedsPerPeriod").parents(".form-group").show();
+                 }
+             });
+             /***************************************************************************
+             *
+             * - unselect event on the service type multi-select/auto-complete control.
+             *
+             ****************************************************************************/
+             $("#ServiceTypeIDs").on("select2:unselect", function (event) {
+                 console.log(event.params.data.id);
+                 var id = event.params.data.id;
+                 if (id == 1) {
+                     $(".stay-required").siblings(".glyphicon-star").addClass("hide");
+                     $("#IsStayIncluded").attr("value", "False");
+                     $("#MaxBedsPerPeriod").parents(".form-group").hide();
+                 }
+             });
+
+             var requiredIf = function () {
+
+                 var value = document.querySelector("#IsStayIncluded").getAttribute("value");
+                 return value === "True";
+             }
+        </script>
+    );
+}

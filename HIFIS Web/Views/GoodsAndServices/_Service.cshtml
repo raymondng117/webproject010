@@ -1,0 +1,158 @@
+﻿@model ClientServicesViewModel
+
+@Html.Partial("_BaseHiddenFor")
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ActivitiesTypeID, new { autocomplete = "off" })
+@Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.GoodsActivitiesID)
+
+@*//Need to pass Enumerable.Empty<SelectListItem>() so GoodItemID is created as a 'select' element as opposed to an input element.*@
+<div>
+    @Html.HifisEditorFor(model => model.ActivityItemID, Enumerable.Empty<SelectListItem>())
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Hours) 
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Minutes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ServiceCost, "Money", new { @class = "money" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ServicePrice, "Money", new { @class = "money" })
+</div>
+
+
+
+
+@if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Service_Add))
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+                 $(function () {
+                     $.ajax({
+                         url: "@Url.Action("GetServicesItemsList", "GoodsAndServices")",
+                         type: "POST",
+                     }).done(function (data) {
+                         $('#ActivityItemID').prepend('<optgroup label="@Labels.ExpressServices">' + makeOptions(data.Result.data) + '</optgroup>');
+                     }).always(function () {
+                         reinitSelect2($('#ActivityItemID'));
+                     });
+                 });
+             </script>
+        );
+    }
+}
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $('#ActivityItemID').append('<option value=""/>');
+
+             $("#addService").on("shown.bs.collapse", function () {
+                 reinitSelect2($('#ActivityItemID'));
+             });
+             $(function () {
+                 $.ajax({
+                     url: "@Url.Action("GetServicesTypeListJson", "GoodsAndServices")?selectedID=@Model.ActivityItemID",
+                     type: "POST",
+                 }).done(function (data) {
+                     $('#ActivityItemID').append('<optgroup label="@Labels.StandardServices">' + makeOptions(data.Result.data) + '</optgroup>');
+                 }).always(function () {
+                     reinitSelect2($('#ActivityItemID'));
+                     if ($('#ActivitiesTypeID').val() != 0) {
+                         var setVal = $('#ActivitiesTypeID').val() + ",T";
+                         $('#ActivityItemID').val(setVal);
+                         $('select').trigger('change');
+                     }
+                 });
+             });
+
+             function makeOptions(res) {
+                 var str = "";
+                 if (res.length > 0) {
+                     for (i = 0; i < res.length; i++) {
+                         str += '<option value="' + res[i].value + '">' + res[i].label + '</option>';
+                     }
+                 }
+                 else {
+                     str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                 }
+                 return str;
+             };
+
+             function reinitSelect2(selector) {
+                 selector.select2('destroy');
+                 selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+             }
+
+             $('#ActivityItemID').on("select2:unselect", function (e) {
+                 $('#innerListWrapper').hide("slow");
+                 $('#NoResultsDiv').show('slow');
+                 $('#ActivitiesTypeID').val('');
+                 $('#Hours').val(0);
+                 $('#Minutes').val(0);
+                 $('#ServiceCost').val('');
+                 $('#ServicePrice').val('');
+                 $('select').trigger('change');
+             });
+
+             $('#ActivityItemID').on("select2:select", function (e) {
+                 var substrings = $(this).val().split(',');
+
+                 var Details;
+
+                 if (substrings[1] == 'D') {
+                     $.ajax({
+                         url: "@Url.Action("GetServicesItemInfo", "GoodsAndServices")",
+                         type: "POST",
+                         data: { "itemID": substrings[0] },
+                     }).done(function (data) {
+                         $('#ActivitiesTypeID').val(data.Result.data[0].typeID);
+                         $('#Hours').val(data.Result.data[0].hours);
+                         $('#Minutes').val(data.Result.data[0].minutes);
+                         if (data.Result.data[0].unitCost === "N/A") {
+                             $('#ServiceCost').val(0);
+                         }
+                         else {
+                             $('#ServiceCost').val(parseInt(data.Result.data[0].unitCost));
+                         }
+                         if (data.Result.data[0].unitCost === "N/A") {
+                             $('#ServicePrice').val(0);
+                         }
+                         else {
+                             $('#ServicePrice').val(parseInt(data.Result.data[0].unitPrice));
+                         }
+                     }).fail(function () {
+                     }).always(function () {
+                     });
+                 }
+                 else {
+                     $('#ActivitiesTypeID').val('');
+                     $('#Hours').val(0);
+                     $('#Minutes').val(0);
+                     $('#ServiceCost').val('');
+                     $('#ServicePrice').val('');
+                 }
+             });
+
+         </script>
+    );
+}

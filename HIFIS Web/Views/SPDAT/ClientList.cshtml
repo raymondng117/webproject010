@@ -1,0 +1,299 @@
+﻿@model List<SPDATIntakeViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientListSPDAT;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+		<a class="tabButton" href="#vi-spdat" role="tab" data-toggle="tab">@Labels.VISPDAT</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#spdat" role="tab" data-toggle="tab">@Labels.SPDAT</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+            <!-- vi-spdat tab -->
+            <div class="tab-pane active" id="vi-spdat">
+                <div class="table-responsive">
+                    @if (RightsHelper.HasRight(UserRights.VI_SPDAT_Client_List))
+                    {
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "order": [ [1, "desc"] ] }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.Organization</th>
+                                <th class="align-text-center">@Labels.StartDate</th>
+                                <th class="align-text-center">@Labels.CaseWorker</th>
+                                <th class="align-text-center">@Labels.Type</th>
+                                <th class="align-text-center">@Labels.Version</th>
+                                <th class="align-text-center">@Labels.Score</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var intake in Model)
+                            {
+                                <tr>
+                                    <td>@intake.OrganizationName</td>
+                                    <td>@DateHelper.DateTimeFormaterENFR(@intake.DateStart, Labels.CurrentCulture)</td>
+                                    <td>@intake.CaseworkerName</td>
+                                    <td class="align-text-center">@intake.IntakeTypeName</td>
+                                    <td class="align-text-center">@intake.Version</td>
+                                    <td class="align-text-center">@intake.ScoreSummary.TotalScore</td>
+                                    <td class="nowrap">
+
+                                        @if (intake.IntakeTypeID == (short)SPDATTypes.spdat_vi || intake.IntakeTypeID == (short)SPDATTypes.spdat_vi2)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.VI_SPDAT_V1_Edit, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.VI_SPDAT_V1_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.VI_SPDAT_V1_Delete, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "Delete", "SPDAT", new { intakeID = intake.IntakeID, id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "deleteButton noText", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        }
+                                        @if (intake.IntakeTypeID == (short)SPDATTypes.spdat_vi_f || intake.IntakeTypeID == (short)SPDATTypes.spdat_vi_f2)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V1_Edit, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V1_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V1_Delete, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "Delete", "SPDAT", new { intakeID = intake.IntakeID, id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "deleteButton noText", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        }
+                                        @if (intake.IntakeTypeID == (short)SPDATTypes.spdat_vi_tay)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V1_Edit, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V1_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V1_Delete, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "Delete", "SPDAT", new { intakeID = intake.IntakeID, id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "deleteButton noText", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        }
+                                        @if (intake.IntakeTypeID == (short)SPDATTypes.spdat_vi_youth_v2)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V2_Edit, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V2_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V2_Delete, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "Delete", "SPDAT", new { intakeID = intake.IntakeID, id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "deleteButton noText", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        }
+
+                                        @if (intake.IntakeTypeID == (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.VI_SPDAT_V3_Edit, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.VI_SPDAT_V3_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.VI_SPDAT_V3_Delete, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "Delete", "SPDAT", new { intakeID = intake.IntakeID, id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "deleteButton noText", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        }
+
+                                        @if (intake.IntakeTypeID == (short)SPDATTypes.spdat_vi_family_v3)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V3_Edit, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V3_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "SPDAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+                                            if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V3_Delete, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "Delete", "SPDAT", new { intakeID = intake.IntakeID, id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "deleteButton noText", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+			                    <div class="alert exception-panel">
+				                    <div class="mrgn-bttm-sm align-center">                                   
+					                    <h3 class="panel-title">@Labels.UserRightsException</h3>
+				                    </div>
+				                    <div>
+					                    <p>@Labels.RightsVISPDATWarning</p>
+				                    </div>
+			                    </div>
+		                    </div>
+	                    </div>                   
+                    }
+                </div>
+                <div>@Labels.SelectFollowingVISPDAT</div>
+                <div class="mrgn-tp-md">
+                    @if (RightsHelper.HasRight(UserRights.VI_SPDAT_V1_Add))
+                    {
+                        @Html.ActionLink(Labels.AdultV1, "New", "SPDAT", new { intakeTypeID = 3, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VISPDATV1, alt = Labels.AdultV1, aria_label = Labels.AdultV1, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.VI_SPDAT_V2_Add))
+                    {
+                        @Html.ActionLink(Labels.AdultV2, "New", "SPDAT", new { intakeTypeID = 5, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VISPDATV2, alt = Labels.AdultV2, aria_label = Labels.AdultV2, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.VI_SPDAT_V3_Add))
+                    {
+                        @Html.ActionLink(Labels.AdultV3, "New", "SPDAT", new { intakeTypeID = 16, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VISPDATV3, alt = Labels.AdultV3, aria_label = Labels.AdultV3, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V1_Add))
+                    {
+                        @Html.ActionLink(Labels.FamilyV1, "New", "SPDAT", new { intakeTypeID = 4, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VIFSPDATV1, alt = Labels.FamilyV1, aria_label = Labels.FamilyV1, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V2_Add))
+                    {
+                        @Html.ActionLink(Labels.FamilyV2, "New", "SPDAT", new { intakeTypeID = 6, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VIFSPDATV2, alt = Labels.FamilyV2, aria_label = Labels.FamilyV2, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.F_VI_SPDAT_V3_Add))
+                    {
+                        @Html.ActionLink(Labels.FamilyV3, "New", "SPDAT", new { intakeTypeID = 15, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VIFSPDATV3, alt = Labels.FamilyV3, aria_label = Labels.FamilyV3, @role = "button" });
+                    }
+                    @if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V1_Add))
+                    {
+                        @Html.ActionLink(Labels.YouthV1, "New", "SPDAT", new { intakeTypeID = 10, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.TAYVISPDATV1, alt = Labels.YouthV1, aria_label = Labels.YouthV1, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.Y_VI_SPDAT_V2_Add))
+                    {
+                        @Html.ActionLink(Labels.YouthV2, "New", "SPDAT", new { intakeTypeID = 14, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.VI_SPDATv2Youth, alt = Labels.YouthV2, aria_label = Labels.YouthV2, @role = "button" })
+                    }
+
+                </div>
+            </div>
+
+            <!-- spdat tab -->
+            <div class="tab-pane" id="spdat">
+                <div class="table-responsive">
+                    @if (RightsHelper.HasRight(UserRights.SPDAT_Client_List))
+                    {
+                    <table class="wb-tables table table-striped table-hover" 
+                        data-wb-tables='   { "columns": [
+                                                { "width": "25%", "data": "org"},
+                                                { "width": "0%", "bVisible": false, "data": "sort-date"},
+                                                { "width": "25%", "iDataSort": 1, "data": "date"},
+                                                { "width": "25%", "data": "caseworker"},
+                                                { "width": "5%", "data": "type"},
+                                                { "width": "5%", "data": "version"},
+                                                { "width": "5%", "data": "score"},
+                                                { "width": "10%", "data": "action", "className": "nowrap" } 
+                                            ],
+                                            "columnDefs": [
+                                                { "type": "date", "targets": 2 }
+                                            ],
+                                            "order": [ [2, "desc"] ],
+                                            "ajax": "@Url.Action("JsonList", "SPDAT", new { SPDATType = SPDATTypes.spdat, id = ViewBag.ReadOnlyVitals.ClientID })"          
+                                        }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.Organization</th>
+                                <th class="align-text-center"></th>
+                                <th class="align-text-center">@Labels.StartDate</th>
+                                <th class="align-text-center">@Labels.CaseWorker</th>
+                                <th class="align-text-center">@Labels.Type</th>
+                                <th class="align-text-center">@Labels.Version</th>
+                                <th class="align-text-center">@Labels.Score</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+			                    <div class="alert exception-panel">
+				                    <div class="mrgn-bttm-sm align-center">                                   
+					                    <h3 class="panel-title">@Labels.UserRightsException</h3>
+				                    </div>
+				                    <div>
+					                    <p>@Labels.RightsSPDATWarning</p>
+				                    </div>
+			                    </div>
+		                    </div>
+	                    </div>                   
+                    }
+                </div>
+                <div>@Labels.SelectFollowingSPDAT</div>
+                <div class="mrgn-tp-md">
+                    @if (RightsHelper.HasRight(UserRights.SPDAT_V3_Add))
+                    {
+                        @Html.ActionLink(Labels.AdultV3, "New", "SPDAT", new { intakeTypeID = 1, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.SPDATV3, alt=Labels.AdultV3, aria_label = Labels.AdultV3, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.SPDAT_V4_Add))
+                    { 
+                        @Html.ActionLink(Labels.AdultV4, "New", "SPDAT", new { intakeTypeID = 7, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.SPDATV4, alt=Labels.AdultV4, aria_label = Labels.AdultV4, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.F_SPDAT_V1_Add))
+                    {
+                        @Html.ActionLink(Labels.FamilyV1, "New", "SPDAT", new { intakeTypeID = 2, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.FSPDATV1, alt=Labels.FamilyV1, aria_label = Labels.FamilyV1, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.F_SPDAT_V2_Add))
+                    { 
+                        @Html.ActionLink(Labels.FamilyV2, "New", "SPDAT", new { intakeTypeID = 8, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.FSPDATV2, alt=Labels.FamilyV2, aria_label = Labels.FamilyV2, @role = "button" })
+                    }
+                    @if (RightsHelper.HasRight(UserRights.Y_SPDAT_V1_Add))
+                    {
+                        @Html.ActionLink(Labels.YouthV1, "New", "SPDAT", new { intakeTypeID = 9, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title = Labels.YSPDATV1, alt=Labels.YouthV1, aria_label = Labels.YouthV1, @role = "button" })
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             // draw event for the datatables...SInce the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+             $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                 initButtons();
+                 $(".editButton").parents("td").addClass("align-text-center");
+                 $(".displayButton").parents("td").addClass("align-text-center");
+             });
+        </script>
+    );
+}

@@ -1,0 +1,115 @@
+﻿@model ExpenseViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+<section id="Modal_DisplayIncome" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_DisplayExpense</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="displayView">
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ExpenseTypeID, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="ExpenseTypeID" name="ExpenseTypeID"
+                           value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ExpenseTypes, Culture, Model.ExpenseTypeID))" 
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ExpenseAmount, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="ExpenseAmount" name="ExpenseAmount"
+                           value="@Html.DisplayFor(model => model.ExpenseAmount, new { @class = "money" })" 
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.PayFrequencyTypeID, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="PayFrequencyTypeID" name="PayFrequencyTypeID"
+                           value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PayFrequencyTypes, Culture, Model.PayFrequencyTypeID))" 
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ExpenseDateStart, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="ExpenseDateStart" name="ExpenseDateStart"
+                           value="@Html.DisplayFor(model => model.ExpenseDateStart)" 
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ExpenseDateEnd, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="ExpenseDateEnd" name="ExpenseDateEnd"
+                           value="@Html.DisplayFor(model => model.ExpenseDateEnd)"
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.IsEssentialYN, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="IsEssentialYN" name="IsEssentialYN"
+                           value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsEssentialYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" 
+                           readonly />
+                </div>
+            </div>
+
+            @if (appSettings.EnableSharing())
+            {
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="ShareYN" name="ShareYN"
+                               value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ShareYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")"
+                               readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="EditableYN" name="EditableYN"
+                               value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.EditableYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")"
+                               readonly />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button id="newPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script>
+
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_DisplayExpense');
+
+    //$(function () { $("#excelParamForm").hifisValidation(); });
+
+    //$("#excelGetBtn").click(function () {
+
+    //    if ($("#excelParamForm").valid()) {
+    //        $("#excelParamForm").submit();
+    //    }
+    //});
+
+</script>
+
+

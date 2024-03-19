@@ -1,0 +1,58 @@
+﻿@model OutreachFilterViewModel
+
+<form id="serviceListSearchFilterForm" class="form-horizontal">
+    <div>
+        <div>
+            @Html.HifisListBoxFor(model => model.GeoIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture), false, new { id = "ddlGeo", @class = "type-required" })
+        </div>
+
+        <div>
+            @Html.HifisListBoxFor(model => model.STs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture)
+                .Where(st => (ServiceTypes)st.Value.AsInt(0) == ServiceTypes.Goods || (ServiceTypes)st.Value.AsInt(0) == ServiceTypes.GroupActivities)
+            , false, new { id = "STs", @class = "type-required" })
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.FromDate)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ToDate)
+        </div>
+
+        @*<div>
+            @Html.HifisEditorFor(model => model.Act, "YesNo")
+        </div>*@
+
+        <div class="form-group">
+            <div class="col-md-8"></div>
+            <button type="button" id="filterListButton" class="filterButton">@Labels.ApplyFilters</button>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+		     $("#filterListButton").click(function () {
+                 if ($("#serviceListSearchFilterForm").valid()) {
+		             var btn = $(this);
+
+                     $('#servicesTable').DataTable().ajax.url('@Url.Content("~/Outreach/OutreachServicesJson/?")' + $("#serviceListSearchFilterForm").serialize() + '').load(null, false);
+
+		             btn.attr("disabled", true);
+
+		             if ($('#MapContainer').is(':visible')) {
+		                 updateMap();
+		             }
+
+                     $('#servicesTable').on('xhr.dt', function () {
+		                 btn.attr("disabled", false);
+		                 $('#filter-panel').trigger('close.wb-overlay');
+		             });
+                 }
+             });
+</script>);
+}
+

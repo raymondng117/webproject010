@@ -1,0 +1,174 @@
+﻿@model TemplateViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    ViewBag.ViewTitle = Labels.viewTitle_EditUserProfileTemplate;	
+}
+
+@Html.Partial("Plugins/_jstree")
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#TemplateDetails" role="tab" data-toggle="tab">@Labels.TemplateDetails</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#UserRights" role="tab" data-toggle="tab">@Labels.TemplateRights</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="TemplateDetails">
+                @if (RightsHelper.HasRight(UserRights.Users_Rights_Edit))
+                {
+                    using (Html.BeginForm("EditUserRightsTemplate", "Users", null, FormMethod.Post, new { @class = "form-horizontal", id = "EditUserRightsTemplateForm" }))
+                    {
+                        @Html.AntiForgeryToken()
+					    @Html.Partial("_UserTemplate", Model.TemplateRights)
+
+					    <div>
+						    @Html.Button("save", Labels.Save, HtmlButtonType.Submit, null, new { @class = "saveButton" })
+						    @Html.ActionLink(Labels.Cancel, "UserRightsTemplateList", "Users", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+					    </div>
+                    }
+                }
+                else
+                { 
+                    <div class="displayView">
+
+					    <div>
+                            @Html.HifisDisplayFor(model => model.TemplateRights.Name)
+                        </div>
+
+                        <div>
+                            @Html.HifisLabelFor(model => model.TemplateRights.ActiveYN, new { @class = "autowidth" })
+                            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.TemplateRights.ActiveYN)
+                        </div>
+
+					    <div>
+						    @Html.HifisDisplayFor(model => model.TemplateRights.Description)
+					    </div>
+								
+				    </div>
+                }
+			</div>
+			<div class="tab-pane" id="UserRights">
+
+				<div class="mrgn-tp-lg mrgn-bttm-lg">
+                    @Html.Button("ExpandCollapseTree", Labels.ExpandCollapseTree, HtmlButtonType.Button, null, new { id = "ExpandCollapseTree", @class = "addButton" })
+				</div>
+				<div>
+					@Html.TextBox("wetBoewSearchBox", "", new { placeholder = "Search Tree" })
+				</div>
+
+				<div  id="serviceTree">
+					<div class="hifis-tree" data-wet-boew='{"bDisableAllNodes": @(RightsHelper.HasRight(UserRights.Users_Rights_Edit) ? "false" : "true"), "bCheckBoxes": true, "bDisplayIcons": true, "bCallBackFunction":"wetTreeCheckEvent" }'>
+						<ul>
+							@foreach (RightViewModel right in Model.Rights)
+                            {
+								@Html.Partial("_RightTreeItem", right)
+                            }
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>	
+	</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+			 $(document).ready(function () {
+
+				 $('#EditUserRightsTemplateForm').submit(submitEditUserRightsTemplateForm);
+			 });
+
+			 function wetTreeCheckEvent(event, data, isRightAllowed) {
+			     var node = data.node;
+
+                 // Remember, don't need orgID in a template...
+				@Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/Users/UpdateUserRight") + "'",
+                    OnFailure = "node.removeClass('jstree-checked').addClass('jstree-unchecked'); displayNotification(\"error\", \"\", \"<p>" + Labels.DeleteFailure + "</p>\");",
+                    Data = "{ rightID: node.data.rightId, userID: $('#UserID').val(), isAllowed: isRightAllowed, templateID: $('#TemplateRightsID').val() }",
+                    Type = "POST",
+                    OnSuccess = " displayNotification(\"success\", \"\", \"<p>" + Labels.DefaultDataSavedMessage + "</p>\");",
+                });                 
+			 }
+
+			function submitEditUserRightsTemplateForm(e) 
+			{
+				e.preventDefault(); 
+
+				var formData = $(this).serialize();
+
+				@Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/Users/EditUserTemplate") + "'",
+                    Data = "formData",
+                    OnSuccess = "",
+                });
+			}
+
+			 var isCollapsed = true;
+			 $("#ExpandCollapseTree").click(function () {
+				 if (isCollapsed) {
+					 isCollapsed = false;
+					 $("div#serviceTree div.hifis-tree").jstree("open_all");
+				 }
+				 else {
+					 isCollapsed = true;
+					 $("div#serviceTree div.hifis-tree").jstree("close_all");
+				 }
+			 });
+
+			 var to = false;
+
+			 $('#wetBoewSearchBox').keyup(function () {
+				 if (to) {
+					 clearTimeout(to);
+				 }
+				 to = setTimeout(function () {
+					 var v = $('#wetBoewSearchBox').val();
+					 $('div#serviceTree .hifis-tree').jstree(true).search(v);
+				 }, 500);
+			 });
+
+
+
+
+
+
+			 var isCollapsedGlobal = true;
+			 $("#ExpandCollapseTreeGlobal").click(function () {
+				 if (isCollapsedGlobal) {
+					 isCollapsedGlobal = false;
+					 $("div#globalTree .hifis-tree").jstree("open_all");
+				 }
+				 else {
+					 isCollapsedGlobal = true;
+					 $("div#globalTree .hifis-tree").jstree("close_all");
+				 }
+			 });
+
+			 var toGlobal = false;
+			 $('#wetBoewSearchBoxGlobal').keyup(function () {
+				 if (toGlobal) {
+					 clearTimeout(toGlobal);
+				 }
+				 toGlobal = setTimeout(function () {
+					 var vGlobal = $('#wetBoewSearchBoxGlobal').val();
+					 $('div#globalTree .hifis-tree').jstree(true).search(vGlobal);
+				 }, 500);
+			 });
+
+		</script>    
+    );
+}

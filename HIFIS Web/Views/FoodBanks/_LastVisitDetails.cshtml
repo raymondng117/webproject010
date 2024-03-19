@@ -1,0 +1,85 @@
+﻿
+<div id="LastVisitInfoPanel" class="col-sm-offset-2">
+    <div class="panel panel-default mrgn-tp-md">
+	    <div class="panel-heading" role="tab" id="lastVisitHeader">
+		    <h4 class="panel-title">
+			    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#lastVisitPanel" aria-expanded="false" aria-controls="lastVisitPanel">
+				    @Labels.LastVisitInformation
+				    <span class="caret pull-right mrgn-tp-sm"></span>
+			    </a>
+		    </h4>
+	    </div>
+	    <div id="lastVisitPanel" class="panel-collapse collapse" role="tabpanel" aria-labelledby="lastVisitHeader">
+		    <div class="panel-body">
+                <div id="LastVisitInfo">
+
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="active">
+                            <a class="tabButton" href="#FoodBankTransaction" role="tab" data-toggle="tab">@Labels.FoodBankTransaction</a>
+                        </li>
+                        <li>
+                            <a class="tabButton" href="#FoodBankItems" role="tab" data-toggle="tab">@Labels.FoodBankItems</a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab panes -->
+                    <div class="panel panel-default border-top-fix-tabs">
+                        <div class="panel-body">
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="FoodBankTransaction">
+                                    <div class="table-responsive">
+                                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                                            <thead>
+                                                <tr>
+                                                    <th>@Labels.ServiceProvider</th>
+                                                    <th>@Labels.ReasonForService</th>
+                                                    <th>@Labels.Date</th>
+                                                    <th>@Labels.NumberOfPeople</th>
+                                                </tr>
+                                            </thead>
+                                            <tr id="LastVisitServiceInfo">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="FoodBankItems">
+                                    <div class="table-responsive">
+                                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                                            <thead>
+                                                <tr>
+                                                    <th>@Labels.NameE</th>
+                                                    <th>@Labels.Quantity</th>
+                                                    <th>@Labels.UnitCost</th>
+                                                </tr>
+                                            </thead>
+                                            <tr id="PlaceHolder">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @*@if (Model.ServiceTypeID == (int)ServiceTypes.FoodBanks)*@
+                    @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ServiceTypes, (short)Model.ServiceTypeID) == (int)ServiceTypes.FoodBanks)
+                    {
+                        <button type="button" id="ClientLastVisitInfoButton" name="radio" value="@Labels.UseLastVisitDetails" class="addButton  ">@Labels.UseLastVisitDetails</button>
+                    }
+
+                </div>@*<div id="LastVisitInfo">*@
+        
+                <div id="NoLastVisitInfo">
+                    @Labels.NoRecords
+                </div>
+		    </div>
+	    </div>
+    </div>
+</div>

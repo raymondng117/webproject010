@@ -1,0 +1,46 @@
+﻿@*@model HIFIS.WEB.ViewModels.SecureHousingUnitViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_SecureHousingUnit;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#_PlacementVitals">
+          @Labels.PlacementDetails
+           <span class="caret pull-right mrgn-tp-sm"></span>
+        </a>
+      </h4>
+    </div>
+    <div id="_PlacementVitals" class="panel-collapse collapse">
+      <div class="panel-body">
+            @Html.Partial("_PlacementVitals", ViewBag.placementVitals as HousingPlacementVitalsViewModel)
+      </div>
+    </div>
+  </div>
+</div>
+
+@using (Html.BeginForm("SecureHousingUnit", "HousingPlacements", new { id = Model.ClientID, placementID = Model.PlacementID }, FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    //@Html.Partial(Url.Content("~/Views/HousingUnit/_HousingVitals.cshtml"), new HousingUnitVitalsWrapper(Model.Housing))
+    <div>
+        @Html.Hidden("PlacementID", Model.PlacementID)
+        <div>
+            @Html.HifisEditorFor(model => model.DateHousingSecured)
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.DateExpectedMoveIn)
+        </div>
+        
+        <div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "Display", new { id = Model.ClientID, placementID = Model.PlacementID }, new { @class = "cancelButton" }) 
+			</div>
+		</div>  
+        
+    </div>
+}*@

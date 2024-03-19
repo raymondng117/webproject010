@@ -1,0 +1,38 @@
+﻿@model BulletinViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewBulletin;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("New", "Bulletins", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.Partial("_Bulletin", Model)
+
+    <div class="form-group">
+	    <div class="col-sm-offset-5 col-sm-7">
+		    <button type="submit" class="saveButton" name="New" value="New" id="save">@Labels.Save</button>
+            @if (ViewBag.isAdmin != null)
+            {
+                <button type="submit" class="sendButton" name="New" value="NewAllOrgs" id="saveAll">@Labels.SendToAllProviders</button>
+            }
+            @Html.ActionLink(Labels.Cancel, "BulletinList", "Bulletins", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role="button" })
+	    </div>
+    </div>
+} 
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $("#saveAll").click(function () {
+                $("#orgList").rules('remove', 'required');
+            });
+
+            $("#save").click(function () {
+                $("#orgList").rules('add', 'required');
+            });
+        </script>
+);
+}

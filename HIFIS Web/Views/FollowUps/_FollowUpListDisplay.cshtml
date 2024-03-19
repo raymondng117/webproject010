@@ -1,0 +1,39 @@
+﻿@model ClientHousingViewModel
+
+@{
+    string housingAjaxUrl = null;
+
+    //if (Model.HousePlacementID != null )
+    //{
+    //        housingAjaxUrl = "~/FollowUps/PlacementFollowUpListJson?serviceID=" + Model.HousePlacementServiceID + "&isDisplayOnly=true";
+    //}
+    //else
+    //{
+    housingAjaxUrl = "~/FollowUps/ClientHouseFollowUpListJson?clientID=" + Model.ClientID + "&clientHouseID=" + Model.ClientHouseID + "&isDisplayOnly=true";
+//}
+}
+
+<div class="table-responsive" >
+    <table id="followUpsTable" class="wb-tables table table-striped" data-wb-tables='{ "columns": [
+                                                        { "width": "20%", "data": "date"},
+                                                        { "width": "25%", "data": "organization"},
+                                                        { "width": "20%", "data": "caseworker"},
+                                                        { "width": "15%", "data": "monthsElapsed", "name" : "monthsElapsed", "visible" : false},
+                                                        { "width": "15%", "data": "action"}
+                                                    ],
+                                                    "order": [[3, "asc"], [0, "asc"]],
+                                                    "ajax": "@Url.Content(housingAjaxUrl)"
+                                                }'>
+        <thead>
+            <tr>
+	    	    <th>@Labels.DateOfCheck</th>
+                <th>@Labels.Organization</th>
+                <th>@Labels.CaseWorker</th>
+		        <th>@Labels.MonthsElapsed</th>
+				<th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>

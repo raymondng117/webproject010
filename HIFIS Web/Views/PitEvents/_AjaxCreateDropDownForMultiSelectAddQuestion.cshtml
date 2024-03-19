@@ -1,0 +1,114 @@
+﻿@model PitQuestionDropdownViewModel
+
+<section id="Modal_NewDropDownValue" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.AddDropdownValue</h2>
+    </header>
+    <div class="modal-body">
+        <form id="newDropDownValueForm" class="form-horizontal">
+            @*@Html.Partial("_EditPitDropdown", Model)*@
+            <div>
+                @Html.HiddenFor(m => m.SaveQuestion)
+
+                @*@if (!Model.QuestionID.IsEmptyOrNull())*@
+
+                @Html.HiddenFor(m => m.QuestionID)
+                @Html.HiddenFor(m => m.QuestionPickListID)
+                @Html.HiddenFor(m => m.LegacyID)
+                @Html.HiddenFor(m => m.LegacyRequired)
+                @Html.HiddenFor(m => m.RollupRequired)
+                @Html.HiddenFor(m => m.Sequence)
+                @Html.HiddenFor(m => m.IsLiveSurveyYN)
+                @Html.HiddenFor(m => m.IsAddOtherSpecify)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(m => m.Name)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(m => m.RollupID, ViewBag.RollupToList as SelectList)
+            </div>
+
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newDropDownValueSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newDropDownValueCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    var form = $("#newDropDownValueForm");
+
+    function requiredif1() {
+    	return ($('#LegacyRequired').val() == 'True');
+    }
+
+    function isRollUpRequired() {
+        return ($('#RollupRequired').val() == 'True');
+    }
+
+    $(function () { form.hifisValidation(); });
+
+    $("#newDropDownValueSaveBtn").click(function () {
+        if (form.valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/PitEvents/AjaxCreateDropDownValue")",
+                type: "POST",
+                data: form.serialize()
+            }).done(function (data) {
+                var qElement = $('#SurveyQuestion_' + '@Model.QuestionID');
+                // "data.Result == true" means this is a new option, so we need to add it to the dropdown list otherwise we need to be sure it's selected
+                if (data.Result == true) {
+                    btn.attr("disabled", false); //Enable the button incase there was an error
+                    if (data.VM) {
+                        //defaultNotify(data.Success);
+
+                        // add the new dropdown to the select list
+                        qElement.append(
+                            $('<option></option>')
+                                .val(data.VM.QuestionPickListID)
+                                .html(data.VM.Name)
+                                .prop('selected', 'selected')  // Selects the new DropDown
+                        );
+
+                        // add the new dropdown to the dropdownlist attributre of the question                    
+                        var dropdownlist = $.parseJSON(qElement.attr("dropdownlist"));
+                        dropdownlist.push(new function () {
+                            this.ID = data.VM.QuestionPickListID;
+                            this.ActionType = data.VM.DropDownActionTypeID;
+                            this.AffectedQuestionList = data.VM.AffectedQuestionsIDs;
+                            this.AnsweredBehaviourYN = data.VM.AnsweredBehaviourYN;
+                        });
+                        qElement.attr("dropdownlist", JSON.stringify(dropdownlist));
+                    };
+                }
+                else if (data.Result == false) {
+                    //debugger;
+                    var vals = qElement.val();
+                    if (vals.indexOf(data.VM.QuestionPickListID) != -1) {
+                        // Nothing to do, the value just found is already selected
+                    } else {
+                        // The value just found needs to be selected
+                        //$('#SurveyQuestion_' + '@Model.QuestionID' + ' option[value=' + data.VM.QuestionPickListID + ']').attr('selected', 'selected');
+                        vals.push(data.VM.QuestionPickListID);
+                        qElement.val(vals);
+                    }
+                }
+                qElement.change(); //refreshes the select list
+                $("#newDropDownValueCloseBtn").click(); //Close the modal window
+            })
+        };
+    });
+
+</script>

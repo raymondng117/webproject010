@@ -1,0 +1,71 @@
+﻿@model PitQuestionViewModel
+@{
+    ViewBag.Title = Labels.PitCreateEventLocalQuestion;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+   // ViewBag.questionNo = Model.LocalQuestions == null ? 1 : (byte)(Model.LocalQuestions.Count() + 1);
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+@*<div id="preview">
+    Preview <br/>
+    <span id="question_number"></span>
+    <span id="question_english"></span>
+</div>*@
+
+<div>
+    <div class="panel panel-default mrgn-tp-md" >
+        <div class="panel-heading" role="tab" id="NewQuestionHeader">
+            <h4>
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#NewQuestionPanel" aria-expanded="true" aria-controls="NewQuestionPanel">
+                    @Labels.PitCreateEventLocalQuestion
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+        <div id="NewQuestionPanel" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="NewQuestionHeader">
+            <div class="panel-body">
+                @using (Html.BeginForm("CreatePitQuestionnaireQuestion","PitEvents", FormMethod.Post, new { @class = "form-horizontal"}))
+                {
+                    <div>
+                        @Html.Partial("_EditPitQuestionnaireQuestion", new PitQuestionViewModel() { QuestionCategoryTypeID = (short)PitQuestionCategories.Local, PitQuestionnaireID = Model.PitQuestionnaireID, InitiallyEnabledYN = true })
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10" >
+                            <button type="submit" class="addButton">@Labels.AddQuestion</button>
+                            <button id="saveQuestionButton" type="submit" class="addButton">@Labels.PitSaveQuestionAndFinishEvent</button>
+                            @Html.ActionLink(Labels.PitDiscardQuestionAndFinishEvent, "EditPitQuestionnaire", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "saveButton", alt=Labels.PitDiscardQuestionAndFinishEvent, aria_label = Labels.PitDiscardQuestionAndFinishEvent, @role = "button" })
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+
+    @*<h4 class="mrgn-tp-0">@Labels.Questions</h4>*@
+
+    @*@Html.Partial("_AllPitQuestionnaireQuestions", Model.Questions)*@
+    
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $("#saveQuestionButton").click(function (e) {
+                 //document.getElementById('SaveQuestion').value = true;
+                 $("#SaveQuestion").val("true");
+             });
+
+             function refresh()
+             {
+                 $("#question_number").innerText = $("#Question_Number_Input").value;
+             }
+        </script>
+);
+}

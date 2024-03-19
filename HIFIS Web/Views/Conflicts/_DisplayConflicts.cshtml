@@ -1,0 +1,135 @@
+﻿@model ConflictViewModel
+
+<div class=" displayView">
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OrganizationName, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.OrganizationName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FirstIsVictimYN, new { @class = "autowidth" })
+
+         @* TODO: These can all be cleaned up (true ? '' : '') -JdV *@
+        @if (Model.FirstIsVictimYN) {
+            @Labels.Victim
+        } else {
+            @Labels.Aggressor
+        }
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateStart)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateEnd)
+    </div>
+
+    <div class="row"> 
+        @Html.HifisLabelFor(model => model.SecondPersonID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.SecondPersonName)
+    </div>
+
+    <div class="row">
+        @Html.Label(Labels.CounterpartRole, new { @class = "autowidth, col-sm-3", @style = "width:237px;" })
+        @if (Model.SecondIsVictimYN)
+        {
+            @Labels.Victim
+        }
+        else
+        {
+            @Labels.Aggressor
+        }
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IntensityTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+            new SingleItemSelectList 
+            {
+                ID = Model.IntensityTypeID,
+                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_IntensityTypes, ViewBag.CurrentCulture, Model.IntensityTypeID)
+            })
+
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ProbabilityTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+            new SingleItemSelectList 
+            {
+                ID = Model.ProbabilityTypeID,
+                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ProbabilityTypes, ViewBag.CurrentCulture, Model.ProbabilityTypeID)
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.RelationshipTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+            new SingleItemSelectList 
+            {
+                ID = Model.RelationshipTypeID,
+                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_RelationshipTypes, ViewBag.CurrentCulture, Model.RelationshipTypeID)
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ConflictTypeIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+            new MultipleItemSelectList 
+            {
+                IDs = Model.ConflictTypeIDs.Select(l => l.ToString()).ToList(),
+                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ConflictTypes, Culture, Model.ConflictTypeIDs.Select(l => l.ToString()).ToList())
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LocationTypeIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+            new MultipleItemSelectList 
+            {
+                IDs = Model.LocationTypeIDs.Select(l => l.ToString()).ToList(),
+                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_LocationTypes, Culture, Model.LocationTypeIDs.Select(l => l.ToString()).ToList())
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReferredByIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.ReferredByIDs,
+                            List = ViewBag.fromPlaces as SelectList
+                        })
+    </div> 
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReferredToIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.ReferredToIDs,
+                            List = ViewBag.toPlaces as SelectList
+                        })
+
+    </div>
+          
+    <div>
+        <label class="control-label wdth-strct-200" >@Labels.Comment</label>
+        @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+    </div>
+
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Conflicts_Edit))
+        { 
+	        @Html.ActionLink(Labels.Edit, "Edit", "Conflicts", new { id = Model.FirstClientID, conflictID = Model.ConflictID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+        @Html.ActionLink(Labels.Cancel, "ClientList", "Conflicts", new { id = Model.FirstClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

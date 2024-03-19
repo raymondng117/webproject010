@@ -1,0 +1,70 @@
+﻿@model QuestionnaireQuestionViewModel
+@{
+    ViewBag.ViewTitle = Labels.EditDropdown;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter") 
+
+<div>    
+    <div>
+        @Html.HifisDisplayFor(model => model.QuestionaireName)
+    </div>
+
+    <div>
+        @Html.HifisDisplayFor(model => model.QuestionNo)
+    </div>
+
+    <div>
+        @Html.HifisDisplayFor(model => model.QuestionName)
+    </div>
+
+    <div>
+        @Html.HifisDisplayFor(model => model.QuestionTypeName)
+    </div>
+
+    <br />
+
+    <h2 >@Labels.DropdownValues</h2>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Name</th>
+                    <th>@Labels.Active</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var dropdown in Model.DropdownValues)
+                {
+                    <tr>
+                        <td>@dropdown.DDName</td>   
+                        <td>@(dropdown.ActiveYN ? Labels.Yes : Labels.No)</td>
+                        <td class="align-text-center">
+                        
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_DropDowns_Edit))
+                            { 
+                                @Html.ActionLink(Labels.Edit, "EditDropdown", new { id = dropdown.QuestionPickListID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+                        
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+    <p>
+
+        @if (RightsHelper.HasRight(UserRights.Questionnaire_DropDowns_Add))
+        { 
+            @Html.ActionLink(Labels.AddDropdownValue, "AddDropdown", new { questionID = Model.QuestionID }, new { @class = "addButton", alt=Labels.AddDropdownValue, aria_label = Labels.AddDropdownValue, @role = "button" })
+        }
+        
+        @Html.ActionLink(Labels.Cancel, "EditQuestion", new { id = Model.QuestionID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </p>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

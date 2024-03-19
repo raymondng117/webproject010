@@ -1,0 +1,65 @@
+﻿@model UserSearchFilterViewModel
+
+<form id="userFilterForm" class="form-horizontal">
+    <div>
+
+        @Html.HiddenFor(model => model.FilterType)
+        @Html.HiddenFor(model => model.OrgID)
+
+        @if (Model.OrgID == null)
+        {
+            @*SERVICE PROVIDER*@
+            <div>
+                @Html.HifisListBoxFor(model => model.SPIDs, ViewBag.SPList as SelectList, new { @class = "fixedContainer", style = "width:250px;" })
+            </div>
+            @* DEFAULT SERVICE PROVIDER*@
+            <div>
+                @Html.HifisListBoxFor(model => model.DSPIDs, ViewBag.AccessList as SelectList, new { @class = "fixedContainer", style = "width:250px;" })
+            </div>
+        }
+
+        @*REPORT CATEGORY*@
+        <div>
+            @Html.HifisListBoxFor(model => model.ReportCat, CachedTableTypes.HIFIS_ReportCategoriesTypes)
+        </div>
+        @*USER ROLE*@
+        <div>
+            @Html.HifisListBoxFor(model => model.URs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, Culture))
+        </div>
+        @*GENDER*@
+        <div>
+            @Html.HifisListBoxFor(model => model.GendIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture))
+        </div>
+        @*LANGUAGE*@
+        <div>
+            @Html.HifisListBoxFor(model => model.CultID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_UserCultureTypes, Culture))
+        </div>
+        <div class="form-group">
+            <div class="col-xs-11">
+                <button type="button" id="filterListButton" class="filterButton pull-right">@Labels.ApplyFilters</button>
+            </div>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            $("#filterListButton").click(function () {
+                if ($("#userFilterForm").valid()) {
+                    var btn = $(this);
+
+                    $('#usersTable').DataTable().ajax.url('@Url.Content("~/Users/GetUserListPaginated/?")' + $("#userFilterForm").serialize() + '').load(null, false);
+
+                    btn.attr("disabled", true);
+
+                    $('#usersTable').on('xhr.dt', function () {
+                        btn.attr("disabled", false);
+                        $('#filter-panel').trigger('close.wb-overlay');
+                    });
+                }
+            });
+
+</script>);
+}

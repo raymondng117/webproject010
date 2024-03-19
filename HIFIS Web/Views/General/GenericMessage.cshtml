@@ -1,0 +1,17 @@
+﻿@using (Html.BeginForm())
+{
+    <div>
+        <p>@ViewData["Message"].ToString()</p>
+
+        
+        @if (ViewData["Id"] != null)
+        {
+            <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+				    <input type="submit" value="@Labels.TimeOutLogin" name="btnLogin" />
+			    </div>
+		    </div>
+            
+        }
+    </div>
+}

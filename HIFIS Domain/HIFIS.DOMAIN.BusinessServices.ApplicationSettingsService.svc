@@ -1,0 +1,1 @@
+<%@ ServiceHost Service="HIFIS.DOMAIN.BusinessServices.ApplicationSettingsService" %>

@@ -1,0 +1,66 @@
+﻿@model FollowUpHousingHistoryViewModel
+
+<section id="Modal_FollowUpNew" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_NewFollowUp</h2>
+    </header>
+    <div class="modal-body">
+        <form id="newHousingFollowUpForm" class="form-horizontal">
+            <div>
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ClientHouseID)
+                @Html.HiddenFor(model => model.ClientID)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.FollowUpHeader.DateOfCheck)
+            </div>
+            <div>
+                @Html.HifisTextAreaFor(model => model.FollowUpHeader.Comments, new { @class = "wdth-strct-250 hght-strct-150" })
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="newHousingFollowUpSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newHousingFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#newHousingFollowUpForm").hifisValidation();
+    });
+
+    $("#newHousingFollowUpSaveBtn").click(function () {
+
+        if ($("#newHousingFollowUpForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/FollowUps/NewHousingHistoryFollowUp")",
+                type: "POST",
+                data: $('#newHousingFollowUpForm').serialize()
+
+        }).done(function (data) {
+                
+            defaultNotify(data.Success); //display the default error or success message
+
+            btn.attr("disabled", false); //Enable the button incase there was an error
+
+            if (data.Success) {
+                $("#newHousingFollowUpCloseBtn").click(); //Close the modal window on success
+                //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                $('#followUpsTable').DataTable().ajax.reload();
+            }
+        });
+    }
+    });
+</script>

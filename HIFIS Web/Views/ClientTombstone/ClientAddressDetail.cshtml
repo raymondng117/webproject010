@@ -1,0 +1,157 @@
+﻿@model ClientAddressDetailViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientAddressDetail;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("ClientAddressDetailUpdate", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+    
+        @Html.HiddenFor(m => m.ClientID)
+        @Html.HiddenFor(m => m.AddressID)
+
+        @Html.HiddenFor(m => m.ClientAddress.ClientAddressID)
+        @Html.HiddenFor(m => m.ClientAddress.AddressID)
+        @Html.HiddenFor(m => m.ClientAddress.ClientID)
+
+        @Html.HiddenFor(m => m.Address.AddressID)
+
+        <div>
+            @Html.HifisEditorFor(model => model.ClientAddress.DateStart, "DateOnly")
+        </div>
+    
+        <div>
+            @Html.HifisEditorFor(model => model.ClientAddress.DateEnd, "DateOnly")
+        </div>    
+        <div>
+            @Html.HifisEditorFor(model => model.Address.AddressLn1)
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.Address.AddressLn2)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Address.Building)
+        </div>    
+        <div>
+            @Html.HifisEditorFor(model => model.Address.Floor)
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.Address.CountryID, CachedTableTypes.HIFIS_CountryTypes)
+        </div>
+
+        <div id="DIV_CANADA">
+            <div>
+                @Html.HifisEditorFor(model => model.Address.ProvinceID, CachedTableTypes.HIFIS_ProvinceTypes, new { @class = "province" })
+            </div>
+    
+            <div>
+                @Html.HifisEditorFor(model => model.Address.CityID, CachedTableTypes.HIFIS_CityTypes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.Address.PostalCode)
+            </div>
+        </div> 
+    
+        <div class="hide" id="DIV_INTERNATIONAL">
+            <div>
+                @Html.HifisEditorFor(model => model.Address.InternationalProvinceName)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.Address.InternationalCityName)
+            </div>
+    
+            <div>
+                @Html.HifisEditorFor(model => model.Address.InternationalPostalCode)
+            </div>
+        </div>
+    
+            <div class="form-group">
+	            <div class="col-sm-offset-2 col-sm-10">
+		             @*@Html.ActionLink(Labels.NewClientAddress, "ClientAddressSearch", "ClientTombstone", new { id = Model.ClientID, }, new { @class = "addButton  ", title = @Labels.NewClientAddress }) *@
+                    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "ClientHousingHistory", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton  ", title = @Labels.New, alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+	            </div>
+            </div>    
+    
+        @Html.HiddenFor(model => model.AddressHifisRowVersion)
+        @Html.HiddenFor(model => model.AddressLastUpdatedBy)
+        @Html.HiddenFor(model => model.ClientAddressHifisRowVersion)
+        @Html.HiddenFor(model => model.ClientAddressLastUpdatedBy)
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(document).ready(function()
+            {
+                $(".country").change(function()
+                {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "'" + Url.Content("~/Master/AjaxGetProvinceList") + "'",
+                       Data = "{CountryID: $(this).val()}",
+                       OnSuccess = @"var select = document.getElementById('ProvinceID');
+                                        select.options.length = 0; // clear out existing items
+                                        for(var i=0; i < data.length; i++) {
+                                            var d = data[i];
+                                            select.options.add(new Option(d.Text, d.Value))
+                                        }
+                                        $('#ProvinceID').trigger('change');
+                                        "
+                   })
+                });
+
+                $(".province").change(function()
+                {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "'" + Url.Content("~/Master/AjaxGetCityList") + "'",
+                       Data = "{ProvinceID: $(this).val()}",
+                       OnSuccess = @"var select = document.getElementById('CityID');
+                                        select.options.length = 0; // clear out existing items
+                                        for(var i=0; i < data.length; i++) {
+                                            var d = data[i];
+                                            select.options.add(new Option(d.Text, d.Value))
+                                        }
+                                        $('#CityID').trigger('change');
+                                        "
+                   })
+                });
+
+            });
+        </script>
+    );
+
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $('#ddlCountry').ready(ShowHideCountryDIV);
+            $('#ddlCountry').change(ShowHideCountryDIV);
+
+            function ShowHideCountryDIV() {
+                var countryID = parseInt($('#ddlCountry').val());
+                //alert('Country ID: ' + countryID.toString());
+                switch (countryID) {
+                    case 1: // Canada
+                        $('#DIV_CANADA').show();
+                        $('#DIV_INTERNATIONAL').hide();
+                        break;
+                     default:
+                        $('#DIV_CANADA').hide();
+                        $('#DIV_INTERNATIONAL').show();
+                        break;
+                }
+            }
+
+        </script>
+    );
+}

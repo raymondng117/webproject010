@@ -1,0 +1,38 @@
+﻿@model ContinuumViewModel
+
+<section id="Modal_NewContinuum" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.HousingContinuum_New</h2>
+    </header>
+    @using (Html.BeginForm("AddContinuum", "Continuum", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="modal-body">        
+            <div class="form-group">
+                <label for="SelectedHouseTypes" class="col-sm-4 control-label">
+                    @Labels.HousingContinuum_Name
+                </label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        @Html.HifisEditorFor(m => m.Name, "", new { style = "margin-left:15px;" }, true)
+                    </div>
+                </div>
+            </div>   
+        </div>
+
+        <div class="modal-footer" style="background-color: white;">
+            <button id="newContninuumSaveBtn" class="saveButton">@Labels.Save</button>
+            <button id="newContninuumCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    }
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () { $("#newItemForm").hifisValidation(); });
+
+</script>

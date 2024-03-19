@@ -1,0 +1,177 @@
+﻿.preserve-newline
+{
+	white-space: pre-line;
+}
+
+.break-word {
+    word-wrap: break-word;
+}
+
+.vertical-align-top
+{
+    vertical-align: top !important;
+}
+
+
+.align-image-center
+{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*****************************
+* Custom Help Button         *
+*****************************/ 
+.custom-help
+{
+    color:#000000;
+    cursor: pointer;
+}
+
+/*
+    */
+.videoWrapper {
+     position: relative;
+     padding-bottom: 72%;
+     height: 0;
+     width: 100%;
+     margin: 0 auto;
+}
+
+.videoWrapper video {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+}
+
+/* 
+    */
+.help-sidebar
+{
+    background:linear-gradient(#176CA7, #114F7A) repeat scroll 0% 0% transparent;  
+}
+
+.help-sidebar a
+{
+    color:white;
+}
+
+.help-table td a {
+    display:block;
+    width:100%;
+    text-decoration:none;
+}
+
+.help-table td:hover {
+    background:grey !important; 
+}
+
+.help-active
+{
+    background:lightgrey !important; 
+    border-left:1px solid darkblue !important;
+}
+
+.no-deco
+{
+    text-decoration:none;
+}
+
+/*****************************
+* Help and e-Learning Panels *
+*****************************/  
+.help-panel-border{
+    border-width: 1px 1px 1px 4px !important;
+}
+
+/* Hint */
+.help-hint{
+	background-color:#D8EECA;
+	border-color:#278400;
+}
+
+.help-hint > :first-child:before{
+    color:#278400;
+	content:""
+}
+
+/* Show Me / Learn How */
+.help-showme{
+	background-color:#F9F4D4;
+	border-color:#F90;
+}
+
+.help-showme > :first-child:before{
+    color:#F90;
+	content:""
+}
+
+/* Simulation */
+.help-sim{
+	background-color:#D7FAFF;
+	border-color:#269ABC;
+}
+
+.help-sim > :first-child:before{
+    color:#269ABC;
+	content:"";
+}
+
+/* Knowledge Check / Challenge Yourself */
+.help-chal{
+	background-color:#EEEEEE;
+	border-color:#000000;
+}
+
+.help-chal > :first-child:before{
+    color:#000000;
+	content:"";
+}
+
+/* Key Point */
+.help-key{
+	background-color:#F3E9E8;
+	border-color:#D3080C;
+}
+
+.help-key > :first-child:before{
+    color:#D3080C;
+	content:"";
+}
+
+/* Related Help */
+.help-help{
+	background-color:#EDE5F3;
+	border-color:#7849A1;
+}
+
+.help-help > :first-child:before{
+    color:#7849A1;
+	content:"";
+}
+
+/* Step by Step */
+.help-step{
+	background-color:#E7F3F1;
+	border-color:#4A9586;
+}
+
+.help-step > :first-child:before{
+    color:#4A9586;
+	content:"";
+}
+
+/* Demonstration */
+.help-demo{
+	background-color:#E0EAF8;
+	border-color:#2F74D0;
+}
+
+.help-demo > :first-child:before{
+    color:#2F74D0;
+	content:"";
+}
+

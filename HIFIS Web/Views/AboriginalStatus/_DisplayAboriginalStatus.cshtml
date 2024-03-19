@@ -1,0 +1,64 @@
+﻿@model IndianStatusViewModel
+
+<div class="displayView">
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AboriginalStatusID, new { @class = "autowidth" })
+        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, Culture, Model.AboriginalStatusID)
+    </div>
+
+    @*@if (Model.AboriginalStatusID != (short)IndianStatusTypes.NonAboriginal)*@
+    @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, short.Parse(Model.AboriginalStatusID.ToString())) != (short)IndianStatusTypes.NonAboriginal)
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ProvinceID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                new SingleItemSelectList
+                {
+                    ID = Model.ProvinceID,
+                    List = ViewBag.Provinces as SelectList
+                })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.BandNameType, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                new SingleItemSelectList
+                {
+                    ID = Model.BandNameType,
+                    List = ViewBag.BandTypes as SelectList
+                })
+        </div>
+
+        <div class="row">
+            @Html.HifisDisplayFor(m => m.TreatyNumber)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.HomeReserveType, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                new SingleItemSelectList
+                {
+                    ID = Model.HomeReserveType,
+                    List = ViewBag.ReserveTypes as SelectList
+                })
+        </div>
+
+        <div>
+            @if (RightsHelper.HasRight(UserRights.Aboriginal_Status_Edit))
+            {
+                @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ClientID = Model.ClientID }, new { @class = "editButton", alt = Labels.Edit, aria_label=Labels.Edit, @role="button" })
+            }
+        </div>
+    }
+    else
+    {
+        <div>
+            @if (RightsHelper.HasRight(UserRights.Aboriginal_Status_Add))
+            {
+                @Html.ActionLink(Labels.Add, "New", new { id = Model.ClientID = Model.ClientID }, new { @class = "addButton", alt=Labels.Add, aria_label = Labels.Add, @role="button" })
+            }
+        </div>
+    }
+</div>
+    
+

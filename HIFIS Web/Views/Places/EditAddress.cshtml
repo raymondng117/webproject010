@@ -1,0 +1,34 @@
+﻿@model AddressViewModel
+@{
+    ViewBag.ViewTitle = Labels.EditAddress;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("EditAddress", "Places", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.HiddenFor(model => model.PlaceID)
+
+        <span id="AddressFormFields">@Html.Partial("_AddressSearch.cshtml", Model)</span>
+        
+        <div id="newAddressForm">
+            <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+				    <button type="submit" class="saveButton  ">@Labels.Save</button>
+
+                    @if (Model.ActionName != null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "PlaceDetails", "Places", new { id = Model.PlaceID }, new { @class = "cancelButton", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "PlaceList", "Places", null, new { @class = "cancelButton", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+			    </div>
+		    </div>             
+        </div>
+    }
+</div>

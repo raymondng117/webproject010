@@ -1,0 +1,97 @@
+﻿@model GoodsAndServicesViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_GoodsAndServices;
+
+    ViewBag.HIFISTombstone = Model.ClientService;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="clearfix"></div>
+
+<div class="mrgn-bttm-md">
+    @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/GoodsAndServices/_DisplayGoodsService.cshtml"), ViewModel = Model })
+</div>
+
+<div>
+    <h4>
+        @Labels.Goods
+    </h4>
+</div>
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>@Labels.Good</th>
+                <th>@Labels.Quantity</th>
+                <th>@Labels.UnitCost</th>
+                <th>@Labels.UnitPrice</th>
+                <th>@Labels.UnitOfMeasure</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ClientGoodList != null && Model.ClientGoodList.Count > 0)
+            {
+                for (int i = 0; i < Model.ClientGoodList.Count; i++)
+                {
+            <tr>
+                <td>@Html.DisplayFor(m => m.ClientGoodList[i].GoodName)</td>
+                <td>@Html.DisplayFor(m => m.ClientGoodList[i].NoOfUnits)</td>
+                <td>@Html.DisplayFor(m => m.ClientGoodList[i].UnitCost)</td>
+                <td>@Html.DisplayFor(m => m.ClientGoodList[i].UnitPrice)</td>
+                <td>@Html.DisplayFor(m => m.ClientGoodList[i].UnitOfMeasureName)</td>
+            </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h4>
+        @Labels.Services
+    </h4>
+</div>
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>@Labels.Service</th>
+                <th>@Labels.StartDate</th>
+                <th>@Labels.EndDate</th>
+                <th>@Labels.ExpendedTime</th>
+                <th>@Labels.UnitCost</th>
+                <th>@Labels.UnitPrice</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ClientActivityList != null && Model.ClientActivityList.Count > 0)
+            {
+                for (int i = 0; i < Model.ClientActivityList.Count; i++)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(m => m.ClientActivityList[i].ActivitiesTypeName)</td>
+                        <td>@DateHelper.DateTimeFormaterENFR(Model.ClientActivityList[i].DateStart, Labels.CurrentCulture)</td>
+                        <td>@DateHelper.DateTimeFormaterENFR((DateTime)Model.ClientActivityList[i].DateEnd.GetValueOrDefault(), Labels.CurrentCulture)</td>
+                        <td>@Html.DisplayFor(m => m.ClientActivityList[i].Hours) @Labels.Hrs @Html.DisplayFor(m => m.ClientActivityList[i].Minutes) @Labels.Mins</td>
+                        <td>@Html.DisplayFor(m => m.ClientActivityList[i].ServiceCost)</td>
+                        <td>@Html.DisplayFor(m => m.ClientActivityList[i].ServicePrice)</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="mrgn-bttm-lg">
+    @Html.Partial("_BaseFooter", (BaseViewModel)Model.ClientService)
+</div>
+<div>
+    @if (RightsHelper.HasRight(UserRights.Goods_Services_Client_List, Model.OrganizationID))
+    {
+        @Html.ActionLink(Labels.BackToGoodsServicesList, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "prevButton ", alt=Labels.BackToGoodsServicesList, aria_label = Labels.BackToGoodsServicesList, @role = "button" })
+    }
+    @if (RightsHelper.HasRight(UserRights.Goods_Services_Edit, Model.OrganizationID))
+    {
+        @Html.ActionLink(Labels.Manage, "Manage", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID, serviceID = Model.ServiceID, GoodActivityID = Model.GoodsActivitiesID }, new { @class = "manageButton", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+    }
+</div>

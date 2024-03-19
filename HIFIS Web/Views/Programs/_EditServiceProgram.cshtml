@@ -1,0 +1,84 @@
+﻿@model ServiceProgramViewModel
+
+<section id="Modal_EditServiceProgram" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <button type="button" class="mfp-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2 class="modal-title" id="myModalLabel">@Labels.viewTitle_ProgramEdit</h2>
+    </header>
+
+    <div class="modal-body" style="background-color:white; min-height: 65px;">
+
+        <form id="UpdateProgramDetailsForm">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ServiceProgramID)
+            @Html.HiddenFor(model => model.ServiceID)
+            @Html.HiddenFor(model => model.ProgramID)
+
+            <div>
+                @Html.HifisEditorFor(m => m.DateStart, "DateAndTime")
+            </div>
+            <div class="clearfix"></div>
+
+            <div>
+                @Html.HifisEditorFor(m => m.DateEnd, "DateAndTime")
+            </div>
+            <div class="clearfix"></div>
+        </form>
+
+    </div>
+
+    <div class="modal-footer" style="background-color:white;">
+        <button id="UpdateProgramDetailsSaveButton" type="button" class="saveButton">@Labels.Save</button>
+        <button id="UpdateProgramDetailsCloseButton" type="button" class="cancelButton popup-modal-dismiss " data-dismiss="modal">@Labels.Close</button>
+    </div>
+</section>
+<script type="text/javascript">
+    init_hifis();
+    autoWidthBoot('.modal-body');
+    fixWidth();
+
+    $("#UpdateProgramDetailsForm").removeData("validator");
+    $("#UpdateProgramDetailsForm").removeData("unobtrusiveValidation");
+    $.validator.unobtrusive.parse("#UpdateProgramDetailsForm");
+
+    $("#UpdateProgramDetailsSaveButton").click(function () {
+
+        if ($("#UpdateProgramDetailsForm").valid()) {
+            var data_serialized = $('#UpdateProgramDetailsForm').serialize();
+
+            $("#UpdateProgramDetailsSaveButton").attr("disabled", true);
+
+            $.ajax({
+
+                url: "@Url.Content("~/Programs/EditServiceProgram")",
+                type: 'POST',
+                dataType: 'json',
+                data: data_serialized
+
+            }).done(function (data) {
+
+                $('#programListTable').DataTable().ajax.reload();
+                $("#UpdateProgramDetailsCloseButton").click();
+
+                if (data.Success) {
+                    displayNotification('success', null, '@Labels.DefaultDataSavedMessage');
+                }
+                else {
+                    displayNotification('error', null, '@Labels.FailedToSave');
+                }
+
+                $("#UpdateProgramDetailsSaveButton").attr("disabled", false);
+            });
+        }
+    });
+
+    function fixWidth() {
+        var $elements = $('.modal-body label.col-sm-2');
+        $elements.each(function () {
+            $(this).removeClass("col-sm-2").addClass("col-sm-4")
+                .parent().find(".col-sm-10").removeClass("col-sm-10").addClass("col-sm-8");
+        });
+
+        $(".modal-body select").parent().attr('style', 'width: 85% !important');
+    };
+</script>

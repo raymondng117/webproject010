@@ -1,0 +1,142 @@
+﻿@model ClientConflictListViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th>@Labels.OrganizationName</th>
+                <th>@Labels.Client</th>
+                <th>@Labels.Counterpart</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.ConflictType</th>
+                <th>@Labels.Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Conflicts != null && Model.Conflicts.Count > 0)
+            {
+                int j = 1;
+            
+                foreach (ConflictViewModel item in Model.Conflicts)
+                {            
+                    <tr>
+                        <td class="col-sm-2">
+                            @item.OrganizationName
+                        </td>
+                        <td class="col-sm-2">
+                            @item.FirstPersonName
+                            <br />
+
+                            @* TODO: These can all be cleaned up (true ? '' : '') -JdV *@
+                            (@if(item.FirstIsVictimYN)
+                            {
+                                @Labels.Victim
+                            }else{
+                                @Labels.Aggressor
+                            })
+                        </td>
+                        <td class="col-sm-3">
+                            @item.SecondPersonName
+                            <br />
+                            (@if(item.SecondIsVictimYN)
+                            {
+                                @Labels.Victim
+                            }else{
+                                @Labels.Aggressor
+                            })
+                        </td>
+                        <td class="col-sm-2">
+                            @Html.DisplayFor(ModelItem => item.DateStart)
+                        </td>
+                        <td>
+                            @if (item.ConflictTypeIDs != null)
+                            {
+                                if (item.ConflictTypeIDs.Count() > 1)
+                                {
+                                    <div class="panel-default">
+                                        <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" role="button" style="text-align:left;"> 
+                                                @item.ConflictTypeIDs.Count() @Labels.ConflictTypes 
+                                                <span class="caret pull-right mrgn-tp-sm"></span>
+                                            </a>
+                                        </div>
+                                        <div id="@j" class="panel-collapse collapse">
+                                            <ul class="pddng-lft-md">
+                                                @foreach (var ct in item.ConflictTypeIDs)
+                                                {
+                                                    <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConflictTypes, Culture, ct)</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    j++;
+                                }
+                                else
+                                {
+                                    foreach (var ct in item.ConflictTypeIDs)
+                                    {
+                                        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConflictTypes, Culture, ct)
+                                    }
+                                }
+                            }
+                        </td>
+                        <td class="text-center print-none">
+                            @if (item.OrganizationID != null) // This means we are in the client list view
+                            {
+                                if (RightsHelper.HasRight(UserRights.Conflicts_Display, item.OrganizationID))
+                                {
+	                                @Html.ActionLink(Labels.Display, "Display", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+                                
+                                if (RightsHelper.HasRight(UserRights.Conflicts_Edit, item.OrganizationID))
+                                {
+                                    if (Model.ReadOnlyVitals.ClientID != item.FirstClientID)
+                                    {
+                                        @Html.ActionLink(Labels.EditNewWindow, "Edit", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "newWindow noText", target = "_blank", alt=Labels.EditNewWindow, aria_label = Labels.EditNewWindow, @role = "button" })
+
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "Edit", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+                                }
+                                // We only want to allow the delete button to appear in the ClientList view. This will force the user to really find the record they want to delete before removing it.
+                                if (RightsHelper.HasRight(UserRights.Conflicts_Delete))
+                                {
+                                    @Html.ActionLink(Labels.Delete, "Delete", "Conflicts", new { conflictID = item.ConflictID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                }
+                            }
+                            else // front desk view
+                            {
+                                if (RightsHelper.HasRight(UserRights.Conflicts_Display))
+                                {
+                                    @Html.ActionLink(Labels.Display, "Display", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+                                
+                                if (RightsHelper.HasRight(UserRights.Conflicts_Edit))
+                                {
+                                    if (Model.ReadOnlyVitals.ClientID != item.FirstClientID)
+                                    {
+                                        @Html.ActionLink(Labels.EditNewWindow, "Edit", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "newWindow noText", target = "_blank", alt=Labels.EditNewWindow, aria_label = Labels.EditNewWindow, @role = "button" })
+
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "Edit", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+                                }
+                            }
+                    
+                                                
+                        
+                        </td>
+                    </tr>
+                }
+            }
+            
+        </tbody>
+    </table>
+</div>

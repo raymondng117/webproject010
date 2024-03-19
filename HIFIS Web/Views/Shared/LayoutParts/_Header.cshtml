@@ -1,0 +1,395 @@
+﻿@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+    string lang = ViewBag.CurrentCulture == Constants.Eng ? "en" : "fr";
+	bool isEULA = HttpContext.Current.Request.Url.AbsoluteUri.Contains("EULA");
+}
+<ul id="wb-tphp">
+	<li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-lng">Skip to Language Selection/ Passer à la sélection de la langue</a> </li>
+	<li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-srch">@Labels.SkipSearch </a> </li>
+	<li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-sm">@Labels.SkipMenu </a> </li>
+	<li class="wb-slc"><a class="wb-sl" href="#wb-cont">@Labels.SkipMain</a> </li>
+	<li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-info">@Labels.SkipFooter</a> </li>
+</ul>
+<header role="banner">
+	<div id="wb-bnr" class="inside">
+		<div id="wb-bar">
+			<div class="container">
+				<div class="row">
+					<section id="wb-lng" class="visible-md visible-lg">
+						<h2>@Labels.LangSelect</h2>
+                        <ul>
+                            @if (User.Identity.IsAuthenticated && isEULA == false)
+                            {
+                                <li>
+                                    @if (Request.RequestContext.RouteData.Values["action"].ToString() != "EditPitSurvey" && Request.RequestContext.RouteData.Values["action"].ToString() != "EditPitSurveyLivePagingQuestion")
+                                    {
+                                        if (ViewBag.CurrentCulture == null || ViewBag.CurrentCulture == Constants.Fr)
+                                        {
+                                            @Html.ActionLink(Labels.LanguageSelection, "LanguageChange", "Language", new { strCulture = Constants.Eng, strReturnURL = this.Request.RawUrl }, new { alt = Labels.LanguageSelection, aria_label = Labels.LanguageSelection })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink(Labels.LanguageSelection, "LanguageChange", "Language", new { strCulture = Constants.Fr, strReturnURL = this.Request.RawUrl }, new { alt = Labels.LanguageSelection, aria_label = Labels.LanguageSelection })
+                                        }
+                                    }
+                                </li>
+                                <li>
+                                    @Html.ActionLink(ViewBag.CurrentOrgName != null ? (string)ViewBag.CurrentOrgName : Labels.ChangeOrg, "LogOn", "Account", new { changeOrg = true }, new { @class = "wb-lbx lbx-modal", aria_controls = "Modal_AjaxLogin", role = "button", id = "changeCurrentOrgBtn", alt = ViewBag.CurrentOrgName != null ? (string)ViewBag.CurrentOrgName : Labels.ChangeOrg, aria_label = ViewBag.CurrentOrgName != null ? (string)ViewBag.CurrentOrgName : Labels.ChangeOrg })
+                                </li>
+                                <li>
+                                    @((HttpContext.Current.Session[HIFIS.WEB.Controllers.MasterController.USER_VITALS_SESSION_KEY] as HIFIS.CONTRACTS.WCFContracts.DataContracts.UserProfile).UserName.ToString())
+                                </li>
+                            }
+                            else if (User.Identity.IsAuthenticated && isEULA)
+                            {
+                                <li>
+                                    @if (ViewBag.CurrentCulture == null || ViewBag.CurrentCulture == Constants.Fr)
+                                    {
+                                        @Html.ActionLink(Labels.LoginEnglishBtn, "EULA", "License", new { currentCulture = Constants.Eng }, new { alt = Labels.LoginEnglishBtn, aria_label = Labels.LoginEnglishBtn })
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink(Labels.LoginFrenchBtn, "EULA", "License", new { currentCulture = Constants.Fr }, new { alt = Labels.LoginFrenchBtn, aria_label = Labels.LoginFrenchBtn })
+                                    }
+                                </li>
+
+                                <li>
+                                    <label class="eulaLabel" aria-label="@ViewBag.CurrentOrgName">@ViewBag.CurrentOrgName</label>
+                                </li>
+                            }
+                            else if (User.Identity.IsAuthenticated == false && isEULA)
+                            {
+                                <li>
+                                    @if (ViewBag.CurrentCulture == null || ViewBag.CurrentCulture == Constants.Fr)
+                                    {
+                                        @Html.ActionLink(Labels.LoginEnglishBtn, "EULA", "License", new { currentCulture = Constants.Eng }, new { alt = Labels.LoginEnglishBtn, aria_label = Labels.LoginEnglishBtn })
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink(Labels.LoginFrenchBtn, "EULA", "License", new { currentCulture = Constants.Fr }, new { alt = Labels.LoginFrenchBtn, aria_label = Labels.LoginFrenchBtn })
+                                    }
+                                </li>
+                            }
+                        </ul>
+					</section>
+				    <section class="wb-mb-links col-xs-12 visible-sm visible-xs" id="wb-glb-mn">
+				        <a href="@Url.Content("~/")" lang="@lang">
+				            <img class="wdth-strct-50" src="@Url.Content("~/Content/wet-boew/assets/logo.png")" alt="@Labels.HIFIS_FullText"/><h1>@Labels.HIFIS</h1>
+				        </a>
+                        <h2>@Labels.HIFIS @Labels.MainMenu</h2>
+				        <ul class="pnl-btn list-inline text-right">
+				            <li>
+				                <a href="#mb-pnl" title="@Labels.SearchAndMenus" aria-controls="mb-pnl" class="overlay-lnk btn btn-sm btn-default" role="button">
+				                    <span class="glyphicon glyphicon-search">
+										<span class="glyphicon glyphicon-th-list">
+											<span class="wb-inv">Search and menus</span>
+										</span>
+									</span>
+				                </a>
+				            </li>
+				        </ul>
+				        <div id="mb-pnl"></div>
+				    </section>
+				</div>
+			</div>
+		</div>
+		<div class="container inside">
+		    <div class="row">
+                <section id="wb-lng" class="visible-md visible-lg">
+                    <div id="wb-sttl" class="col-md-8">
+                        <a href="@Url.Content("~/")" lang="@lang">
+                            <div class="@lang">
+                                @*<h1>@Labels.HIFIS</h1>*@
+                                <span id="bannerTitle">@Labels.HIFIS</span>
+                                <div class="logo"><img src="@Url.Content("~/Content/wet-boew/assets/logo_inside.png")" alt="@Labels.HIFIS_FullText_Alt" /></div>
+                                @* Add aria-hidden to avoid screen reader to read the alt and then the text (prevent double reading) *@
+                                <small aria-hidden="true">@WebUtility.HtmlDecode(Labels.HIFIS_FullText)</small>
+                                <div style="clear:both;" />
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                    @if (RightsHelper.HasRight(UserRights.Clients_Search))
+                    {
+                        <section id="wb-srch" class="col-md-4 visible-md visible-lg">
+                            <h2>@Labels.SearchForAClient</h2>
+                            @using (Html.BeginForm("ClientSearchProxy", "ClientTombstone", FormMethod.Get, new { @class = "form-inline", id = "GlobalSearchForm", role = "search", onsubmit = "return clientSearchMinInput()" }))
+                            {
+                                 @Html.AntiForgeryToken()
+                                 <div class="form-group">
+                                    <div class="input-group">
+                                        <label for="wb-srch-q" class="control-label">@Labels.SearchClient</label>
+                                        @Html.TextBox("cSearchString", null, new { @class = "form-control", id = "wb-srch-q", type = "search", size = "27", maxlength = "150", placeholder = Labels.ClientSearch, style = "z-index: 200;" })
+                                        <span class="input-group-btn">
+                                            <button style="z-index: 200; height: 37px; margin-left: 0px;" class="btn btn-default" type="submit" value="Search"><span class="glyphicon glyphicon-search"></span></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+
+                        </section>
+                    }
+            </div>
+		</div>
+	</div>
+
+	<nav role="navigation" id="wb-sm" class="wb-menu visible-md visible-lg" data-trgt="mb-pnl" typeof="SiteNavigationElement">
+		<div class="pnl-strt container visible-md visible-lg nvbar">
+			<h2>@Labels.MainMenu</h2>
+			<div class="row">
+				@Html.TopMenu()
+			</div>
+		</div>
+	</nav>
+
+
+	<!--------------Banner Section-------------->
+    @{
+        InstanceViewModel InstanceInfo = null;
+        if (ViewBag.InstanceInfoVM != null) {
+            try {
+                InstanceInfo = (InstanceViewModel)ViewBag.InstanceInfoVM;
+            }
+            catch {}
+        }
+    }
+    @if (ViewBag.RegistrationBannerText != null && ViewBag.RegistrationBannerText != "")
+    {
+        <div class="wb-bnr-ss" style="background:#ab1515">
+            <div class="container">
+                <div class="row col-md-12">
+                    <div class="wb-ss pull-left">
+                        @Html.Raw(ViewBag.RegistrationBannerText)
+                    </div>
+                    @if (ViewBag.DaysLeftTillExpire != null)
+                    {
+                        <div class="wb-ss pull-right" style="text-align: right;">
+                            @ViewBag.DaysLeftTillExpire @Labels.RegBanner_DaysLeftInTrial
+                        </div>
+                    }
+                    else if (ViewBag.CountDownToLogOut != null)
+                    {
+                        <div class="wb-ss pull-right" style="text-align: right;">
+                            <span id="timeOutMinSec"></span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else if (InstanceInfo != null && InstanceInfo.ShowBanner)
+    {
+        <div class="wb-bnr-ss" style="background:@InstanceInfo.BackgroundColour">
+            <div class="container">
+                <div class="row col-md-12">
+                    <div class="wb-ss" style="color:@InstanceInfo.TextColour">
+                        @HttpUtility.HtmlEncode(InstanceInfo.BannerText)
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</header>
+
+<section id="h_timeOutModal" class="mfp-hide modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+        <h2 id="h_timeOutTitle" class="modal-title">@Labels.txtTimeOut</h2>
+	</header>
+	<div id="h_timeOutBody" class="modal-body">
+	</div>
+	<div class="modal-footer" style="background-color: white;">
+		<a id="h_timeOutLogOffButton" class="btn btn-primary" role="button" href="@Url.Action("LogOff","Account")"></a>
+		<button id="h_timeOutCloseButton" class="btn btn-primary popup-modal-dismiss cancelButton" 
+				onclick="localStorage.setItem('displayedTimeoutWarning', true);" type="button" style="display: none;">@Labels.Close</button>
+	</div>
+</section>
+<section id="h_InterruptionModal" class="mfp-hide modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.Reminder</h2>
+	</header>
+	<div class="modal-body">
+		@Labels.ReminderText
+	</div>
+	<div class="modal-footer" style="background-color: white;">
+		<button class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+			$(document).ready(function () {
+			   // $('[data-toggle="popover"]').popover(); //removed since it broke all other popovers
+
+				var clientSearch = $('#wb-srch-q');
+
+				clientSearch.popover({
+					content: 'PlaceHolder',
+					trigger: 'manual',
+					placement: 'left',
+					html: true
+				});
+
+				clientSearch.on('input', function () {
+					clientSearchMinInput();
+				});
+
+				clientSearch.blur(function () {
+					clientSearch.popover('hide');
+				});
+
+				clientSearch.focus(function () {
+					clientSearchMinInput();
+				});
+
+				//$('#GlobalSearchForm').on('submit', function () {
+				//    return clientSearchMinInput();
+				//});
+
+				var minLength;
+				if ($('#MinimumCharacterInput').val()) {
+					minLength = parseInt($('#MinimumCharacterInput').val());
+				}
+				else {
+					minLength = parseInt(@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultMinCharInput"]);
+				}
+
+				function clientSearchMinInput() {
+
+					var length = clientSearch.val().replace(/ /g, '').length;
+
+					if (length >= 1 && length < minLength) {
+
+						if (clientSearch.attr('aria-describedby') == null) {
+							clientSearch.popover('show');
+						}
+
+						if (clientSearch.attr('aria-describedby') != null) {
+							var id = clientSearch.attr('aria-describedby').split(" ")[0];
+							var remaining = (minLength - length);
+							$('#' + id).children('.popover-content')
+								.html("<div style=\"font-size: 15px\">"
+								+ "@Labels.ClientSearchMinInputErrorPrefix" + remaining + "@Labels.ClientSearchMinInputErrorSuffix"
+								+ "</div>");
+						}
+
+						return false;
+						} else {
+							clientSearch.popover('hide');
+							return true;
+						}
+				}
+
+				@{ bool InstanceInterruption = (ViewBag.InstanceInterruption != null && ViewBag.InstanceInterruption == true);}
+
+				var InstanceInterruption = @InstanceInterruption.ToString().ToLower();
+
+				if (InstanceInterruption){
+					
+					function CheckInterrupt() {
+						const thirtyMinutes = 30;
+						const millisecondsPerMinute = 60000;
+
+						var dateString = localStorage.getItem("YcuIw1CMNyt11XCmez");
+						if (dateString == null){
+							var timeToShowPopup = new Date(Date.now() + (thirtyMinutes * millisecondsPerMinute)).getTime();
+							localStorage.setItem("YcuIw1CMNyt11XCmez",timeToShowPopup)
+						}else{
+							if (Date.now() >= dateString){
+								$('#h_InterruptionModal').trigger('open.wb-lbx', [[{ src: '#h_InterruptionModal', type: 'inline' }], true]);
+
+								var timeToShowPopup = new Date(Date.now() + (thirtyMinutes * millisecondsPerMinute)).getTime();
+								localStorage.setItem("YcuIw1CMNyt11XCmez",timeToShowPopup)
+							}
+						}					
+					}
+
+					// Run function rightaway
+					CheckInterrupt();
+
+					// Check every minute
+					setInterval(CheckInterrupt, (1000 * 60));
+				}
+
+				var countDownTime = new Date("@ViewBag.CountDownToLogOut").getTime();
+				if (!isNaN(countDownTime)) {
+					// Update the count down every 1 second
+					var x = setInterval(function () {
+						
+						// Get todays date and time in UTC
+						var now = Date.now();
+						
+						// Find the distance between now and the count down date
+						var distance = countDownTime - now;
+
+						// Time calculations for days, hours, minutes and seconds
+						//var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+						//var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+						var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+						var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+						// Pad Numbers
+						var PadedMinutes = padToTwo(minutes);
+						var PadedSeconds = padToTwo(seconds);
+
+						// If the count down is over, trigger a modal
+						if (distance < 0) {
+							console.log();
+							clearInterval(x);
+
+							var i18n = wb.i18n;
+							var i18nText = { // Gets text from the wet beow resource files
+								buttonSignin: i18n("tmpl-signin"),
+								timeoutTitle: i18n("st-msgbx-ttl"),
+								timeoutAlready: i18n("st-alrdy-to-msg")
+							};
+
+							// Reusing text that already exists in wet
+							$('#h_timeOutTitle').text(i18nText.timeoutTitle);
+							$('#h_timeOutBody').text(i18nText.timeoutAlready);
+							$('#h_timeOutLogOffButton').text(i18nText.buttonSignin);
+
+							$('#h_timeOutCloseButton').hide();
+							$('#h_timeOutLogOffButton').show();
+
+							$('#h_timeOutModal').trigger('open.wb-lbx', [[{ src: '#h_timeOutModal', type: 'inline' }], true]);
+						}
+						else {
+							var timeoutBegin = wb.i18n("st-to-msg-bgn");
+
+							// Display Timeout warning
+							if (minutes <= 1 && localStorage.getItem('displayedTimeoutWarning') != 'true') {
+
+								var timeoutTitle = wb.i18n("st-msgbx-ttl");
+								var timeoutTimer = timeoutBegin = timeoutBegin
+									.replace("#min#", minutes)
+									.replace("#sec#", seconds)
+
+								$('#h_timeOutTitle').text(timeoutTitle);
+								document.getElementById("h_timeOutBody").innerHTML = timeoutBegin;
+								$('#h_timeOutCloseButton').show();
+								$('#h_timeOutLogOffButton').hide();
+
+								$('#h_timeOutModal').trigger('open.wb-lbx', [[{ src: '#h_timeOutModal', type: 'inline' }], true]);
+							} else if (minutes > 1) {
+								localStorage.setItem('displayedTimeoutWarning', false);
+							}
+
+							timeoutBegin = "<span class='visible-md-inline visible-lg-inline'>" + timeoutBegin
+							.replace("#min#", "</span>" + minutes)
+							.replace("#sec#", seconds)
+							.replace(".", "");
+
+							// Output the result
+							document.getElementById("timeOutMinSec").innerHTML = timeoutBegin;
+						}						
+					}, 1000);
+				}
+				function padToTwo(number) {
+					if (number <= 9) { number = ("0" + number).slice(-2); }
+					return number;
+				}
+			});
+		</script>);
+} 

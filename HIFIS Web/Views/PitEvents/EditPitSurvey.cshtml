@@ -1,0 +1,141 @@
+﻿@model HIFIS.WEB.ViewModels.PitSurveyViewModel
+@{
+	ViewBag.ViewTitle = Labels.EditPitSurvey;
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("EditPitSurvey", "PitEvents", FormMethod.Post, new { @class = "form-horizontal", id = "pitForm" }))
+{
+	if(ViewBag.IncompleteSurvey != null)
+	{
+		<div class="alert alert-warning" role="alert">
+			<p>@Labels.IncomepleteSurveyInfo</p>
+		</div>
+	}
+
+	if (Model.IsLive)
+	{
+		<div style="text-align: right;">
+			<a class="closeButton wb-lbx btn-danger" href="#Modal_AbandonSurvey">
+				@Labels.AbandonSurvey
+			</a>
+		</div>
+	}
+
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" role="tab" id="sDetails">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#surveyDetails" aria-expanded="true" aria-controls="surveyDetails">
+					@Labels.SurveyDetails
+					<span class="caret pull-right mrgn-tp-sm"></span>
+				</a>
+			</h4>
+		</div>
+		<div id="surveyDetails" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="sDetails">
+			<div id="Survey_FormPortion" class="panel-body">
+				@Html.Partial("SurveyPartials/_EditPitSurvey", Model)
+			</div>
+		</div>
+	</div>
+
+    <div id="SurveyQuestions_FormPortion">
+        @Html.Partial("SurveyPartials/_EditPitSurveyQuestions", Model)
+    </div>
+	<div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="saveButton  ">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "PitSurveysList", "PitEvents", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>
+	</div>
+}
+@Html.Partial("_AbandonSurvey", Model)
+
+@using (Html.BeginScriptContext()) // handling Question dependencies
+{
+	Html.AddScriptBlock(@<script type="text/javascript">
+        $(function () {
+            DetectSurvey();
+
+            EnableDisableSurveyQuestions(
+                @Html.Raw(Json.Encode(Model.Questions.Select(
+                    q => new {
+                        QuestionID = q.QuestionID,
+                        QuestionTypeID = q.QuestionTypeID
+                    }).ToList())));
+
+            $('[pit-fam-button="true"]')
+                .attr('href', $('[pit-fam-button="true"]').attr('href')
+				+ '&shiftID=' + $('#ShiftID').val()
+				+ '&surveyNo=' + $('#SurveyNo').val());
+        });
+
+        $('#pitForm').submit(function () {
+            var totalOfQuestions = 1;
+            var completedQuestionsQty = 0;
+            var completedQuestionsPercentage = 0;
+
+            totalOfQuestions = $("#SurveyQuestions_FormPortion :input[id*='Question_']")
+						.filter(function () {
+						    return $("#" + this.id).parents('[id^=form-group_]').css("display") != 'none';
+						}).length;
+
+            completedQuestionsQty = $("#SurveyQuestions_FormPortion :input[id*='Question_']")
+						.filter(function () {
+						    return this.value != undefined && this.value != null && this.value != "" ;
+						}).length;
+
+            completedQuestionsPercentage = parseInt((completedQuestionsQty / totalOfQuestions) * 100);
+
+            var isComplete = (completedQuestionsPercentage == 100);
+
+            var scrTotal = $("#scrQuestions :input[id*='Question_']")
+					.filter(function () {
+					    return $("#" + this.id).parents('[id^=form-group_]').css("display") != 'none';
+					}).length;
+
+            var scrAns = $("#scrQuestions :input[id*='Question_']")
+				.filter(function () {
+				    return this.value != undefined && this.value != null && this.value != "";
+				}).length;
+
+            //if they answer all screening questions
+            if ((scrTotal == scrAns) && ($("#PitScreenedIN").val() == "false" || $("#PitScreenedIN").val() == "False"))
+                completedQuestionsPercentage = 100;
+
+            if ((scrTotal == scrAns) && ($("#PitScreenedIN").val() == "false" || $("#PitScreenedIN").val() == "False")) {
+                $("#IsComplete").val(true);
+            } else {
+                $("#IsComplete").val(isComplete);
+            }
+
+            return true; // return false to cancel form action
+        });
+
+        $('#SurveyIdentifier').on('input', function (e) {
+            var id = $(this).val();
+            var qId = $("#PitQuestionnaireID").val();
+            var data = '';
+            if (id != '') {
+
+                $.getJSON('@Url.Content("~/PitEvents/IntervieweeIDJSON?id=")' + id + "&qId=" + qId, function (result) {
+                    if (result == '') {
+                        $('#SurveyIdentifier').popover('destroy');
+                    } else {
+
+                        $('#SurveyIdentifier').attr("data-content", result);
+
+                        $('#SurveyIdentifier').popover({ title: "@Labels.SimilarClientRef" });
+                        $('#SurveyIdentifier').popover('show');
+                    }
+                });
+            }
+            else {
+                //$("#SPJSONData").html('').hide();
+                //$('#SPData').show();
+            }
+        });
+	</script>);
+}

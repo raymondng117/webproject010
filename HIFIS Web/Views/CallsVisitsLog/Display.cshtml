@@ -1,0 +1,7 @@
+﻿@model CallsVisitsLogViewModel   
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CallsVisitsLogDisplay;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/CallsVisitsLog/_DisplayCallsVisitsLog.cshtml"), ViewModel = Model })

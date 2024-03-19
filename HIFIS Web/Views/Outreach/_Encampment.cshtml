@@ -1,0 +1,110 @@
+﻿@model EncampmentViewModel
+
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.EncampmentID)
+@Html.HiddenFor(m => m.ClusterID)
+@*@Html.HiddenFor(m => m.Comments)*@
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.EncampmentLocationTypeID, CachedTableTypes.HIFIS_EncampmentLocationTypes)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.EncampmentName)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.DateStart, "DateTime")
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.DateEnd, "DateTime", new { id= "EncampmentDateEnd" })
+</div>
+
+<div class="row" id="reasonForDisbandedDiv">
+    @Html.HifisEditorFor(m => m.ReasonForDisbandedTypes, CachedTableTypes.HIFIS_ReasonForDisbandedTypes, new { id = "ReasonForDisbandedTypes" })
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.Address.GeoIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture), Model.Address.OnlyIfMandatory, new { id = "ddlGeo", @class = "type-required" })
+</div>
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Description, new { @class = "mceEditor_Messaging" })
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script>
+
+    $(function () {
+
+        if ($('#isGeoRegionEnforced').val() === "True")
+            $('#ddlGeo').siblings(".glyphicon-star").addClass("show");
+
+        if ($('#isGeoRegionEnforced').val() === "False")
+            $('#ddlGeo').siblings(".glyphicon-star").addClass("hide");
+
+        var encampmentDateEnd = $("#EncampmentDateEnd").val();
+        if ((encampmentDateEnd == null || encampmentDateEnd == "")) {
+            $('#reasonForDisbandedDiv').hide();
+        }
+        
+        $('[id^=datePicker2]').on('dp.change',
+            function (event) {
+                encampmentDateEnd = $("#EncampmentDateEnd").val();
+                if ((encampmentDateEnd)) {
+                    $('#reasonForDisbandedDiv').show();
+                    reinitSelect2($('#ReasonForDisbandedTypes'));
+                }
+            }
+        );
+
+        // Hide the Reason for disbandment if DateEnd is not provided
+        // Using focusout for hiding the Disbaneded filed becasue it seems dp.change event doesnot fire when the date field is empty.
+        $('#EncampmentDateEnd').on('focusout',
+            function (event) {
+                encampmentDateEnd = $("#EncampmentDateEnd").val();
+                if (!encampmentDateEnd) {
+                    var reasonForDisbandedTypes = $("#ReasonForDisbandedTypes");
+                    reasonForDisbandedTypes.val(null).trigger('change');
+                    $('#reasonForDisbandedDiv').hide();
+                }
+            }
+        );
+
+        function reinitSelect2(selector) {
+            selector.select2('destroy');
+            selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+        };
+    });
+
+    var disbandedTypesRequiredIf = function () {
+        var reasonForDisbandedTypes = $('#ReasonForDisbandedTypes').find(':selected').val();
+        var encampmentDateEnd = $("#EncampmentDateEnd").val();
+
+        if (encampmentDateEnd)
+            return true;
+        else if (reasonForDisbandedTypes) {
+            return true;
+        }
+        return false;
+    }
+
+    function checkGeoRequired() {
+        if ($('#isGeoRegionEnforced').val() == 'True') {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+</script>
+);
+}
+

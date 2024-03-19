@@ -1,0 +1,31 @@
+﻿@model BedViewModel
+
+@Html.Partial("_BaseHiddenFor", Model)
+
+@Html.HiddenFor(model => model.RoomID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.ShelterName)
+@Html.HiddenFor(model => model.RoomName)
+@Html.HiddenFor(model => model.ID)
+
+<div>
+    @Html.HifisEditorFor(model => model.Name)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.BedTypeID, CachedTableTypes.HIFIS_BedTypes)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.BedStatusTypeID, CachedTableTypes.HIFIS_BedStatusTypes)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.OverflowYN, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.MobileYN, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.ActiveYN, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.EffectiveDate)
+</div>

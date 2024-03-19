@@ -1,0 +1,11 @@
+﻿@model ReservationViewModel          
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DsiplayReservation;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("~/Views/CustomTables/_CustomTableViewBuilder.cshtml", new CustomTableViewBuilder() { PartialName = "/Views/Reservations/_DisplayReservations.cshtml", ViewModel = Model })
+
+
+<div> @Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

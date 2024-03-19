@@ -1,0 +1,106 @@
+﻿
+@using (Html.BeginScriptContext())
+{
+   Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $(function () {
+             
+                 initJSTree();
+             });
+
+             window.initJSTree = function (treeSelector) {
+                 var tree = $(".hifis-tree");
+
+                 if (treeSelector != null) {
+                     tree = $(treeSelector);
+                 }                 
+
+                 //var opts = JSON.parse(JSON.stringify(tree.attr("data-wet-boew")));
+                 //alert(tree.attr("data-wet-boew"));
+                 if (tree.attr("data-wet-boew")) {
+                     var opts = JSON.parse(tree.attr("data-wet-boew"));
+
+                     
+                     tree.jstree({
+                         "core": {
+                             "themes": {
+                                 "icons": true,
+                                 "stripes": true,
+                                 "variant": "large",
+                                 "responsive": true
+                             },
+                             "check_callback": function (operation, node, node_parent, node_position, more) {
+                                 // operation can be 'create_node', 'rename_node', 'delete_node', 'move_node' or 'copy_node'
+                                 // in case of 'rename_node' node_position is filled with the new node name
+                                 if (operation === 'move_node') {
+                                     var fn = window[opts.bDNDCallBackFunction];
+                                     if (typeof fn === 'function') {
+                                         return fn(operation, node, node_parent, node_position, more);
+                                     }
+                                 }
+                                 else {
+                                     return false;
+                                 }
+                             }//this closes check_callback
+                         },
+                         "checkbox": {
+                             "keep_selected_style": false
+                         },
+                         "search": {
+                             "case_insensitive": false,
+                         },
+                         "plugins": ["themes", "ui", "html_data", opts.bCheckBoxes ? "checkbox" : "", "sort", "search", "wholerow", "dnd"]
+                     });
+                     tree.on("select_node.jstree", function (event, data) {
+                         var fn = window[opts.bCallBackFunction];
+                         if (typeof fn === 'function') {
+                             fn(event, data, true);
+                         }
+                         else {
+                             //alert('The callback function was not implemented correctly... You can implement this function by assigning a function name to bCallBackFunction property. For Example: \"bCallBackFunction\": \"ACallBackFunctionName\"');
+                         }
+                     });
+                     tree.on("deselect_node.jstree", function (event, data) {
+                         var fn = window[opts.bCallBackFunction];
+                         if (typeof fn === 'function') {
+                             fn(event, data, false);
+                         }
+                         else {
+                             //alert('The callback function was not implemented correctly... You can implement this function by assigning a function name to bCallBackFunction property. For Example: \"bCallBackFunction\": \"ACallBackFunctionName\"');
+                         }
+                     });
+                     tree.bind("loaded.jstree", function (event, data) {
+                         //                                                    //Onload this will loop through each li item with the that data attr and add the jstree-checked class
+                         $('.hifis-tree').find('[data-wet-tree-checked="true"]').each(function () {
+                             $(this).removeClass('jstree-unchecked').addClass('jstree-checked');
+                         });
+                         //Onload this will loop through each li item with the that data attr and add the jstree disabled type
+                         $('.hifis-tree').find('[data-wet-tree-checked="disabled"]').each(function () {
+                             $(this).removeClass('jstree-unchecked').addClass('jstree-checked').addClass('jstree-disabled').addClass('forced-opacity');
+                         });
+                         //Onload this will loop through each li item with the that data attr and add the jstree disabled type
+                         $('.hifis-tree').find('[data-wet-tree-checked="nonclick"]').each(function () {
+                             $(this).addClass('jstree-disabled');
+                         });
+
+                     });
+
+
+                     if (opts.bDisableAllNodes) {
+                         tree.on("ready.jstree", function (e, data) {
+                             $('.hifis-tree a').click(function () { return false; });
+                         });
+                         tree.on("open_node.jstree", function (e, data) {
+                             $('.hifis-tree a').click(function () { return false; });
+                         });
+                     }
+
+
+                     tree.jstree("close_all");
+
+                     return tree;
+                 }
+            }                     
+        </script>);
+}
+@*<link rel="Stylesheet" href="../../../Scripts/Hifis/jstree/themes/default/style.min.css" />*@

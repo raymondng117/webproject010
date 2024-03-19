@@ -1,0 +1,290 @@
+﻿@model DateFilterListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_AllBulletins;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+
+<div id="radio" class="btn-group mrgn-bttm-md">
+    @{ string classlink1 = (!ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.Active, "BulletinList", new { showAll = false }, new { @class = classlink1, alt=Labels.Active, aria_label=Labels.Active })
+
+    @{ string classlink2 = (ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.All, "BulletinList", new { showAll = true }, new { @class = classlink2, alt=Labels.All, aria_label=Labels.All })
+
+    <div class="clearfix"></div>
+</div>
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view. *@
+@Html.Partial("_DateFilterList", Model)
+<div class="clearfix"></div>
+<br />
+
+<div class="table-responsive">
+    <table id="bulletinList" class="wb-tables table table-striped table-hover" data-wb-tables='{ 
+                "ajax": "@Url.Action("GetBulletinListJson", "Bulletins", new { filterTime = Model.DateFilterID, showAll = ViewBag.showAll })",
+                "order": [[ 4, "desc" ]],
+                    "columns": [
+                        { "data": "subject" },
+                        { "data": "serviceProviders" },
+                        { "data": "clients" },
+                        { "data": "priority" },
+                        { "data": "dateStart" },
+                        { "data": "dateEnd" },
+                        { "data": "active" },
+                        { "data": "action" }
+                    ] 
+        }'>
+        <thead>
+            <tr>
+                <th>@Labels.Subject</th>
+                <th>@Labels.ServiceProviders</th>
+                <th>@Labels.Clients</th>
+                <th>@Labels.hdrPriority</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.DateEnd</th>
+                <th>@Labels.Active</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="clearfix"></div>
+<div class="mrgn-tp-md">
+
+    @if (RightsHelper.HasRight(UserRights.Bulletins_Add))
+    {
+        @Html.ActionLink(Labels.AddNewBulletin, "New", "Bulletins", null, new { @class = "addButton", alt=Labels.AddNewBulletin, aria_label=Labels.AddNewBulletin, @role="button" })
+    }
+
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(document).on('draw.dt', '#bulletinList', function () {
+                //This re-init any lightboxes that are dynamically added via the datables reload call
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            });
+
+            $(document).on('click', '.closeBulletinBtn', function (e) {
+                e.preventDefault();
+
+                var targetUrl = $(this).attr("href");
+
+                $("#close-confirm").modal('toggle');
+
+                var btn = $(this);
+
+                $("#modalButtonCloseBulletin").click(function () {
+                    $.ajax({
+
+                        url: btn.attr("href"),
+                        type: "POST"
+
+                    }).done(function (data) {
+
+                        defaultNotify(data.Success); //display the default error or success message
+
+                        if (data.Success) {
+                            $('#bulletinList').DataTable().ajax.reload(function () {
+                                $(".wb-lbx").trigger("wb-init.wb-lbx");
+                                $(".expandableSummary").trigger("wb-init.wb-details");
+                            }); // Re-load the datatable                            
+                        }
+
+                        $("#cancelBulletinCloseBtn").click(); //Close the modal window
+                    });
+                });
+            });
+
+        </script>
+    );
+}
+
+<div id="close-confirm" class="modal greyTransparentBackground mrgn-tp-20">
+    <div class="modal-dialog whiteBackground">
+        <div class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h2 class="modal-title">@Labels.ttlCloseBulletinConfirmation</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.CloseBulletin</p>
+            </div>
+            <div class="modal-footer">                
+                <button type="button" id="modalButtonCloseBulletin" class="btn btn-primary">@Labels.BulletinClose</button>
+                <button type="button" id="cancelBulletinCloseBtn" class="btn btn-default" data-dismiss="modal">@Labels.Cancel</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+@*@using (Html.BeginForm("BulletinList", "Bulletins", FormMethod.Post, new { @class = "form-horizontal" }))
+{      
+    <div class="form-color-white module-form-block">
+        <div class="table-responsive"><table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>  
+            <thead>
+                <tr>
+                    <th>@Labels.Subject</th>
+                    <th>@Labels.ServiceProviders</th>     
+                    <th>@Labels.Clients</th>            
+                    <th>@Labels.hdrPriority</th>
+                    <th>@Labels.DateStart</th> 
+                    <th>@Labels.DateEnd</th>
+                    <th>@Labels.Action</th>
+                </tr> 
+            </thead>
+            
+            @for (int i = 0; i < Model.Bulletin.Count; i++)
+            {                
+                <tr>
+                    <td>@Html.DisplayFor(model => model.Bulletin[i].Subject)</td>  
+                    <td> 
+                        @if (Model.Bulletin[i].Organizations.Count > 1)
+                        {
+                            <div class="panel-default">
+                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#colone@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                        @Model.Bulletin[i].Organizations.Count @Labels.Organizations 
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </div>
+                                <div id="colone@(i)" class="panel-collapse collapse">
+                                    <ul class="pddng-lft-md">
+                                        @foreach (var org in Model.Bulletin[i].Organizations)
+                                        {                            
+                                            <li>@org.Name</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            foreach (var org in Model.Bulletin[i].Organizations)
+                            {                            
+                                @org.Name
+                            }
+                        }                          
+                    </td> 
+                    <td>   
+                        @if (Model.Bulletin[i].BulletinsClients.Count > 1)
+                        {
+                            <div class="panel-default">
+                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#coltwo@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                        @Model.Bulletin[i].Clients.Count @Labels.Clients 
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </div>
+                                <div id="coltwo@(i)" class="panel-collapse collapse">
+                                    <ul class="pddng-lft-md">
+                                        @foreach (var client in Model.Bulletin[i].Clients)
+                                        {                            
+                                            <li>@Html.ActionLink(client.FullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, null)</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            foreach (var client in Model.Bulletin[i].Clients)
+                            {                            
+                                @Html.ActionLink(client.FullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, null)  
+                            }
+                        }                    
+                    </td>               
+                    <td class="align-text-center">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_BulletinPriorityTypes, Culture, Model.Bulletin[i].BulletinPriorityTypeID)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => model.Bulletin[i].DateStart)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => model.Bulletin[i].DateEnd)</td>
+                    <td class="align-text-center">
+                        @if (RightsHelper.HasRight(UserRights.Bulletins_Print))
+                        { 
+                            @Html.ActionLink(Labels.DisplayOrPrint, "Display", "Bulletins", new { id = Model.Bulletin[i].BulletinID, redirectTo="bulletinlist" }, new { @class = "printButton noText" }) 
+                        }
+                        
+                        @if (RightsHelper.HasRight(UserRights.Bulletins_Edit))
+                        { 
+                              @Html.ActionLink(Labels.EditBulletin, "Edit", "Bulletins", new { bulletinID = Model.Bulletin[i].BulletinID }, new { @class = "editButton noText" })
+                        }
+                        
+                        
+                        @if (Model.Bulletin[i].DateEnd >= DateTime.Today)
+                        {
+                            if (RightsHelper.HasRight(UserRights.Bulletins_Close))
+                            { 
+                                @Html.ActionLink(Labels.BulletinClose, "Close", "Bulletins", new { bulletinID = Model.Bulletin[i].BulletinID }, new { @class = "cancelButton noText" }) 
+                            }
+                        }
+                        
+                        @if (RightsHelper.HasRight(UserRights.Bulletins_Delete))
+                        { 
+                            @Html.ActionLink(Labels.DeleteBulletin, "Delete", "Bulletins", new { bulletinID = Model.Bulletin[i].BulletinID }, new { @class = "deleteButton noText" }) 
+                        }
+                    </td>
+                </tr>
+            }
+        </table></div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Bulletins_Add))
+        { 
+            @Html.ActionLink(Labels.AddNewBulletin, "New", "Bulletins", null, new { @class = "addButton" }) 
+        }
+
+    </div>
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+} 
+
+*@
+
+
+
+@*@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             
+            $(document).ready(function () {
+                //Had to do this so that click event works on dynamically created buttons
+                $(document).on('click', '.cancelButton', function (e) {
+                    e.preventDefault();
+
+                    var button = $(this);
+                    
+                    var targetUrl = $(this).attr("href");
+
+                    $("#close-confirm").modal('toggle');
+
+                    $("#modalButtonCloseBulletin").click(function () {
+
+                        @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "targetUrl",
+                       OnSuccess = "displayNotification(\"success\", \"\", \"<p>" + Labels.DefaultDataSavedMessage + "</p>\"); button.hide('slow');",
+                       OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.FailedToSave + "</p>\");",
+                       OnComplete = "$('#close-confirm').modal('toggle');",
+                       LoaderGif = false
+                   });
+                    });
+                });
+            });
+        </script>
+);
+}*@

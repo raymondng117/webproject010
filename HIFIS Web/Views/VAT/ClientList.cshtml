@@ -1,0 +1,121 @@
+﻿@model List<VATIntakeViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientListVAT;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+		<a class="tabButton" href="#VAT" role="tab" data-toggle="tab">@Labels.VAT</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+            <!-- VAT tab -->
+            <div class="tab-pane active" id="vi-VAT">
+                <div class="table-responsive">
+                    @if (RightsHelper.HasRight(UserRights.VAT_Client_List))
+                    {
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "order": [ [1, "desc"] ] }'>
+                            <thead>
+                                <tr>
+                                    <th class="align-text-center">@Labels.Organization</th>
+                                    <th class="align-text-center">@Labels.StartDate</th>
+                                    <th class="align-text-center">@Labels.CaseWorker</th>
+                                    <th class="align-text-center">@Labels.Score</th>
+                                    <th class="align-text-center">@Labels.AttachedDocs</th>
+                                    <th class="align-text-center">@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var intake in Model)
+                                {
+                                    <tr>
+                                        <td>@intake.OrganizationName</td>
+                                        <td>@DateHelper.DateTimeFormaterENFR(@intake.DateStart, Labels.CurrentCulture)</td>
+                                        <td>@intake.CaseworkerName</td>
+                                        <td class="align-text-center">@intake.ScoreSummary.TotalScore</td>                                        
+                                        <td class="align-text-center">
+
+                                            @if (intake.AttachmentsDisplay != null && intake.AttachmentsDisplay.Name != null && RightsHelper.HasRight(UserRights.VAT_Display, intake.OrganizationID))
+                                            {
+                                                @Html.ActionLink(intake.AttachmentsDisplay.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(intake.AttachmentsDisplay.DocumentID), ClientID = intake.PrimaryClientID }, new { alt = intake.AttachmentsDisplay.Name, aria_label = intake.AttachmentsDisplay.Name });
+                                            }
+                                            else if (intake.AttachmentsDisplay != null && intake.AttachmentsDisplay.Name != null)
+                                            {
+                                                <span>@Labels.NA</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@Labels.None</span>
+                                            }
+
+                                        </td> 
+                                        <td class="align-text-center">
+                                                @if (RightsHelper.HasRight(UserRights.VAT_Edit, intake.OrganizationID))
+                                                {
+                                                    @Html.ActionLink(Labels.Edit, "Edit", "VAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "editButton noText no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                                }
+                                                @if (RightsHelper.HasRight(UserRights.VAT_Display, intake.OrganizationID))
+                                                {
+                                                    @Html.ActionLink(Labels.Display, "Display", "VAT", new { intakeTypeID = intake.IntakeTypeID, intakeID = intake.IntakeID, clientID = ViewBag.ReadOnlyVitals.ClientID, OrgID = intake.OrganizationID }, new { @class = "displayButton noText no-print", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                                }
+                                                @if (RightsHelper.HasRight(UserRights.VAT_Delete, intake.OrganizationID))
+                                                {
+                                                    @Html.ActionLink(Labels.Delete, "Delete", "VAT", new { id = ViewBag.ReadOnlyVitals.ClientID, intakeID = intake.IntakeID }, new { @class = "deleteButton noText no-print", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                                }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+			                    <div class="alert exception-panel">
+				                    <div class="mrgn-bttm-sm align-center">                                   
+					                    <h3 class="panel-title">@Labels.UserRightsException</h3>
+				                    </div>
+				                    <div>
+					                    <p>@Labels.RightsVATWarning</p>
+				                    </div>
+			                    </div>
+		                    </div>
+	                    </div>                   
+                    }
+                </div>
+                <div class="mrgn-tp-md">
+                    @if (RightsHelper.HasRight(UserRights.VAT_Add))
+                    { 
+                        @Html.ActionLink(Labels.VAT, "New", "VAT", new { intakeTypeID = 1, clientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton no-print ToolTipText", Title=Labels.VAT, alt=Labels.VAT, aria_label = Labels.VAT, @role = "button"})
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             // draw event for the datatables...SInce the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+             $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                 initButtons();
+                 $(".editButton").parents("td").addClass("align-text-center");
+                 $(".displayButton").parents("td").addClass("align-text-center");
+                 $(".deleteButton").parents("td").addClass("align-text-center");
+             });
+        </script>
+    );
+}

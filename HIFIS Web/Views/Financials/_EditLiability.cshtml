@@ -1,0 +1,76 @@
+﻿@model LiabilityViewModel
+
+<section id="Modal_EditLiability" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditLiability</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="row">
+            @using (Html.BeginForm("EditLiability", "Financials", new { id = Model.ClientID, assetID = Model.LiabilityOrAssetID }, FormMethod.Post, new { @class = "form-horizontal", id = "editLiability" }))
+            {
+                @Html.Partial("_Liability")
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-xs">
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="liabilitySaveBtn" class="saveButton">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_EditLiability');
+
+    $(function () {
+        $("#editLiability").hifisValidation();
+
+    });
+
+
+    $("#liabilitySaveBtn").click(function () {
+
+        if ($("#editLiability").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/Financials/EditLiability")",
+                type: "POST",
+                data: $('#editLiability').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success);
+                    updateTotals();
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#liabilityTable').DataTable().ajax.reload();
+
+                } else {
+                    defaultNotify(data.Success);
+                }
+            });
+        }
+    });
+
+</script>
+
+
+
+
+

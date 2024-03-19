@@ -1,0 +1,49 @@
+﻿@model ReportViewModel
+@{
+    ViewBag.Title = Labels.ReportsDisplay;
+    ViewBag.ViewTitle = Labels.viewTitle_ReportDisplay;
+    if (Model.ReportName != null)
+    {
+        ViewBag.ViewTitle += ": " + CultureHelper.CurrentNameSplit(Model.ReportName, ViewBag.CurrentCulture);
+        //ViewBag.ViewTitle += " | " + Model.ReportName;
+    }
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    if (Session["ReportViewModel"] != null)
+    {
+        ((ReportViewModel)Session["ReportViewModel"]).Dispose();
+    }
+
+    Session["ReportViewModel"] = Model;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+
+    @Html.ActionLink(Labels.BackToReportManager, "Manager", null, new { @class = "btn btn-default prevButton", alt = Labels.BackToReportManager, aria_label = Labels.BackToReportManager, @role = "button" })
+    @if(Model.HasParameters) 
+        {
+        @Html.ActionLink(Labels.BackToReportGenerator, "Generate", new { id = Model.ReportID }, new { @class = "btn btn-default prevButton", alt = Labels.BackToReportGenerator, aria_label = Labels.BackToReportGenerator, @role = "button" })
+        }
+
+        <div id="Loader">
+            <img src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" alt="Loader Image" />
+        </div>
+    </p>
+
+    <iframe class="" id="ReportViewerIFrame" width="100%" height="1200" frameborder="0" src="@Url.Content("~/ReportDocs/ReportViewer/ReportViewer.aspx")"></iframe>
+
+    @using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+                $(document).ready(function () {
+                    $('#ReportViewerIFrame').load(function () {
+                        $("#Loader").hide();
+                    });
+                });
+            </script>);
+    }
+</div>

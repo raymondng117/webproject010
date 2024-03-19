@@ -1,0 +1,99 @@
+﻿
+<h3>@Labels.PaymentsFor: @ViewBag.ProgramName</h3>
+
+<div class="table-responsive">
+    <table id="paymentListTable" class="wb-tables table table-striped table-hover"
+                data-wb-tables='{   "columns": [
+                                        { "width": "15%", "data": "paymentMethod"},
+                                        { "width": "15%", "data": "paymentDate"},
+                                        { "width": "15%", "data": "amount"},
+                                        { "width": "10%", "data": "receiptNumber"},
+                                        { "width": "10%", "data": "from" },
+                                        { "width": "10%", "data": "to" },
+                                        { "width": "10%", "data": "action"}                                                
+                                    ],
+                                    "info": false,
+                                    "ajax": "@Url.Action("GetPaymentListJson", "Programs", new { programID = ViewBag.ProgramID, serviceID = ViewBag.ServiceID })",
+                                }'>
+        <thead>
+            <tr>             
+                <th>@Labels.PaymentMethod</th>
+                <th>@Labels.PaymentDate</th>
+                <th>@Labels.Amount</th>
+                <th>@Labels.ReceiptNumber</th>
+                <th>@Labels.From</th>
+                <th>@Labels.To</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<div style="margin-top: 15px;"></div>
+
+@* Modal markup is below *@
+<a href="@Url.Content("~/Programs/GetPaymentForm?serviceID=" + ViewBag.ServiceID)&programID=@ViewBag.ProgramID" role="button"  class="addButton" data-toggle="modal" data-target="#AddPaymentModal">@Labels.AddPayment</a>
+
+<button onclick="backToPrograms();" class="prevButton">@Labels.Back</button>
+
+<script type="text/javascript">
+
+    $(function () {
+
+        $("#paymentListTable").DataTable({
+            "ajax": '@Url.Content("~/Programs/GetPaymentListJson?serviceID=" + ViewBag.ServiceID)&programID=@ViewBag.ProgramID',
+            "columns": [
+                { "data": "paymentMethod" },
+                { "data": "paymentDate" },
+                { "data": "amount" },
+                { "data": "receiptNumber" },                
+                { "data": "from" },
+                { "data": "to" },
+                { "data": "action" }
+            ]
+        });
+    });
+
+    //This will decorate buttons an things correctly when table is drawn
+    $('#paymentListTable').on('draw.dt', function () {
+        init_hifis();
+    });
+
+    function backToPrograms() {
+        //this button already handles all of the heavy work
+        $("#ServiceProgramsButton").click();
+    }
+    
+    //This will decorate buttons an things correctly when table is drawn
+    $('#paymentListTable').on('draw.dt', function () {
+        init_hifis();
+        //This re-init any lightboxes that are dynamically added via the datables reload call
+        $(".wb-lbx").removeClass("wb-init").removeClass("wb-lbx-inited");
+        $(".wb-lbx").trigger("wb-init.wb-lbx");
+        $("div[id^='tooltip']").remove();
+    });
+
+    $(document).on('hidden.bs.modal', function (e) {
+        if (!$(e.target).find("#ConfirmDeleteModalContent").length) {
+            $(e.target).removeData('bs.modal').find(".modal-content").html('<img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" /><p style="color:white; text-align:center;"> @Labels.Loading</p>');
+        }
+    });
+
+</script>
+
+@* Modal For adding a payment *@
+<div class="modal fade OnTheFlyPanel" id="AddPaymentModal" role="dialog" aria-hidden="true" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-content mrgn-tp-xl">
+        <img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" />
+        <p style="color:white; text-align:center;">@Labels.Loading</p>
+    </div>
+</div>
+
+@* Modal For editing a payment *@
+<div class="modal fade OnTheFlyPanel" id="EditPaymentModal" role="dialog" aria-hidden="true" style="background-color: rgba(0,0,0,0.5);">
+    <div class=" modal-dialog modal-content overlay-def mrgn-tp-10">
+        <img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" />
+        <p style="color:white; text-align:center;">@Labels.Loading</p>
+    </div>
+</div>
+

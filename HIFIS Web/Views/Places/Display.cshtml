@@ -1,0 +1,10 @@
+﻿@model HIFIS.WEB.ViewModels.PlaceViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayPlace;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Places/_DisplayPlaces.cshtml"), ViewModel = Model })
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

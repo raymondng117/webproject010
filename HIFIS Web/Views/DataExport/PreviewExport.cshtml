@@ -1,0 +1,474 @@
+﻿@model HIFIS.CONTRACTS.WCFContracts.DataContracts.DataExportTableViewData
+@{
+	ViewBag.ViewTitle = Labels.PreviewExport;
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+	List<HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidClientExportResult> invalidClients = new List<HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidClientExportResult>();
+	
+	if (ViewBag.InvalidExportClients != null)
+	{
+		invalidClients = ViewBag.InvalidExportClients as List<HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidClientExportResult>;
+	}
+
+	bool isTestExport = (bool)ViewBag.IsTestExport;
+}
+
+@if (ViewBag.InvalidExportClients != null)
+{
+	<section>
+
+		<details class="alert alert-warning wb-init wb-collapsible-inited open" id="alert-warning" open="">
+			<summary class="h3">@Labels.ExportWarnings</summary>
+
+			<b>@Labels.ExportWarningsText1</b>
+			<div style="margin-left:25px">
+				@foreach (var client in invalidClients.Where(cl => cl.Reason == HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidExportReason.DuplicateClient))
+                {
+                    <i>
+                        @Html.ActionLink(client.FullName, "ClientSearchProxy", "ClientTombstone", new { cSearchString = client.FullName }, new { target = "_blank", alt=client.FullName, aria_label = client.FullName })
+                    </i>
+                    <br />
+                }
+            </div>
+            
+            <br />
+
+            <p>
+                <b>@Labels.ExportWarningsText2</b>
+            </p>
+
+            <div style="margin-left:25px">
+                @foreach (var client in invalidClients.Where(cl => cl.Reason != HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidExportReason.DuplicateClient))
+
+                {
+
+                    <div class="row">
+					<i class="col-md-2">@Html.ActionLink(client.FullName, "DisplayVitals", "ClientTombstone", new { id = WebHelper.EncryptID(client.ID) }, new { target = "_blank", alt=client.FullName, aria_label = client.FullName })</i>
+						<i>
+                            @switch (client.Reason)
+                            {
+								case HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidExportReason.DateOfBirth:
+
+                                <text>@Labels.DOB</text>
+
+                                    break;
+								case HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidExportReason.AdmissionDate:
+
+                                <text>@Labels.Admissions</text>
+
+                                    break;
+								case HIFIS.CONTRACTS.WCFContracts.DataContracts.InvalidExportReason.TurnawayDate:
+
+                                <text>@Labels.TurnAways</text>
+
+                                    break;
+                            }
+						</i>
+					</div>
+				}
+			</div>
+		</details>
+	</section>
+}
+
+@*<section class="alert alert-info wb-init wb-collapsible-inited open" id="alert-info" open="">
+	<p>@Labels.Export_ShortClientID_Message: </p>
+	<div style="word-wrap: break-word !important;font-style: italic;padding-left: 5px;">
+		HRJOGHJHIXHNCSIZGHJRDUEXAYDUJJHZATBBGAACAABQHNEFEUANAOHFALJQJTEUAOGPJODXGKEPAEGGFPEHCRJIHNFRFSDPFCDMFTDPFIDJEIBCAXDAHTEMDLHXCGGR
+	</div>
+</section>*@
+
+<style>
+	@@media only screen and (min-width: 970px) {
+		.pull-right-md {
+			float: right !important;
+		}
+	}
+</style>
+
+@*<div class="pull-right-md">
+    <label>@Labels.ShowReadable</label>
+    <input class="YesAndNo" data-label-text="@Labels.ShowReadable" disabled="true" data-off-text="@Labels.No" data-on-text="@Labels.Yes" id="readSwitch" type="checkbox" value="false" />
+</div>*@
+
+<div class="mrgn-tp-sm">
+    <div class="form-group pull-right-md">
+        <label class="col-md-6 control-label text-nowrap bottom" style="padding-top: 6px;">@Labels.ShowReadable</label>
+        <div class="col-md-6">
+            <input class="YesAndNo" data-label-text="" disabled="true" data-off-text="@Labels.No" data-on-text="@Labels.Yes" id="readSwitch" type="checkbox" value="false" />
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active"><a class="tabButton" href="#Client" role="tab" data-toggle="tab">@Labels.Clients</a></li>
+    <li><a class="tabButton" href="#Admissions" role="tab" data-toggle="tab">@Labels.Admissions</a></li>
+    <li><a class="tabButton" href="#Turnaways" role="tab" data-toggle="tab">@Labels.TurnAways</a></li>
+    <li><a class="tabButton" href="#Indicators" role="tab" data-toggle="tab">@Labels.Indicators</a></li>
+    <li><a class="tabButton" href="#Organization" role="tab" data-toggle="tab">@Labels.ServiceProviders</a></li>
+    <li><a class="tabButton" href="#CustomIndicators" role="tab" data-toggle="tab">@Labels.CustomIndicators</a></li>
+    <li><a class="tabButton" href="#BedCountHistory" role="tab" data-toggle="tab">@Labels.BedCountHistory</a></li>
+</ul>
+
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+        <div class="tab-content">
+
+            <!-- Tab Pane #1: Client Export Data -->
+            <div class="tab-pane active" id="Client">
+                <div class="table-responsive">
+                    <table id="client-export-table" class="wb-tables table table-striped table-hover"
+                           data-wb-tables='{   "columns": [
+											{ "width": "10%" , "data": "id",	"type": "string"},
+											{ "width": "06%" , "data": "gender", "type": "string"},
+											{ "width": "10%" , "data": "dob",	"type": "string"},
+											{ "width": "07%" , "data": "role",	"type": "string"},
+											{ "width": "10%" , "data": "head",	"type": "string"},
+											{ "width": "05%" , "data": "country", "type": "string"},
+											{ "width": "22%" , "data": "ctzn",	"type": "string"},
+											{ "width": "10%" , "data": "abo",	"type": "string"},
+											{ "width": "20%" , "data": "vet",	"type": "string"}
+											],
+											"ordering": false,
+											"lengthMenu": [ 10 , 25 ],
+											"serverSide": true,
+											"processing": true,
+											"bFilter": false,
+											"autoWidth" : false,
+											"ajax": "@Url.Action("ClientExportListJson", "DataExport")"
+										}'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Client_txt</th>
+                                <th>@Labels.Gender</th>
+                                <th>@Labels.DOB</th>
+                                <th>@Labels.FamilyRole</th>
+                                <th>@Labels.FamilyHead</th>
+                                <th>@Labels.Country</th>
+                                <th>@Labels.Citizenship</th>
+                                <th>@Labels.Aboriginal_txt</th>
+                                <th>@Labels.Veteran</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Pane #2: Admissions Export Data -->
+            <div class="tab-pane" id="Admissions">
+                <div class="table-responsive">
+                    <table id="admissions-export-table" class="wb-tables table table-striped table-hover"
+                           data-wb-tables='{   "columns": [
+												{ "width": "10%" , "data": "id",	"type": "string"},
+												{ "width": "16%" , "data": "sp",	"type": "string"},
+												{ "width": "15%" , "data": "srv",	"type": "string"},
+												{ "width": "15%" , "data": "dis",	"type": "string"},
+												{ "width": "20%" , "data": "ctzn",	"type": "string"},
+												{ "width": "10%" , "data": "abo",	"type": "string"},
+												{ "width": "07%" , "data": "role",	"type": "string"},
+												{ "width": "10%" , "data": "head",	"type": "string"},
+												{ "width": "07%" , "data": "start", "type": "string"},
+												{ "width": "07%" , "data": "end",	"type": "string"}
+											],
+											"ordering" : false,
+											"lengthMenu": [ 10 , 25 ],
+											"serverSide": true,
+											"processing": true,
+											"bFilter": false,
+											"autoWidth" : false,
+											"ajax": {
+												"url" : "@Url.Action("AdmissionsExportListJson", "DataExport")",
+												"type" : "POST"
+											}
+										}'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Client_txt</th>
+                                <th>@Labels.ServiceProvider</th>
+                                <th>@Labels.ReasonForService</th>
+                                <th>@Labels.ReasonForDischargeBookOut</th>
+                                <th>@Labels.Citizenship</th>
+                                <th>@Labels.Aboriginal_txt</th>
+                                <th>@Labels.FamilyRole</th>
+                                <th>@Labels.FamilyHead</th>
+                                <th>@Labels.DateStart</th>
+                                <th>@Labels.DateEnd</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Pane #3: Turnaways Export Data -->
+            <div class="tab-pane" id="Turnaways">
+                <div class="table-responsive">
+                    <table id="turnaways-export-table" class="wb-tables table table-striped table-hover"
+                           data-wb-tables='{   "columns": [
+												{ "width": "12%", "data": "client",		"type": "string"},
+												{ "width": "21%", "data": "provider" ,	"type": "string"},
+												{ "width": "25%", "data": "reason",		"type": "string"},
+												{ "width": "08%", "data": "date",		"type": "string"},
+												{ "width": "07%", "data": "gender",		"type": "string"},
+												{ "width": "05%", "data": "age",		"type": "string"},
+												{ "width": "06%", "data": "aboriginal",	"type": "string"},
+												{ "width": "06%", "data": "disability",	"type": "string"}
+											],
+											"ordering" : false,
+											"lengthMenu": [ 10 , 25 ],
+											"serverSide": true,
+											"processing": true,
+											"bFilter": false,
+											"autoWidth" : false,
+											"ajax": "@Url.Action("TurnawaysExportListJson", "DataExport")"
+										}'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Client_txt</th>
+                                <th>@Labels.ServiceProvider</th>
+                                <th>@Labels.ReasonForTA</th>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.Gender</th>
+                                <th>@Labels.Age</th>
+                                <th>@Labels.Aboriginal_txt</th>
+                                <th>@Labels.Disabled</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Pane #4: Indicator Export Data -->
+            <div class="tab-pane" id="Indicators">
+                <div class="table-responsive">
+                    <table id="indicator-export-table" class="wb-tables table table-striped table-hover"
+                           data-wb-tables='{   "columns": [
+												{ "width" : "30%" , "data": "client",	"type": "string"},
+												{ "width" : "41%" , "data": "typeid",	"type": "string"},
+												{ "width" : "15%" , "data": "type",		"type": "string"},
+												{ "width" : "07%" , "data": "startdate", "type": "string"},
+												{ "width" : "07%" , "data": "enddate",	"type": "string"}
+											],
+											"ordering" : false,
+											"lengthMenu": [ 10 , 25 , 50 ],
+											"serverSide": true,
+											"processing": true,
+											"bFilter": false,
+											"autoWidth" : false,
+											"ajax": "@Url.Action("IndicatorsExportListJson", "DataExport")"
+										}'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Client_txt</th>
+                                <th>@Labels.Name</th>
+                                <th>@Labels.Type</th>
+                                <th>@Labels.DateStart</th>
+                                <th>@Labels.DateEnd</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Pane #5: Organization Export Data -->
+            <div class="tab-pane" id="Organization">
+                <div class="table-responsive">
+                    <table id="organization-export-table" class="wb-tables table table-striped table-hover"
+                           data-wb-tables='{   "columns": [
+												{ "width": "05%" ,"data": "id",			"type": "string"},
+												{ "width": "36%" ,"data": "name",		"type": "string"},
+												{ "width": "26%" ,"data": "type",		"type": "string"},
+												{ "width": "15%" ,"data": "city",		"type": "string"},
+												{ "width": "10%" ,"data": "bedcount",	"type": "string"},
+												{ "width": "08%" ,"data": "bedtype",	"type": "string"}
+											],
+											"ordering" : false,
+											"lengthMenu": [ 10 , 25 , 50 , 75 ],
+											"serverSide": true,
+											"processing": true,
+											"bFilter": false,
+											"autoWidth" : false,
+											"ajax": "@Url.Action("OrganizationExportListJson", "DataExport")"
+										}'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.ID</th>
+                                <th>@Labels.Name</th>
+                                <th>@Labels.Type</th>
+                                <th>@Labels.City</th>
+                                <th>@Labels.BedCount</th>
+                                <th>@Labels.BedType</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Pane #6: Custom Indicators Export Data -->
+            <div class="tab-pane" id="CustomIndicators">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": true, "bFilter": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.ID</th>
+                                <th>@Labels.Name</th>
+                                <th>@Labels.RollUp@Labels.ID</th>
+                                <th>@Labels.Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cusInd in Model.CustomIndicators)
+                            {
+                                <tr>
+                                    <td style="width:25%">@cusInd.TypeID</td>
+                                    <td style="width:25%">@CultureHelper.LanguagePicker(cusInd.NameEnglish, cusInd.NameFrench, ViewBag.CurrentCulture)</td>
+                                    <td style="width:25%">@cusInd.RollupTypeID</td>
+                                    <td style="width:25%">@cusInd.Type.ToString()</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Pane #7: Bed Count History -->
+            <div class="tab-pane" id="BedCountHistory">
+                <div class="table-responsive">
+                    <table id="bedCountHistory-export-table" class="wb-tables table table-striped table-hover"
+                           data-wb-tables='{   "columns": [
+												{ "width": "10%" ,"data": "serviceProviderID",			"type": "string"},
+                                                { "width": "40%" ,"data": "ServiceProviderName",			"type": "string"},
+												{ "width": "10%" ,"data": "bedCount",		"type": "string"},
+												{ "width": "10%" ,"data": "overflow",		"type": "string"},
+												{ "width": "20%" ,"data": "dateTimeModified",		"type": "string"},
+												{ "width": "10%" ,"data": "active",	"type": "string"}
+											],
+											"ordering" : false,
+											"lengthMenu": [ 10 , 25 , 50 , 75 ],
+											"serverSide": true,
+											"processing": true,
+											"bFilter": false,
+											"autoWidth" : false,
+											"ajax": "@Url.Action("BedCountHistoryExportListJson", "DataExport")"
+										}'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.ServiceProviderID</th>
+                                <th>@Labels.ServiceProvider</th>
+                                <th>@Labels.BedCount</th>
+                                <th>@Labels.Overflow</th>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+	</div>
+</div>
+
+@if (isTestExport)
+{
+	<section class="alert alert-warning wb-init wb-collapsible-inited open" id="alert-warning" open="">
+		<p>@Labels.ExportingDisabled</p>
+	</section>
+}
+
+<div class="row mrgn-bttm-md">
+    <div class="col-sm-2 col-sm-offset-2">
+        @Html.HifisLabelFor(Labels.SiteID, Labels.SiteID)
+    </div>
+    <div class="col-sm-8">
+        @Html.TextBox("test", Model.SiteID, new { @class = "form-control", disabled = true })
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="row mrgn-bttm-md">
+    <div class="col-sm-10 col-sm-offset-4">
+        @Html.ActionLink("Send", "SendExport", "DataExport", null, new { @class = "sendButton", alt="Send", aria_label = "Send", @role = "button" })
+        @Html.ActionLink("Cancel", "Export", "DataExport", null, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>
+
+        @using (Html.BeginScriptContext())
+        {
+            Html.AddScriptBlock(
+                @<script type="text/javascript">
+                    $(document).ready(function () {
+                        var clientdone = false;
+                        var admisdone = false;
+                        var turnawaydone = false;
+                        var orgdone = false;
+                        var inddone = false;
+                        var bedCountdone = false;
+
+                        $('#readSwitch').on('switchChange.bootstrapSwitch', function (event, state) {
+                            switchTableReadable(state);
+
+                            $(this).bootstrapSwitch('disabled', true);
+                            clientdone = false;
+                            admisdone = false;
+                            turnawaydone = false;
+                            orgdone = false;
+                            inddone = false;
+                            bedCountdone = false;
+                        });
+
+                        function switchTableReadable(state) {
+                            $('#client-export-table').DataTable().ajax.url('@Url.Content("~/DataExport/ClientExportListJson/?")' + 'read=' + state).load(null, false);
+                            $('#admissions-export-table').DataTable().ajax.url('@Url.Content("~/DataExport/AdmissionsExportListJson/?")' + 'read=' + state).load(null, false);
+                            $('#turnaways-export-table').DataTable().ajax.url('@Url.Content("~/DataExport/TurnawaysExportListJson/?")' + 'read=' + state).load(null, false);
+                            $('#organization-export-table').DataTable().ajax.url('@Url.Content("~/DataExport/OrganizationExportListJson/?")' + 'read=' + state).load(null, false);
+                            $('#indicator-export-table').DataTable().ajax.url('@Url.Content("~/DataExport/IndicatorsExportListJson/?")' + 'read=' + state).load(null, false);
+                            $('#bedCountHistory-export-table').DataTable().ajax.url('@Url.Content("~/DataExport/BedCountHistoryExportListJson/?")' + 'read=' + state).load(null, false);
+                        }
+
+                        $('#client-export-table').on('xhr.dt', function () {
+                            clientdone = true;
+                        });
+                        $('#admissions-export-table').on('xhr.dt', function () {
+                            admisdone = true;
+                        });
+                        $('#turnaways-export-table').on('xhr.dt', function () {
+                            turnawaydone = true;
+                        });
+                        $('#organization-export-table').on('xhr.dt', function () {
+                            orgdone = true;
+                        });
+                        $('#indicator-export-table').on('xhr.dt', function () {
+                            inddone = true;
+                        });
+                        $('#bedCountHistory-export-table').on('xhr.dt', function () {
+                            bedCountdone = true;
+                        });
+
+                        $('.wb-tables').on('xhr.dt', function () {
+                            if (clientdone && admisdone && turnawaydone && orgdone && inddone && bedCountdone) {
+                                $('#readSwitch').bootstrapSwitch('disabled', false);
+                            }
+                        });
+
+                        @*$('#emailSwitch').on('switchChange.bootstrapSwitch', function (event, state) {
+                            $('#sendButton').attr('href', '@Url.Content("~/DataExport/SendExport/?")' + 'email=' + state);
+                        });*@
+
+                    });
+</script>
+            );
+        }

@@ -1,0 +1,79 @@
+﻿@model ClientQuestionnaireViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ViewClientAnswers + " - " + Model.QuestionnaireName;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<h6 class="mrgn-tp-0">@Labels.Completed: @Model.DateAnswered.Value.Date.ToString("yyyy-MM-dd")</h6>
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>@Labels.Question</th>
+                    <th>@Labels.Response</th>
+                </tr>
+            </thead>
+            <tbody>            
+                @foreach (var question in Model.Questionnaire.Questions)
+                { 
+                <tr>
+                    <td>@question.QuestionNo</td>
+                    <td>@question.QuestionName</td>
+                    <td>
+                        @switch ((QuestionTypes)question.QuestionTypeID)
+                        {
+                            case QuestionTypes.YesNo: 
+                            <p>@(question.ClientAnswer.YNValue ? Labels.Yes : Labels.No)</p>
+                            break;
+                            case QuestionTypes.Numeric:
+                            <p>@(question.ClientAnswer.NumericValue.HasValue ? question.ClientAnswer.NumericValue.Value.ToString() : "---")</p>
+                            break;
+                            case QuestionTypes.Text: 
+                            <p>@(!question.ClientAnswer.TextValue.IsEmptyOrNull() ? question.ClientAnswer.TextValue : "---")</p>
+                            break;
+                            case QuestionTypes.Date: 
+                            <p>@(question.ClientAnswer.DateValue.HasValue ? Html.DisplayFor(model => question.ClientAnswer.DateValue).ToString() : "---")</p>
+                            break;
+                            case QuestionTypes.DropdownSingle:
+                            <p>@(!question.ClientAnswer.SingleDropdownValue.IsEmpty() && question.DropdownValues.Any(dv => dv.QuestionPickListID == question.ClientAnswer.SingleDropdownValue) ? question.DropdownValues.SingleOrDefault(dv => dv.QuestionPickListID == question.ClientAnswer.SingleDropdownValue).DDName : "---")</p>
+                            break;
+                            case QuestionTypes.DropdownMultiple:
+                            <ul>
+                                @if (question.ClientAnswer.MultipleDropdownValue.IsEmptyOrNull())
+                                {
+                                    <li>@Labels.NA</li>
+                                    
+                                }
+                                else
+                                {
+                                    foreach (var dropdown in question.DropdownValues)
+                                    {
+                                        if (question.ClientAnswer.MultipleDropdownValue.Contains(dropdown.QuestionPickListID))
+                                        {
+                                            <li>@dropdown.DDName</li>
+                                        }
+                                        else
+                                        {
+                                            @*<li style="text-decoration: line-through">@dropdown.DDName</li>*@
+                                        }
+                                    }
+                                }
+                            </ul>
+                            break;
+                        }
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mrgn-tp-md">
+        @Html.ActionLink(Labels.Cancel, "ClientList", "Questionnaires", new { id = Model.ClientID, questionnaireId = Model.QuestionnaireID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>
+

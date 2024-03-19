@@ -1,0 +1,128 @@
+﻿@model MessageViewModel
+
+@Html.AntiForgeryToken()
+<div>
+    @Html.HifisEditorFor(model => model.UseMailingList, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.MailingList, null, null, new { id = "ddMailingList" })
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.RecipientsPersonIDs,
+                            ViewBag.UserList as SelectList,
+                            String.Format("<a href=\"{0}\" class=\"wb-lbx lbx-modal multipleSelectFilterButton noText align-left \" aria-controls='Modal_EditItem' role='button'>{1}</a>",
+                                          Url.Action("UsersFilter", new { fieldName = "SendTo" }),
+                                          Labels.Filter),
+                            new { id = "ddSendTo" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.MessagePriorityTypeID, CachedTableTypes.HIFIS_MessagePriorityTypes, Culture)
+</div>
+
+<div>
+    @Html.HifisAutocompleteFor(
+        model => model.RegardingClientID
+        , Url.Content("~/PeopleTombstone/AjaxGetPList")
+        , Model.RegardingClientName
+        , new AutocompleteViewModelOptions()
+        {
+            Placeholder = Labels.SearchForAClient,
+            HiddenValue = true,
+            SelectClientFieldType = SelectClientFieldTypes.Other
+        })
+
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DeliverOn)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.MessageSubject)
+</div>
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.MessageBody, new { @class = "mceEditor_Messaging" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            function updateDropdownValues(dropdown, values) {
+                dropdown.options.length = 0; // clear out existing items
+
+                for (var i = 0; i < values.length; i++) {
+                    dropdown.options.add(new Option(values[i].Text, values[i].Value));
+                }
+
+                $(dropdown).trigger('change');
+                doSelect2Init();
+            }
+
+            function populateMailingLists() {
+                $.ajax({
+                    url: "@Url.Action("GetActiveMailingLists")",
+                    type: "POST",
+                    data: {}
+                }).done(function (data) {
+                    if (data.Success) {
+                        updateDropdownValues(document.getElementById("ddMailingList"), data.Result);
+                    }
+                });
+            }
+
+            function populateSendToWithDefaultValues() {
+                $.ajax({
+                    url: "@Url.Action("GetActiveUsersFromCurrentOrganization")",
+                    type: "POST",
+                    data: {}
+                }).done(function (data) {
+                    if (data.Success) {
+                        updateDropdownValues(document.getElementById("ddSendTo"), data.Result);
+                    }
+                });
+            }
+
+            function populateSendToWithMailingList(mailListID) {
+                $.ajax({
+                    url: "@Url.Action("GetCurrentMailingListMembers")",
+                    type: "POST",
+                    data: { id: mailListID }
+                }).done(function (data) {
+                    if (data.Success) {
+                        updateDropdownValues(document.getElementById("ddSendTo"), data.Result);
+                        $(".selectAllButton").click();
+                    }
+                });
+            }
+
+            $(document).ready(function () {
+                $('#ddMailingList').closest(".form-group").hide();
+
+                $('#UseMailingList').on('switchChange.bootstrapSwitch', function (event, state) {
+                    if (state) {
+                        //1- show ML dropdown
+                        $('#ddMailingList').closest(".form-group").fadeIn('slow');
+                        //2- populate ml dropdown with the user's mailing lists
+                        populateMailingLists();
+                    } else {
+                        //1- hide the dropdown
+                        $('#ddMailingList').closest(".form-group").hide();
+                        //2- populate the 'send to' drowpdown with default data
+                        populateSendToWithDefaultValues();
+                    }
+                });
+
+                $('#ddMailingList').on('change', function (event) {
+                    //populate the send to field and select all members
+                    populateSendToWithMailingList($('#ddMailingList').val());
+                });
+            });
+        </script>);
+}

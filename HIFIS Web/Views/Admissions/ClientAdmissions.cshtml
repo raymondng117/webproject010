@@ -1,0 +1,295 @@
+﻿@model ClientAdmissionsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientAdmissions;
+    ViewBag.LayoutView = LayoutPage.Client;
+    string activityLogURL = Url.Action("ClientsAdmissionsListPagedJson", "Admissions", new { id = Model.ClientId, isReservationList = false });
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@if (Model.IsServiceRestricted)
+{
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="alert exception-panel">
+                <div class="mrgn-bttm-sm align-center">
+                    <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+                </div>
+                <div>
+                    <p>@Labels.StaysRestriction</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Loader div -->
+<div id="loader-div" class="hide">
+    @Labels.Loading <img src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" alt="@Labels.DynamicLoading" />
+</div>
+
+<!-- Display Stay Modal -->
+<div id="display-stay" class="modal greyTransparentBackground">
+    <div class="modal-dialog whiteBackground">
+        <div class="modal-content">
+            <div class="modal-header">
+                @Html.ActionLink(Labels.Print, "Details", "Admissions", new { id = "" }, new { @class = "printButton noText align-right", id = "printBtn", alt=Labels.Print, aria_label=Labels.Print, @role="button" })
+                <h2 class="modal-title">@Labels.Display</h2>
+            </div>
+            <div class="modal-body" style="min-height: 300px; z-index:1000;">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal" >@Labels.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Tab panes -->
+<div class="wb-tabs ignore-session col-xs-12">
+    <div class="tabpanels">
+        @if (RightsHelper.HasRight(UserRights.Stays_Client_List))
+        {
+            <!-- Tab Pane #1: BookedInTab -->
+            <details id="details-panel1" class="pddng-md" @(ViewBag.ShowReservations == false ? "open=\"open\"" : "")>
+                <summary>@Labels.BookedIn</summary>
+                <div>
+                    <div class="table-responsive">
+                        <table id="AJAXbookedInTable" class="wb-tables table table-striped table-hover"
+                               data-wb-tables='{   "columns": [
+                                                { "width": "20%", "data": "name", "orderable": true, "name": "OrganizationName"},
+                                                { "width": "0%", "bVisible": false, "data": "in-date", "orderable": true, "name": "DateStart"},
+                                                { "width": "25%", "iDataSort": 1, "data": "date", "orderable": true, "name": "DateEnd"},
+                                                { "width": "30%", "data": "reason", "orderable": true, "name": "ReasonForServiceName"},
+                                                { "width": "15%", "data": "accomodation", "orderable": false},
+                                                { "width": "10%", "data": "action", "orderable": false}
+                                            ],
+                                            "columnDefs": [
+                                                { "type": "date", "targets": 1 }
+                                            ],
+                                            "serverSide": true,
+                                            "ajax": "@activityLogURL",
+                                            "processing": true,
+                                            "order": [ [1, "desc"] ]
+                                        }'>
+                            <thead>
+                                <tr>
+                                    <th class="align-text-center">@Labels.ServiceProvider</th>
+                                    <th class="align-text-center"></th>
+                                    <th class="align-text-center">@Labels.In : @Labels.Out</th>
+                                    <th class="align-text-center">@Labels.ReasonForService</th>
+                                    <th class="align-text-center">@Labels.Room : @Labels.Bed</th>
+                                    <th class="align-text-center">@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <div class="mrgn-tp-md">
+                        @if (Model.IsBookedIn)
+                        {
+                            if (RightsHelper.HasRight(UserRights.Stays_BookOut) && !Model.IsNull)
+                            {
+                                @Html.ActionLink(Labels.BookOut, "BookOut", "Admissions", new { id = Model.ClientId, stay = Model.BookOutId, isFromStays = false }, new { @class = "minusButton no-print", alt = Labels.BookOut, aria_label = Labels.BookOut, @role = "button" })
+                            }
+                        }
+                        else
+                        {
+                            if (!Model.IsServiceRestricted || RightsHelper.HasRight(UserRights.Barred_Override))
+                            {
+                                if (RightsHelper.HasRight(UserRights.Stays_BookIn))
+                                {
+                                    @Html.ActionLink(Labels.BookIn, "BookIn", "Admissions", new { id = Model.ClientId, isClient = true }, new { @class = "addButton mrgn-rght-xs no-print", alt = Labels.BookIn, aria_label = Labels.BookIn, @role = "button" })
+                                    @Html.ActionLink(Labels.BookInFamily, "BookIn", "Admissions", new { id = Model.ClientId, isClient = true, isWithFamily = true }, new { @class = "addButton mrgn-rght-xs no-print", alt = Labels.BookInFamily, aria_label = Labels.BookInFamily, @role = "button" })
+                                }
+
+                                if (RightsHelper.HasRight(UserRights.Stays_UndoBookout) && !Model.IsNull)
+                                {
+                                    @Html.ActionLink(Labels.UndoLatestBookout, "UndoLatestBookOut", "Admissions", new { id = Model.UndoLatestId, client = Model.ClientId }, new { @class = "reloadButton no-print", alt = Labels.UndoLatestBookout, aria_label = Labels.UndoLatestBookout, @role = "button" })
+                                }
+                            }
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.Stays_BookIn))
+                        {
+                            @Html.ActionLink(Labels.CreateHistoricalStay, "Create", "Admissions", new { id = Model.ClientId }, new { @class = "addButton mrgn-rght-xs no-print", alt = Labels.CreateHistoricalStay, aria_label = Labels.CreateHistoricalStay, @role = "button" })
+                        }
+
+
+                        @if (RightsHelper.HasRight(UserRights.Diversion_Client_List))
+                        {
+                            @Html.ActionLink(Labels.viewTitle_DiversionList, "ClientList", "Diversion", new { id = Model.ClientId }, new { @class = "listButton mrgn-rght-xs no-print", alt = Labels.viewTitle_DiversionList, aria_label = Labels.viewTitle_DiversionList, @role = "button" })
+                        }
+
+                    </div>
+                </div>
+            </details>
+        }
+        @if (RightsHelper.HasRight(UserRights.Reservations_Client_List))
+        {
+
+            <!-- Tab Pane #1: ReservationsTab -->
+            <details id="details-panel2" class="pddng-md" @(ViewBag.ShowReservations == false ? "" : "open=\"open\"")>
+                <summary>@Labels.Reservations</summary>
+                <div>
+                    <div class="table-responsive">
+                        <table id="reservationsTable" class="wb-tables table table-striped table-hover"
+                               data-wb-tables='{   "columns": [
+                                                { "width": "20%", "data": "name"},
+                                                { "width": "0%", "bVisible": false, "data": "in-date" },
+                                                { "width": "25%", "iDataSort": 1, "data": "date"},
+                                                { "width": "30%", "data": "reason"},
+                                                { "width": "15%", "data": "accomodation"},
+                                                { "width": "10%", "data": "action"}
+                                            ],
+                                            "columnDefs": [
+                                                { "type": "date", "targets": 1 }
+                                            ],
+                                            "processing": true,
+                                            "order": [ [1, "desc"] ],
+                                            "ajax": "@Url.Action("ClientsAdmissionsListJson", "Admissions", new { id = Model.ClientId, isReservationList = true })"
+                                        }'>
+                            <thead>
+                                <tr>
+                                    <th class="align-text-center">@Labels.ServiceProvider</th>
+                                    <th class="align-text-center"></th>
+                                    <th class="align-text-center">@Labels.In : @Labels.Out</th>
+                                    <th class="align-text-center">@Labels.ReasonForService</th>
+                                    <th class="align-text-center">@Labels.Room : @Labels.Bed</th>
+                                    <th class="align-text-center">@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <div class="mrgn-tp-md">
+                        @if (RightsHelper.HasRight(UserRights.Reservations_Add))
+                        {
+                            if (!Model.IsServiceRestricted || (RightsHelper.HasRight(UserRights.Barred_Override)))
+                            {
+                                @Html.ActionLink(Labels.NewReservation, "NewReservation", "Admissions", new { id = Model.ClientId, isClient = true, isWithFamily = false, isReservation = true }, new { @class = "reserveButton mrgn-rght-xs no-print", alt=Labels.NewReservation, aria_label=Labels.NewReservation })
+                            }
+                        }
+                    </div>
+                </div>
+            </details>
+        }
+    </div>
+</div>
+
+@*<div id="JSGlobalVar">
+        @Html.Partial("_SharedGlobalVar", Model)
+    </div>*@
+
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            //***************************************************************************
+            //*
+            //*   Global variables
+            //*
+            //****************************************************************************
+
+            var returnToClient = '@ViewBag.ReturnToClient';
+
+            @*
+                var current_ClientStateTypeID = @Model.ClientROVVitals.ClientStateTypeID;
+
+                var label_GetStayInformation = '@Labels.GetStayInformation';
+                var label_BookInWithWrongStatusMsg = '@Labels.BookInWithWrongStatusMsg';
+
+
+                $(document).on('SharedGlobalVar_OnReady', function () {
+
+                    HIFIS_Admissions.ClientAdmissionsView.ApplyOnLoad.OnReady();
+                });
+
+
+                $(document).on("ready", function () {
+
+                    //HIFIS_Admissions.ClientAdmissionsView.ApplyOnLoad.OnReady();
+                });
+            *@
+
+
+            $(document).on("wb-ready.wb-tables", ".wb-tables", function (event) {
+                $("#loader-div").addClass("hide").css({ "margin-left": "250px", "margin-top": "100px" });
+                $("#container").css('margin-left', '');
+
+                /***************************************************************************
+                *
+                *   Get stay details to display to the user.
+                *
+                ****************************************************************************/
+                $("#AJAXbookedInTable").on("click", ".display-btn", function () {
+
+                    var displayModal = $("#display-stay");
+                    var id = $(this).attr("data-id");
+                    var client = $(this).attr("data-client");
+                    $("#printBtn").attr("href", "@Url.Action("Details", "Admissions", null)?id=" + id); // sets the print url to the right stay id
+                    displayModal.find(".modal-body").html($("#loader-div").removeClass("hide"));
+                    $( "#loader-div" ).focus();
+                    displayModal.show();
+
+                    $.ajax({
+                        url: "@Url.Action("DisplayBookedInStay", "Admissions", null)",
+                        type: "GET",
+                    data: { "id": id },
+                    }).done(function (data) {
+                        displayModal.find(".modal-body").html($("#loader-div"));
+                        displayModal.find(".modal-body").append(data.Result);
+                        $("#loader-div").addClass("hide");
+                    }).fail(function () {
+                        alert("@Labels.GetStayInformation");
+                        displayModal.hide();
+                    });
+                });
+
+                $(".modalCloseButton").on("click", function () {
+                    $(".modal").hide();
+                });
+            });
+
+            // draw event for the datatables...Since the datatables loads after the javascript loads then
+            // the buttons within the tables need to be initialised after the table is drawn.
+            $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                initButtons();
+                $(".editButton").parents("td").addClass("align-text-center");
+            });
+
+
+            $(document).on("click", ".addButton", function (event) {
+                return BlockDeceasedArchivedBookins();
+            });
+
+            $(document).on("click", ".reserveButton", function (event) {
+                return BlockDeceasedArchivedBookins();
+            });
+
+            function BlockDeceasedArchivedBookins() {
+                var archivedInt = @((int)HIFIS.ENUMS.CommonClasses.ClientStateTypes.Archived);
+                var deceasedInt = @((int)HIFIS.ENUMS.CommonClasses.ClientStateTypes.Deceased);
+                if (@Model.ClientROVVitals.ClientStateTypeID == archivedInt || @Model.ClientROVVitals.ClientStateTypeID == deceasedInt) {
+                    displayNotification('alert', '', "<p>@Labels.BookInWithWrongStatusMsg</p>");
+                    return false; // cancel the event
+                }
+                return true;
+            }
+
+
+</script>
+);
+}
+

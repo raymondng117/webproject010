@@ -1,0 +1,8 @@
+﻿@model HelpTopicMaterialModel
+
+@using (Html.BeginForm("AddMaterialToTopic", "HIFISHelp", FormMethod.Post))
+{        
+    @Html.HiddenFor(model => model.HelpTopicID);
+    @Html.DropDownListFor(model => model.HelpMaterialID, ViewBag.MaterialList as SelectList)
+    <button type="submit" class="saveButton">@Labels.Save</button>
+}

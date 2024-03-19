@@ -1,0 +1,103 @@
+﻿@model PlaceViewModel
+
+@Html.HiddenFor(model => model.isPlaceRequired)
+
+@if (Model.ContactPersonNames != null)
+{
+    for (int i = 0; i < Model.ContactPersonNames.Count; i++)
+    {
+        @Html.HiddenFor(model => Model.ContactPersonNames[i])
+    }    
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.PlaceName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.PlaceTypeID, CachedTableTypes.HIFIS_PlaceTypes, Culture)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.ServicesOfferedIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServicesOfferedTypes, Culture))
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Active, "YesNo")
+</div>
+
+<div>
+    @Html.HifisMultiAutocompleteFor(model => model.ContactPersonIDs, Url.Content("~/PeopleTombstone/AjaxGetSearchList"), Model.ContactPersonNames, new AutocompleteViewModelOptions() { Placeholder = Labels.SearchForAPerson, HiddenValue = true, SelectClientFieldType = SelectClientFieldTypes.Other })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReferrerCategTypeID, CachedTableTypes.HIFIS_ReferrerCategTypes, new { @class = "type-required" }) 
+</div>
+        
+<div id="divReferableOption">
+    <div>     
+        @Html.HifisEditorFor(model => model.ReferableFromYN, "YesNo")            
+    </div>
+        
+    <div>     
+        @Html.HifisEditorFor(model => model.ReferableToYN, "YesNo")            
+    </div>  
+</div> 
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+</div> 
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            function checkAddressRequired() {
+                if ($('#isAddressRequired').val() == 'True') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function checkGeoRequired() {
+                if ($('#isGeoRegionEnforced').val() == 'True') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+             /***************************************************************************
+             *
+             *   Events that either hides or displays the mandatory star next to the
+             *   ReferrerCategTypeID Field depending on a true or false value from either
+             *   of the yes/no inputs.
+             *
+             ****************************************************************************/
+             $(function () {
+
+                 if ($('input[id="ReferableFromYN"]').bootstrapSwitch('state') == false && $('input[id="ReferableToYN"]').bootstrapSwitch('state') == false)
+                     $("#ReferrerCategTypeID").siblings(".glyphicon-star").addClass("hide");
+
+                 $('input[id="ReferableFromYN"]').on("switchChange.bootstrapSwitch", function (event, state) {
+                     if (state == true)
+                         $("#ReferrerCategTypeID").siblings(".glyphicon-star").removeClass("hide");
+                     else if ($('input[id="ReferableToYN"]').bootstrapSwitch('state') == false)
+                         $("#ReferrerCategTypeID").siblings(".glyphicon-star").addClass("hide");
+                 });
+
+                 $('input[id="ReferableToYN"]').on("switchChange.bootstrapSwitch", function (event, state) {
+                     if (state == true)
+                         $("#ReferrerCategTypeID").siblings(".glyphicon-star").removeClass("hide");
+                     else if ($('input[id="ReferableFromYN"]').bootstrapSwitch('state') == false)
+                         $("#ReferrerCategTypeID").siblings(".glyphicon-star").addClass("hide");
+                 });
+
+             });
+        </script>
+    );
+}

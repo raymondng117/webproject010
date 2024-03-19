@@ -1,0 +1,16 @@
+﻿@model ConsentMember
+<tr id="tr_@Model.Consent.ClientID">
+    <td>
+        @(Model.FirstName + " " + Model.LastName)
+    </td>
+    <td>
+        <form class="form-inline">
+            @Html.HiddenFor(m => m.FirstName)
+            @Html.HiddenFor(m => m.LastName)
+            @Html.HiddenFor(m => m.Age)
+            @Html.HiddenFor(m => m.HasActiveConsent)
+            @Html.HiddenFor(m => m.IsReadOnly)
+            @Html.Partial("Consent/_MemberConsent", Model.Consent)
+        </form>
+    </td>
+</tr>

@@ -1,0 +1,126 @@
+﻿@model OrganizationServiceProviderViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("ServiceDetails", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    <fieldset class="color-white">
+        <legend>@Labels.ServiceProviderDetailsTitle</legend>
+
+        @Html.HiddenFor(model => model.ServiceProviderID)
+        @Html.HiddenFor(model => model.OrganizationID)
+        @Html.HiddenFor(model => model.ActiveYN)
+        @Html.HiddenFor(model => model.HifisRowVersion)
+
+        <div>
+            @Html.HifisEditorFor(model => model.NameE)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.NameF)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ServiceProviderTypeID, Utilities.CreateSelectListWithBlankOption(ViewBag.ServiceProviderList, Model.ServiceProviderTypeID) as SelectList)
+        </div>
+
+        <div>
+            Target Clientele:
+            <select data-val="true" data-val-number="The field City must be a number." data-val-required="The City field is required." id="ClienteleID" name="ClienteleID">
+                <option value="1">General</option>
+                <option value="2">Youth</option>
+                <option value="3">Women with Children</option>
+                <option value="4">Family</option>
+            </select>
+            @Html.Partial("_Mandatory")
+        </div>
+
+        <div>
+            Genders Served:
+            <input type="checkbox" checked="checked" /> Males
+            <input type="checkbox" checked="checked" /> Females
+            <input type="checkbox" checked="checked" /> Other
+            <div class=" color-attention"> </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div>
+            Rooms:
+            <input type="text" value="7" />
+
+        </div>
+
+        <div>
+            Beds:
+            <input type="text" value="23" />
+
+        </div>
+
+        <div>
+            Overflow:
+            <input type="text" value="4" />
+
+        </div>
+
+        <div>
+            Other Attributes:
+            <input type="checkbox" checked="checked" /> Has Emergency Beds<br />
+            <input type="checkbox" /> Has Traditional Beds<br />
+            <input type="checkbox" checked="checked" /> Serves Families<br />
+        </div>
+    </fieldset>
+
+    <fieldset class="color-white">
+        <legend>Address</legend>
+
+        <div>
+            @Html.HifisEditorFor(model => model.AddressLn1)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.AddressLn2)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.CountryID, CachedTableTypes.HIFIS_CountryTypes)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ProvinceID, CachedTableTypes.HIFIS_ProvinceTypes)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.CityID, CachedTableTypes.HIFIS_CityTypes)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.PostalCode)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Phone1)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Fax)&nbsp;<font class="explain">(###-###-####)</font>
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Email)
+        </div>
+
+    </fieldset>
+
+
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <input id="btnSaveOrganization" type="submit" value="@Labels.Save" class="mrgn-xs" />
+            @Html.ActionLink(Labels.Cancel, "Index", "Organization", new { }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+}

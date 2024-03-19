@@ -1,0 +1,55 @@
+﻿@model LogFileViewModel
+@{
+    ViewBag.Title = "Error Log - " + Model.FileName;
+}
+
+<h2>View Error Log - @Model.FileName</h2>
+
+<table class="wb-tables table table-striped">
+    <thead>
+        <tr>
+            <th style="width: 125px;">Server Time</th>
+            <th>Error Message</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var log = Model.Contents.Replace(Environment.NewLine, "`").Split('`');
+
+            var rgx = new System.Text.RegularExpressions.Regex(@"^\d{4}");
+            
+            foreach (string item in log)
+            {
+                if (item.Length > 0)
+                {
+                    if (rgx.IsMatch(item))
+                    {
+                        try
+                        {
+                            <tr>
+                                <td>@item.Substring(11,8)</td>                            
+                                <td>@item.Substring(24).Substring(@item.Substring(24).IndexOf(":")+2)</td>
+                            </tr>
+                        }
+                        catch (Exception)
+                        {
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>@item</td>                            
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>@item</td>                            
+                        </tr>
+                    }
+                }
+            }
+        }
+    </tbody>
+</table>
+
+@Html.ActionLink(Labels.Back, "ErrorLogs", null, new { @class = "btn btn-md btn-primary", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })

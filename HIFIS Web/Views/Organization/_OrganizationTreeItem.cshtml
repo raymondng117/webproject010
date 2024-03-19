@@ -1,0 +1,47 @@
+﻿@model OrganizationBasicViewModel
+
+
+@if (Model.ChildOrganizations.Count == 0)
+{   
+    if (ViewBag.disabledFlag)
+    {
+        <text><li data-jstree='{"icon" : "glyphicon glyphicon-home", "disabled": true }'></text>
+    }
+    else
+    {
+        <text><li data-jstree='{"icon" : "glyphicon glyphicon-home", "disabled": false }'></text>
+    }
+}
+else
+{ 
+
+    if (ViewBag.disabledFlag)
+    {
+        <text><li data-jstree='{"icon" : "glyphicon glyphicon-home", "disabled": true }'></text>
+    }
+    else
+    {
+        <text><li data-jstree='{"icon" : "glyphicon glyphicon-home", "disabled": false }'></text>
+    }
+}        
+
+            @if ((ViewBag.isAdmin) || RightsHelper.HasRight(UserRights.ServiceProviders_Edit, Model.OrganizationID))
+            {
+                @Html.ActionLink(Model.Name + (Model.ChildOrganizations.Count > 0 ? " (" + Model.ChildOrganizations.Count.ToString() + ")" : "") + " " + Model.ActiveStatus , "OrganizationDetails", "Organization", new { id = Model.OrganizationID }, new { @class = "organizationAnchor nocheckbox", alt = Model.Name + (Model.ChildOrganizations.Count > 0 ? " (" + Model.ChildOrganizations.Count.ToString() + ")" : "") + " " + Model.ActiveStatus, aria_label = Model.Name + (Model.ChildOrganizations.Count > 0 ? " (" + Model.ChildOrganizations.Count.ToString() + ")" : "") + " " + Model.ActiveStatus })
+            }
+            else
+            {
+                @Model.Name
+            }
+ 
+            @if (Model.ChildOrganizations.Count != null)
+            {
+                <ul>
+                    @foreach (OrganizationBasicViewModel org in Model.ChildOrganizations)
+                    {
+                        @Html.Partial("_OrganizationTreeItem", org)
+                    }
+            
+                </ul>
+            }
+    </li>

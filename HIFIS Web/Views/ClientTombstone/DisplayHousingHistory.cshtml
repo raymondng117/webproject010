@@ -1,0 +1,230 @@
+﻿@model ClientHousingViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayClientHousingHistory;//housing history   
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+
+<div class="clearfix"></div>
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#detailsTab" role="tab" data-toggle="tab">@Labels.Details</a>
+    </li>
+    @if (RightsHelper.HasRight(UserRights.Followup_List))
+    {
+        <li>
+            <a class="tabButton" href="#followUpsTab" role="tab" data-toggle="tab">@Labels.FollowUps</a>
+        </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_List))
+    {
+    <li>
+		<a class="tabButton" href="#subsidiesTab" role="tab" data-toggle="tab">@Labels.Subsidies</a>
+	</li>
+    }
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane active displayView" id="detailsTab">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.HouseDetails.HouseTypeID, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.HouseDetails.HouseTypeID,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseTypes, ViewBag.CurrentCulture, Model.HouseDetails.HouseTypeID)
+                        })
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.DateStart)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.DateEnd)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.Building, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.Building)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.AddressLn1, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.AddressLn1)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.AddressLn2, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.AddressLn2)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.Unit, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.Unit)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.CountryID, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.Country)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.ProvinceID, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.Province)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.CityID, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.City)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.PostalCode, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.AddressDetails.PostalCode)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.AddressDetails.GeoIDs, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.AddressDetails.GeoIDs.Select(s => s.ToString()).ToList(),
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, ViewBag.CurrentCulture, Model.AddressDetails.GeoIDs)
+
+                        })
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.HouseDetails.LandlordPersonID, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.HouseDetails.Landlord.FullName)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Rent, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.Rent)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Telephone1, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.Telephone1)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Telephone1Ext, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.Telephone1Ext)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Telephone2, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.Telephone2)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.MobilePhone, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.MobilePhone)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Email, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.Email)
+                </div>
+                <div class="btn-group">
+                    @if (RightsHelper.HasRight(UserRights.Client_Housing_Edit))
+                    {
+                        @Html.ActionLink(Labels.Edit, "ClientHousingHistoryEdit", "ClientTombstone", new { id = Model.ClientID, clientHouseID = Model.ClientHouseID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button"  })
+                    }
+
+                    @Html.ActionLink(Labels.Cancel, "ClientHousingHistory", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+                    @if (Model.DateEnd == null || (Model.MostRecentHistory && Model.DateEnd > DateTime.Now))
+                    {
+                        <button id="recordReviewed" class="btn btn-default"><span class="glyphicon glyphicon-ok mrgn-rght-xs"></span>@Labels.Verified</button>
+                    }
+                </div>
+            </div>
+
+            @if (RightsHelper.HasRight(UserRights.Followup_List))
+            {
+                <div class="tab-pane" id="followUpsTab">
+                    @Html.Partial("~/Views/FollowUps/_FollowUpListDisplay.cshtml", Model)
+                </div>
+            }
+
+            @if (RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_List))
+            {
+	        <div class="tab-pane displayView" id="subsidiesTab">
+                <div class="row">
+		            <div class="col-sm-2">
+                        @Html.HifisLabelFor(model => model.ClientIncome)
+                    </div>
+                    <div class="col-sm-10">
+                        @Html.DisplayFor(model => model.ClientIncome)
+                    </div>
+                </div>
+                <div class="row">
+		            <div class="col-sm-2">
+                        @Html.HifisLabelFor(model => model.Rent)                
+                    </div>
+                    <div class="col-sm-10">
+                        @Html.DisplayFor(model => model.Rent)
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="subsidiesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{  "columns": [
+                                                                                                                                { "width": "25%" , "data": "program" },
+                                                                                                                                { "width": "21%" , "data": "serviceProvider" },
+                                                                                                                                { "width": "10%" , "data": "amount" },
+                                                                                                                                { "width": "13%" , "data": "startDate" },
+                                                                                                                                { "width": "13%" , "data": "endDate" },
+                                                                                                                                { "width": "18%" , "data": "action", "visible" : false }
+                                                                                                                                ],
+                                                                                                                                "order": [ [0, "desc" ] ],
+                                                                                                                                "ajax": "@Url.Content("~/HousingPlacements/GetSubsidiesJson?clientHouseID=" + Model.ClientHouseID)"
+                                                                                                                                }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.ProgramName</th>
+                                <th class="align-text-center">@Labels.ServiceProvider</th>
+                                <th class="align-text-center">@Labels.Amount</th>
+                                <th class="align-text-center">@Labels.DateStart</th>
+                                <th class="align-text-center">@Labels.DateEnd</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>                
+	        </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mrgn-tp-sm">@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            //on unit list redraw reinit hifis scripts and reinit lightboxes
+            $('#subsidiesTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+            
+            $("#recordReviewed").click(function () {
+                $.ajax({
+                    url: "@Url.Content("~/ClientTombstone/HousingHistoryReviewed")",
+                    type: "POST",
+                    data: {"clientHouseID": "@Model.ClientHouseID" },
+                }).done(function (data) {
+                    if (data.ShowDataSaveSuccessfully && data.Success) {
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                        $.ajax({
+                            url: "@Url.Content("~/ClientTombstone/CheckLastHousingHistory?clientID=" + Model.ReadOnlyVitals.ClientID)",
+                            success: function (data) {
+                                console.log(data)
+                                if (data.Result.showHousingUpdateNotification === false) {
+                                    $("#updateHousingHistoryAlert").hide();
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                    }
+                }).fail(function (data) {
+                    displayNotification('error', null, 'Failed to Save');
+                })
+            });
+        </script>);
+}

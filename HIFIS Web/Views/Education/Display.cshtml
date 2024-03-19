@@ -1,0 +1,80 @@
+﻿@model EducationViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayEducation;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div id="DisplayEducation">
+    <div class="displayView col-sm-12 mrgn-bttm-md mrgn-tp-md">
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.PlaceID, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="PlaceID" name="PlaceID"
+                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.PlaceID,
+                            List = ViewBag.schoolList as SelectList
+                        })" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EducationLevelID, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="EducationLevelID" name="EducationLevelID"
+                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.EducationLevelID,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_EducationLevelTypes, ViewBag.CurrentCulture, Model.EducationLevelID)
+                        })" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Completed, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="Completed" name="Completed"
+                       value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.Completed).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DateStart, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="DateStart" name="DateStart"
+                       value="@Html.HifisDisplayFor(model => model.DateStart, null, true, "DateOnly")" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DateEnd, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="DateEnd" name="DateEnd"
+                       value="@Html.HifisDisplayFor(model => model.DateEnd, null, true, "DateOnly")" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Comments, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="Comments" name="Comments"
+                       value="@Html.HifisDisplayFor(model => model.Comments, null, true, null)" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                @Html.ActionLink(Labels.Cancel, "ClientList", "Education", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+
+        <div class="mrgn-lft-sm mrgn-tp-lg">
+            @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+        </div>
+
+    </div>
+</div>

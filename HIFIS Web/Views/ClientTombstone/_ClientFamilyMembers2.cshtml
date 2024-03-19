@@ -1,0 +1,160 @@
+﻿@model ClientFamilyMemberListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayFamilyMember;
+
+    string clientGroupID = string.Empty;   
+}
+
+<fieldset>
+    <div class=" form-color-white module-form-block">
+        <div class=" mrgn-bttm-0">
+            <span class="color-accent"><strong>@Labels.FamilyHead:</strong> </span>@Model.FamilyHeadName 
+            <span class="color-attention align-right align-text-right">@Model.FamilyCode</span>
+            
+            <hr />
+        </div>
+        <div>
+            <div class="table-responsive">
+                <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                    <thead>
+                        <tr>
+                            <th class="wdth-strct-10 align-text-center">#</th>
+                            <th class="wdth-strct-100">@Labels.FullName</th>
+                            <th class="wdth-strct-100">@Labels.FamilyRole</th>
+                            <th class="wdth-strct-60">@Labels.DOB</th>
+                            <th class="wdth-strct-60">@Labels.Gender</th>
+                            <th class="wdth-strct-60">@Labels.Relationship</th>
+                            <th class="wdth-strct-60 align-text-center">@Labels.Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.FamilyMembers != null && Model.FamilyMembers.Count > 0)
+                        {
+                            for (int i = 0; i < Model.FamilyMembers.Count; i++)
+                            {
+                                @Html.HiddenFor(m => m.FamilyMembers[i].ClientID)
+                                @Html.HiddenFor(m => m.FamilyMembers[i].DOB)
+                                @Html.HiddenFor(m => m.FamilyMembers[i].FullName)
+                        
+                                @Html.HiddenFor(m => m.FamilyMembers[i].Gender)
+                                @Html.HiddenFor(m => m.FamilyMembers[i].Relationship)
+                                @Html.HiddenFor(m => m.FamilyMembers[i].Role)
+                                @Html.HiddenFor(m => m.FamilyMembers[i].Sequence)
+                            <tr>
+
+                                @if (Model.ClientID == Model.FamilyMembers[i].ClientID)
+                                {
+                                    <td class="align-text-center errorText">@Html.DisplayFor(m => m.FamilyMembers[i].Sequence)</td>
+
+                                    <td>                                        
+                                        @Model.FamilyMembers[i].FullName
+                                    </td>
+                                
+                                    clientGroupID = Model.FamilyMembers[i].ClientGroupID;
+
+                                }
+                                else
+                                {
+                                    <td class="align-text-center">
+                                        @Html.DisplayFor(m => m.FamilyMembers[i].Sequence)
+                                    </td>
+                                    <td>                                        
+                                        @Html.ActionLink(Model.FamilyMembers[i].FullName, "DisplayVitals", "ClientTombstone", new { id = Model.FamilyMembers[i].ClientID}, new { alt = Model.FamilyMembers[i].FullName, aria_label = Model.FamilyMembers[i].FullName})
+
+                                        @if (Model.FamilyMembers[i].PartOfHouseHoldYN == true)
+                                        {
+                                            <span class="glyphicon glyphicon-ok"></span>
+                                        }
+                                    </td>
+                          
+                                }
+
+                                <td>@Html.DisplayFor(m => m.FamilyMembers[i].Role)</td>
+                                <td>@Html.DisplayFor(m => m.FamilyMembers[i].DOB)</td>
+                                <td>@Html.DisplayFor(m => m.FamilyMembers[i].Gender)</td>
+                                <td>@Html.DisplayFor(m => m.FamilyMembers[i].Relationship)</td>
+
+                                @if (RightsHelper.HasRight(UserRights.Client_Family_Group_Memberships_Terminate_Client))
+                                {
+                                    if (Model.FamilyMembers[i].PersonID == Model.PersonID)
+                                    {                                      
+                                        <td class="align-text-center">
+                                            @Html.ActionLink(Labels.Edit, "DisplayFamilyMember", "ClientTombstone",
+                                            new
+                                            {
+                                                pClientGroupID = Model.FamilyMembers[i].ClientGroupID,
+                                                pClientID = Model.ClientID,
+                                                pFamilyHeadID = Model.FamilyHeadID,
+                                                pCurrentClientID = Model.ClientID,
+                                                pGroupID = Model.GroupID
+                                            },
+                                                new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+
+                                            @Html.ActionLink(Labels.Delete, "TerminateClientGroupMembership", "ClientTombstone",
+                                            new
+                                            {
+                                                pClientGroupID = Model.FamilyMembers[i].ClientGroupID,
+                                                pCurrentClientID = Model.ClientID
+                                            },
+                                                new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                        </td>                                
+                                    }
+                                    else
+                                    {
+                                        <td class="align-text-center">
+                                            @Html.ActionLink(Labels.Edit, "DisplayFamilyMember", "ClientTombstone",
+                                            new
+                                            {
+                                                pClientGroupID = Model.FamilyMembers[i].ClientGroupID,
+                                                pClientID = Model.ClientID,
+                                                pFamilyHeadID = Model.FamilyHeadID,
+                                                pCurrentClientID = Model.ClientID,
+                                                pGroupID = Model.GroupID
+                                            },
+                                                new { @class = "noText editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+                                 
+                                            @*Only give the option to delete a family if there is only the family head remaining in the group*@
+                                            @if(Model.FamilyMembers.Count == 1)
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "TerminateClientGroupMembership", "ClientTombstone",
+                                                new
+                                                {
+                                                    pClientGroupID = Model.FamilyMembers[i].ClientGroupID,
+                                                    pCurrentClientID = Model.ClientID
+                                                },
+                                                    new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        </td>
+                                    }
+                                }
+
+                            </tr>                    
+                            }
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="mrgn-tp-md">
+
+            @if (RightsHelper.HasRight(UserRights.Client_Family_Members_Get_New))
+            { 
+                @Html.ActionLink(Labels.AddFamilyMember, "GetNewFamilyMember", "ClientTombstone", new { pCurrentClientID = Model.ClientID, pGroupID = Model.GroupID, pFamilyHeadID = Model.FamilyHeadID }, new { @class = "addButton", alt=Labels.AddFamilyMember, aria_label = Labels.AddFamilyMember, @role = "button" }) 
+            }
+
+            @if (RightsHelper.HasRight(UserRights.Client_Family_Group_Memberships_Terminate))
+            {
+                if (Model.ClientID == Model.FamilyHeadID)
+                {
+                    @Html.ActionLink(Labels.DeleteFamily, "TerminateGroupMembership", "ClientTombstone", new { pGroupID = Model.GroupID, pCurrentClientID = Model.ClientID }, new { @class = "deleteButton  ", alt=Labels.DeleteFamily, aria_label = Labels.DeleteFamily, @role = "button" }) 
+                }
+            }
+        </div>
+    </div>
+
+</fieldset>

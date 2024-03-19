@@ -1,0 +1,44 @@
+﻿@model PitQuestionViewModel
+@{    
+  
+}
+
+<div>
+ 
+    @Html.HiddenFor(m => m.PitQuestionnaireID)
+    @Html.HiddenFor(m => m.QuestionCategoryTypeID)
+    @Html.HiddenFor(m => m.QuestionID)
+    @Html.HiddenFor(m => m.SaveQuestion)
+    @Html.HiddenFor(m => m.LockedYN)
+    @Html.HiddenFor(m => m.InitiallyEnabledYN)
+
+
+    <div>
+        @Html.HifisEditorFor(m => m.QuestionNo, null, new { min = "1", type = "number" })
+    </div>
+    <br />
+
+    <div>
+        @Html.HifisTextAreaFor(m => m.Question, new { @class="wdth-strct-400" })
+    </div>
+
+    <div>
+        @Html.HifisTextAreaFor(m => m.QuestionF, new { @class = "wdth-strct-400" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.QuestionTypeID, ViewBag.QuestionType as SelectList,  "DropDownList") 
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.SequenceLabel)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.SequenceNo, null, new { min = "1", type = "number" })
+    </div>
+</div>

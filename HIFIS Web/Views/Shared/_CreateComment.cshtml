@@ -1,0 +1,15 @@
+﻿@model DevCommentViewModel
+
+@using (Html.BeginForm("CreateComment", "DevComment", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.HiddenFor(model => model.ParentCommentID)
+    @Html.HiddenFor(model => model.ViewURL)
+    @Html.TextAreaFor(model => model.Comment, new { rows = "8", @class="wdth-100" })
+
+    <div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<input type="submit" value="Add Comment"  />	
+		</div>
+	</div>
+    
+}

@@ -1,0 +1,22 @@
+﻿@model PeopleCarViewModel
+@{ 
+    ViewBag.LayoutView = LayoutPage.People;
+    
+    ViewBag.ViewTitle = Labels.viewTitle_NewPeopleCar;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>    
+    @using (Html.BeginForm("NewVehicle", "PeopleTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_Vehicle");
+           
+        <div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton  " value="@Labels.Save">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "VehicleList", "PeopleTombstone", new { id = Model.PersonID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div> 
+    }
+</div>

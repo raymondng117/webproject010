@@ -1,0 +1,33 @@
+﻿@model GoodsAndServices_ServiceViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewGoodsAndServicesService;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter") 
+
+@using (Html.BeginForm("New", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal" }))
+{    
+    @Html.Partial("_GoodsAndService", Model);
+    @Html.Partial("~/Views/Outreach/_OutreachAddress.cshtml", Model.OutReachAddress, "OutReachAddress.")
+    
+    <div class="form-group">
+		<div class="col-sm-offset-3 col-sm-9">
+			<button id="sveBttn" type="submit" class="saveButton">@Labels.Save</button>
+            @if (Model.ReadOnlyVitals != null)
+            {
+                @Html.ActionLink(Labels.Cancel, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            }
+            else
+            {
+                @Html.ActionLink(Labels.Cancel, "List", "GoodsAndServices", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            }
+		</div>
+	</div>                                     
+}
+
+@Html.Partial("_gsJS")
+
+
+

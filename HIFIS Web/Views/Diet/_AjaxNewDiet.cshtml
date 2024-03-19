@@ -1,0 +1,62 @@
+﻿@model DietViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<section id="Modal_NewDiet" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_AddDiet</h2>
+    </header>
+
+    <div class="modal-body" style="overflow: hidden;">
+        <div id="NewDietFormSection" class="row">
+            <form id="newDietForm" class="form-horizontal">
+                @Html.Partial("_DietaryRequirement", Model)
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="newDietSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newDietCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $('input[id=ClientID]').val($('#HiddenClientID').val());
+
+    $("#newDietSaveBtn").click(function () {
+
+        if ($("#newDietForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/Diet/New")",
+                type: "POST",
+                data: $("#newDietForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#dietsTable').DataTable().ajax.reload( function () { $(".wb-lbx").trigger("wb-init.wb-lbx");  });
+                    $("#newDietCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>
+
+

@@ -1,0 +1,62 @@
+﻿@model ClientCountryViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DsiplayCountryOfOrigin;
+    ViewBag.LayoutView = LayoutPage.Client;     
+}
+
+<div class=" displayView">
+    <div>
+        @Html.HifisLabelFor(model => model.CountryOfBirth, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.CountryOfBirth,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CountryTypes, ViewBag.CurrentCulture, Model.CountryOfBirth)
+                        })
+    </div>
+    @*@if (Model.CountryOfBirth == (short)CountryTypes.Canada)*@
+    @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_CountryTypes, Model.CountryOfBirth) == (short)CountryTypes.Canada)
+    {
+        <div>
+            @Html.HifisLabelFor(model => model.ProvinceOfBirth, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.ProvinceOfBirth,
+                                List = ViewBag.Provinces as SelectList
+                            })
+        </div>
+        <div>
+            @Html.HifisLabelFor(model => model.CityOfBirth, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.CityOfBirth,
+                                List = ViewBag.Cities as SelectList
+                            })
+        </div>
+    }
+    //else if (Model.CountryOfBirth == (short)CountryTypes.UnitedStates)
+    else if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_CountryTypes, short.Parse(Model.CityOfBirth)) == (short)CountryTypes.UnitedStates)
+    {
+        <div>
+            @Html.HifisLabelFor(model => model.StateOfBirth, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.StateOfBirth,
+                                List = ViewBag.Provinces as SelectList
+                            })
+        </div>
+        <div>
+            @Html.HifisLabelFor(model => model.USACityFreeText, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.USACityFreeText)
+        </div>
+    }
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Client_Country_Edit))
+        {
+            @Html.ActionLink(Labels.Edit, "Country", "ClientTombstone", new { id = Model.ClientID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role="button" })
+        }
+    </div>
+</div>

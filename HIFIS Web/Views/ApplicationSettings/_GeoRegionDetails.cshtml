@@ -1,0 +1,101 @@
+﻿@model GeoRegionViewModel
+@{
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+}
+
+@Html.HiddenFor(model => model.GeoRegionID)
+
+<div>
+    @Html.HifisLabelFor(model => model.GeoRegionName, new { @class = "col-sm-4"})
+    @Html.HifisDisplayFor(model => model.GeoRegionName, new { @class = "col-sm-8" }, true, null)
+</div>
+
+<div>
+    @Html.HifisLabelFor(model => model.ProvinceID, new { @class = "col-sm-4"})
+    @Html.HifisEditorFor(model => model.ProvinceID, ViewBag.Provinces as SelectList, "DropDownList", new { @class = "col-sm-8", id = "ddlProvince" }, true, null)
+</div>
+
+<div>
+    @Html.HifisLabelFor(model => model.CityList, new { @class = "col-sm-4"})
+    @Html.HifisListBoxFor(model => model.CityList, Enumerable.Empty<SelectListItem>(), new { @class = "col-sm-9", id = "ddlCities" }, true, true, true)
+</div>
+
+<script> 
+
+    var defaultProvinceID = '@Model.ProvinceID';
+    var cities;
+
+    function gettoken() {
+        var token = '@Html.AntiForgeryToken()';
+        token = $(token).val();
+        return token;
+    }
+
+    function PopulateCity() {
+        
+        $.ajax({
+            url: "@Url.Action("AjaxGetAvailableGeoCityList", "Master")",
+            type: "POST",
+            data: { "ProvinceID": $("#ddlProvince").val(), "GeoID": $("#GeoRegionID").val(), "__RequestVerificationToken": gettoken() },
+        }).done(function (data) {
+            $('#ddlCities').empty();
+            $('#ddlCities').append('<option value=""/>');
+            $('#ddlCities').append(makeOptions(data.Result));
+                 }).always(function () {
+                     reinitSelect2($('#ddlCities'));
+                 });
+    }
+
+    function InitialPopulateCity() {
+        
+        cities = @Html.Raw(jsSerializer.Serialize(Model.CityList));
+
+        $.ajax({
+            url: "@Url.Action("AjaxGetAvailableGeoCityList", "Master")",
+            type: "POST",
+            data: { "ProvinceID": $("#ddlProvince").val(), "GeoID": $("#GeoRegionID").val() },
+        }).done(function (data) {
+            $('#ddlCities').append(makeOptions(data.Result, cities));
+            var elmt = document.getElementById('ddlCities');
+            for ( var k = 0; k < cities.length; k++ ) {
+                for ( var i = 0; i < elmt.options.length; i++ )    
+                if ( cities[k] == elmt.options[i].value ) {
+                    elmt.options[i].selected = true;
+                }
+            }
+        }).always(function () {
+            reinitSelect2($('#ddlCities'));
+        });
+    }
+
+    function makeOptions(res, cities) {
+        var str = "";
+        if (res.length > 0) {
+            for (i = 0; i < res.length; i++) {
+                str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';               
+            }
+        }
+        else {
+            str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                 }
+                 return str;
+    };
+
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+    }
+
+
+    //Onload
+    $(document).ready(function () {
+        
+        InitialPopulateCity();
+        $("#ddlProvince").change(PopulateCity);
+        
+    });  
+    
+</script>
+ 
+
+ 

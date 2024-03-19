@@ -1,0 +1,10 @@
+﻿@* Used to store ViewBag variables for dynamic use. *@
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Hidden("CurrentCulture", (object)ViewBag.CurrentCulture)
+@Html.Hidden("CurrentGeoRegionID", (object)ViewBag.CurrentGeoRegionID)
+@Html.Hidden("MinimumCharacterInput", (appSettings != null) ? appSettings.GetMinimumCharacterInput() : (int)ViewBag.MinCharInput)
+

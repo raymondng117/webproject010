@@ -1,0 +1,97 @@
+﻿@model GenericTableLookUpViewModel
+
+<section id="Modal_ManageSubscriptions" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@(Labels.ManageSubscriptions + " - " + ViewBag.KeyName)</h2>
+    </header>
+    <div class="modal-body">
+        <form id="manageSubscriptionsForm" class="form-horizontal">
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.lookupID)
+            @Html.HiddenFor(model => model.NameE)
+            @Html.HiddenFor(model => model.NameF)
+            @Html.HiddenFor(model => model.Sequence)
+            @Html.HiddenFor(model => model.LookupTableID)
+            @Html.HiddenFor(model => model.Stratum)
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">@Labels.NameE</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@Model.NameE</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">@Labels.NameF</label>
+                <div class="col-sm-10">
+                    <p class="form-control-static">@Model.NameF</p>
+                </div>
+            </div>
+
+            <div>
+                @Html.HifisLabelFor(model => model.IsSubscribed, new { @class = "col-sm-3" })
+                @Html.HifisEditorFor(model => model.IsSubscribed, "YesNo",new { @class = "col-sm-9" },true,null)
+            </div>
+
+            <div>
+                @Html.HifisListBoxFor(model => model.SelectedOrganizationIDs, ViewBag.OrganizationList as SelectList)
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="manageSubscriptionsSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="manageSubscriptionsCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    //Used by "RequiredIf" annotation for field RollUpID. This field is not required when editing only the Service Providers subscriptions for standard Look-Up values
+    var requiredIf = function () {
+        return "False";
+    }
+
+    var form = $("#manageSubscriptionsForm");
+
+    $(function () { form.hifisValidation(); });
+
+    $("#manageSubscriptionsSaveBtn").click(function () {
+
+        if (form.valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+
+            @Html.Partial("_Ajax", new AjaxViewModel()
+            {
+                Url = "'" + @Url.Content("~/LookupTables/AjaxManageSubscriptions") + "'",
+                Data = "form.serialize()",
+                OnSuccess = "onSuccessUpdateSubscriptions();",
+                OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.FailedToSave + "</p>\");",
+                OnComplete = "btn.attr(\"disabled\", false);",
+                Type="POST"
+            });
+        }
+    });
+
+    function onSuccessUpdateSubscriptions() {
+
+        displayNotification("success", "", "<p>@Labels.DefaultDataSavedMessage</p>");
+
+        $('#existingLookups').DataTable().ajax.reload(
+            function () {
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+             }
+         ); // Re-load the datatable
+
+        $("#manageSubscriptionsCloseBtn").click(); //Close the modal window on success
+    }
+</script>
+

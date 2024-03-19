@@ -1,0 +1,39 @@
+﻿@{
+    ViewBag.ViewTitle = Labels.DatabaseMaintenance;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@if (ViewBag.ActionStatus != null)
+{
+    <section class="alert alert-@((bool)ViewBag.ActionStatus ? Labels.Success : Labels.Danger)">
+        <p>
+            @Labels.Action: @ViewBag.ActionMessage<br />
+            @Labels.Result: @ViewBag.ResultMessage
+        </p>
+    </section>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Labels.Action</th>
+            <th>@Labels.Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="">
+
+                @using (Html.BeginForm("RebuildIndex", "Support", FormMethod.Post, new { id = "RebuildIndexForm", @class = "btn btn-default" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <a href="javascript:document.getElementById('RebuildIndexForm').submit()">
+                        <span class="text-nowrap">@Labels.RebuildIndex</span>
+                    </a>
+                }
+
+            </td>
+            <td>@Labels.RebuildIndexDesc</td>
+        </tr>
+    </tbody>
+</table>

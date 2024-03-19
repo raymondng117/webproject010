@@ -1,0 +1,39 @@
+﻿@model  List<PitFamilyMemberAnswerViewModel>
+
+<table id="FamilyMembers" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "ordering": false, "searching": false }'>
+    <thead>
+        <tr>
+            <th>@Labels.FamilyCode</th>
+            <th>@Labels.PitSurveyNo</th>
+            <th>@Labels.Gender</th>
+            <th>@Labels.Age</th>
+            <th>@Labels.Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.IsEmptyOrNull())
+        {
+            var i = 0;
+            foreach (var vm in Model)
+            {
+                <tr>
+                    <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTFamilyMemberTypes, Culture, vm.FamilyMemberRole)</td>
+                    <td>@vm.PitSurveyNo</td>
+                    <td>@(vm.GenderTypeID == null ? "" : WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTGenderTypes, Culture, vm.GenderTypeID))</td>
+                    <td>@vm.Age</td>
+                    <td>
+                        <a id="F_M_@i" href="javascript:;" qid="@vm.QuestionID" class="deleteButton noText">@Labels.Delete</a>
+                    </td>
+                    @{ i++;}
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<script>
+	if (typeof window.jQuery != 'undefined') {
+		// jQuery present
+		init_hifis();
+		SetFamilyQuestionAsAnswered();
+	}
+</script>

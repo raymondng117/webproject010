@@ -1,0 +1,304 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            // use this to reapply jQuery UI
+            function refreshJqueryUi() {
+                refreshRoomsJquery(); // _RoomsBeds_RoomJS.cshtml
+                refreshBedsJquery(); // _RoomsBeds_BedJS.cshtml
+
+                $(".addButton").button({ icons: { primary: "ui-icon-plusthick"} });
+                $(".deleteButton").button({ icons: { primary: "ui-icon-trash"} });
+                $(".noText").button("option", "text", false);
+
+                $('#stays-dock .client')
+                    .draggable({
+                        revert: true,
+                        snap: true,
+                    });
+            }
+
+            // CLIENT
+
+            function createClient(id, lastName, firstName, isExistingStay) {
+                return $('<span id="client-' + id + '" class="client ' + (isExistingStay ? 'existing' : '') + '   corner-all  -text-icon-primary" data-client-id="' + id + '"><span class=" -icon-primary glyphicon glyphicon-user"></span><span class=" -text">' + lastName + ', ' + firstName + '</span></span>')
+            }
+
+            function getClientElement(selector) { // accepts a client id (string) or html element
+                // is it a client id?
+                if (typeof selector === 'string') {
+                    return $('.client[data-client-id="' + selector +'"]');//document.getElementById("client-" + selector));
+                }
+
+                // is it this element?
+                selector = $(selector);
+                if (selector.hasClass('client')) {
+                    return selector;
+                }
+
+                // is it a child element?
+                var children = selector.find('.client');
+                if (children.count) {
+                    return children;
+                }
+
+                // no? must be a parent element.
+                return selector.closest('.client');
+            }
+
+            // SHELTER
+
+            function getShelterElement(selector) { // accepts a shelter id (string) or html element
+                // is it a shelter id?
+                if (typeof selector === 'string') {
+                    return $(document.getElementById("shelter-" + selector)); // using non-jquery selector because of '=' in ids
+                }
+
+
+                // is it this element?
+                selector = $(selector);
+                if (selector.hasClass('shelter')) {
+                    return selector;
+                }
+
+                // is it a child element?
+                var children = selector.find('.shelter');
+                if (children.count) {
+                    return children;
+                }
+
+                // no? must be a parent element.
+                return selector.closest('.shelter');
+            }
+
+            function getShelterIdOfDiv(element) {
+                var shelter = element.closest('.shelter');
+                if (shelter.length) { return shelter.attr('id').split('-').slice(1).join('-'); }
+                return '';
+            }
+
+            // Shelter defined in RoomsBeds.cshtml
+            function addShelter(shelter) {
+                var shelterDiv = document.createElement('div');
+                $(shelterDiv)
+                    .attr('id', 'shelter-' + shelter.id)
+                    .addClass('shelter')
+                    .append('<div class="shelter-name"><h2>' + shelter.name + '</h2></div>')
+                    .appendTo('#RoomsBeds');
+
+                var roomsDiv = document.createElement('div');
+                $(roomsDiv)
+                    .addClass('rooms')
+                    .appendTo(shelterDiv);
+
+                for (var i = 0; i < rooms.length; i++) {
+                    addRoom(rooms[i], roomsDiv);
+                }
+                // new room
+                $(shelterDiv).append('<div class="room-add"><a href="@Url.Action("AjaxAddRoom", "Organization")?shelterId=' + shelter.id + '" class="addButton noText">@Labels.AddRoom</a></div>');
+            }
+
+            function deleteShelter(shelterIdOrDiv) {
+                if (typeof roomIdOrDiv == 'string') {
+                    var shelterDiv = getShelterElement(shelterId);
+                } else {
+                    var shelterDiv = $(shelterIdOrDiv).closest('.shelter');
+                }
+
+                shelterDiv.hide(400, function() { $(this).remove() });
+            }
+
+            // ROOMS
+
+            function getRoomElement(selector) { // accepts a room id (string) or html element
+                // is it a room id?
+                if (typeof selector === 'string') {
+                    return $(document.getElementById('room-' + selector)); // using non-jquery selector because of '=' in ids
+                }
+
+                // is it this element?
+                selector = $(selector);
+                if (selector.hasClass('room')) {
+                    return selector;
+                }
+
+                // is it a child element?
+                var children = selector.find('.room');
+                if (children.count) {
+                    return children;
+                }
+
+                // no? must be a parent element.
+                return selector.closest('.room');
+            }
+
+            function getRoomsDiv(shelterId) {
+                return getShelterElement(shelterId).find('.rooms'); // using non-jquery selector because of '=' in ids
+            }
+
+            function getRoomId(element) {
+                var room = $(element).closest('.room');
+                if (room.length) { return room.attr('id').split('-').slice(1).join('-'); }
+                return '';
+            }
+
+            // Room defined in RoomsBeds.cshtml
+            function addRoom(room, roomsDivOrShelterId, refreshJqueryAfter) {
+                refreshJqueryAfter = (typeof refreshJqueryAfter === "undefined") ? false: refreshJqueryAfter;
+
+                if (typeof roomsDivOrShelterId == 'string') {
+                    var roomsDiv = getRoomsDiv(roomsDivOrShelterId);
+                } else {
+                    var roomsDiv = $(roomsDivOrShelterId).closest('.shelter').find('.rooms');
+                }
+
+                var roomDiv = $(document.createElement('div'));
+                roomDiv
+                    .css('display', 'none')
+                    .attr('id', 'room-' + room.id)
+                    .addClass('room')
+                    .append('<div class="room-delete"><a href="@Url.Action("AjaxRemoveRoom", "Organization")?roomId=' + room.id + '" class="deleteButton noText">Delete Room</a></div>')
+                    .append('<div class="room-name"><h5>' + room.name + '</h5></div>')
+                    .appendTo(roomsDiv);
+
+                var bedsDiv = document.createElement('div');
+                $(bedsDiv)
+                    .addClass('beds')
+                    .appendTo(roomDiv);
+
+                for (var i = 0; i < beds.length; i++) {
+                    addBed(beds[i], bedsDiv);
+                }
+                // new bed
+                roomDiv.append('<div class="bed-new"><div class="bed-add"><a href="@Url.Action("AjaxAddBed", "Organization")?roomId=' + room.id + '" class="addButton noText">@Labels.AddBed</a></div><div class="bed-new-box"><div class="bed-name">&nbsp;</div></div></div>');
+
+                if (refreshJqueryAfter) {
+                    refreshJqueryUi()
+                    roomDiv.show(400);
+                } else {
+                    roomDiv.show();
+                }
+            }
+
+            function deleteRoom(roomIdOrDiv) {
+                if (typeof roomIdOrDiv == 'string') {
+                    var roomDiv = getRoomElement(roomIdOrDiv);
+                } else {
+                    var roomDiv = $(roomIdOrDiv).closest('.room');
+                }
+        
+                roomDiv.hide(400, function () { $(this).remove() });
+            }
+
+            // BEDS
+
+            function getBedsDiv(roomId) { // note: "Beds" div and *not* "Bed" div
+                return $(document.getElementById('room-' + roomId)).find('.beds'); // using non-jquery selector because of '=' in ids
+            }
+
+            function getBedElement(selector) { // accepts a bed id (string) or html element
+                // is it a bed id?
+                if (typeof selector === 'string') {
+                    return $(document.getElementById('bed-' + selector)); // using non-jquery selector because of '=' in ids
+                }
+
+                // is it this element?
+                selector = $(selector);
+                if (selector.hasClass('bed')) {
+                    return selector;
+                }
+
+                // is it a child element?
+                var children = selector.find('.bed');
+                if (children.count) {
+                    return children;
+                }
+
+                // no? must be a parent element.
+                return selector.closest('.bed');
+            }
+
+            function getBedBoxElement(selector) { // accepts a bed id (string) or html element
+                return getBedElement(selector).find('.bed-box');
+            }
+
+            function getBedId(element) {
+                var bed = $(element).closest('.bed');
+                if (bed.length) { return bed.attr('id').split('-').slice(1).join('-'); }
+                return '';
+            }
+
+            function getBedElementByClient(clientSelector) {
+                var clientElement = getClientElement(clientSelector);
+                return clientElement.closest('.bed');
+            }
+
+            function getBedClientCount(bedElement) {
+                return bedElement.find('.client').length;
+            }
+
+            function isBedOccupied(bedElement) {
+                return Boolean(getBedClientCount(bedElement));
+            }
+
+            function updateBedOccupancy(bedElement) {
+                if (isBedOccupied(bedElement)) {
+                    markBedAsOccupied(bedElement);
+                } else {
+                    markBedAsOccupied(bedElement, false);
+                }
+            }
+
+            function markBedAsOccupied(bedElement, isOccupied) {
+                var bedBox = getBedBoxElement(bedElement);
+                if (typeof isOccupied === 'undefined' || isOccupied) {
+                     bedBox.addClass('bed-occupied');
+                } else {
+                     bedBox.removeClass('bed-occupied');
+                }
+            }
+
+            // Bed defined in RoomsBeds.cshtml
+            function addBed(bed, bedsDivOrRoomId, refreshJqueryAfter) {
+                refreshJqueryAfter = (typeof refreshJqueryAfter === "undefined") ? false : refreshJqueryAfter;
+
+                if (typeof roomsDivOrShelterId == 'string') {
+                    var bedsDiv = getBedsDiv(bedsDivOrRoomId);
+                } else {
+                    var bedsDiv = $(bedsDivOrRoomId);
+                }
+
+                var bedDiv = $('<div />');
+                bedDiv
+                    .css('display', 'none')
+                    .attr('id', 'bed-' + bed.id)
+                    .addClass('bed')
+                    .append('<div class="bed-delete"><a href="@Url.Action("AjaxRemoveBed", "Organization")?bedId=' + bed.id + '" class="deleteButton noText">Delete Bed</a></div>')
+                    .append(
+                        $('<div class="bed-box" />')
+                            .append('<span class="bed-icon"></span>')
+                            .append('<span class="bed-name">' + bed.name + '</span>')
+                            .append('<span class="bed-clients client-container"></span>')
+                    )
+                    .droppable()
+                    .appendTo(bedsDiv);
+
+                if (refreshJqueryAfter) {
+                    refreshJqueryUi();
+                    bedDiv.show(400);
+                } else {
+                    bedDiv.show();
+                }
+            }
+
+            function deleteBed(bedIdOrDiv) {
+                if (typeof roomIdOrDiv == 'string') {
+                    var bedDiv = getBedElement(bedIdOrDiv);
+                } else {
+                    var bedDiv = $(bedIdOrDiv).closest('.bed');
+                }
+
+                bedDiv.hide(400, function () { $(this).remove() });
+            }
+        </script>);
+}

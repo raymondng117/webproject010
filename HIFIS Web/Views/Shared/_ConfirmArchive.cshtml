@@ -1,0 +1,67 @@
+﻿<div id="dialog-confirm-archive" class="modal greyTransparentBackground mrgn-tp-20">
+  <div class="modal-dialog whiteBackground">
+    <div class="modal-content">
+      <div class="modal-header alert alert-danger">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h2 class="modal-title">@Labels.ttlArchiveConfirmation</h2>
+      </div>
+      <div class="modal-body">
+        <p>@Labels.ArchiveConfirmation</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">@Labels.Close</button>
+        <button type="button" id="modalSaveButton-archive" class="btn btn-primary">@Labels.Archive</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $(function () {
+                 $("#dialog-confirm-archive").appendTo("body");
+             });
+
+             var targetUrl_archive;
+             var rowToDelete_archive;
+
+             //Had to do this so that click event works on dynamically created buttons
+             $(document).on('click', '.deleteButton', function (e) {
+                 e.preventDefault();
+
+                 targetUrl_archive = $(this).attr("href");
+                 rowToDelete_archive = $(this).closest("tr");
+
+                 $("#dialog-confirm-archive").modal('toggle');
+             });
+
+             $(document).on('click', "#modalSaveButton-archive", function () {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "targetUrl_archive",
+                    OnSuccess = "deleteRow(); $(this).remove()",
+                    OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.DeleteFailure + "</p>\");",
+                    OnComplete = "$('#dialog-confirm-archive').modal('toggle');",
+                    Type="POST"
+                });
+            });
+
+             function deleteRow() {
+                 var rootTable = rowToDelete_archive.parents('table').DataTable();
+
+                 rootTable.row(rowToDelete_archive).remove().draw();
+
+                 if (window.location.href.indexOf("/Messages/List") != -1) {
+                     CheckForNewMessages();
+                 }
+
+                 displayNotification('success', '', "<p>@Labels.DeleteSuccess</p>");
+             }
+        </script>
+    );
+}
+

@@ -1,0 +1,82 @@
+﻿@*@model HIFIS.WEB.ViewModels.HousingPlacementAttemptViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.NewPlacementAttempt;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+<div id="dialog-confirm" class="hide" title="@Labels.EndPlacementConfirmationTitle">
+    <p>
+        <span class="glyphicon glyphicon-warning-sign align-left mrgn-rght-sm mrgn-bttm-md"></span>
+        @Labels.EndPlacementConfirmation
+    </p>
+</div>  
+
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#_PlacementVitals">
+          @Labels.PlacementDetails
+           <span class="caret pull-right mrgn-tp-sm"></span>
+        </a>
+      </h4>
+    </div>
+    <div id="_PlacementVitals" class="panel-collapse collapse">
+      <div class="panel-body">
+            @Html.Partial("_PlacementVitals", ViewBag.placementVitals as HousingPlacementVitalsViewModel)
+      </div>
+    </div>
+  </div>
+</div>
+
+@using (Html.BeginForm("NewAttempt", "HousingPlacements", FormMethod.Post, new { @class = "form-horizontal", id = "AttemptForm" }))
+{
+    @Html.HiddenFor(model => model.HousingPlacementID)
+    <div>
+        @Html.HifisEditorFor(model => model.AttemptedDate)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.ReasonHousingNotSercuredID, CachedTableTypes.HIFIS_ReasonHousingNotSecuredTypes, new {  @class = "selectListMaxWidth" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.caseworkerList as SelectList)
+    </div>
+    
+    <div class="form-group">
+        <div class="col-sm-4">
+            @Html.Label("")
+        </div>
+        <div class="col-sm-8">
+            <span id="FinalAttemptWarning" class="text-danger hide">          
+                <strong>@Labels.FinalAttemptWarning</strong>
+            </span>
+        </div>
+        @Html.HifisEditorFor(model => model.IsFinalAttempt, "YesNo", new { @class = "mrgn-lft-xs" })
+    </div>
+
+    <div>
+        @Html.HifisTextAreaFor(model => model.Comment, new { @class="wdth-strct-300 hght-strct-150" })
+    </div>
+    
+    <button class="saveButton">@Labels.Save</button>
+    @Html.ActionLink(Labels.Cancel, "Display", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousingPlacementID }, new { @class = "cancelButton" })
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">           
+		     $('input[name=IsFinalAttempt]').on('switchChange.bootstrapSwitch', function (event, state) {
+		         if (state)
+		             $('#FinalAttemptWarning').removeClass("hide");
+		         else
+		             $("#FinalAttemptWarning").addClass("hide");
+		     });
+        </script>
+    );
+}*@

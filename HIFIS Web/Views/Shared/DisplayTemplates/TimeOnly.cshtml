@@ -1,0 +1,10 @@
+﻿@model System.DateTime?
+
+@if (Model.HasValue)
+{
+    @Html.Raw(new DateTime(Model.Value.Ticks).ToString("h:mm tt"))
+}
+else
+{
+    @Html.Raw("&nbsp;&nbsp;:&nbsp;&nbsp; &nbsp;&nbsp;")
+}

@@ -1,0 +1,28 @@
+﻿@model ConsentViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+@Html.HiddenFor(model => model.ConsentID)
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.OrganizationID)
+        
+<div class="row">
+    @Html.HifisEditorFor(model => model.StartDate)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ExpiryDate)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.Comment)
+</div>
+
+@*<div class="row">
+    @Html.HifisEditorFor(model => model.AcceptYN, "YesNo")
+</div>*@
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.UploadedFile, "File")
+</div>

@@ -1,0 +1,20 @@
+﻿@model ProgramFixedCostViewModel            
+     
+@Html.HiddenFor(m => m.ProgramID)
+@Html.HiddenFor(m => m.ProgramFixedCostID)
+
+<div>
+    @Html.HifisEditorFor(m => m.Amount, "Money", new { @class = "money wdth-strct-150" })
+</div>
+<div>
+  @Html.HifisEditorFor(m => m.Description)
+</div>
+<div>
+  @Html.HifisEditorFor(m => m.DateFrom)
+</div>
+<div>
+  @Html.HifisEditorFor(m => m.DateTo)
+</div>
+<div>
+  @Html.HifisEditorFor(m => m.ShowOnReports, "YesNo")
+</div>

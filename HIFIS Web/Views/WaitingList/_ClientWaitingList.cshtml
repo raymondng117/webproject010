@@ -1,0 +1,30 @@
+﻿@model ClientWaitingListViewModel
+     
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.WaitingRequestPriorityTypeID, CachedTableTypes.HIFIS_WaitingRequestPriorityTypes)
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.WaitingRequestReasonTypeID, CachedTableTypes.HIFIS_WaitingRequestReasonTypes)
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.WaitingRequestStatusTypeID, CachedTableTypes.HIFIS_WaitingRequestStatusTypes)
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.StatusDate)
+</div>
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+</div> 

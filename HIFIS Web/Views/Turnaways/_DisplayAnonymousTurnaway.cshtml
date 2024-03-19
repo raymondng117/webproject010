@@ -1,0 +1,112 @@
+﻿@model TurnawayViewModel
+
+<div class=" displayView">
+    @Html.HiddenFor(model => model.OrganizationID)
+
+    @if (ViewBag.EnabledPresumedIndigenousIndicator == true)
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.PresumedAboriginalYN, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.PresumedAboriginalYN)
+        </div>
+    }
+
+    @if (ViewBag.EnabledObservedDisabilityIndicator == true)
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ObservedDisability, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ObservedDisability)
+        </div>
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AgeCategoryTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.AgeCategoryTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_AgeCategoryTypes, ViewBag.CurrentCulture)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.GenderTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.GenderTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, ViewBag.CurrentCulture)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.NumOfAdults, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.NumOfAdults)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.NumOfChildren, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.NumOfChildren)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReasonsForTurnawayTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.ReasonsForTurnawayTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonsForTurnawayTypes, ViewBag.CurrentCulture)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OnBehalfOfID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.OnBehalfOfID,
+                            List = ViewBag.Staff as SelectList
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisDisplayFor(model => model.ReferredByName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FromReferrerPlaceID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.FromReferralName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ToReferrerPlaceID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.ToReferralName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssociatedProgramIDs)
+        <div>
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                new MultipleItemSelectList
+                {
+                    IDs = Model.AssociatedProgramIDs,
+                    List = ViewBag.ProgramList as SelectList
+                })
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Comments)
+    </div>
+
+    <div class="row">
+        @if (RightsHelper.HasRight(UserRights.Turnaways_Edit, Model.OrganizationID))
+        {
+            @Html.ActionLink(Labels.Edit, "Edit", "Turnaways", new { id = Model.PrimaryClientID, turnawayID = Model.TurnawayID }, new { @class = "editButton", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+
+        @Html.ActionLink(Labels.Cancel, "List", "Turnaways", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+
+</div>

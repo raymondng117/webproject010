@@ -1,0 +1,83 @@
+﻿@model ClientStorageViewModel
+@{
+    if (Model.ClientID == null)
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_NewStorage;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_NewClientStorage;
+    }    
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("New", "Storage", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        if (Model.ReadOnlyVitals == null || Model.ClientID == null)
+        {
+            <div>
+                @Html.HifisAutocompleteFor(
+                    model => model.ClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.ReadOnlyVitals.ClientFullName
+                    , new AutocompleteViewModelOptions
+                    {
+                            OnSelect = "callGetROVitals();"
+                            , HiddenValue = true
+                            //, HiddenID ="ClientID"
+                    })
+            </div>     
+        }
+        else
+        {
+            @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        } 
+        
+        @Html.Partial("_Storage", Model)
+        
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				<button type="submit" class="saveButton">@Labels.Save</button>
+                @if (ViewBag.cID == null)
+                {
+                    @Html.ActionLink(Labels.Cancel, "List", "Storage", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+                else
+                {                
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "Storage", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+			</div>
+		</div>
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function callGetROVitals() {
+                 getROVitals($('#ClientID').val());
+             }
+
+            function OnTheFlyCallBack(objectID, formData) {
+
+                if ($("#ClientID").val() == "" || $("#ClientID").val() == " ") {
+                    getROVitals($("#ClientID").val());
+                }
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#ClientID").val(objectID);
+
+                getROVitals(objectID);
+            }
+        </script>   
+    );
+}
+
+

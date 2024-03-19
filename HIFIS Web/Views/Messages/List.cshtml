@@ -1,0 +1,234 @@
+﻿@model MessageListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_Messaging;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    int i = 0;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div id="radio" class="btn-group">
+    <ul class="list-unstyled">
+        <li class="btn-group btn-group-sm">
+            @{ string classlink1 = (!Model.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.messages30d, "List", null, new { @class = classlink1, alt=Labels.messages30d, aria_label = Labels.messages30d, @role = "button" })
+
+            @{ string classlink2 = (Model.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.All, "List", new { ShowAll = true }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+        </li>
+    </ul>
+</div>
+<div class="clearfix"></div>
+<ul class="nav nav-tabs mrgn-tp-md" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#Incoming" role="tab" data-toggle="tab">@Labels.Inbox</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#Outgoing" role="tab" data-toggle="tab">@Labels.Sent</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#MailingLists" role="tab" data-toggle="tab">@Labels.MailingLists</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane active" id="Incoming">
+                <div class="table-responsive">
+                    <table id="IncomingMessageTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order": [2, "desc"] }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.From</th>
+                                <th>@Labels.SubjectClickToRead</th>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.Priority</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        @if (!Model.IncomingMessages.IsEmptyOrNull())
+                        {
+                            <tbody>
+                                @foreach (MessageViewModel item in Model.IncomingMessages)
+                                {
+                                    <tr data-messageid="@item.MessageID" style="@(item.IsRead ? "" : "font-weight: bold;")"
+                                        data-read="@item.IsRead"
+                                        data-selected="False">
+                                        <td class="col-xs-3">
+                                            @item.Sender
+                                        </td>
+                                        <td class="col-xs-3">
+                                            @Html.ActionLink(item.MessageSubject, "Display", "Messages", new { id = item.MessageID, isOutgoing = false }, new { alt = item.MessageSubject, aria_label = item.MessageSubject })
+                                        </td>
+                                        <td class="DateIncoming col-xs-2">
+                                            @item.DeliverOn.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                        </td>
+                                        <td class="PriorityIncoming col-xs-2">
+                                            @item.PriorityName
+                                        </td>
+                                        <td class="text-center col-xs-2">
+
+                                            @if (RightsHelper.HasRight(UserRights.Messaging_Delete))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "DeleteFromIncoming", new { id = item.MessageID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        }
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane" id="Outgoing">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order": [2, "desc"] }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.To</th>
+                                <th>@Labels.SubjectClickToRead</th>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.Priority</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        @if (!Model.OutgoingMessages.IsEmptyOrNull())
+                        {
+                            <tbody>
+                                @foreach (MessageViewModel item in Model.OutgoingMessages)
+                                {
+                                    i++;
+                                    <tr data-messageid="@item.MessageID"
+                                        data-selected="False">
+                                        <td class="col-xs-3">
+                                            @if (item.RecipientsNames.Count > 1)
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colone@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;">
+                                                            @item.RecipientsNames.Count @Labels.Users
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colone@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @foreach (string name in item.RecipientsNames)
+                                                            {
+                                                                <li>@name</li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                foreach (string name in item.RecipientsNames)
+                                                {
+                                                    @name
+                                                }
+                                            }
+                                        </td>
+                                        <td class="col-xs-3">
+                                            @Html.ActionLink(item.MessageSubject, "Display", "Messages", new { id = item.MessageID, isOutgoing = true }, new { alt = item.MessageSubject, aria_label = item.MessageSubject })
+                                        </td>
+                                        <td class="DateOutgoing col-xs-2">
+                                            @item.DeliverOn.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                        </td>
+                                        <td class="PriorityOutgoing col-xs-2">
+                                            @item.PriorityName
+                                        </td>
+                                        <td class="text-center col-xs-2">
+                                            @if (RightsHelper.HasRight(UserRights.Messaging_Delete))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "DeleteFromOutgoing", new { id = item.MessageID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        }
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane" id="MailingLists">
+                <div class="table-responsive">
+                    <table id="MailingListsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.MailingListName</th>
+                                <th>@Labels.Active</th>
+                                <th>@Labels.MailListMembers</th>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        @if (!Model.MailingLists.IsEmptyOrNull())
+                        {
+                            <tbody>
+                                @foreach (MailingListViewModel item in Model.MailingLists)
+                                {
+                                    <tr data-mailinglistid="@item.MailListID"
+                                        data-selected="False">
+                                        <td class="col-xs-4">
+                                            @item.MailListName
+                                        </td>
+                                        <td class="col-xs-1">
+                                            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", item.isActive)
+                                        </td>
+                                        <td class="col-xs-3">
+                                            @if (item.MembersNames.Count > 1)
+                                            {
+                                            <div class="panel-default">
+                                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                    <a data-toggle="collapse" data-parent="#accordion" href="#colone@(item.MailListID)" class="btn btn-default btn-sm btn-block" style="text-align:left;">
+                                                        @item.MembersNames.Count @Labels.Users
+                                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                                    </a>
+                                                </div>
+                                                <div id="colone@(item.MailListID)" class="panel-collapse collapse">
+                                                    <ul class="pddng-lft-md">
+                                                        @foreach (string name in item.MembersNames)
+                                                            {
+                                                            <li>@name</li>
+                                                            }
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            }
+                                            else
+                                            {
+                                            @item.MembersNames.First()
+                                            }
+                                        </td>
+                                        <td class="col-xs-2">
+                                            @item.CreatedDate.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                        </td>
+                                        <td class="text-center col-xs-2">
+                                            @*@Html.ActionLink(Labels.Display, "DisplayMailingList", new { id = item.MailListID }, new { @class = "displayButton noText" })*@
+                                            @Html.ActionLink(Labels.Edit, "EditMailingList", new { id = item.MailListID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                            @Html.ActionLink(Labels.Delete, "DeleteMailingList", new { id = item.MailListID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        }
+                    </table>
+                </div>
+                @Html.ActionLink(Labels.NewMailListButton, "NewMailingList", null, new { @class = "addButton", alt=Labels.NewMailListButton, aria_label = Labels.NewMailListButton, @role = "button" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    @if (RightsHelper.HasRight(UserRights.Messaging_Send))
+    {
+        //Attaching id of value "New" for new messages because the ID needs to be something, and New is explicit and easy to filter on
+        @Html.ActionLink(Labels.NewMessageButton, "SendMessage", new { id = "New", type = MessageTypes.New }, new { @class = "addButton", alt=Labels.NewMessageButton, aria_label = Labels.NewMessageButton, @role = "button" })
+    }
+</div>

@@ -1,0 +1,336 @@
+﻿@model OutreachAddressViewModel
+
+@Html.HiddenFor(model => model.AddressID)
+@Html.HiddenFor(model => model.Country)
+@Html.HiddenFor(model => model.OnlyIfMandatory)
+@Html.HiddenFor(model => model.IsEncampment)
+
+
+@if (!Model.IsEncampment)
+{
+    <div>
+        @Html.HifisListBoxFor(model => model.GeoIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture), Model.OnlyIfMandatory, new { id = "ddlGeo", @class = "type-required" })
+    </div>
+}
+
+
+<div class="mrgn-tp-lg mrgn-bttm-md">
+    <div class="row justify-content-center" id="geolocation-info">
+    </div>
+    <div class="row justify-content-center" id="outreach-info">
+    </div>
+    <div class="form-group">
+        <div class="row">
+            @if (Model.IsEncampment)
+            {
+                <div class="col-sm-3 control-label">
+                    <label for="getLocation">@Labels.CaptureEncampmentLocation</label>
+                </div>
+            }
+            else
+            {
+                <div class="col-sm-3 control-label">
+                    <label for="getLocation">@Labels.CaptureServiceLocation</label>
+                </div>
+            }
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <button id="getCurrentLocationBtn" class="location-btn locationButton no-print" style="margin-right:5px;" name="getLocation" type="button" role="button">@Labels.GetCurrentLocation</button>
+                    <button id="showMapBtn" class="map-btn displayButton no-print" style="margin-right:5px; display:none;" name="getMapLocation" type="button" role="button" onclick="ToggleMapView()">@Labels.ChooseOnMap</button>
+                    <button id="showAddressBtn" class="address-btn editDDButton no-print" style="margin-right:5px;" name="getAddressLocation" type="button" role="button">@Labels.AddressForm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div id="mappingSection" class="col-sm-offset-2 col-sm-6" style="display: none; ">
+            <div id="MapContainer" style="height: 598px; width: 848px; border: thin solid black;">
+            </div>
+            <br />
+        </div>
+    </div>
+
+    <div class="row">
+        <div id="addressSection" style="display: none;">
+            <div>
+                @Html.HifisEditorFor(m => m.Latitude, null, new { id = "Latitude" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(m => m.Longitude, null, new { id = "Longitude" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=EnableMap" async defer></script>
+@* needed to override infobox styling *@
+<style>
+    .infobox-actions {
+        height: auto !important;
+    }
+</style>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     //Onload
+     //$(document).ready(function () {
+     //    onPageReady();
+     //});
+
+    function checkCoordsRequired() {
+
+        if ($('#IsEncampment').val() == 'False') {
+            if ($('#ddlGeo').val()) {
+                // append validation info message only for outreach not encampments
+                showOutreachValidationAlert("@Labels.LocationDataRequired");
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+     }
+</script>
+);
+
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+    // brings you to the form section to capture location data
+    $(document).on("click", "#getCurrentLocationBtn", function () {
+        getLocation();
+    });
+
+    // brings you to the form section to capture location data
+    $(document).on("click", "#showAddressBtn", function () {
+        // Show location section
+        $("#mappingSection").hide();
+        $("#addressSection").show();
+        init_hifis()
+    });
+
+    // brings you to the form section to capture location data
+    $(document).on("click", "#showMapBtn", function () {
+        // Show location section
+        $("#addressSection").hide();
+        $("#mappingSection").show();
+    });
+
+    $(document).ready(function () {
+        // if location is captured don't take the address
+        if ($("#Latitude").val() && $("#Longitude").val()) {
+            $('#IsLocationCaptured').val('True');
+            $('.address-btn').prop('disabled', true)
+            $('#addressSection :input[data-val-required], #addressSection :input[data-val-requiredif]').each(function () { $(this).rules('remove') });
+        }
+    });
+
+    /*
+     * Get location from browser section start
+     */
+
+
+    function getLocation() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // The user granted permission, and you can access the location data
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    storeCoords(latitude, longitude);
+                },
+                (error) => {
+                    showError(error)
+                }
+            );
+        } else {
+            // Geolocation is not available in this browser
+            console.log('Geolocation is not supported in this browser.');
+            // Display a user-friendly message explaining that location services are not supported
+            // and suggesting manual input or other alternatives.
+        }
+    }
+
+    function storeCoords(latitude, longitude) {
+        console.log("location success");
+        console.log('Found location: ' + latitude + ', ' + longitude);
+        $("#Latitude").val(latitude);
+        $("#Longitude").val(longitude);
+        $("#IsLocationCaptured").val('True');
+        showGeoLocationAlert("@Labels.LocationRecorded");
+
+        // now that coords are stored, we have to block address
+        //$('.address-btn').prop('disabled', true)
+        $('#addressSection :input[data-val-required], #addressSection :input[data-val-requiredif]').each(function () { $(this).rules('remove') });
+    }
+
+    function showError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                showGeoLocationAlert("@Html.Raw(Labels.GeolocationUserDeniedRequest)");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                showGeoLocationAlert("@Html.Raw(Labels.GeolocationUnavailable)");
+                break;
+            case error.TIMEOUT:
+                showGeoLocationAlert("@Html.Raw(Labels.GeolocationTimedOut)");
+                break;
+            case error.UNKNOWN_ERROR:
+                showGeoLocationAlert("@Html.Raw(Labels.GeolocationUnknownError)");
+                break;
+        }
+    }
+
+    function showGeoLocationAlert(errorText) {
+        var text = "";
+
+        text += '<div id="geolocation-info" class="col-md-offset-3 col-md-6 alert alert-info alert-dismissible" role="alert"><a href = "#" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a><p id="geo-info-text">';
+        text += errorText;
+        text += '</p></div>';
+
+        $("#geolocation-info").html(text);
+    }
+
+    function showOutreachValidationAlert(errorText) {
+        var text = "";
+
+        text += '<div id="outreach-info" class="col-md-offset-3 col-md-6 alert alert-info alert-dismissible" role="alert"><a href = "#" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></a><p id="outreach-info-text">';
+        text += errorText;
+        text += '</p></div>';
+
+        $("#outreach-info").html(text);
+    }
+
+    function makeLocationAlert(errorText) {
+    }
+
+    /*
+    * Get location from browser section end
+    */
+
+    /*
+    * Get location from mapclick start
+    */
+
+
+    var mapView = $('#mappingSection');
+    var map;
+    var infobox;
+
+    function EnableMap() {
+        $('.map-btn').show();
+    }
+
+    //When MapView/StandardView button is clicked
+    function ToggleMapView(){
+
+
+        if (mapView.is(':visible')) {
+            mapView.hide();
+            //$('#StandardView').show();
+            //$('#ToggleViewButton').html("@Labels.MapView");
+        }
+        else {
+            mapView.show();
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLocation = {
+                            lat: position.coords.latitude,
+                            long: position.coords.longitude
+                        };
+                        buildMap(currentLocation);
+                    },
+                    (error) => {
+                        buildMap();
+                    }
+                );
+            } else {
+                buildMap();
+            }
+        }
+    }
+
+
+    function handleMapClick(e) {
+        // remove existing Pins
+        map.entities.clear();
+
+        if (infobox !== undefined) {
+            infobox.dispose();
+        }
+
+        // Get the coordinates of the clicked location
+        const latitude = e.location.latitude;
+        const longitude = e.location.longitude;
+
+        // Do something with the coordinates (e.g., display them, perform further processing)
+        console.log('Clicked Latitude:', latitude);
+        console.log('Clicked Longitude:', longitude);
+
+        var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(latitude, longitude), {
+            draggable: false,
+            visible: true,
+            color: 'orangered',
+        });
+
+        map.entities.push(pin);
+
+        infobox = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(latitude, longitude), {
+            title: '@Labels.LocationSelected',
+            description: '@Labels.AcceptLocation',
+            width: 100,
+            height: 100,
+            actions: [
+                { label: 'Yes', eventHandler: function (e) { storeCoords(latitude.toFixed(6), longitude.toFixed(6)); infobox.dispose(); } },
+                { label: 'No', eventHandler: function (e) { map.entities.clear(); infobox.dispose(); } }
+            ]
+        });
+
+        infobox.setMap(map);
+    }
+
+    function buildMap(data) {
+
+        var options = {
+            credentials: '@ViewBag.Key',
+            enableSearchLogo: false
+        };
+
+        if (typeof data === 'object' && data !== null) {
+            var loc = eval(data);
+            options.center = new Microsoft.Maps.Location(loc.lat, loc.long);
+        }
+
+        // Create and assign the map object!
+        map = new Microsoft.Maps.Map('#MapContainer', options);
+
+        Microsoft.Maps.Events.addHandler(map, 'click', handleMapClick);
+
+        //if an existing location exists
+        if ($("#Latitude").val() && $("#Longitude").val()) {
+            var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location($("#Latitude").val(), $("#Longitude").val()), {
+                draggable: false,
+                visible: true,
+                color: 'orangered',
+            });
+
+            map.entities.push(pin);
+        }
+    }
+
+    /*
+     * Get location from mapclick end
+     */
+</script>
+);
+}
+

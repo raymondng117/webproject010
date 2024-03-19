@@ -1,0 +1,50 @@
+﻿@model ExcelViewModel
+
+<section id="Modal_Excel" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.Excel_ExcelOptions</h2>
+	</header>    
+
+	<div class="modal-body">        
+        @using (Html.BeginForm(Model.Action, Model.Controller, FormMethod.Post, new { @class = "form-horizontal", id="excelParamForm" }))
+        {
+            @Html.HiddenFor(m => m.DataSetName)
+            @Html.HiddenFor(m => m.ClientID)
+
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="col-sm-3 control-label">@Labels.DateStart</label>
+                    @Html.HifisEditorFor(m => m.DateStart, "", null, true, null)
+                </div>
+                <div class="col-md-12">
+                    <label class="col-sm-3 control-label">@Labels.DateEnd</label>
+                    @Html.HifisEditorFor(m => m.DateEnd, "", null, true, null)
+                </div>                        
+            </div>
+        }
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="excelGetBtn" class="excelButton">@Labels.Excel_GetExcel</button>
+		<button id="excelCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(function () { $("#excelParamForm").hifisValidation(); });
+
+    $("#excelGetBtn").click(function () {        
+
+        if ($("#excelParamForm").valid()) {
+            $("#excelParamForm").submit();
+        }
+    });
+    
+</script>
+
+

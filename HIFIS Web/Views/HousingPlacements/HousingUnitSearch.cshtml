@@ -1,0 +1,348 @@
+﻿@model HousingPlacementViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_HousingUnitSearch;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    string ajaxUrl = Url.Content("~/HousingPlacements/UnitSearchResultsJson/?HPID=" + Model.HousePlacementID + "&PCID=" + Model.ReadOnlyVitals.ClientID + "&PS=" + Model.PlacementStatus);
+
+    if (ViewBag.IsGeoRegionEnabled)
+    {
+        ajaxUrl += "&GeoID=" + ViewBag.CurrentGeoRegionID;
+    }
+    
+    foreach(short s in Model.HTS)
+    {
+        ajaxUrl += "&HTS=" + s;
+    }
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.HiddenFor(model => model.PlacementStatus)
+@Html.Partial("_HousingPlacementDetails", Model)
+
+<p><a id="openFilters" aria-label=@Labels.FilterOptions.ToString() aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+<button id="ToggleViewButton" style="display: none;" onclick="ToggleMapView()">@Labels.MapView</button></p>
+
+<div id="MapView">
+    <div>
+        <span class="legendLabel">@Labels.Available:</span><div class="legendBox availableStandard">&nbsp;</div> / <div class="legendBox availableMap">&nbsp;</div>
+        <span class="legendLabel" style="padding-left: 10px;">@Labels.Shareable:</span><div class="legendBox shareable">&nbsp;</div>
+        <span class="legendLabel" style="padding-left: 10px;">@Labels.Secured:</span><div class="legendBox secured">&nbsp;</div>
+        <span class="legendLabel" style="padding-left: 10px;">@Labels.Occupied:</span><div class="legendBox occupied">&nbsp;</div>
+        <span class="legendLabel" style="padding-left: 10px;">@Labels.TemporarilyUnavailable:</span><div class="legendBox tempUnavailable">&nbsp;</div>
+        </div>
+    <div>
+        @* Canvas draws to full size of parent div but places where it ends so size must be set. *@
+        <div id="MapContainer" style="height:575px; width:848px;">
+            <span id="noMapPins" style="display: none;">@Labels.NoMapPins</span>
+</div>
+    </div>
+</div>
+
+<div id="StandardView" class="row">
+    <section class="col-md-12">
+        <div>
+            <div class="clearfix"></div><br />
+            <div class="table-responsive">
+                <table id="unitListTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                    { "width": "13%", "data": "orgs", "orderable": false, "type": "string"},
+                                                                    { "width": "18%", "data": "address", "orderable": false, "type": "string"},
+                                                                    { "width": "12%", "data": "type", "orderable": false, "type": "string"},
+                                                                    { "width": "13%", "data": "status", "orderable": false, "type": "string"},
+                                                                    { "width": "10%", "data": "rent", "orderable": false, "type": "string"},
+                                                                    { "width": "24%", "data": "properties", "orderable": false, "type": "string"},
+                                                                    { "width": "10%", "data": "actions", "orderable": false, "type": "string"}
+                                                                ],
+                                                                "order": [ [0, "desc"] ],
+                                                                "serverSide": true,
+                                                                "processing": true,
+                                                                "bFilter" : false,
+                                                                "ajax": "@ajaxUrl"@*"@Url.Content("~/HousingPlacements/UnitSearchResultsJson/?HousePlacementID=" + Model.HousePlacementID + "&PrimaryClientID=" + Model.ReadOnlyVitals.ClientID + "&PlacementStatus=" + Model.PlacementStatus)"*@}'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.ServiceProviders</th>
+                            <th>@Labels.Address</th>
+                            <th>@Labels.HousingType</th>
+                            <th>@Labels.UnitStatus</th>
+                            <th>@Labels.Rent/@Labels.Month</th>
+                            <th>@Labels.Properties</th>
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>        
+</div>
+<div class="clearfix"></div>
+<div class="mrgn-tp-md">
+        
+@if (RightsHelper.HasRight(UserRights.HousingPlacements_Attempt_Add, Model.OrganizationID))
+{
+    @Html.ActionLink(Labels.NewPlacementAttempt, "GetNewAttemptForm", "HousingPlacements", new { clientID = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "wb-lbx lbx-modal addBingButton", alt=Labels.NewPlacementAttempt, aria_label = Labels.NewPlacementAttempt, @role = "button" });
+}
+           
+@if (RightsHelper.HasRight(UserRights.HousingPlacements_Edit, Model.OrganizationID))
+{     
+    @Html.ActionLink(Labels.Back, "Display", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+}
+else
+{
+    @Html.ActionLink(Labels.Back, "ClientList", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+}
+</div>
+
+<!-- Overlay Panel -->
+<section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.FilterOptions</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Partial("_UnitSearchFilters", new UnitSearchFilterViewModel() { HPID = Model.HousePlacementID, PCID = Model.ReadOnlyVitals.ClientID, PS = Model.PlacementStatus, HTS = Model.HTS, GeoID = ViewBag.CurrentGeoRegionID })
+    </div>
+</section>
+
+<link href="@Url.Content("~/Content/Stylesheets/HifisModules/HousingUnitSearch.css")" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=EnableMap" async defer></script>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            $(function(){
+                $.ajax({
+                    url: "@Url.Action("GetUsedHousingTypes", "HousingUnit")",
+                    type: "POST"
+                }).done(function (result) {
+                    $('#HTS').append(makeOptions(result.data));
+                    selectHTOptions();
+                }).always(function () {
+                    reinitSelect2($('#HTS'));
+                });
+            });
+
+            //open the filter panel
+            $('#openFilters').on('click', function () {
+                if ($("#filter-panel").hasClass('open'))
+                    $('#filter-panel').trigger('close.wb-overlay');
+                else
+                    reinitSelect2($('#HTS'));
+                $('#filter-panel').trigger('open.wb-overlay');
+            });
+
+            //when the filter panel opens reinit select2s
+            $(document).on('open.wb-overlay', function (event) {
+                doSelect2Init();
+            });
+
+            //selects the items that were preselected in the model
+            function selectHTOptions() {
+                var types = @Html.Raw(Json.Encode(Model.HTS))
+                for(var i = 0; i < types.length; i++)
+                {
+                    $('#HTS option[value=' + types[i] + ']').attr('selected','selected');
+                }
+            }
+
+            //on unit list redraw reinit hifis scripts and reinit lightboxes
+            $('#unitListTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+
+            //close filter panel
+            $('#closeFilters').on('click', function () {
+                $("#filter-panel").trigger("close.wb-overlay");
+            });
+
+            //reapplies container class to the large select2 drop downs
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                select2InitFunctions.push(function () {
+                    selector.select2(
+                    {
+                        allowClear: true,
+                        placeholder: $("#DropdownPlaceholder").val(),
+                        dropdownAutoWidth: true,
+                        containerCssClass: "custom-select2-container"
+                    });
+                });
+                doSelect2Init();
+            }
+
+            //
+            // The following JS is for bing map view.
+            //
+            var pinInfoBox;
+            var map;
+            var mapView = $('#MapView');
+
+            function EnableMap(){
+                $('#ToggleViewButton').show();
+            }
+
+            function ToggleMapView(){
+
+                if (mapView.is(':visible')) {
+                    mapView.hide();
+                    $('#StandardView').show();
+                    $('#ToggleViewButton').html("@Labels.MapView");
+                }
+                else {
+                    $.ajax({
+                        url: "@Url.Action("GetUnitMapPins", "HousingPlacements")",
+                        type: "POST",
+                        data: $("#unitSearchFilterForm").serialize()
+                    }).done(function (data) {
+
+                        if (map !== undefined) {
+                            map.dispose();
+                        }
+
+                        $('#StandardView').hide();
+                        mapView.show();
+                        $('#ToggleViewButton').html("@Labels.StandardView");
+
+                        if(data.count > 0){
+                            $('#noMapPins').hide();
+                            buildMap(data);
+                        }
+                        else{
+                            $('#noMapPins').show();
+                        }
+
+                    }).fail(function () {
+                        alert('@Labels.MapViewNotAvailable');
+                        return;
+                    });
+                }
+            }
+
+            function buildMap(data){
+                var boundBox = Microsoft.Maps.LocationRect.fromEdges(data.maxLat, data.minLong, data.minLat, data.maxLong);
+                map = new Microsoft.Maps.Map('#MapContainer', {
+                    credentials:'@ViewBag.Key',
+                    enableSearchLogo: false,
+                    //center: new Microsoft.Maps.Location(data.centerLat, data.centerLong),
+                    bounds: boundBox,
+                });
+
+                var obj = eval(data);
+                var pinLayer = new Microsoft.Maps.Layer();
+                for (var i = 0; i < obj.count; ++i)
+                {
+                    var htmlcont = "";
+                    if(obj.data[i].shareable === "true")
+                    {
+                        htmlcont = '@Url.Content("~/Content/images/Icons/iconOrange.png")';
+                    }
+                    else
+                    {
+                        htmlcont = GetIcon(obj.data[i].occupancy);
+                    }
+                    pinOptions = {
+                        draggable: false,
+                        visible: true,
+                        icon: htmlcont,
+                    };
+                    var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(obj.data[i].latitude, obj.data[i].longitude), {
+                        icon: htmlcont,
+                    });
+                    pin.Title = obj.data[i].houseID;
+                    Microsoft.Maps.Events.addHandler(pin, 'click', dinfo);
+                    pinLayer.add(pin);
+                }
+
+                map.layers.insert(pinLayer);
+
+                var infoLayer = new Microsoft.Maps.Layer();
+
+                pinInfoBox = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(0, 0), { visible: false });
+                pinInfoBox.setMap(map);
+            }
+
+            function dinfo(e){
+
+                var infoContent;
+
+                $.ajax({
+                    url: "@Url.Action("GetPinInfo", "HousingPlacements")",
+                    type: "POST",
+                    data: { "houseID": e.target.Title }
+                }).done(function (data) {
+
+                    infoContent = '<div class="infoBoxHeader" style="width:300px;"> ' +
+                                    '<p><span class="color-accent"><strong>' + data.address + '</strong></span>' +
+                                    '<a class="glyphicon glyphicon-remove align-right" href="javascript:void(0)" onClick="hideInfobox()"></a></p><hr />' +
+                                    ' <table class="wdth-100"><tbody> ' +
+                                                        ' <tr><th>@Labels.HousingType</th><td>' + data.housingType + '</td></tr> ' +
+                                                        ' <tr><th>@Labels.UnitStatus</th><td>' + data.unitStatus + ' (' + data.statusDate + ')</td></tr> ' +
+                                                        ' <tr><th>@Labels.FloorCount</th><td>' + data.floor + '</td></tr>' +
+                                                        ' <tr><th>@Labels.Bedrooms</th><td>' + data.bedrooms + '</td></tr>' +
+                                                        ' <tr><th>@Labels.Rent/@Labels.Month</th><td>' + data.rent + '</td></tr> ' +
+                                                        ' <tr><th>@Labels.Properties</th><td>' + data.properties + '</td></tr> ' +
+                                                        ' </tbody></table>' +
+                                    '<a class="viewButton btn btn-default btn-sm" target="_blank" href="@Url.Action("Display", "HousingUnit")/' + data.houseID + '"><span class=\"glyphicon glyphicon-picture\"></span> @Labels.FullDetails</a>';
+                    //if occupancy status is 1 (available), null (handling old bad data that should be available), PR shareable AND its not temporarily unavailable, AND you have the rights to book in at this unit.
+                    if((data.occupancy === "1" || data.occupancy === "" || data.shareable === "true") && (data.occupancy !== "5") && (data.hasRight === "true") ){
+                        infoContent += '<a class="selectHousing btn btn-default btn-sm wb-lbx lbx-modal" href="@Url.Content("~/HousingPlacements/GetSecureUnitForm/?placementID=" + Model.HousePlacementID + "&clientID=" + Model.ReadOnlyVitals.ClientID + "&status=" + Model.PlacementStatus)' + "&houseID=" + data.houseID + '"><span class=\"glyphicon glyphicon-plus\"></span> @Labels.SecureUnit</a></div>';
+                    }
+
+                    map.setView({ center: e.location});
+                    pinInfoBox.setOptions({ visible: true, offset: new Microsoft.Maps.Point(0, -20), htmlContent: infoContent});
+                    pinInfoBox.setLocation(e.location);
+                    $('.wb-lbx').trigger("wb-init.wb-lbx");
+                });
+            }
+
+            function updateMap() {
+                $.ajax({
+                    url: "@Url.Action("GetUnitMapPins", "HousingPlacements")",
+                    type: "POST",
+                    data: $("#unitSearchFilterForm").serialize()
+                }).done(function (data) {
+
+                    if (map !== undefined) {
+                        map.dispose();
+                    }
+
+                    if(data.count > 0){
+                        $('#noMapPins').hide();
+                        buildMap(data);
+                    }
+                    else{
+                        $('#noMapPins').show();
+                    }
+
+                }).fail(function () {
+                    alert('@Labels.MapViewNotAvailable');
+                    return;
+                });
+            }
+
+            function hideInfobox(e) {
+                pinInfoBox.setOptions({ visible: false });
+            }
+
+            //Returns icon based on unit status
+            function GetIcon(occupancy)
+            {
+                if (occupancy === "2") {
+                    return '@Url.Content("~/Content/images/Icons/iconPink.png")';
+                }
+                else if (occupancy === "3" || occupancy === "4") {
+                    return '@Url.Content("~/Content/images/Icons/iconRed.png")';
+                }
+                else if (occupancy === "5") {
+                    return '@Url.Content("~/Content/images/Icons/iconYellow.png")';
+                }
+
+                return '@Url.Content("~/Content/images/Icons/iconBlue.png")';
+            }
+</script>);
+}

@@ -1,0 +1,41 @@
+﻿@*@model ConfirmActionViewModel*@
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+    
+}
+
+<div id="dialog-confirmCA-action" class="modal mrgn-tp-20">
+    <div class="modal-dialog whiteBackground">
+        <div id="confirmActionModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <button type="button" id="modalXButton_ConfirmCoordinatedAccessAction" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h2 class="modal-title">@Labels.Reminder</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.CoordinatedAccessConsentRemindeText </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="modalCloseButton_ConfirmCoordinatedAccessAction" class="btn btn-default modalCloseButton" data-dismiss="modal">@Labels.OK</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+                $("#dialog-confirmCA-action").appendTo("body");
+            });
+            $(function () {
+
+                $('#dialog-confirmCA-action').modal('toggle');
+
+            });
+           
+           
+    
+        </script>
+);
+}

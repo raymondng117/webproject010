@@ -1,0 +1,45 @@
+﻿@model System.String
+@{
+    string lang = "en-CA";
+    if(HttpContext.Current.Session["CurrentCulture"] != null)
+    {
+        lang = HttpContext.Current.Session["CurrentCulture"].ToString();      
+    }
+}
+
+<script src="~/Scripts/Hifis/tinymce/tinymce.min.js" type="text/javascript"></script>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script>
+            tinyMCE.init({
+                mode: "specific_textareas",
+                editor_selector: "mceEditor_Print",
+                entity_encoding : "raw",
+                plugins: "print,wordcount,noneditable,autoresize",
+                menubar: false,
+                toolbar: 'print',
+                resize: "both",
+			    contextmenu: false,
+			    statusbar: false,		
+			    language : '@lang', 
+                setup: function (ed) {
+                    ed.on('Init', function (event) {
+                        $('.editor-field').find('div').each(function () {
+                            $(this).css('padding-bottom', '0px');
+                        });
+                    });
+			        ed.on('PreInit', function (event) {
+			            var ed = event.target, dom = ed.dom;
+					    dom.setAttrib(ed.getBody(), 'contenteditable', 'false');
+				    });
+			    }
+		    }); 
+        </script>
+    );
+}
+
+<div class="editor-field">
+    @Html.TextAreaFor(model => model, new { @class = "mceEditor_Print" })
+</div>

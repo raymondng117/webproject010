@@ -1,0 +1,100 @@
+﻿@model List<AuditViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientActivityLog;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+    
+    string ajaxUrl = Url.Content(String.Format("~/ClientTombstone/ClientActivityLogJson?clientID={0}",
+                                    new object[] { ViewBag.ClientID }));
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="row">
+    <div class="col-sm-12">
+        <div id="radio" class="btn-group mrgn-bttm-md">
+            <div class="btn-group" role="group" id="filterBtnGroup">
+                <button type="button" class="btn btn-primary btn-sm" id="show30Days">@Labels.messages30d</button>
+                <button type="button" class="btn btn-default btn-sm" id="show6Months">@Labels.messages6m</button>
+                <button type="button" class="btn btn-default btn-sm last-btn-group-element" id="showAll">@Labels.All</button>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="table-responsive">
+            <table id="logsTable" class="wb-tables table table-striped table-hover"
+                   data-wb-tables='{ "columns": [
+                                               {"width": "20%", "data": "userName" },
+                                               {"width": "20%", "data": "orgName" },
+                                               {"width": "20%", "data": "moduleName" },
+                                               {"width": "20%", "data": "message" },
+                                               {"width": "20%", "data": "timeStamp" }
+                                            ],
+                                "info": false,
+                                "processing": true,
+                                "order": [[4, "desc"]],
+                                "ajax": "@ajaxUrl"}'>
+                <thead>
+                    <tr>
+                        <th>@Labels.User</th>
+                        <th>@Labels.ServiceProvider</th>
+                        <th>@Labels.ModuleType</th>
+                        <th>@Labels.Description</th>
+                        <th>@Labels.Date</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row mrgn-tp-md">
+    <div class="col-sm-12">
+        <div class="btn-group">
+            @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+            {
+                @Html.ActionLink(Labels.DisplayVitalsHistory, "ClientVitalsHistoryList", "ClientTombstone", new { id = ViewBag.ClientID }, new { @class = "displayButton mrgn-rght-sm", alt=Labels.DisplayVitalsHistory, aria_label=Labels.DisplayVitalsHistory, @role = "button" })
+            }
+            @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+            {
+                @Html.ActionLink(Labels.DisplayClientStateHistory, "ClientStateHistoryList", "ClientTombstone", new { id = ViewBag.ClientID }, new { @class = "displayButton", alt=Labels.DisplayClientStateHistory, aria_label=Labels.DisplayClientStateHistory, @role = "button" })
+            }
+        </div>
+    </div>
+</div>
+
+    @using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+
+            var baseAjaxUrl = '@ajaxUrl';
+
+            $('#show30Days').on('click', function () {
+                $('#logsTable').DataTable().ajax.url(baseAjaxUrl + '&filterType=1').load(null, false);
+                markSelectedButton($(this));
+            });
+            $('#show6Months').on('click', function () {
+                $('#logsTable').DataTable().ajax.url(baseAjaxUrl + '&filterType=2').load(null, false);
+                markSelectedButton($(this));
+            });
+            $('#showAll').on('click', function () {
+                $('#logsTable').DataTable().ajax.url(baseAjaxUrl + '&filterType=3').load(null, false);
+                markSelectedButton($(this));
+            });
+
+            function markSelectedButton(selectedButton) {
+                $("#filterBtnGroup").children().each(function () {
+                    if (this.id === selectedButton.attr('id')) {
+                        $(this).removeClass('btn-default');
+                        $(this).addClass('btn-primary');
+                        $(this).blur();
+                    } else {
+                        $(this).removeClass('btn-primary');
+                        $(this).addClass('btn-default');
+                    }
+                });
+            }
+
+            </script>);
+    }

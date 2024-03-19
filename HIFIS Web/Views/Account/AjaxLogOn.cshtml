@@ -1,0 +1,147 @@
+﻿@model LogOnModel
+
+<section id="Modal_AjaxLogin" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h1 class="modal-title">@Labels.logIn</h1>
+    </header>
+    <div class="modal-body">
+        @if (ViewBag.ChangeOrgTitle == null)
+        { //This means it was an error on an ajax request and not just a change org request
+            <section>
+                <details class="alert alert-danger" open="open">
+                    <summary class="h3">
+                        <h3>Something Went Wrong</h3>
+                    </summary>
+                    <p>It looks like something went wrong while loading this form.</p>
+                    <p>Please login and try again.</p>
+                </details>
+            </section>
+        }
+        else
+        {
+            <input id="IsChangeOrgForm" type="hidden" value="true" />
+        }
+
+        @using (Html.BeginForm("LogOn", "Account", FormMethod.Post, new { @class = "form-horizontal", id = "modalLoginForm" }))
+        {
+            @Html.Partial("_LogOn", Model)
+        }
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="modalLoginBtn" class="saveButton">@Labels.logIn</button>
+        <button id="modalLoginCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () { $("#modalLoginForm").hifisValidation(); });
+
+    $("#modalLoginBtn").click(function () {
+
+        if ($("#modalLoginForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/Account/LogOn")",
+                type: "POST",
+                data: $("#modalLoginForm").serialize()
+
+            }).done(function (data) {
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+
+                    displayNotification("success", "@Labels.Success", "@Labels.LoginSuccessModal");
+
+                    if (data.Result.IsFirstLogon) {
+                        window.location.href = "@Url.Action("ChangePassword", "Account")";
+                    }
+                    else {
+
+                        if ($('#IsChangeOrgForm').val()) {
+                            location.reload();
+                        }
+                        else {
+                            $("#modalLoginCloseBtn").click(); //Close the modal window on success
+                        }
+                    }
+                }
+                else {
+                    var errorList = data.ErrorList;
+                    if (errorList != null) {
+                        $.each(errorList, function (index, item) {
+                            displayNotification("error", "@Labels.Error", item);
+                        });
+                    }
+                    else {
+                        displayNotification("error", "@Labels.Error", "@Labels.LoginFailModal");
+                    }
+                    $("#UserName").val("");
+                    $("#Password").val("");
+                    $("#OrganizationID").val('').trigger('change');
+                }
+            });
+        }
+    });
+
+</script>
+
+
+<script type="text/javascript">
+    $(function () {
+        $('#clientTimezone').val(new Date().getTimezoneOffset());
+
+        var lastUserName;
+
+        $("#UserName").blur(function () {
+            if ($("#UserName").val() != "")
+                twoFactorAuthentication();
+        });
+
+        $("#reloadSP").click(function () {
+            twoFactorAuthentication(true);
+        });
+
+        function twoFactorAuthentication(forceReload) {
+
+            if (forceReload || lastUserName != $("#UserName").val() && $("#UserName").val().trim() != "") {
+                lastUserName = $("#UserName").val();
+
+                $.ajax({
+                    url: "@Url.Content("~/Account/TwoFactorAuthentication")",
+                    type: "POST",
+                    data: {
+                        __RequestVerificationToken: gettoken(),
+                        userName: $('#UserName').val(), isTwoFactor: "@Model.EnableSecurityToken"
+                    },
+                    contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                });
+            }
+        }
+
+        function gettoken() {
+            var token = '@Html.AntiForgeryToken()';
+            token = $(token).val();
+            return token;
+       }
+
+    });
+
+    if (document.readyState === 'complete') {
+        var requiredIf = function () {
+            var value = document.querySelector("#EnableSecurityToken").getAttribute("value");
+            return value === "True";
+        }
+    }
+
+</script>

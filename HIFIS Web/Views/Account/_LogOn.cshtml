@@ -1,0 +1,95 @@
+﻿@model LogOnModel
+
+@Html.Hidden("clientTimezone")
+@Html.HiddenFor(m => m.ReturnUrl)
+@Html.HiddenFor(m => m.EnableSecurityToken)
+@Html.AntiForgeryToken()
+
+
+@if (ViewBag.Outdated == true)
+{
+    <div class="form-group">
+        @Html.HifisLabelFor(m => m.UserName, new { @class = "col-sm-4 control-label" })
+        <div id="user" class="input-group col-sm-8" style="width:200px;">
+            @Html.TextBoxFor(m => m.UserName, new { @class = "col-sm-4-offset form-control align-left mrgn-lft-md", style = "", disabled = true })
+
+            <div class="input-group-addon pointerCursor" id="reloadSP"><span class='glyphicon glyphicon-refresh'></span></div>
+
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <div id="pass">
+            @Html.HifisLabelFor(m => m.Password, new { @class = "col-sm-4 control-label" })
+            <div class="col-sm-8" style="padding-left:15px;">
+                <div style="padding-left:15px;">
+                    @Html.HifisEditorFor(m => m.Password, null, new { @disabled = true, @autocomplete = "off" }, true)
+                </div>
+            </div>
+        </div>
+    </div>
+    /*<div id="pass">
+        @Html.HifisEditorFor(m => m.Password, null, new { disabled = true, autocomplete = "off" })
+    </div>*/
+}
+else
+{
+    <div class="form-group">
+        @Html.HifisLabelFor(m => m.UserName, new { @class = "col-sm-4 control-label" })
+        <div id="user" class="input-group col-sm-8" style="width:200px;">
+            @Html.TextBoxFor(m => m.UserName, new { @class = "col-sm-2-offset form-control align-left mrgn-lft-md", style = "" })
+
+            <div class="input-group-addon pointerCursor" id="reloadSP"><span class='glyphicon glyphicon-refresh'></span></div>
+
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div id="pass">
+            @Html.HifisLabelFor(m => m.Password, new { @class = "col-sm-4 control-label" })
+            <div class="col-sm-8" style="padding-left:15px;">
+                <div style="padding-left:15px;">
+                    @Html.HifisEditorFor(m => m.Password, null, new { @autocomplete = "off" }, true)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    /*<div id="pass">
+        @Html.HifisEditorFor(m => m.Password, null, new { autocomplete = "off" })
+    </div>*/
+
+    <div class="form-group">
+        <div id="UserOrganizationsDropdown">
+            @if (ViewBag.IsChangeOrg == true)
+            {
+                @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "col-sm-4 control-label"})
+                <div class="col-sm-8" style="padding-left:15px;">
+                    <div style="padding-left:15px;">
+                        @Html.HifisEditorFor(model => model.OrganizationID, ViewBag.OrgLists as SelectList, "DropDownList", new { data_loader = true }, true)
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+@if (Model.EnableSecurityToken)
+{
+    <div>
+        @Html.HifisEditorFor(m => m.SecurityToken)
+    </div>
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+            if("@ViewBag.Outdated" === "True"){
+                $("#btnLogin").prop('disabled', true);
+            }
+</script>);
+}
+
+
+
+

@@ -1,0 +1,68 @@
+﻿@model ContinuumCategoryViewModel
+
+<section id="Modal_UpdateCategory" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.HousingContinuum_UpdateCategory - @Model.Name</h2>
+    </header>
+    <div class="modal-body">
+        @using (Html.BeginForm("updateCategory", "Continuum", FormMethod.Post, new { @class = "form-horizontal", id = "updateCategoryForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+            @Html.HiddenFor(m => m.ContinuumID)
+            @Html.HiddenFor(m => m.ContinuumCategoryID)
+            @Html.HiddenFor(m => m.Sequence)
+            @Html.HiddenFor(m => m.Name)
+            @Html.HiddenFor(m => m.SelectedHouseTypes)
+
+            @Html.HifisEditorFor(m => m.RollupId, ViewBag.RollupHousingTypes as SelectList)
+        }
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="updateCategorySaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="updateCategoryCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () { $("#updateCategoryForm").hifisValidation(); });
+
+    $("#updateCategorySaveBtn").click(function () {
+
+        if ($("#updateCategoryForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/Continuum/UpdateCategory")",
+                type: "POST",
+                data: $("#updateCategoryForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#categoryTable').DataTable().ajax.reload(function () {
+                        $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        $(".expandableSummary").trigger("wb-init.wb-details");
+                    }); // Re-load the datatable
+
+                    $("#updateCategoryCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>

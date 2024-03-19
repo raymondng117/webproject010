@@ -1,0 +1,129 @@
+﻿@model dynamic
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script src="@Scripts.Url("~/Scripts/AdmissionModule")" id="Scripts_hifis_AdmissionModule">
+        </script>
+    );
+}
+
+
+<!-- JavaScript _SharedGlobalVar -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript" id="Script_SharedGlobalVar">
+
+                //***************************************************************************
+                //*
+                //*   Global variables
+                //*
+                //****************************************************************************
+
+                var jsArray = [];
+                var family = null;
+
+                var selectedClient = null;
+                var selectedToolBarBtn = null;
+                var selectedBookedInClient = null;
+                var selectedClientValues_BookIn = {};
+
+                var deleteID = "";
+                var clientIDs = null;
+                var dateTime_Now = "@DateTime.Now.ToShortDateString()";
+                var currentLocationPathname = location.pathname;
+                var archivedInt = @((int)HIFIS.ENUMS.CommonClasses.ClientStateTypes.Archived)
+                var deceasedInt = @((int)HIFIS.ENUMS.CommonClasses.ClientStateTypes.Deceased);
+                var ServiceRestrictionModules_Stays = '@((int)ServiceRestrictionModules.Stays)';
+                var HasRight_Barred_Override = '@RightsHelper.HasRight(UserRights.Barred_Override)';
+
+                var index = 0;
+                var flag = false;
+
+                var session_currentOrg = '@Session["currentOrg"]';
+                var session_BedDisplayExpanded = '@Session["BedDisplayExpanded"]';
+                var session_IsWithFamily = '@Session["IsWithFamily"]';
+
+                var URL_Admission_DeleteReservation = '@Url.Action("DeleteReservation", "Admissions", null)';
+                var URL_Admission_SheltersAdmissionsStatsJson = '@Url.Action("SheltersAdmissionsStatsJson", "Admissions", null)?GeoRegionID=';
+                var URL_Admission_ChangeClientBed = '@Url.Action("ChangeClientBed", "Admissions", null)';
+                var URL_Admission_ClientAdmissions = '@Url.Action("ClientAdmissions", "Admissions", null)?id=';
+                var URL_Admission_AdmissionDetailsAjax = '@Url.Action("AdmissionDetailsAjax", "Admissions", null)';
+                var URL_Admission_GetFamilyListAjax = '@Url.Action("GetFamilyListAjax", "Admissions", null)';
+                var URL_Admission_ShelterInfo = '@Url.Action("ShelterInfo", "Admissions", null)';
+                var URL_Admission_Details = '@Url.Action("Details", "Admissions", null)?id=';
+                var URL_Admission_DisplayBookedInStay = '@Url.Action("DisplayBookedInStay", "Admissions", null)';
+                var URL_Admission_GetNewAdmissionForm = '@Url.Action("GetNewAdmissionForm", "Admissions", null)?isReservation=';
+                var URL_Admission_IsClientBookedIn = '@Url.Action("IsClientBookedIn", "Admissions", null)';
+                var URL_Master_IsServiceRestrictedAjax = '@Url.Action("IsServiceRestrictedAjax", "Master", null)';
+                var URL_Admission_Reservations = '@Url.Action("Reservations", "Admissions", null)';
+                var URL_Admission_Index = '@Url.Action("Index", "Admissions", null)';
+
+                var label_BookIn = '@Labels.BookIn - @Labels.BedSelection';
+                var label_Reservation = '@Labels.Reservation - @Labels.BedSelection';
+                var label_DefaultDataSavedMessage = '@Labels.DefaultDataSavedMessage' + ':';
+                var label_Processing = '@Labels.Processing' + ':';
+                var label_ReservationConflictStay = '@Labels.ReservationConflictStay';
+                var label_DateOfReservation = '@Labels.DateOfReservation' + ':';
+                var label_ReservationFor = '@Labels.ReservationFor' + ':';
+                var label_BookInDate = '@Labels.BookInDate' + ':';
+                var label_Client = '@Labels.Client' + ':';
+                var label_CutOffTime = '@Labels.CutOffTime' + ':';
+                var label_NoneToDisplay = '@Labels.NoneToDisplay';
+                var label_FailedToSave = '@Labels.FailedToSave' + ':';
+                var label_NewBookIn = '@Labels.NewBookIn';
+                var label_NewReservation = '@Labels.NewReservation';
+                var label_ManageRoomsBeds = '@Labels.ManageRoomsBeds';
+                var label_Admissions = '@Labels.Admissions';
+                var label_Selectedclients = '@Labels.Selectedclients';
+                var label_GetStayInformation = '@Labels.GetStayInformation';
+                var label_AlreadyBooked = '@Labels.AlreadyBooked';
+                var label_AlreadyBookedIn = '@Labels.AlreadyBookedIn';
+                var label_viewTitle_EditReservation = '@Labels.viewTitle_EditReservation';
+                var label_ConcurrencyConflict = '@Labels.ConcurrencyConflict';
+                var label_ActiveServiceRestriction = '@Labels.ActiveServiceRestriction';
+
+
+
+                $(document).on("ready", function () {
+
+                    if (ValidatePath('Admissions')) {
+
+                        //This event will help to load the OnReady only after the SharedGlobalVar section
+                        var event; // The custom event that will be created
+                        if (document.createEvent) {
+
+                            event = document.createEvent("HTMLEvents");
+                            event.initEvent("SharedGlobalVar_OnReady", true, true);
+                            event.eventName = "SharedGlobalVar_OnReady";
+                            document.dispatchEvent(event);
+                        }
+                        else {
+
+                            event = document.createEventObject();
+                            event.eventName = "SharedGlobalVar_OnReady";
+                            event.eventType = "SharedGlobalVar_OnReady";
+                            document.fireEvent("on" + event.eventType, event);
+                        }
+
+                        console.log("SharedGlobalVar_OnReady is ready!");
+
+                    }
+                });
+
+                $(document).on('SharedGlobalVar_OnReady', function () {
+
+                    HIFIS_Admissions.SharedFunction.ApplyOnLoad.OnReady();
+                });
+
+                $(document).on("ready", function () {
+
+                    //HIFIS_Admissions.SharedFunction.ApplyOnLoad.OnReady();
+                });
+
+</script>
+
+);
+}
+

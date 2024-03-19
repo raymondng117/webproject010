@@ -1,0 +1,83 @@
+﻿
+@model List<PitSurveyViewModel>
+@{
+	
+	ViewBag.ViewTitle = Labels.PiTSurvey + 
+		(HttpContext.Current.Session[HIFIS.WEB.Controllers.MasterController.USER_VITALS_SESSION_KEY] as HIFIS.CONTRACTS.WCFContracts.DataContracts.UserProfile).UserName;
+
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+
+
+
+<div>
+	<div>
+		<div class="table-responsive">
+			<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+				<thead>
+					<tr>
+						<th>@Labels.PitSurveyNo</th>
+						<th>@Labels.PitEventTimeTaken</th>   
+						<th>@Labels.Status</th>                     
+						<th>@Labels.Location</th>
+						<th>@Labels.Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (!Model.IsEmptyOrNull())
+					{
+						/*-- Request to pad smaller Survey No. with 0's to keep length consistent on display --*/
+						int maxSurveyNumberSize = Model.Select(x => x.SurveyNo).Max().ToString().Length;
+						
+						foreach (var pitSurvey in Model)
+						{
+							<tr>
+								<td style="text-align:center;">@pitSurvey.SurveyNo.ToString("D").PadLeft(maxSurveyNumberSize, '0')</td>
+								<td>@DateHelper.DateTimeFormaterENFR(pitSurvey.ShiftTime.Value, Labels.CurrentCulture)</td>
+								<td>@switch (pitSurvey.SurveyStatus)
+								{
+									case "C":
+										@Labels.Completed
+										break;
+									case "I":
+										@Labels.Incomplete
+										break;
+									case "A":
+										@Labels.Abandoned
+										break;
+									default:
+										break;
+								}
+								</td>
+								@*<td>@pitSurvey.PitQuestionnaire.CityName - @pitSurvey.PitQuestionnaire.EventStartDate.Value.ToShortDateString()</td>*@  
+								<td>@pitSurvey.Location</td>  
+								<td class="align-text-center">
+									@Html.ActionLink(Labels.EditPitSurvey, "EditPitSurvey", new { pitSurveyID = pitSurvey.PitSurveyID }, new { @class = "editButton noText", alt=Labels.EditPitSurvey, aria_label = Labels.EditPitSurvey, @role = "button" })
+									@Html.ActionLink(Labels.DeletePitSurvey, "DeletePitSurvey", new { pitSurveyID = pitSurvey.PitSurveyID }, new { @class = "deleteButton noText", alt=Labels.DeletePitSurvey, aria_label = Labels.DeletePitSurvey, @role = "button" })
+								</td> 
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="clearfix"></div>
+		<p>
+			@if (RightsHelper.HasRight(UserRights.PiT_Data_Entry_Personnelle))
+			{
+				<span>
+				@Html.ActionLink(Labels.CreatePitSurveyDataEntry, "CanCreatePitSurveyDataEntry", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.CreatePitSurveyDataEntry, aria_label = Labels.CreatePitSurveyDataEntry, @role = "button" })
+				</span>
+			}
+			@if (RightsHelper.HasRight(UserRights.PiT_Live_Surveyor))
+			{
+				<span>
+				@Html.ActionLink(Labels.PiTAddSurveyScrolling, "CanCreatePitSurveyLive", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.PiTAddSurveyScrolling, aria_label = Labels.PiTAddSurveyScrolling, @role = "button" })
+				</span>
+				
+				@Html.ActionLink(Labels.PiTAddSurveyPaging, "CanCreatePitSurveyLivePaging", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.PiTAddSurveyPaging, aria_label = Labels.PiTAddSurveyPaging, @role = "button" })
+			}
+		</p>
+	</div>
+</div>

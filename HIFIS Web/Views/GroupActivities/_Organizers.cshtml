@@ -1,0 +1,317 @@
+﻿@model GroupActivityViewModel
+
+
+<style>
+    label[for=UserIDs] {
+        margin-top: 10px;
+    }
+</style>
+
+<h4>@Labels.Staff</h4>
+
+@if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+{
+    <div style="float:left;">
+        @Html.HifisMultiAutocompleteFor(model => model.UserIDs
+                     , Url.Content("~/Users/AjaxGetUserList")
+                     , new AutocompleteViewModelOptions() { SelectClientFieldType = SelectClientFieldTypes.Other }
+                     , null
+                     , String.Format("<a id=\"addUserButton\" class=\"\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-plus-sign'></span></a>", 
+                    Labels.AddContact)
+        )
+    </div>
+}
+
+<table id="staffTable" class="wb-tables table table-striped table-hover" 
+    data-wb-tables='{ "columns": [
+                            { "width": "90%", "data": "name"},
+                            { "width": "10%", "data": "remove"}
+                        ],
+                        "order": [ [0, "desc"] ],
+                        "ajax": "@Url.Content("~/GroupActivities/OrganizerListJson?id=" + Model.GroupActivityID + "&display=" + ViewBag.Display )"                         
+                    }'>
+    <thead>
+        <tr>
+            <th class="align-text-center">@Labels.FullName</th>
+            <th class="align-text-center">@Labels.Remove</th>
+        </tr>
+    </thead>
+    <tbody class="align-text-center"></tbody>
+</table>
+
+<h4>@Labels.ExternalContacts</h4>
+
+@if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+{
+    <div style="float:left;">
+        @Html.HifisMultiAutocompleteFor(model => model.PeopleIDs
+                    , Url.Content("~/PeopleTombstone/AjaxGetPListRoles")
+                    , new AutocompleteViewModelOptions() { SelectClientFieldType = SelectClientFieldTypes.Other }
+                    , null
+                    , String.Format("<a id=\"addContactButton\" class=\"\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-plus-sign'></span></a>", Labels.AddContact))
+    </div>
+}
+
+<table id="contactsTable" class="wb-tables table table-striped table-hover" 
+    data-wb-tables='{ "columns": [
+                            { "width": "90%", "data": "name"},
+                            { "width": "10%", "data": "remove"}
+                        ],
+                        "order": [ [0, "desc"] ],
+                        "ajax": "@Url.Content("~/GroupActivities/ContactListJson?id=" + Model.GroupActivityID + "&display=" + ViewBag.Display )"                         
+                    }'>
+    <thead>
+        <tr>
+            <th class="align-text-center">@Labels.FullName</th>
+            <th class="align-text-center">@Labels.Remove</th>
+        </tr>
+    </thead>
+    <tbody class="align-text-center">
+    </tbody>
+</table>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             var sTable = $('#staffTable');
+             var cTable = $('#contactsTable');
+          
+             //On Success function that displays results to the user, reloads the datatable, and initializes the buttons in the table.
+             function defaultOrganizersSaved() {
+
+                 if (window.location.href.indexOf("/Messages/List") != -1) {
+                     CheckForNewMessages();
+                 }
+
+                 displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                 sTable.DataTable().ajax.reload(function () {
+                     $('select[id=UserIDs]').select2("val", "");
+                 });
+                 cTable.DataTable().ajax.reload(function () {
+                     $('select[id=PeopleIDs]').select2("val", "");
+                 });
+
+             }
+
+             // On failure notification
+             function defaultOrganizersFailed() {
+                 displayNotification("error", "", "<p>@Labels.FailedToSave</p>");
+             }
+
+             //Inserts the selected organizers from the organizers multiselect into the group activity
+             $(function () {
+                 $("#addUserButton").on("click", function (e) {
+                     var cIDs = [];
+                     var aID;
+
+                     aID = $('input[id=GroupActivityID]').val();
+                     cIDs = $('select[id=UserIDs]').val();
+                     
+                     @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/GroupActivities/AddOrganizers") + "'",
+                            Data = "{IDs: cIDs, activityID: aID}",
+                            OnSuccess = "defaultOrganizersSaved()",
+                            OnFailure = "defaultOrganizersFailed()",
+                            OnComplete = "",
+                            Type="POST"
+                        }); 
+                 });
+             });
+
+             //Inserts the selected contact from the contacts multiselect into the group activity
+             $(function () {
+                 $("#addContactButton").on("click", function (e) {
+                     var cIDs = [];
+                     var aID;
+
+                     aID = $('input[id=GroupActivityID]').val();
+                     cIDs = $('select[id=PeopleIDs]').val();
+
+                     @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/GroupActivities/AddContacts") + "'",
+                            Data = "{IDs: cIDs, activityID: aID}",
+                            OnSuccess = "defaultOrganizersSaved()",
+                            OnFailure = "defaultOrganizersFailed()",
+                            OnComplete = "",
+                            Type="POST"
+                        });
+                 });
+             });
+
+             var punselecting = false;
+             var poldArray = [];
+
+             $('#PeopleIDs').on('select2:unselecting', function (e) {
+                 if (punselecting === false) {
+                     punselecting = true;
+                     poldArray = $('select[id=PeopleIDs]').val();
+                 }
+             });
+
+             $('#PeopleIDs').on('select2:unselect', function (e) {
+                 var newArray = [];
+                 newArray = $('select[id=PeopleIDs]').val();
+                 clearOptions("PeopleIDs", poldArray, newArray);
+                 poldArray = newArray;
+
+                 if (poldArray === null || poldArray.length === 0) {
+                     punselecting = false;
+                 }
+             });
+
+             var uunselecting = false;
+             var uoldArray = [];
+
+             $('#UserIDs').on('select2:unselecting', function (e) {
+                 if (uunselecting === false) {
+                     uunselecting = true;
+                     uoldArray = $('select[id=UserIDs]').val();
+                 }
+             });
+
+             $('#UserIDs').on('select2:unselect', function (e) {
+                 var newArray = [];
+                 newArray = $('select[id=UserIDs]').val();
+                 clearOptions("UserIDs", uoldArray, newArray);
+                 uoldArray = newArray;
+
+                 if (uoldArray === null || uoldArray.length === 0) {
+                     uunselecting = false;
+                 }
+             });
+
+             $(function () {
+                 $("#staffTable tbody").on("click", "td.align-text-center", function (e) {
+                     var nextTR = $(this).parent("tr").next();
+                     
+                     if (nextTR.children("td").children(".parent").length < 1) {
+                         var nextRow = nextTR.nextUntil().find(".parent").first().parent("td").parent("tr");
+                         var rowList = nextTR.nextUntil(nextRow).add(nextTR);
+
+                         if (rowList.length > 1)
+                             rowList.stop(true, true).slideToggle("swing");
+                     }
+
+                     console.log(nextTR, nextRow, nextRow.prev());
+                     e.preventDefault();
+                 });                                 
+             });
+             
+             $(function () {
+                 $("#contactsTable tbody").on("click", "td.align-text-center", function (e) {
+                     var nextTR = $(this).parent("tr").next();
+                     
+                     if (nextTR.children("td").children(".parent").length < 1) {
+                         var nextRow = nextTR.nextUntil().find(".parent").first().parent("td").parent("tr");
+                         var rowList = nextTR.nextUntil(nextRow).add(nextTR);
+
+                         if (rowList.length > 1)
+                             rowList.stop(true, true).slideToggle("swing");
+                     }
+
+                     console.log(nextTR, nextRow, nextRow.prev());
+                     e.preventDefault();
+                 });                                 
+             });
+
+             //checks if the Organizer is already in the group activity when added to the multiselect.
+             //if already added they are automatically removed.
+             $("#UserIDs").on("select2:select", function (e) {
+                 var cID;
+                 var aID;
+                 cID = $('select[id=UserIDs]').children('option').last().val();
+                 aID = $('input[id=GroupActivityID]').val();
+                 isOrganizerInGroup(cID.toString(), aID.toString());
+             });
+
+             function isContactInGroup(pid, aid) {
+                 $.ajax({
+
+                     url: "@Url.Action("GetContactStatus", "GroupActivities")",
+                     type: "POST",
+                     data: { "personID": pid, "activityID": aid },
+
+                 }).done(function (data) {
+                     if (data == false) {
+                         displayNotification('success', '', "<p>@Labels.ServiceSelected</p>");
+                     } else {
+                         displayNotification('error', '', "<p>@Labels.AlreadyRegistered</p>");
+                         $("#PeopleIDs option[value=" + pid + "]").prop("selected", false).parent().trigger("change");
+                         $("#PeopleIDs option[value=" + pid + "]").remove();
+                     }
+                 });
+             };
+
+             function isContactStaff(pid) {
+                 $.ajax({
+                     url: "@Url.Action("GetStaffStatus", "GroupActivities")",
+                     type: "POST",
+                     data: { "personID": pid},
+                 }).done(function (data) {
+                     if (data == true) {
+                         displayNotification('alert', '', "<p>@Labels.IsStaff</p>");
+                     }
+                 });
+             };
+             //checks if the contact is already in the group activity when added to the multiselect.
+             //if already added they are automatically removed.
+             $("#PeopleIDs").on("select2:select", function (e) {
+                 var cID;
+                 var aID;
+                 cID = $('select[id=PeopleIDs]').children('option').last().val();
+                 aID = $('input[id=GroupActivityID]').val();
+                 isContactInGroup(cID.toString(), aID.toString());
+                 isContactStaff(cID.toString());
+             });
+
+             function isOrganizerInGroup(pid, aid) {
+                 $.ajax({
+
+                     url: "@Url.Action("GetOrganizerStatus", "GroupActivities")",
+                     type: "POST",
+                     data: { "personID": pid, "activityID": aid},
+
+                 }).done(function (data) {
+                     if (data == false) {
+                         displayNotification('success', '', "<p>@Labels.ServiceSelected</p>");
+                     } else {
+                         displayNotification('error', '', "<p>@Labels.AlreadyRegistered</p>");
+                         $("#UserIDs option[value=" + pid + "]").prop("selected", false).parent().trigger("change");
+                         $("#UserIDs option[value=" + pid + "]").remove();
+                     }
+                 });
+             };
+
+            //removes the corresponding organizer from the group activity
+             @*$(function () {
+                 $(document).on("click", "button[id=removeOrganizer]", function () {
+                     var remID;
+                     var actID;
+
+                     actID = $('input[id=GroupActivityID]').val();
+                     remID = $(this).val();
+
+                     removeOrganizer(remID, actID);
+                 });
+             });             
+
+            function removeOrganizer(pid, aid) {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                           Url = "'" + Url.Content("~/GroupActivities/RemoveOrganizer") + "'",
+                           Data = "{personID: pid, activityID: aid}",
+                           OnSuccess = "defaultOrganizersSaved()",
+                           OnFailure = "defaultOrganizersFailed()",
+                           OnComplete = "",
+                           Type="POST"
+            });
+            };*@
+         </script>
+    );
+}

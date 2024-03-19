@@ -1,0 +1,160 @@
+﻿@model PitQuestionnaireViewModel
+
+@Html.HiddenFor(model => model.PitQuestionnaireID)
+@Html.HiddenFor(model => model.HasSurveys)
+@Html.HiddenFor(model => model.OwnerOrganizationID)
+@Html.HiddenFor(model => model.PitTemplateName)
+
+@Html.HiddenFor(model => model.RegistrationGuid)
+@Html.HiddenFor(model => model.ExportID)
+@Html.HiddenFor(model => model.Status)
+@Html.HiddenFor(model => model.RegistrationDate)
+@Html.HiddenFor(model => model.MobileUsage)
+@Html.HiddenFor(model => model.ActivationCode)
+
+<h3>@Labels.EventInformation</h3>
+<hr />
+
+<div>
+    @Html.HifisEditorFor(m => m.EventStartDate, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.EventEndDate, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.MinSurveyAge)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ProvinceID, ViewBag.Provinces as SelectList, "DropDownList", new { id = "ddlProvince"})
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.CityID, ViewBag.Cities as SelectList, "DropDownList", new { id = "ddlCity" })
+</div>
+
+@*<div>
+    @Html.HifisEditorFor(model => model.PitTemplateID, ViewBag.PitTemplateList as SelectList, "DropDownList", new { data_loader = true })
+</div>*@
+
+<div>
+    @Html.HifisEditorFor(m => m.LiveSurveyOffsetNo)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.HiddenHomelessnessYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.RegistryWeekYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.PeriodPrevalenceCountYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.IntervieweeIdYN, "YesNo")
+</div>
+
+<hr/>
+
+<h4>@Labels.PITRegistrationHeader</h4>
+
+<div>
+    <div class="form-group">
+        <label class="control-label col-sm-4">
+            @Html.HifisLabelFor(m => m.PitTemplateName)
+        </label>
+        <div class="col-sm-8">
+            <div class="input-group" style="padding-top: 7px;">
+                @Html.HifisDisplayFor(m => m.PitTemplateName, null, true)
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <div class="form-group">
+        <label class="control-label col-sm-4">
+            @Labels.DownloadBlankDPA
+        </label>
+        <div class="col-sm-8">
+            <div class="input-group">
+                @Html.ActionLink(Labels.DownloadBlankDPA, "DownloadDPA", "Registration", new { french = (ViewBag.CurrentCulture != Constants.Eng) }, new { @class = "downloadButton", target = "_blank", alt=Labels.DownloadBlankDPA, aria_label = Labels.DownloadBlankDPA, @role = "button" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    @Html.HifisTextBoxFor(m => m.ContactName)
+</div>
+
+<div>
+    @Html.HifisTextBoxFor(m => m.ContactEmail)
+</div>
+
+<div>
+    @Html.HifisTextBoxFor(m => m.DPAName)
+</div>
+
+<div>
+    @Html.HifisTextBoxFor(m => m.DPAEmail)
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(m => m.Comments)
+</div>
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(m => m.QuickInfo, new { @class = "mceEditor_Messaging" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+</div>
+
+@*<div>
+    @Html.HifisEditorFor(model => model.OwnerOrganizationID, ViewBag.orgList as SelectList)
+</div>*@
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            var defaultCityID = '@Model.CityID';
+            var defaultProvinceID = '@Model.ProvinceID';
+
+            function UpdateDropdownValues(dropdown, values) {
+                dropdown.options.length = 0; // clear out existing items
+
+                for (var i = 0; i < values.length; i++)
+                    dropdown.options.add(new Option(values[i].Text, values[i].Value));
+
+                $(dropdown).trigger('change');
+            }
+
+            function PopulateCity()
+            {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Async = false,
+                    Url = "'" + Url.Content("~/Master/AjaxGetCityList") + "'",
+                    Data = "{ ProvinceID: $(this).val()}",
+                    OnSuccess = @"UpdateDropdownValues(document.getElementById('ddlCity'), data);
+                    if(defaultCityID){ $('#ddlCity').val(defaultCityID); defaultCityID = false;}"
+                });
+            }
+
+            $(document).ready(function () {
+                $("#ddlProvince").change(PopulateCity);
+            });
+        </script>
+    );
+}

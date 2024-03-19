@@ -1,0 +1,98 @@
+﻿@model PitQuestionDropdownViewModel
+@{
+    Model.Name = ViewBag.CurrentCulture == Constants.Eng ? Model.NameE : Model.NameF;
+}
+<div>
+	@Html.HiddenFor(m => m.QuestionPickListID)
+	@Html.HiddenFor(m => m.QuestionID)
+	@Html.HiddenFor(m => m.RollupRequired)
+	@Html.HiddenFor(m => m.LegacyRequired)
+	@Html.HiddenFor(m => m.PitTemplateID)
+	@Html.HiddenFor(m => m.PitQuestionnaireID)
+	@Html.HiddenFor(m => m.PitDropDownName)        
+	@Html.HiddenFor(m => m.RollupID)
+	@Html.HiddenFor(m => m.EmptyBehaviourYN)
+	@Html.HiddenFor(m => m.SaveQuestion)
+	
+</div>
+
+@if (Model.QuestionPickListID.IsEmptyOrNull())
+{
+    <div>
+        @Html.HifisEditorFor(m => m.NameE, null, new { @class = "max_width_90" })
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.NameF, null, new { @class = "max_width_90" })
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.Name)
+    </div>
+}
+else
+{
+    <div>
+        @Html.HiddenFor(m => m.Name)
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.NameE, null, new { @class = "max_width_90" })
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.NameF, null, new { @class = "max_width_90" })
+    </div>
+}
+<div>
+	@Html.HifisEditorFor(m => m.Sequence, null, new {type ="number"})
+</div>
+
+<div>
+	@if (Model.LegacyRequired)
+	{
+		@Html.HifisEditorFor(m => m.LegacyID)
+	}
+	else
+	{
+		@Html.HiddenFor(m => m.LegacyID)
+	}
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+</div>  
+
+@if (! Model.PitTemplateID.IsEmptyOrNull())
+{   
+	<div>
+		@Html.HifisEditorFor(m => m.IsRollupTo, "YesNo")
+	</div>
+
+
+	<div>
+		@Html.HifisEditorFor(model => model.DropDownActionTypeID, CachedTableTypes.HIFIS_PiTDropDownActionTypes)
+	</div>
+
+	<div>
+		@Html.HifisListBoxFor(model => model.AffectedQuestionsIDs, ViewBag.AffectedQuestionsList as SelectList)
+	</div>
+	
+	<div>
+		@Html.HifisEditorFor(m => m.AnsweredBehaviourYN, "YesNo")
+	</div>
+
+	<div>
+		@Html.HifisEditorFor(m => m.IsLiveSurveyYN)
+	</div>
+} 
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+			function requiredif1()
+			{
+				return ($('#LegacyRequired').val() == 'True');
+			}
+			function isRollUpRequired() {
+			    return ($('#RollupRequired').val() == 'True');
+			}
+		</script>);
+}

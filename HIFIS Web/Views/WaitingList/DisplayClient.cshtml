@@ -1,0 +1,124 @@
+﻿@model ClientWaitingListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayClientInWaitingLists;
+    
+    ViewBag.LayoutView = LayoutPage.Client;  
+}
+
+<div class="displayView">
+
+    @Html.HiddenFor(model => model.ReturnToMain)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.WaitingListID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.WaitingListID,
+                            List = ViewBag.WaitingLists as SelectList
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateStart)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateEnd)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.WaitingRequestPriorityTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.WaitingRequestPriorityTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_WaitingRequestPriorityTypes, ViewBag.CurrentCulture, Model.WaitingRequestPriorityTypeID)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.WaitingRequestReasonTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.WaitingRequestReasonTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_WaitingRequestReasonTypes, ViewBag.CurrentCulture, Model.WaitingRequestReasonTypeID)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.WaitingRequestStatusTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.WaitingRequestStatusTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_WaitingRequestStatusTypes, ViewBag.CurrentCulture, Model.WaitingRequestStatusTypeID)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.StatusDate, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.StatusDate)
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <label class="control-label wdth-strct-200">@Labels.Comment</label>
+            @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3">
+            @if (Model.ReturnToMain)
+            {
+                @Html.ActionLink(Labels.Cancel, "ManageClients", "WaitingList", new { WaitingListID = Model.WaitingListID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            }
+            else
+            {
+                @Html.ActionLink(Labels.Cancel, "ClientList", "WaitingList", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            }
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="pnlStatus">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" href="#pnlStatusHistory" aria-expanded="false">
+                    @Labels.StatusHistory
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+        <div id="pnlStatusHistory" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pnlStatus">
+            <div class="panel-body">
+                <div class="form-color-white module-form-block">
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.StatusDate</th>
+                                    <th>@Labels.Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var viewModelItem in Model.StatusHistory)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(ModelItem => viewModelItem.StatusDate)</td>
+                                        <td class="align-text-center">@Html.DisplayFor(ModelItem => viewModelItem.StatusName)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

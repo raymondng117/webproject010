@@ -1,0 +1,99 @@
+﻿@{
+
+    ViewBag.Title = "EULA";
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+
+    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("HIFIS.ENUMS.Labels.Labels", typeof(Labels).Assembly);
+    System.Globalization.CultureInfo enCulture = new System.Globalization.CultureInfo("en-CA");
+    System.Globalization.CultureInfo frCulture = new System.Globalization.CultureInfo("fr-CA");
+
+}
+
+
+@{
+    var eulaContent = "";
+    if (Request.QueryString["CurrentCulture"] != null && Request.QueryString["CurrentCulture"] != "")
+    {
+        switch (Request.QueryString["CurrentCulture"])
+        {
+            case "fr-CA":
+                eulaContent = @temp.GetString("EULA", frCulture);
+                break;
+            default: //"en-CA":
+                eulaContent = @temp.GetString("EULA", enCulture);
+                break;
+        }
+    }
+    else
+    {
+        eulaContent = Labels.EULA;
+    }
+}
+
+
+<div class="well">@Html.Raw(eulaContent)</div>
+
+
+<div class="row">
+@if (User.Identity.IsAuthenticated) 
+{ 
+    if ((bool)HttpContext.Current.Session["EULA Accepted"] == false)
+    {
+        <div class="col-md-6 text-center">
+            @using (Html.BeginForm("EULA", "License", new { EULA_Response = "Accept", currentCulture = ViewBag.CurrentCulture }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                switch (Request.QueryString["CurrentCulture"])
+                {
+                    case "fr-CA":
+                        <button type="submit" name="EULA_Response" value="Accept" class="btn btn-success">@temp.GetString("EULA_IAccept", frCulture)</button>
+                        break;
+                    default: //"en-CA":
+                        <button type="submit" name="EULA_Response" value="Accept" class="btn btn-success">@temp.GetString("EULA_IAccept", enCulture)</button>
+                        break;
+                }
+            }
+        </div>
+        <div class="col-md-6 text-center">
+            @using (Html.BeginForm("EULA", "License", new { EULA_Response = "Reject", currentCulture = ViewBag.CurrentCulture }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                switch (Request.QueryString["CurrentCulture"])
+                {
+                    case "fr-CA":
+                        <button type="submit" name="EULA_Response" value="Reject" class="btn btn-danger">@temp.GetString("EULA_IDoNotAccept", frCulture)</button>
+                        break;
+                    default: //"en-CA":
+                        <button type="submit" name="EULA_Response" value="Reject" class="btn btn-danger">@temp.GetString("EULA_IDoNotAccept", enCulture)</button>
+                        break;
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <div class="col-md-12">
+            <div class="module-success module-simplify mrgn-tp-lg">
+                <div>
+                    <section class="alert alert-success">
+                        @switch (Request.QueryString["CurrentCulture"])
+                        {
+                            case "fr-CA":
+                                <h1>@temp.GetString("EULA_Accepted", frCulture)</h1>
+                                @Html.Raw(temp.GetString("EULA_AcceptedModal_Body", frCulture))
+                                break;
+                            default: //"en-CA":
+                                <h1>@temp.GetString("EULA_Accepted", enCulture)</h1>
+                                @Html.Raw(temp.GetString("EULA_AcceptedModal_Body", enCulture))
+                                break;
+                        }
+                    </section>
+                </div>
+            </div>
+        </div>
+    }
+}
+</div>

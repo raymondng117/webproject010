@@ -1,0 +1,46 @@
+﻿@model ELearningTopicModel 
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ModuleID)
+@Html.HiddenFor(model => model.PlaylistID)
+@Html.HiddenFor(model => model.TopicID)
+@Html.HiddenFor(model => model.Sequence)
+<div class="row">
+    <div class="col-sm-6">   
+        @Html.Label(Labels.HifisHelp_NameE) @Html.Partial("Common/_HelpMandatory")
+        <br />
+        @Html.TextBoxFor(model => model.NameE)                            
+    </div>
+    <div class="col-sm-6">   
+            @Html.Label(Labels.HifisHelp_NameF) @Html.Partial("Common/_HelpMandatory")
+            <br />
+        @Html.TextBoxFor(model => model.NameF)                            
+    </div>
+</div>
+<div class="row">    
+    <div class="col-sm-6">   
+        @Html.Label(Labels.HifisHelp_IsSubTopic)
+        @{   
+            object first = new { @class = "YesAndNo", data_on_text = Labels.Yes, data_off_text = Labels.No, data_on_color = "success", data_off_color = "danger", id = "firstvictim" };
+        }
+        @Html.CheckBoxFor(model => model.IsSubTopicYN, first)                      
+    </div>
+    <div class="col-sm-6">   
+        @Html.Label(Labels.HifisHelp_TopicType)
+        @Html.DropDownListFor(model => model.TopicTypeID, ViewBag.TopicTypes as SelectList) @Html.Partial("Common/_HelpMandatory")                   
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        @Html.Label(Labels.HifisHelp_DescriptionE) @Html.Partial("Common/_HelpMandatory")     
+        <br />
+        @Html.EditorFor(model => model.DescriptionE, "TinyMCE_MaterialHelp")
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        @Html.Label(Labels.HifisHelp_DescriptionF) @Html.Partial("Common/_HelpMandatory")     
+        <br />
+        @Html.EditorFor(model => model.DescriptionF, "TinyMCE_MaterialHelp")
+    </div>
+</div>

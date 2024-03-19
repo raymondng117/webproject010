@@ -1,0 +1,86 @@
+﻿@*@* This file contains all the scripts and stylesheets we want to add to the WET layout *@
+
+@* JQuery Migrate*@
+@*<script src="@Url.Content("~/Scripts/jquery-migrate-1.2.1.min.js")"></script>*@
+
+@* JQuery UI *@
+@*<link href="@Url.Content("~/Content/jquery-ui.custom/jquery-ui.min.css")" rel="stylesheet" />
+<script src="@Url.Content("~/Content/jquery-ui.custom/jquery-ui.min.js")"></script>*@
+
+@* jQuery Plugins *@
+@*<script src="@Url.Content("~/Content/jQuery-BBQ/jquery.ba-bbq.min.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+<script src="@Url.Content("~/Scripts/Hifis/jquery.maskedinput.js")"></script>
+<script src="@Url.Content("~/Scripts/Hifis/jquery.maskMoney.js")"></script>*@
+
+@* SugarJS *@
+@*<script type="text/javascript" src="@Url.Content("~/Content/SugarJS/sugar.min.js")"></script>*@
+
+@* Controls formatting *@
+@*@Html.Partial("LayoutParts/CustomScriptsCSS/_Dropdown")*@
+
+ @*Stylesheets*@ 
+@*<link href="@Url.Content("~/Content/Stylesheets/Forms.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/Stylesheets/jQuery.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/Stylesheets/Layout.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/Stylesheets/Messaging.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/Stylesheets/Ajax.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/Stylesheets/HifisStyles.css")" rel="stylesheet" />*@
+
+@* Custom scripts *@
+@*<script src="@Url.Content("~/Scripts/Hifis/HelperFunctions.js")"></script>*@
+@*Html.Partial("_ConfirmRedirect")*@
+
+
+
+@*<script type="text/javascript">    $('select').addClass("wet-boew-chosen").attr('data-wet-boew', '{"bAllowSingleDeselect": true, "bDisplayDisabledOptions": false, "bDisplaySelectedOptions": false, "sNoResultsText": "@Labels.NoResults", "sPlaceholderTextSingle": "@Labels.SingleOption", "sPlaceholderTextMultiple": "@Labels.MultipleOptions", "bSearchContains": true}');</script>*@
+@*@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        Html.Partial("LayoutParts/CustomScriptsCSS/_Autowidth").ToString()
+    );
+}*@
+
+@*@Html.Partial("LayoutParts/CustomScriptsCSS/_Date")
+@Html.Partial("LayoutParts/CustomScriptsCSS/_Time")
+@Html.Partial("LayoutParts/CustomScriptsCSS/_Buttons")*@
+@*@Html.Partial("LayoutParts/CustomScriptsCSS/_Tooltip")*@
+@*@Html.Partial("LayoutParts/CustomScriptsCSS/_Telephone")
+@Html.Partial("LayoutParts/CustomScriptsCSS/_Money")*@
+@*@Html.Partial("LayoutParts/CustomScriptsCSS/_AjaxGetROVitals")*@
+@*@Html.Partial("LayoutParts/CustomScriptsCSS/_CustomValidation")*@
+@*@Html.Partial("_Notify")*@
+
+@if (ViewBag.CurrentCulture == Constants.Fr) { <script src="@Url.Content("~/Scripts/jquery.validate.messages_fr.js")"></script> }
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(document).ready(function () {
+                pe.wb_load({ 'plugins': { 'chosen': $('select')
+                    .addClass("wet-boew-chosen")
+                    .attr('data-wet-boew', '{"bAllowSingleDeselect": true, "bDisplayDisabledOptions": false, "bDisplaySelectedOptions": false, "sNoResultsText": "@Labels.NoResults", "sPlaceholderTextSingle": "@Labels.SingleOption", "sPlaceholderTextMultiple": "@Labels.MultipleOptions", "bSearchContains": true}')
+                }
+                });
+
+                initButtons();
+
+                $('input[type="date"]')
+                .mask("9999-99-99", { placeholder: " " });
+
+                //Not working
+                //initDate();
+            });
+        </script>);
+}
+@*
+<script src="@Url.Content("~/Content/wet-boew/js/settings.js")"></script>
+<script src="@Url.Content("~/Content/wet-boew/theme-wet-boew/js/theme-min.js")"></script>
+<script src="@Url.Content("~/Content/wet-boew/js/pe-ap-min.js")"></script>*@
+
+
+
+
+

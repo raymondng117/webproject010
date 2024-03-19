@@ -1,0 +1,269 @@
+﻿@model FamilyAttestationViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="familyAttestationDialog" class="modal mrgn-tp-10 attestation-modal">
+    <div class="modal-dialog whiteBackground">
+        <div id="attestationModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <h2 class="modal-title">@Labels.AttestationDialogTitle</h2>
+            </div>
+            <div class="modal-body condensed-modal">
+                <div class="row">
+                    <div class="col-sm-12">
+                        @((ViewBag.CurrentCulture == Constants.Eng ?
+                        Html.Raw(appSettings.GetAttestationTextEng()) :
+                        Html.Raw(ViewBag.CurrentCulture == Constants.Fr ? appSettings.GetAttestationTextFr() : string.Empty)
+                        ))
+                    </div>
+                </div>
+                <div class="row mrgn-tp-sm">
+                    <div class="col-sm-offset-1 col-sm-10">
+                        <table class="table table-striped table-condensed table-bordered table-hover ">
+                            <colgroup>
+                                <col class="col-xs-9">
+                                <col class="col-xs-1">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.FamilyMemberName</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (AttestationMember member in Model.Members.OrderBy(m => m.FirstName).OrderByDescending(o => o.IsReadOnly))
+                                {
+                                    @Html.Partial("ClientAttestation/_AttestationFamilyMember", member)
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="cancelFamilyAttestationBtn" class="btn btn-default" data-dismiss="modal">@Labels.Cancel</button>
+                <button type="button" id="saveFamilyAttestationBtn" class="btn btn-primary">@Labels.Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function createSwitches() {
+        $("input[name='IsReadOnly']").each(function () {
+            var yesnoInput = $(this).siblings(".form-group").find("input[name='IsConfirmed'].YesAndNo");
+            yesnoInput.parent().removeClass("form-control");
+            if ($(this).val() == 'True') {
+                yesnoInput.bootstrapSwitch({
+                    disabled: true
+                });
+            } else {
+                yesnoInput.bootstrapSwitch();
+            }
+        });
+    }
+
+    $(function () {
+        //Get everything to display correctly
+        //init_hifis();
+        autoWidthBoot('.modal-body');
+        createSwitches();
+
+        $('#familyAttestationDialog').modal({
+            backdrop: 'static',
+            keyboard: false,
+            show: false
+        });
+
+        $('#familyAttestationDialog').modal('toggle');
+
+        $('#saveFamilyAttestationBtn').on('click', function () {
+            $("#familyAttestationDialog").modal('toggle');
+
+            var familyMembersArray = [];
+
+            $("#familyAttestationDialog form").each(function () {
+                var memberObject = serializeFormToObject($(this));
+                if (memberObject.IsReadOnly == 'False') {
+                    familyMembersArray.push(memberObject);
+                }
+            });
+
+            var familyMembersJSON = JSON.stringify({ 'familymembers': familyMembersArray });
+
+            //go ahead and save the attestation
+            $.ajax({
+                url: "@Url.Action("SaveFamilyAttestation", "Master", null)",
+                dataType: 'json',
+                contentType: 'application/json',
+                type: "POST",
+                data: familyMembersJSON
+            }).done(function (data) {
+                if (data.Success) {
+                    if (familyMembersArray.length != data.Result.length) {
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                    }
+
+                    if ('@Model.InputName' !== '') {
+                        //disable the ones that were not attested
+                        $('#@Model.InputName option').each(function () {
+                            if (data.Result.includes($(this).val())) {
+                                $(this).prop("selected", false).parent().trigger("change");
+                            }
+                        });
+                    }
+
+                    //force :/
+                    //Have to delete the ones that were previously added and not attested
+                    if ('@Model.Callback'.indexOf('familyAttestationCallback') != -1) {
+
+                        if (ValidatePath('Admission')) {
+
+                            HIFIS_Admissions.BookInView.Utility_Functions.applyAttestationResults(data.Result);
+                        }
+                        else {
+
+                            applyAttestationResults(data.Result);
+                        }
+                    }
+
+                    //then continue with normal flow
+                    @if (appSettings.EnforceConsent())// && !Model.ClientROVitals.HasActiveConsent)
+                    {
+                        /*Now I have to go to the consent...*/
+                        <text>
+                        var familyArray = [];
+                        $("#familyAttestationDialog form").each(function () {
+                            var memberObject = serializeFormToObject($(this));
+                            if (memberObject.IsReadOnly.toLowerCase() == 'true' || memberObject.IsConfirmed.toLowerCase() == 'true') {
+                                familyArray.push(memberObject.ClientID);
+                            }
+                        });
+
+                        var postData = {
+                            FamilyMembers: familyArray,
+                            InputName: '@Model.InputName',
+                            Callback: '@Model.Callback'
+                        };
+
+                        $.post('@Url.Action("FamilyConsent", "Master", null)',
+                                $.param(postData, true),
+                                function (data) {
+                                    $("#family-attestation-result").html(data);
+                                });
+                        </text>
+                    }
+                    else
+                    {
+                        //continue with normal flow
+                        @Html.Raw(Model.Callback)
+                    }
+                }
+                else {
+                    displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                }
+            });
+        });
+
+        $('#cancelFamilyAttestationBtn').on('click', function () {
+            $("#familyAttestationDialog").modal('toggle');
+
+            var familyMembersArray = [];
+
+            $("#familyAttestationDialog form").each(function () {
+                var memberObject = serializeFormToObject($(this));
+                if (memberObject.IsReadOnly.toLowerCase() == 'false') {
+                    familyMembersArray.push(memberObject.ClientID);
+                }
+            });
+            if ('@Model.InputName' !== '') {
+                //disable the ones that were not attested
+                $('#@Model.InputName option').each(function () {
+                    if (familyMembersArray.includes($(this).val())) {
+                        $(this).prop("selected", false).parent().trigger("change");
+                    }
+                });
+            }
+
+            //force :/
+            //Have to delete the ones that were previously added and not attested
+            if ('@Model.Callback'.indexOf('familyAttestationCallback') != -1) {
+                @*@Html.Raw(Model.Callback)*@
+
+                if (ValidatePath('Admission')) {
+
+                    HIFIS_Admissions.BookInView.Utility_Functions.applyAttestationResults(familyMembersArray);
+                }
+                else {
+
+                    applyAttestationResults(familyMembersArray);
+                }
+            }
+
+            @if (appSettings.EnforceConsent())// && !Model.ClientROVitals.HasActiveConsent)
+            {
+                /*Now I have to go to the consent...*/
+                <text>
+            var familyArray = [];
+                $("#familyAttestationDialog form").each(function () {
+                    var memberObject = serializeFormToObject($(this));
+                    if (memberObject.IsReadOnly.toLowerCase() == 'true' || memberObject.IsConfirmed.toLowerCase() == 'true') {
+                        familyArray.push(memberObject.ClientID);
+                    }
+                });
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: '@Model.InputName',
+                    Callback: '@Model.Callback'
+                };
+
+                $.post('@Url.Action("FamilyConsent", "Master", null)',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                        });
+                </text>
+            }
+            else
+            {
+                //continue with normal flow
+                        @Html.Raw(Model.Callback)
+            }
+        });
+
+        function serializeFormToObject(formToSerialize) {
+            var arrayData, objectData;
+            arrayData = formToSerialize.serializeArray();
+            objectData = {};
+
+            $.each(arrayData, function () {
+                var value;
+
+                if (this.value != null) {
+                    value = this.value;
+                } else {
+                    value = '';
+                }
+
+                //if it is not an object itself
+                if (objectData[this.name] != null) { //if the name exists, this is a new value for the same name(property)
+                    //for now, dont do anything...
+                    /*if (!objectData[this.name].push) {
+                        //if is not an array already, convert it to an array and add the values
+                        objectData[this.name] = [objectData[this.name]];
+                    }
+                    objectData[this.name].push(value);*/
+                } else {
+                    objectData[this.name] = value;
+                }
+            });
+
+            return objectData;
+        };
+
+    });
+</script>

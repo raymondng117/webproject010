@@ -1,0 +1,342 @@
+﻿@model AddressViewModel
+
+@Html.HiddenFor(model => model.Country)
+@Html.HiddenFor(model => model.City)
+@Html.HiddenFor(model => model.Province)
+@Html.HiddenFor(model => model.AddressID)
+@Html.HiddenFor(model => model.isAddressRequired)
+@Html.HiddenFor(model => model.isGeoRegionEnforced)
+@Html.HiddenFor(model => model.OnlyIfMandatory)
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+<div>
+    @Html.HifisEditorFor(model => model.Building, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @* Not necessarily a Mandatory but we always want it to show. *@
+    @Html.HifisEditorFor(model => model.AddressLn1, false)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.AddressLn2, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Unit, Model.OnlyIfMandatory)
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.CountryID, CachedTableTypes.HIFIS_CountryTypes, Model.OnlyIfMandatory, new { id = "ddlCountry" })
+</div>
+
+<div style="display:none;" id="DIV_CANADA">
+    <div>
+        @Html.HifisEditorFor(model => model.ProvinceID, ViewBag.Provinces as SelectList, Model.OnlyIfMandatory, "DropDownList", new { id = "ddlProvince" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.CityID, ViewBag.Cities as SelectList, Model.OnlyIfMandatory, "DropDownList", new { id = "ddlCity" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.PostalCode, Model.OnlyIfMandatory)
+    </div>
+</div> 
+    
+<div style="display:none;" id="DIV_INTERNATIONAL">
+    <div>
+        @Html.HifisEditorFor(model => model.InternationalProvinceName, Model.OnlyIfMandatory)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.InternationalCityName, Model.OnlyIfMandatory)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.InternationalPostalCode, Model.OnlyIfMandatory)
+    </div>
+</div>
+@*<div>
+        @Html.HifisEditorFor(model => model.GeoID, CachedTableTypes.HIFIS_GeoRegionTypes, Model.OnlyIfMandatory, new { id = "ddlGeo" })
+    </div>*@
+<div>
+    @Html.HifisListBoxFor(model => model.GeoIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture), Model.OnlyIfMandatory, new { id = "ddlGeo", @class = "type-required" })
+</div>
+    
+ 
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            var defaultCityID = '@Model.CityID';
+            var defaultProvinceID = '@Model.ProvinceID';
+            var defaultCountryID = '@Model.CountryID';
+
+            function UpdateDropdowns()
+            {
+                $("#ddlCountry").trigger('change'); 
+                $("#ddlProvince").trigger('change');
+                $("#ddlCity").trigger('change');
+                $("#ddlGeo").trigger('change');
+            }
+
+            function UpdateDropdownValues(dropdown, values)
+            {
+                dropdown.options.length = 0; // clear out existing items
+
+                for(var i = 0; i < values.length; i++)
+                    dropdown.options.add(new Option(values[i].Text, values[i].Value));
+
+                //$(dropdown).trigger('change'); 
+            }
+
+            function PopulateCity() 
+            { 
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Async = false,
+                    Url = "'" + Url.Content("~/Master/AjaxGetCityList") + "'",
+                    Data = "{ ProvinceID: $('#ddlProvince').val()}",
+                    OnSuccess = @"UpdateDropdownValues(document.getElementById('ddlCity'), data);
+                                     if(defaultCityID){ $('#ddlCity').val(defaultCityID).trigger('chosen:updated').change(); defaultCityID = false;}"
+                });
+            }
+            
+            function PopulateProvince()
+            {
+                if ($('#ddlCountry').val()) {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/Master/AjaxGetProvinceList") + "'",
+                        Data = "{CountryID: $('#ddlCountry').val()}",
+                        OnSuccess = @"UpdateDropdownValues(document.getElementById('ddlProvince'), data);
+                                         if(defaultProvinceID){ $('#ddlProvince').val(defaultProvinceID).trigger('chosen:updated').change(); defaultProvinceID = false; }"
+                    });
+                }
+                else{
+                    $('#ddlCity').html('').trigger('change');
+                    $('#ddlProvince').html('').trigger('change');
+                }
+            }
+
+            function ShowHideCountryDIV() {
+                var countryID = parseInt($('#ddlCountry').val());
+
+                if (!isNaN(countryID)) {
+                    switch (countryID) {
+                        case 1: // Canada
+                            $('#DIV_CANADA').show();
+                            $('#ddlProvince').closest('.form-group').show();
+                            $('#ddlCity').closest('.form-group').show();
+                            $('#PostalCode').closest('.form-group').show();
+                            PopulateProvince();
+
+                            $('#DIV_INTERNATIONAL').hide();
+                            $('#InternationalProvinceName').closest('.form-group').hide();
+                            $('#InternationalProvinceName').val("");
+                            $('#InternationalCityName').closest('.form-group').hide();
+                            $('#InternationalCityName').val("");
+                            $('#InternationalPostalCode').closest('.form-group').hide();
+                            $('#InternationalPostalCode').val("");
+
+                            //For Mandatories when province or city is set to required.
+                            if ($('#ddlProvince').attr('data-val') != null || $('#ddlCity').attr('data-val') != null || $('#PostalCode').attr('data-val') != null) {
+
+                                $('#ddlProvince').attr('data-val') != null ? $('#ddlProvince').attr('data-val', 'true') : null;
+                                $('#ddlCity').attr('data-val') != null ? $('#ddlCity').attr('data-val', 'true') : null;
+                                $('#PostalCode').attr('data-val') != null ? $('#PostalCode').attr('data-val', 'true') : null;
+
+                                $('.form-horizontal').removeData('unobtrusiveValidation');
+                                $('.form-horizontal').removeData('validator');
+                                $.validator.unobtrusive.parse('.form-horizontal');
+                            }
+
+                            break;
+                        default:
+                            $('#DIV_CANADA').hide();
+                            $('#ddlProvince').closest('.form-group').hide();
+                            $('#ddlProvince').select2("val", "");
+                            $('#ddlCity').closest('.form-group').hide();
+                            $('#ddlCity').select2("val", "");
+                            $('#PostalCode').closest('.form-group').hide();
+                            $('#PostalCode').val("");
+
+                            $('#DIV_INTERNATIONAL').show();
+                            $('#InternationalProvinceName').closest('.form-group').show();
+                            $('#InternationalCityName').closest('.form-group').show();
+                            $('#InternationalPostalCode').closest('.form-group').show();
+
+                            //For Mandatories when province or city is set to required.
+                            if ($('#ddlProvince').attr('data-val') != null || $('#ddlCity').attr('data-val') != null || $('#PostalCode').attr('data-val') != null) {
+
+                                $('#ddlProvince').attr('data-val') != null ? $('#ddlProvince').attr('data-val', 'false') : null;
+                                $('#ddlCity').attr('data-val') != null ? $('#ddlCity').attr('data-val', 'false') : null;
+                                $('#PostalCode').attr('data-val') != null ? $('#PostalCode').attr('data-val', 'false') : null;
+
+                                //After changing the data-val attribute we need to call the following functions to reset validation on the page
+                                $('.form-horizontal').removeData('unobtrusiveValidation');
+                                $('.form-horizontal').removeData('validator');
+                                $.validator.unobtrusive.parse('.form-horizontal');
+                            }
+
+                            break;
+                    }
+                }
+                else {
+                    $('#DIV_CANADA').hide();
+                    $('#DIV_INTERNATIONAL').hide();
+                }
+            }
+
+            //Populates hidden inputs so we can get the string name of selections in the view model
+            function populateAddressNames() {
+                $('#Country').val($("#ddlCountry").children('option[value="' + $('#ddlCountry').val() + '"]').text());
+                $('#Province').val($("#ddlProvince").children('option[value="' + $('#ddlProvince').val() + '"]').text());
+                $('#City').val($("#ddlCity").children('option[value="' + $('#ddlCity').val() + '"]').text());
+            }
+
+            //Onload
+            $(document).ready(function () {
+                onPageReady();
+            });
+
+            function onPageReady() {
+                ShowHideCountryDIV();
+                populateAddressNames()
+
+                $("#ddlProvince").change(function () {
+                    var selection = $(this).children('option[value="' + $('#ddlProvince').val() + '"]').text()
+                    $('#Province').val(selection);
+                    $('#ddlCountry').val() == 1? PopulateCity() : null;
+                });
+
+                $("#ddlCity").change(function () {
+                    var selection = $(this).children('option[value="' + $('#ddlCity').val() + '"]').text()
+                    $('#City').val(selection);
+                });
+
+                $("#ddlCountry").change(function () {
+                    var selection = $(this).children('option[value="' + $('#ddlCountry').val() + '"]').text()
+                    $('#Country').val(selection);
+                    ShowHideCountryDIV();
+                });
+
+                //Required var id, input element id
+                if ($('#isAddressRequired').val() === "True")
+                    $('#AddressLn1').siblings(".glyphicon-star").addClass("show");
+
+                if ($('#isAddressRequired').val() === "False")
+                    $('#AddressLn1').siblings(".glyphicon-star").addClass("hide");
+
+                if ($('#isGeoRegionEnforced').val() === "True")
+                    $('#ddlGeo').siblings(".glyphicon-star").addClass("show");
+
+                if ($('#isGeoRegionEnforced').val() === "False")
+                    $('#ddlGeo').siblings(".glyphicon-star").addClass("hide");
+
+                //#region Mandatory
+                //When Province is set to mandatory through the user, this area ensures the international Province and city fields
+                // behave with similar required behavoiur.
+
+                //Adds the star glypicon and a span for the error message----
+                if ($('#ddlProvince').attr('data-val') != null) {    
+                    $('#InternationalProvinceName').parent('.input-group').append('<span class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger"></span>');
+                    $('#InternationalProvinceName').parent('.input-group').append('<span id="provincefree-error" style="display: none;" class="align-left field-validation-error"><span>' + $('#ddlProvince').attr('data-val-required') + '</span></span>');
+                }
+                if ($('#ddlCity').attr('data-val') != null) {
+                    $('#InternationalCityName').parent('.input-group').append('<span class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger"></span>');
+                    $('#InternationalCityName').parent('.input-group').append('<span id="cityfree-error" style="display: none;" class="align-left field-validation-error"><span>' + $('#ddlCity').attr('data-val-required') + '</span></span>');
+                }
+                if ($('#PostalCode').attr('data-val') != null) {
+                    $('#InternationalPostalCode').parent('.input-group').append('<span class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger"></span>');
+                    $('#InternationalPostalCode').parent('.input-group').append('<span id="postalfree-error" style="display: none;" class="align-left field-validation-error"><span>' + $('#PostalCode').attr('data-val-required') + '</span></span>');
+                }
+                //If Canada is not selected AND province is required,
+                // AND the International field is empty THEN display error and dont post.('#ddlProvince').parents
+                $('.form-horizontal').on('submit', function () {
+                    if ($('#ddlProvince').attr('data-val') != null && $('#ddlCountry').val() != 1) {
+                        if ($('#InternationalProvinceName').val() == null || $('#InternationalProvinceName').val() == '') {
+                            $('#provincefree-error').show();
+                            return false; // prevents the form from posting
+                        }
+                    }
+                });
+                $('.form-horizontal').on('submit', function () {
+                    if ($('#ddlCity').attr('data-val') != null && $('#ddlCountry').val() != 1) {
+                        if ($('#InternationalCityName').val() == null || $('#InternationalCityName').val() == '') {
+                            $('#cityfree-error').show();
+                            return false;
+                        }
+                    }
+                });
+                $('.form-horizontal').on('submit', function () {
+                    if ($('#PostalCode').attr('data-val') != null && $('#ddlCountry').val() != 1) {
+                        if ($('#InternationalPostalCode').val() == null || $('#InternationalPostalCode').val() == '') {
+                            $('#postalfree-error').show();
+                            return false;
+                        }
+                    }
+                });
+
+                //Removes the error message when user types something in
+                $('#InternationalProvinceName').on('change', function () {
+                    if ($(this).val() != null && $(this).val() != '')
+                        $('#provincefree-error').hide();
+                });
+                $('#InternationalCityName').on('change', function () {
+                    if ($(this).val() != null && $(this).val() != '')
+                        $('#cityfree-error').hide();
+                });
+                $('#InternationalPostalCode').on('change', function () {
+                    if ($(this).val() != null && $(this).val() != '')
+                        $('#postalfree-error').hide();
+                });
+
+                //Displays the error when is appears after postback
+                if ($('.validation-summary-errors').children('ul').children('li').text().includes('Province/Territory field is required')
+                 || $('.validation-summary-errors').children('ul').children('li').text().includes('Province/territoire est requis')) {
+                    $('#provincefree-error').show();
+                }
+                if ($('.validation-summary-errors').children('ul').children('li').text().includes('City field is required')
+                 || $('.validation-summary-errors').children('ul').children('li').text().includes('Ville est requis')) {
+                    $('#cityfree-error').show();
+                }
+                if ($('.validation-summary-errors').children('ul').children('li').text().includes('Postal Code field is required')
+                 || $('.validation-summary-errors').children('ul').children('li').text().includes('Code postal est requis')) {
+                    $('#postalfree-error').show();
+                }
+                //#endregion Mandatory
+            }
+        </script>
+    );
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+        
+            function checkAddressRequired() {
+                if ($('#isAddressRequired').val() == 'True') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function checkGeoRequired() {
+                if ($('#isGeoRegionEnforced').val() == 'True') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+        </script>
+    );
+}

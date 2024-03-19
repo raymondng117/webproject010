@@ -1,0 +1,140 @@
+﻿@model List<string>
+@{
+    ViewBag.ViewTitle = Labels.PiTExport + " - " + TempData["CityName"];
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div id="exportError" class="alert alert-danger" style="display:none;" role="alert">
+    <p id="exportErrorMsg">@ViewBag.exportProgress</p>
+</div>
+
+<div>
+    <div id="exportProgress" class="alert alert-info" style="display:none;" role="alert">
+        <p>@Labels.ExportProg_Building...</p>
+    </div>
+    <div class="table-responsive">
+        <table id="exportTable" class="wb-tables table table-striped table-hover"
+               data-wb-tables='{
+					"columns": [
+						{ "data": "name",	"type": "string"},
+						{ "data": "type",	"type": "string"},
+						{ "data": "city",	"type": "string"},
+						{ "data": "date",	"type": "string"},
+						{ "data": "action",	"type": "string"}],
+					"info": false,
+					"order": [[3,"desc"]],
+					"ordering": false,
+					"search": {
+						"search": "@TempData["CityName"]"
+					  },
+					"serverSide": true,
+					"processing": true,
+					"ajax": "@Url.Action("ExportListJson", "PitEvents")"}'>
+            <thead>
+                <tr>
+                    <th>@Labels.Name</th>
+                    <th>@Labels.Type</th>
+                    <th>@Labels.City</th>
+                    <th>@Labels.Date</th>
+                    <th>@Labels.Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+
+    <p id="exportButtons">
+        @*@Html.ActionLink("Preview HPS Export", "PrepareHPSExport", "PitEvents", new { eventID = ViewBag.eventID, includeCOH = true }, new { @class = "addButton" })*@
+        @if (ViewBag.SiteID != null)
+        {
+            <a href="#Modal_PreviewExport" class="listButton wb-lbx" role="button">@Labels.ViewSendRHExport</a>
+        }
+
+		@Html.ActionLink(Labels.CreateFullDataSet, "StartExport", "PitEvents", 
+			new { eventID = ViewBag.eventID, dataSetType = HIFIS.CONTRACTS.WCFContracts.DataContracts.PiTDataSetType.Full}, new { @class = "addButton", alt=Labels.CreateFullDataSet, aria_label = Labels.CreateFullDataSet, @role = "button" })
+
+        @*@Html.ActionLink(Labels.CreateRegistryWeekDataSet, "StartExport", "PitEvents",
+            new { eventID = ViewBag.eventID, dataSetType = HIFIS.CONTRACTS.WCFContracts.DataContracts.PiTDataSetType.RegistryWeek }, new { @class = "addButton" })*@
+
+        @*@if (ViewBag.isOntario)
+            {
+                @Html.ActionLink(Labels.CreateOntarioExport, "StartExport", "PitEvents",
+                    new { eventID = ViewBag.eventID, dataSetType = HIFIS.CONTRACTS.WCFContracts.DataContracts.PiTDataSetType.Ontario }, new { @class = "addButton" })
+            }*@
+    </p>
+
+</div>
+
+<section id="Modal_PreviewExport" class="mfp-hide modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.ViewSendRHExport</h2>
+    </header>
+    <div class="modal-body">
+        <div class="row">
+            <div class="form-group">
+                <label class="col-md-6 control-label text-nowrap bottom" style="padding-top: 6px;">@Labels.IncludeCOHQuestions</label>
+                <div class="col-md-6">
+                    <input class="YesAndNo" data-off-text="@Labels.No" data-on-text="@Labels.Yes" id="cohSwitch" type="checkbox" value="false" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<div class="modal-footer" style="background-color: white;">
+		@Html.ActionLink(Labels.ViewSendRHExport, "PrepareRHExport", "PitEvents", new { eventID = ViewBag.eventID, includeCOH = false }, new {id ="previewExportBtn", @class = "btn btn-default", alt=Labels.ViewSendRHExport, aria_label = Labels.ViewSendRHExport, @role = "button" })
+		<button class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+			$(document).ready(function () {
+				$('#cohSwitch').bootstrapSwitch('state', false)
+				$('#cohSwitch').on('switchChange.bootstrapSwitch', function (event, state) {
+					if (state) {
+						$("#previewExportBtn").attr("href","@Html.Raw(Url.Action("PrepareRHExport", "PitEvents", new { eventID = ViewBag.eventID, includeCOH = true }))")
+					} else {
+						$("#previewExportBtn").attr("href", "@Html.Raw(Url.Action("PrepareRHExport", "PitEvents", new { eventID = ViewBag.eventID, includeCOH = false }))")
+					}
+				});
+				var stop = false;
+				(function () {
+					if (!stop)
+					$.ajax({
+						type: "POST",
+						url: '@Url.Action("GetExportProgress", "PitEvents")',
+						data: "eventID=" + "@ViewBag.eventID",
+						dataType: "json",
+						success: function (response) {
+							if (response.Result.code == -1){
+								$('#exportError').show();
+								$('#exportErrorMsg').innerHTML = response.Result.message;
+                            }
+                            else if (response.Result.code == 1) {
+								$('#exportProgress').show();
+								$('#exportButtons').hide();
+                            }
+                            else {
+								$('#exportTable').DataTable().ajax.reload();
+								$('#exportError').hide();
+								$('#exportProgress').hide();
+								$('#exportButtons').show();
+								stop = true;
+							}
+						}
+					});
+					setTimeout(arguments.callee, 1000);
+				})()
+
+				$('#exportTable').on('draw.dt', function () {
+					init_hifis();
+				} );
+			});
+</script>
+);
+}

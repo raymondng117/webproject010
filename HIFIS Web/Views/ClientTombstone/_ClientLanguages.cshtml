@@ -1,0 +1,53 @@
+﻿ @model ClientTombstoneViewModel 
+            
+<fieldset class="color-white">
+    <legend>@Labels.ClientLanguages</legend>   
+
+    <div>
+        @Labels.ClientLanguages
+        @Html.CheckBoxFor(model => model.SpeaksEnglish) @Html.HifisLabelFor(model => model.SpeaksEnglish)
+        @Html.CheckBoxFor(model => model.SpeaksFrench) @Html.HifisLabelFor(model => model.SpeaksFrench)
+    </div>
+    <div class="clearfix"></div>   
+    <hr />
+
+    <div>
+        <div class="1 color-accent">
+           @Labels.msgClientLanguageUnderstand
+        </div> 
+    </div>
+    <div class="clearfix"></div> 
+    <br />
+
+    <div class="grid-12 color-accent">
+        <div>
+             @Html.HifisLabelFor(model => model.AvailableLanguages)
+        </div> 
+        <div>
+             @Html.HifisLabelFor(model => model.SelectedLanguages)
+        </div> 
+    </div>
+    <div class="clearfix"></div> 
+
+    <div>
+        <div>
+            @Html.ListBox("ListBoxName1", ViewBag.AvailableLanguages as SelectList)
+        </div> 
+        <div>
+            <input type="button" value=">" />  <br /> 
+            <input type="button" value="<" />
+        </div> 
+        <div>
+            @Html.ListBox("ListBoxName2", ViewBag.SelectedLanguages as SelectList) 
+        </div> 
+    </div>
+    <div class="clearfix"></div> 
+    <br />
+
+    <div>
+        @Html.HifisEditorFor(model => model.NewLanguage)
+    </div>
+
+</fieldset>
+ 
+

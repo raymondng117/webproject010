@@ -1,0 +1,105 @@
+﻿@model ClientHealthViewModel 
+    
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals)) 
+
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.HealthIssueID)
+@Html.HiddenFor(model => model.HealthIssueName)
+
+<div>
+    @Html.HifisEditorFor(model => model.HealthIssueTypeID, CachedTableTypes.HIFIS_HealthIssueTypes)
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.DateFrom)
+</div>
+           
+<div>
+    @Html.HifisEditorFor(model => model.DateTo)
+</div>
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.Description, new { @class = "col-sm-2 control-label" })
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@Html.TextAreaFor(model => model.Description, new { @class = "form-control" })
+		</div>
+	</div>
+</div>
+
+<div>
+    <div class="form-group">
+		<label class="col-sm-2 control-label"></label>
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@Html.CheckBoxFor(model => model.SelfReportedYN) @Html.HifisLabelFor(model => model.SelfReportedYN )
+            @Html.CheckBoxFor(model => model.SuspectedYN) @Html.HifisLabelFor(model => model.SuspectedYN)
+            @Html.CheckBoxFor(model => model.DiagnosedYN) @Html.HifisLabelFor(model => model.DiagnosedYN)
+            @Html.CheckBoxFor(model => model.ContagiousYN) @Html.HifisLabelFor(model => model.ContagiousYN)
+		</div>
+	</div>
+</div>
+
+<br />
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.Medication, new { @class = "col-sm-2 control-label" })
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@Html.TextAreaFor(model => model.Medication, new { @class = "form-control" })
+		</div>
+	</div>
+</div>
+                
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.Treatment, new { @class = "col-sm-2 control-label" })
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@Html.TextAreaFor(model => model.Treatment, new { @class = "form-control" })
+		</div>
+	</div>
+</div>
+    
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            $(document).ready(function () {
+                if ($('#txtNewMedication').val() == '') {
+                    $('#txtNewMedication')
+                        .val('@Labels.txtNewMedicationPrompt')
+                        .css('color', 'gray');
+                }
+            });
+
+            $(document).ready(function () {
+                if ($('#txtNewTreatment').val() == '') {
+                    $('#txtNewTreatment')
+                        .val('@Labels.txtNewTreatmentPrompt')
+                        .css('color', 'gray');
+                }
+            });
+
+            function ClearDefaultTextMedication() {
+                if ($('#txtNewMedication').val() == '@Labels.txtNewMedicationPrompt') {
+                    $('#txtNewMedication')
+                        .val('')
+                        .css('color', 'black');
+                }
+            }
+
+            function ClearDefaultTextTreatment() {
+                if ($('#txtNewTreatment').val() == '@Labels.txtNewTreatmentPrompt') {
+                    $('#txtNewTreatment')
+                        .val('')
+                        .css('color', 'black');
+                }
+            }
+
+    </script>
+    );
+}

@@ -1,0 +1,67 @@
+﻿<div id="dialog-confirm-deactivate" class="modal mrgn-tp-20">
+  <div class="modal-dialog whiteBackground">
+    <div class="modal-content">
+      <div class="modal-header alert alert-danger">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h2 class="modal-title">@Labels.ttlDeavtivateConfirmation</h2>
+      </div>
+      <div class="modal-body">
+        <p>@Labels.DeactivateConfirmation</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">@Labels.Close</button>
+        <button type="button" id="modalSaveButton-deactivate" class="btn btn-primary">@Labels.Deactivate</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $(function () {
+                 $("#dialog-confirm-deactivate").appendTo("body");
+             });
+
+             var targetUrl_deactivate;
+             var rowToDelete_deactivate;
+
+             //Had to do this so that click event works on dynamically created buttons
+             $(document).on('click', '.deleteButton', function (e) {
+                 e.preventDefault();
+
+                 targetUrl_deactivate = $(this).attr("href");
+                 rowToDelete_deactivate = $(this).closest("tr");
+
+                 $("#dialog-confirm-deactivate").modal('toggle');
+             });
+
+             $(document).on('click', "#modalSaveButton-deactivate", function () {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "targetUrl_deactivate",
+                    OnSuccess = "deleteRow(); $(this).remove()",
+                    OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.DeleteFailure + "</p>\");",
+                    OnComplete = "$('#dialog-confirm-deactivate').modal('toggle');",
+                    Type="POST"
+                });
+             });
+
+             function deleteRow() {
+                 var rootTable = rowToDelete_deactivate.parents('table').DataTable();
+
+                 rootTable.row(rowToDelete_deactivate).remove().draw();
+
+                 if (window.location.href.indexOf("/Messages/List") != -1) {
+                     CheckForNewMessages();
+                 }
+
+                 displayNotification('success', '', "<p>@Labels.DeleteSuccess</p>");
+             }
+        </script>
+    );
+}

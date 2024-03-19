@@ -1,0 +1,84 @@
+﻿@model InstanceViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.EditInstance</h2>
+	</header>
+	@using (Html.BeginForm("EditInstance", "ApplicationSettings", FormMethod.Post, new { @class = "form-horizontal"}))
+	{
+    @Html.AntiForgeryToken()
+	<div class="modal-body">
+			@Html.HiddenFor(model => model.ID)
+			@Html.HiddenFor(model => model.Date)
+			<div>
+				@if (Model.IsProduction)
+				{
+					Model.InstanceType = "Production";
+					@Html.HifisEditorFor(model => Model.InstanceType, HtmlAttributes: new { @readonly = "readonly" })
+				}
+				else
+				{
+					@Html.HifisEditorFor(model => Model.InstanceType)
+				}
+			</div>
+			<div>
+				@Html.HifisEditorFor(model => model.ShowBanner, templateName: "YesNo")
+			</div>
+			<div>
+				@Html.HifisEditorFor(model => model.BannerText)
+			</div>
+			<div>
+				<div class="form-group">
+					@Html.HifisLabelFor(model => model.TextColour, new { @class = "control-label col-sm-5" })
+					<div class="col-sm-7">
+						<div id="TextColour" class="input-group colorpicker-component"> 
+							<input name="TextColour" type="text" value="@Model.TextColour" class="align-left form-control" /> 
+							<span class="input-group-addon"><i></i></span> 
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="form-group">
+					@Html.HifisLabelFor(model => model.BackgroundColour, new { @class = "control-label col-sm-5" })
+					<div class="col-sm-7">
+						<div id="BackgroundColour" class="input-group colorpicker-component">
+							<input name="BackgroundColour" type="text" value="@Model.BackgroundColour" class="align-left form-control" />
+							<span class="input-group-addon"><i></i></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		<div>
+			<div id="bgColor" class="wb-bnr-ss" style="background:@Model.BackgroundColour">
+				<div id="txtColor" class="wb-ss" style="color:@Model.TextColour; padding-left: 5%;">
+					@Model.BannerText
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer" style="background-color: white;">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+		<button class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+	}
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+    initMCE();
+
+    $(function () {
+    	$('#TextColour').colorpicker({
+    		format: 'hex'
+    	}).on('changeColor', function (e) { $('#txtColor').css("color", e.color.toString('hex')); });
+
+    	$('#BackgroundColour').colorpicker({
+    		format: 'hex'
+    	}).on('changeColor', function (e) { $('#bgColor').css("background-color", e.color.toString('hex')); });
+
+    	$('#BannerText').on('input', function (e) { $('#txtColor').html(e.target.value); });
+    });
+</script>

@@ -1,0 +1,33 @@
+﻿@model ClientContributingBehaviouralFactorsViewModel
+
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.ClientFactorID)
+@Html.HiddenFor(model => model.isContributingFactor)
+
+<div>
+    @Html.HifisEditorFor(model => model.FactorTypeID, CachedTableTypes.HIFIS_BehaviouralFactorTypes, new { @class = "max_width_90" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ProbabilityTypeID, CachedTableTypes.HIFIS_ProbabilityTypes, new { @class = "max_width_90" })
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize max_width_90" })
+    @Html.ValidationImageFor(model => model.Comments)
+</div>
+
+
+

@@ -1,0 +1,101 @@
+﻿@model ClientListHealthViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_HealthIssues;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>       
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.HealthIssue</th> 
+                    <th>@Labels.Status</th>
+                    <th>@Labels.StartDate</th>
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.Description</th>
+                    <th>@Labels.Action</th>
+                </tr> 
+            </thead>
+ 
+            <tbody>
+                @for (int i = 0; i < Model.ClientHealth.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(m => m.ClientHealth[i].HealthIssueName, "HealthDetail")
+                            @Html.HiddenFor(ModelItem => Model.ClientHealth[i].HealthIssueID)
+                            @Html.HiddenFor(ModelItem => Model.ClientHealth[i].HealthIssueName)
+                        </td>
+                        <td>
+                            <div class="align-left">
+                    
+                                @if (Model.ClientHealth[i].SuspectedYN)
+                                { 
+                                    <span class="glyphicon glyphicon-ok"></span>
+                                    @Labels.Suspected
+                                }                    
+                            </div>  
+                                <div class="align-left image-align-center">
+                                @if (Model.ClientHealth[i].DiagnosedYN)
+                                { 
+                                    <span class="glyphicon glyphicon-ok"></span>
+                                    @Labels.Diagnosed
+                                }
+                    
+                            </div>
+                            <div class="align-left image-align-center">
+                                @if (Model.ClientHealth[i].ContagiousYN)
+                                {
+                                    <span class="glyphicon glyphicon-ok"></span>
+                                    @Labels.Contagious
+                                }
+                    
+                            </div>
+                                <div class="align-left image-align-center">
+                                    @if (Model.ClientHealth[i].SelfReportedYN)
+                                    {
+                                        <span class="glyphicon glyphicon-ok"></span>
+                                        @Labels.SelfIdentified
+                                    }
+                    
+                            </div>                                                                          
+                        </td>
+                        <td class="align-text-center">
+                            @if (Model.ClientHealth[i].DateFrom != null) 
+                            { 
+                                @Model.ClientHealth[i].DateFrom.Date.ToString("yyyy-MM-dd")
+                            }
+                        </td>                      
+               
+                        <td class="align-text-center">
+                            @if (Model.ClientHealth[i].DateTo == null)
+                            {
+                                @Labels.Ongoing
+                            }
+                            else
+                            {
+                                @Model.ClientHealth[i].DateTo.Value.ToString("yyyy-MM-dd")
+                            }
+                        </td>
+                        <td>@Html.DisplayTextFor(ModelItem => Model.ClientHealth[i].Description)</td>
+
+                        <td class="align-text-center">
+                            @Html.ActionLink(Labels.Edit, "EditHealth", new { controller = "ClientTombstone", id = Model.ClientHealth[i].ClientID, healthIssueID = Model.ClientHealth[i].HealthIssueID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md"> 
+        @Html.ActionLink(Labels.AddHealthIssue, "NewHealth", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.AddHealthIssue, aria_label = Labels.AddHealthIssue, @role = "button" })
+     </div>
+</div>
+

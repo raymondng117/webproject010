@@ -1,0 +1,38 @@
+﻿@{
+    ViewBag.Title = "EULA_Rejected";
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+
+    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("HIFIS.ENUMS.Labels.Labels", typeof(Labels).Assembly);
+    System.Globalization.CultureInfo enCulture = new System.Globalization.CultureInfo("en-CA");
+    System.Globalization.CultureInfo frCulture = new System.Globalization.CultureInfo("fr-CA");
+}
+
+<div class="module-alert module-simplify mrgn-tp-lg">
+    <div>
+        <section class="alert alert-danger">
+            @switch (Request.QueryString["CurrentCulture"])
+            {
+                case "fr-CA":
+                    <h1>@temp.GetString("EULA_EndUserLicenseDenied_Title", frCulture)</h1>
+                    @Html.Raw(@temp.GetString("EULA_EndUserLicenseDenied_Body", frCulture))
+                    break;
+                default: //"en-CA":
+                    <h1>@temp.GetString("EULA_EndUserLicenseDenied_Title", enCulture)</h1>
+                    @Html.Raw(@temp.GetString("EULA_EndUserLicenseDenied_Body", enCulture))
+                    break;
+            }
+        </section>
+    </div>
+</div>
+
+@switch (Request.QueryString["CurrentCulture"])
+{
+    case "fr-CA":
+        @Html.ActionLink(@temp.GetString("EULA_ViewEndUserLicense_Btn", frCulture), "EULA", "License", new { currentCulture = ViewBag.CurrentCulture }, new { @class = "btn btn-primary", alt = @temp.GetString("EULA_ViewEndUserLicense_Btn", frCulture), aria_label = @temp.GetString("EULA_ViewEndUserLicense_Btn", frCulture), @role = "button" })
+        break;
+    default: //"en-CA":
+        @Html.ActionLink(@temp.GetString("EULA_ViewEndUserLicense_Btn", enCulture), "EULA", "License", new { currentCulture = ViewBag.CurrentCulture }, new { @class = "btn btn-primary", alt = @temp.GetString("EULA_ViewEndUserLicense_Btn", enCulture), aria_label = @temp.GetString("EULA_ViewEndUserLicense_Btn", enCulture), @role = "button" })
+        break;
+}
+@ViewBag.MachineNetBiosDomain

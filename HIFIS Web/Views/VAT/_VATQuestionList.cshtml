@@ -1,0 +1,886 @@
+﻿@model VATIntakeViewModel
+@{
+    //Get initial category id
+    short? questionCategoryID = Model.QuestionsViewModel.FirstOrDefault().CategoryTypeID;
+    //Get initial category name
+    string categoryName = Labels.VATQuestions;
+
+    bool isVAT = Model.QuestionsViewModel.FirstOrDefault().IntakeTypeID == 1;      
+}
+
+@BuildTopOfPanel(categoryName)
+
+
+@for (int index = 0; index < Model.QuestionsViewModel.Count; index++)
+{
+    @BuildUpQuestion(index)
+}
+
+@BuildBottomOfPanel()
+
+
+@helper BuildTopOfPanel(string categoryName)
+{
+    @Html.Raw("<div class=\"panel panel-default\">")
+            @Html.Raw("<div class=\"panel-heading\">")
+                @Html.Raw("<h3 class=\"panel-title\">")
+                    @categoryName
+                @Html.Raw("</h3>")
+            @Html.Raw("</div>")
+        @Html.Raw("<div class=\"panel-body\">") 
+            @Html.Raw("<table class=\"wb-tables table table-striped table-hover\" data-wb-tables='{ \"sorting\": false, \"info\": false, \"paging\": false, \"filter\": false }'>")            
+                <thead>
+                    <tr>
+                        <th style="width:5%;">#</th>
+                        <th style="width:45%; padding:5px;">@Labels.Question</th>
+                        <th style="width:20%;">@Labels.Answer</th>
+
+                    </tr>
+                </thead>
+                
+                @Html.Raw("<tbody>")
+}
+@helper BuildBottomOfPanel()
+{
+    @Html.Raw("</tbody></table></div></div>")
+}
+
+@helper BuildUpQuestion(int index)
+{    
+    <tr>
+        <td class="align-text-center">@Model.QuestionsViewModel[index].Component</td>
+        <td>
+            <div style="max-width:97%">
+
+                <div class="panel panel-default" style="margin-left:-15px; margin-right:-15px; margin-top:10px; margin-bottom:0px; ">
+                    <div class="panel-heading" role="tab" id="heading@(Model.QuestionsViewModel[index].Component)" style="background-color:white;">
+                        <h4 class="panel-title" >
+                            <a data-toggle="collapse" href="#collapse@(Model.QuestionsViewModel[index].Component)" aria-expanded="true" aria-controls="collapse@(Model.QuestionsViewModel[index].Component)" style="text-decoration:none; font-weight:500; font-size:1em;">
+                                @Model.QuestionsViewModel[index].Question
+                                <span class="caret pull-right mrgn-tp-sm"></span>
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="collapse@(Model.QuestionsViewModel[index].Component)" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading@(Model.QuestionsViewModel[index].Component)">
+                        <div class="panel-body">
+                        @Html.Raw(Model.QuestionsViewModel[index].Description) 
+                        </div>
+                    </div>
+                </div>              
+                
+                @AddComment(index)
+            </div>
+        </td>
+        <td>@BuildUpQuestionType(index)</td>
+
+    </tr>   
+}
+
+@helper BuildUpQuestionType(int index)
+{
+    if (ViewBag.IsDisplay == null)
+    {
+                <div class="ScoreQuestion1_4" style="padding-left:10px;" data-question-number="@Model.QuestionsViewModel[index].Component" data-question-category="@Model.QuestionsViewModel[index].CategoryTypeName" data-question-answered="false" , data-question-categoryid="@Model.QuestionsViewModel[index].CategoryTypeID">
+                    
+                    @if (index == 9)
+                    {
+                        int k = 1;
+                        for (int i = 0; i <= 2; i++)
+                        { 
+                            @Html.RadioButtonFor(m => m.QuestionsViewModel[index].QuestionAnswer.ScoreValue, k, new { id = "ScoreQuestion1_4" + index + k, style = "cursor:pointer;" })
+
+                            <label for="@("ScoreQuestion1_4" + index + k)" data-toggle="popover" data-trigger="hover" title="Score Description" data-content="@HttpUtility.HtmlDecode(Model.QuestionsViewModel[index].QuestionScoreMeanings[i])" style="padding-left:5px; width:30%; cursor:pointer;">@k.ToString()</label>
+              
+                            <br />
+                            k++;
+                        }
+                    }
+                    else
+                    {
+                        int k = 1;
+                        for (int i = 0; i <= 4; i++)
+                        { 
+                            @Html.RadioButtonFor(m => m.QuestionsViewModel[index].QuestionAnswer.ScoreValue, k, new { id = "ScoreQuestion1_4" + index + k, style = "cursor:pointer;" })
+
+                            <label for="@("ScoreQuestion1_4" + index + k)" data-toggle="popover" data-trigger="hover" title="Score Description" data-content="@HttpUtility.HtmlDecode(Model.QuestionsViewModel[index].QuestionScoreMeanings[i])" style="padding-left:5px; width:30%; cursor:pointer;">@k.ToString()</label>
+              
+                            <br />
+                            k++;
+                        }
+                    }
+                </div>
+    }
+    else
+    {
+        if (Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue != null)
+        {
+            <label for="@("ScoreQuestion1_4" + Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue)" data-toggle="popover" data-trigger="hover" title="Score Description" data-content="@HttpUtility.HtmlDecode(Model.QuestionsViewModel[index].QuestionScoreMeanings[(short)Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue - 1])" style="padding-left:5px; width:30%; cursor:pointer; text-align:center; font-size:2.5em; color:#3d3d3d;">@Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue.ToString()</label>
+        }
+        else
+        {
+                    <div style="padding-left:5px; width:30%; cursor:pointer; text-align:center; font-size:2.5em; color:#3d3d3d;">
+                        @Labels.NA
+                    </div>
+        }
+    }
+        
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.AssessmentQuestionID)
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.IntakeID, new { @class = "IntakeIDForSaving" })
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.IntakeQuestionsAnswerID)
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.Component)
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].CategoryTypeID)
+}
+
+@helper AddComment(int index)
+{          
+    if (ViewBag.IsDisplay == null)
+    {
+        @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.Comment, "", new { style = "width:100%; margin-top:10px;" }, true)
+    }
+    else
+    {
+        @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.Comment, "", new { style = "background-color: white; width:100%; margin-top:10px;", disabled = true }, true)
+    }
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             /****************************************************************
+             *
+             *                          VAT Progress Panel
+             *
+             *****************************************************************/
+
+             //
+             // CLICK EVENTS 
+             //
+
+             $("#VATControlPanel").appendTo("body");
+
+             var controlPanelisOut = false;//A check to see if the panel is out or not.
+             $(".VATControlPanel").mouseenter(function () {
+                 if (!controlPanelisOut) {
+                     $(this).animate({ "left": "+=500px" }, "slow");
+                 }
+                 controlPanelisOut = true;
+             });
+             $(".VATControlPanel").click(function () {
+                 if (!controlPanelisOut) {
+                     $(this).animate({ "left": "+=500px" }, "slow");
+                     controlPanelisOut = true;
+                 }
+             });
+             $(".close").click(function () {
+                 if (controlPanelisOut) {
+                     $(".VATControlPanel").animate({ "left": "-=500px" }, "slow");
+
+                     setTimeout(function () {
+                         controlPanelisOut = false;
+                     }, 600);
+                 }
+             });
+
+             
+             //
+             // Checks to make sure that if there are any answers, the progress reflects those pre-existing answers
+             // You can see initialization of this at the bottom of the page in the OTHER SCRIPTS section
+             //
+
+             function doubleCheckProgress() {
+                 //Loop through all of the questions
+                 $("[data-question-answered]").each(function (index, element) {
+
+                     var inputVal;
+
+                     // if the input type is a radio button, get the value this way
+                     // as input is within the selected element which is a div
+                     if ($(element).hasClass("ScoreQuestionYN") || $(element).hasClass("ScoreQuestion1_4")) {
+                         inputVal = $(element).find("input:checked").val();
+                     }
+                     else {
+                         //Otherwise get the value the normal way
+                         inputVal = $(element).val();
+                     }
+
+                     // If the input is not na null value and it is not undefinded, set the question as answered
+                     if (inputVal !== "" && typeof inputVal != 'undefined') {
+                         //set the question as answered
+                         $(element).attr("data-question-answered", true);
+                     }
+
+                     //If the there is a refused button, check to see if it was set to true, as this is considered a valid answer
+                     if ($(this).closest("tr").find(".RefusedQuestionYN").find(".YesAndNo").bootstrapSwitch('state') === true) {
+                         //alert("hjkh");
+                         //is this a radio button answer?
+                         if ($(element).hasClass("ScoreQuestionYN") || $(element).hasClass("ScoreQuestion1_4")) { // yes it is a radio button
+                             //disable those answer fields
+                             $(element).find("input:radio").prop("disabled", true);
+
+                             //set the question as answerd
+                             $(element).find("input:radio").closest("[data-question-categoryid]").attr("data-question-answered", true);
+                         }
+                         else {//No its not a radio button
+                             //disable those answer fields
+                             $(element).prop("disabled", true);
+
+                             //set the question as answerd
+                             $(element).attr("data-question-answered", true);
+                         }
+                     }
+                 });
+
+                 //Once the answer attributes are properly set, adjust the progress panel
+                 adjustProgress();
+             }
+
+             //
+             // PROGRESS CALCULATION
+             //
+
+             function adjustProgress() {
+                 var ssID = 1;
+                 var bnID = 2;
+                 var imrID = 3;
+                 var mrID = 4;
+                 var ooID = 5;
+                 var mhID = 6;
+                 var suID = 7;
+                 var cID = 8;
+                 var sbID = 9;
+                 var hID = 10;
+
+                 //Suvival Skils
+                 var ss = $('[data-question-categoryid="' + ssID + '"]').length;
+                 var ssTotalAnswered = $('[data-question-categoryid="' + ssID + '"][data-question-answered="true"]').length;
+                 var ssProgress;
+
+                 //Basic Needs
+                 var bn = $('[data-question-categoryid="' + bnID + '"]').length;
+                 var bnTotalAnswered = $('[data-question-categoryid="' + bnID + '"][data-question-answered="true"]').length;
+                 var bnProgress;
+
+                 //Indicated Mortality Risks
+                 var imr = $('[data-question-categoryid="' + imrID + '"]').length;
+                 var imrTotalAnswered = $('[data-question-categoryid="' + imrID + '"][data-question-answered="true"]').length;
+                 var imrProgress;
+
+                 //Medical Risks
+                 var mr = $('[data-question-categoryid="' + mrID + '"]').length;
+                 var mrTotalAnswered = $('[data-question-categoryid="' + mrID + '"][data-question-answered="true"]').length;
+                 var mrProgress;
+
+                 //Organization/Orientation
+                 var oo = $('[data-question-categoryid="' + ooID + '"]').length;
+                 var ooTotalAnswered = $('[data-question-categoryid="' + ooID + '"][data-question-answered="true"]').length;
+                 var ooProgress;
+
+                 //Mental Health
+                 var mh = $('[data-question-categoryid="' + mhID + '"]').length;
+                 var mhTotalAnswered = $('[data-question-categoryid="' + mhID + '"][data-question-answered="true"]').length;
+                 var mhProgress;
+
+                 //Substance Use
+                 var su = $('[data-question-categoryid="' + suID + '"]').length;
+                 var suTotalAnswered = $('[data-question-categoryid="' + suID + '"][data-question-answered="true"]').length;
+                 var suProgress;
+
+                 //Communication
+                 var c = $('[data-question-categoryid="' + cID + '"]').length;
+                 var cTotalAnswered = $('[data-question-categoryid="' + cID + '"][data-question-answered="true"]').length;
+                 var cProgress;
+
+                 //Social Behaviours
+                 var sb = $('[data-question-categoryid="' + sbID + '"]').length;
+                 var sbTotalAnswered = $('[data-question-categoryid="' + sbID + '"][data-question-answered="true"]').length;
+                 var sbProgress;
+
+                 //Homelessness
+                 var h = $('[data-question-categoryid="' + hID + '"]').length;
+                 var hTotalAnswered = $('[data-question-categoryid="' + hID + '"][data-question-answered="true"]').length;
+                 var hProgress;
+
+                 //Total Progress
+                 var total = 0;
+                 var totalAnswered = 0;
+                 var totalProgress = 0;
+
+                 if (ss !== 0) {
+                     ssProgress = Math.round((ssTotalAnswered / ss) * 100);
+                     $('[data-progres-categoryid="' + ssID + '"]').css("width", ssProgress + "%").html(ssProgress + "%");
+
+                     $('[data-count-categoryid="' + ssID + '"]').html(ssTotalAnswered);
+
+                     total += ss;
+                     totalAnswered += ssTotalAnswered;
+                 }
+
+                 if (bn !== 0) {
+                     bnProgress = Math.round((bnTotalAnswered / bn) * 100);
+
+                     $('[data-progres-categoryid="' + bnID + '"]').css("width", bnProgress + "%").html(bnProgress + "%");
+
+                     $('[data-count-categoryid="' + bnID + '"]').html(bnTotalAnswered);
+
+                     total += bn;
+                     totalAnswered += bnTotalAnswered;
+                 }
+
+                 if (imr !== 0) {
+                     imrProgress = Math.round((imrTotalAnswered / imr) * 100);
+
+                     $('[data-progres-categoryid="' + imrID + '"]').css("width", imrProgress + "%").html(imrProgress + "%");
+
+                     $('[data-count-categoryid="' + imrID + '"]').html(imrTotalAnswered);
+
+                     total += imr;
+                     totalAnswered += imrTotalAnswered;
+                 }
+
+                 if (mr !== 0) {
+                     mrProgress = Math.round((mrTotalAnswered / mr) * 100);
+
+                     $('[data-progres-categoryid="' + mrID + '"]').css("width", mrProgress + "%").html(mrProgress + "%");
+
+                     $('[data-count-categoryid="' + mrID + '"]').html(mrTotalAnswered);
+
+                     total += mr;
+                     totalAnswered += mrTotalAnswered;
+                 }
+
+                 if (oo !== 0) {
+                     ooProgress = Math.round((ooTotalAnswered / oo) * 100);
+
+                     $('[data-progres-categoryid="' + ooID + '"]').css("width", ooProgress + "%").html(ooProgress + "%");
+
+                     $('[data-count-categoryid="' + ooID + '"]').html(ooTotalAnswered);
+
+                     total += oo;
+                     totalAnswered += ooTotalAnswered;
+                 }
+
+                 if (mh !== 0) {
+                     mhProgress = Math.round((mhTotalAnswered / mh) * 100);
+
+                     $('[data-progres-categoryid="' + mhID + '"]').css("width", mhProgress + "%").html(mhProgress + "%");
+
+                     $('[data-count-categoryid="' + mhID + '"]').html(mhTotalAnswered);
+
+                     total += mh;
+                     totalAnswered += mhTotalAnswered;
+                 }
+
+                 if (su !== 0) {
+                     suProgress = Math.round((suTotalAnswered / su) * 100);
+
+                     $('[data-progres-categoryid="' + suID + '"]').css("width", suProgress + "%").html(suProgress + "%");
+
+                     $('[data-count-categoryid="' + suID + '"]').html(suTotalAnswered);
+
+                     total += su;
+                     totalAnswered += suTotalAnswered;
+                 }
+
+                 if (c !== 0) {
+                     cProgress = Math.round((cTotalAnswered / c) * 100);
+
+                     $('[data-progres-categoryid="' + cID + '"]').css("width", cProgress + "%").html(cProgress + "%");
+
+                     $('[data-count-categoryid="' + cID + '"]').html(cTotalAnswered);
+
+                     total += c;
+                     totalAnswered += cTotalAnswered;
+                 }
+
+                 if (sb !== 0) {
+                     sbProgress = Math.round((sbTotalAnswered / sb) * 100);
+
+                     $('[data-progres-categoryid="' + sbID + '"]').css("width", sbProgress + "%").html(sbProgress + "%");
+
+                     $('[data-count-categoryid="' + sbID + '"]').html(sbTotalAnswered);
+
+                     total += sb;
+                     totalAnswered += sbTotalAnswered;
+                 }
+
+                 if (h !== 0) {
+                     hProgress = Math.round((hTotalAnswered / h) * 100);
+
+                     $('[data-progres-categoryid="' + hID + '"]').css("width", hProgress + "%").html(hProgress + "%");
+
+                     $('[data-count-categoryid="' + hID + '"]').html(hTotalAnswered);
+
+                     total += h;
+                     totalAnswered += hTotalAnswered;
+                 }
+
+
+                 totalProgress = Math.round((totalAnswered / total) * 100);
+
+                 $('#grandTotalProgress').css("width", totalProgress + "%").html(totalProgress + "%");
+
+                 $('#grandTotalAnswered').html(totalAnswered);
+                 
+                 return totalProgress;
+             }
+
+
+        </script>);
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             /****************************************************************
+             *
+             *                          VAT INTAKE FORM
+             *
+             *****************************************************************/
+
+             //
+             // Validate a VAT intake form to ensure it is safe to submit
+             //
+            
+             //Only want to display this message once
+            var displayedAutoSaveMessage = false;
+
+             //To get the readonlyvitals
+
+            function gettoken() {
+                var token = '@Html.AntiForgeryToken()';
+                token = $(token).val();
+                return token;
+            }
+
+            $("#PrimaryClientID").on("change", function () {
+                $.ajax({
+                    url: "@Url.Action("New", "VAT")",
+                    type: "GET",
+                data: {
+                    intakeTypeID : 1,
+                    clientID:$("#PrimaryClientID").val(),
+                    __RequestVerificationToken: gettoken()
+                },
+                }).done(function (data) {
+                });
+            });
+
+             //Checks if the main form is valid or not.
+             function validateForm() {
+                 //Check that form fields are filled out
+                 if ($("#PrimaryClientID").val() !== "" && $("#DateStart").val() !== "" && $("#DateStart_TimeOfDay").val() !== "" && $("#OrganizationID").val() !== "" && $("#CaseworkerID").val() !== "") {
+
+                     //if (typeof $("#PreScreenPeriodTypeID").val() !== "undefined" && $("#PreScreenPeriodTypeID").val() !== "") || typeof $("#AssessmentPeriodTypeID").val() !== "undefined" && $("#AssessmentPeriodTypeID").val() !== ""
+                     //{
+
+                         //Everything is correct, form is submitable
+                     return true;
+                     //}
+                 }
+
+                 //Form not correct, inform that autosaving wont work until this is done
+                 if (!displayedAutoSaveMessage) {
+                     alert("@Labels.EnableAutoSave");
+
+                     displayedAutoSaveMessage = true;
+                 }
+
+                 return false;
+             }
+
+             //
+             // Checks if VAT intake form has been submitted or not
+             //
+
+             //Check if main intake form has been submitted yet
+             function formsubmitted() {
+                 var isInitFormSubmitted = $("#FormSubmitted").val();
+
+
+                 //If the hidden field doesn't exist or is set to true, it is safe to save questions
+                 //Aditional check is done before db save
+                 if (typeof isInitFormSubmitted === "undefined" || isInitFormSubmitted === 'true') {
+
+                     return true;//Okay to save questions
+                 }
+                 else {
+                     return false;//No okay to save questions
+
+                 }
+             }
+
+
+             /****************************************************************
+             *
+             *                  VAT QUESTION ANSWERS FORM
+             *
+             *****************************************************************/
+
+             //
+             // Auto Saves question answer form as user is inputing data
+             //
+
+             //Will auto save as responses are entered, to prevent loss of data
+             function autoSave() {
+                 var success = false;
+                 //Has the init form been submitted?
+                 if (!formsubmitted()) { //NO
+
+                         //Submit main form first
+                         tinyMCE.triggerSave();  //this will save the "Description" field for validation
+
+                         @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/VAT/New") + "'",
+                        Data = "$('#Intake_FormPortion :input').serialize()",
+                        OnSuccess = "$('#FormSubmitted').val('true'); success = true; $('.IntakeIDForSaving').val(data.id); $('#IntakeID').val(data.id); console.log($('#FormSubmitted').val());var intakeId = data.id;console.log(intakeId);$('.cancelButton').each(function () {var href = $(this).attr('href');href = href + '?intakeID=' + intakeId;$(this).attr('href', href);});",//Pass intakeID along with the url to List/ClientList action when the user clicks Cancel button from new VATIntake form.Set form as saved
+                        LoaderGif = false,
+                        OnComplete = "",
+                        OnFailure = "console.log($('#FormSubmitted').val()); console.log(data.id);",
+                        Async = false
+                    });
+                         @*$.ajax({
+                             url: "@Url.Content("~/VAT/New")",
+                             type: "POST",
+                             data: $('#Intake_FormPortion :input').serialize(),
+                             async: false,
+                         }).done(function (data) {
+                             $('#FormSubmitted').val('true');
+                             $('.IntakeIDForSaving').val(data.id);
+                             $('#IntakeID').val(data.id);
+                             console.log(data);
+                         }).fail(function (data) {
+                             console.log($('#FormSubmitted').val());
+                             console.log(data.id);
+                         });*@
+
+
+                     }
+
+
+                 //cancelAllAjaxCall();
+                 SaveQuestions();
+
+                 return success;
+                 }
+
+            function SaveQuestions()
+            {
+
+                //Save Question
+                 @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/VAT/SaveQuestions") + "'",
+                    Data = "$('#VATIntakeForm').serialize()",
+                    OnSuccess = "$('#FormSubmitted').val('true'); success = true;",//Set form as saved
+                    LoaderGif = false,
+                    OnComplete = "",
+                    Async = true
+                });
+
+                 //setTimeout(SaveQuestions, 60000);  Why having a timeout for SaveQuestions?  This function is being called in autoSave() and autosave() is called each time a question is answered
+             }
+
+             //
+             // Final Form Submit For Question Answers
+             //
+
+            $("#VATIntakeForm").submit(function (event) {
+
+                if (!formsubmitted() && validateForm())
+                {
+                    //Submit main form first
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/VAT/New") + "'",
+                        Data = "$('#Intake_FormPortion :input').serialize()",
+                        OnSuccess = ";$('#FormSubmitted').val('true'); success = true; $('.IntakeIDForSaving').val(data.id); $('#IntakeID').val(data.id); console.log($('#FormSubmitted').val());SaveQuestions();",//Set form as saved
+                        LoaderGif = true,
+                        OnComplete = "",
+                        OnFailure = "console.log($('#FormSubmitted').val()); console.log(data.id);",
+                        Async = false
+                    });
+                 }
+
+                if (adjustProgress() === 100 && formsubmitted())
+                {
+                     // main VATe intake form is complete and submitted
+                     // All questions have been answered, progress is 100%
+                     // It is now safe to submit form
+
+                     // cancel all remaining ajax request to ensure no overwrites occur
+                     if ($.xhrPool.length <= 0)
+                     {
+                         //Everything is good to go, submit the form
+
+                         return;
+                     }
+                     else
+                     {
+                         alert("@Labels.WaitForProcessToComplete");
+                        // request.abort();
+                     }
+
+                 }
+                 else if (adjustProgress() === 0)
+                 {
+                     $.magnificPopup.close();
+                 }
+                 else {
+                     alert("@Labels.CompleteTheForm");
+                 }
+
+                 // Form is not yet safe to submit
+                 // Prevent form from submitting
+                event.preventDefault(); //Don't submit for until it is complete
+
+            })
+
+            //this function closes the overlay modal that always stays on the screen 
+            //Could be a better event to handle it.
+            $(document).on('wb-ready.wb-lbx', function (event) {
+                var magnificPopup = $.magnificPopup.instance;
+                magnificPopup.close();
+            });
+
+</script>);
+}
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+
+                 /****************************************************************
+                 *
+                 *                  QUESTION EVENT HANDLERS
+                 *
+                 *****************************************************************/
+
+                 //
+                 // RefusedQuestionYN
+                 // -----------------
+                 //
+                 // EVENT:
+                 // ------
+                 // ON CHANGE
+
+                 //When a refused toggle is selected
+                 $('.RefusedQuestionYN').on('switchChange.bootstrapSwitch', function (event, state) {
+
+                     var input = $(this).closest("tr").find("[data-question-answered]");
+
+                     if (state) //Slid switch to yes
+                     {
+                         if (input.hasClass("ScoreQuestionYN")) {
+                             // yes no has to store data in inputs within a div, thus the difference
+                             input.find("input:radio").prop("disabled", true);
+                         }
+                         else //if (input.hasClass("ScoreQuestionNumber") || input.hasClass("ScoreQuestionDD"))
+                         {
+                             //disable the answer field
+                             input.prop("disabled", true);
+                         }
+
+                         //set the question as answered
+                         input.attr("data-question-answered", true);
+                     }
+                     else //Slid switch to no
+                     {
+                         if (input.hasClass("ScoreQuestionYN")) {
+                             // yes no has to store data in inputs within a div, thus the difference
+                             input.find("input:radio").prop("disabled", false);
+
+                             if (typeof input.find("input:checked").val() == 'undefined') { //If no answer, answerd is false, otherwise keep answered as true.
+                                 //set answered to false
+                                 input.attr("data-question-answered", false);
+                             }
+                         }
+                         else //if (input.hasClass("ScoreQuestionNumber") || input.hasClass("ScoreQuestionDD"))
+                         {
+
+                             //enable field again
+                             input.prop("disabled", false);
+
+                             if (input.val() === "") {
+                                 //If no answer, answerd is false, otherwise keep answered as true.
+                                 //set answered to false
+                                 input.attr("data-question-answered", false);
+                             }
+                         }
+                     }
+
+                     //redraw the changes in the progress panel
+                     adjustProgress();
+
+                     //if the form is complete, start autosaving
+                     if (validateForm()) {
+
+                         autoSave();
+                     }
+                 });
+
+                 //
+                 // ScoreQuestionYN
+                 // -----------------
+                 //
+                 // EVENT:
+                 // ------
+                 // ON CLICK
+
+                 /// Checking a yes no answer
+                 $(".ScoreQuestionYN>input:radio").click(function () {
+
+                     $(this).parent().attr("data-question-answered", true);
+
+                     //redraw the changes in the progress panel
+                     adjustProgress();
+
+                     //if the form is complete, start autosaving
+                     if (validateForm()) {
+
+                         autoSave();
+                     }
+                 });
+
+
+                 //
+                 // ScoreQuestionYN
+                 // -----------------
+                 //
+                 // EVENT:
+                 // ------
+                 // ON CLICK
+
+                 /// Checking a yes no answer
+                 $(".ScoreQuestion1_4>input:radio").click(function () {
+
+                     $(this).parent().attr("data-question-answered", true);
+
+                     //redraw the changes in the progress panel
+                     adjustProgress();
+
+                     //if the form is complete, start autosaving
+                     if (validateForm()) {
+
+                         autoSave();
+                     }
+                 });
+
+
+                 //
+                 // ScoreQuestionNumber
+                 // -----------------
+                 //
+                 // EVENT:
+                 // ------
+                 // ON FOCUSOUT
+
+                 //leave a number box
+                 $(".ScoreQuestionNumber").focusout(function () {
+                     if ($(this).val() !== "" && $(this).val() > -1) {//is there a value?
+
+                         //Set answered to true
+                         $(this).attr("data-question-answered", true);
+                     }
+                     else {//No value in box
+
+                         //Set answered to flase
+                         $(this).attr("data-question-answered", false);
+                     }
+
+                     //redraw the changes in the progress panel
+                     adjustProgress();
+
+                     //if the form is complete, start autosaving
+                     if (validateForm()) {
+
+                         autoSave();
+                     }
+                 });
+
+
+                 //
+                 // ScoreQuestionDD
+                 // -----------------
+                 //
+                 // EVENT:
+                 // ------
+                 // ON CHANGE
+
+                 //Did the drop down change?
+                 $(".ScoreQuestionDD").change(function () {
+                     if ($(this).val() !== "") {//a proper value was selected
+
+                         //set the question answered to true
+                         $(this).attr("data-question-answered", true);
+                     }
+                     else { //didn't select a value
+
+                         $(this).val("");
+                         //set the question answered to false
+                         $(this).attr("data-question-answered", false);
+                     }
+
+                     //redraw the changes in the progress panel
+                     adjustProgress();
+
+                     //if the form is complete, start autosaving
+                     if (validateForm()) {
+
+                         autoSave();
+                     }
+                 });
+
+                $('[id*="_QuestionAnswer_Comment"]').blur(function () {
+                    if (validateForm()) {
+                        autoSave();
+                    }
+                });
+             });
+
+</script>);
+}
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             /****************************************************************
+             *
+             *                      OTHER SCRIPTS
+             *
+             *****************************************************************/
+
+             //
+             // Used to get clients profile information after selected from search
+             //
+
+             function callGetROVitals() {
+                 getROVitals($('#PrimaryClientID').val());
+             }
+
+
+             //
+             // Page initialization events
+             //
+
+             $(function () {
+                 //Enable the popover to display all of the details
+                 $('[data-toggle="popover"]').popover({
+                     html : true,
+                 });
+
+                 //Init double check procedure
+                 doubleCheckProgress();
+             })
+
+        </script>);
+}

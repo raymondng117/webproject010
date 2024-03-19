@@ -1,0 +1,62 @@
+﻿@model MedicationDispensingHistoryListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_MedicationDispensingHistoryList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="col-xs-12">
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.DateDispensed</th>
+                    <th>@Labels.NumberOfPills</th>
+                    <th>@Labels.DispensedAdjustment</th>
+                    <th>@Labels.DispensedDoneBy</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DispensingViewModel item in Model.History)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.DispensingDate, "DateOnly")</td>
+                        <td>@item.NumberOfPills</td>
+                        <td>@item.DispensingTypeName</td>
+                        <td>@item.OnBehalfOfFullName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CurrentPillCount, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="CurrentPillCount" name="CurrentPillCount"
+                   value="@Html.DisplayFor(model => model.CurrentPillCount)" readonly />
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row mrgn-tp-md">
+        <div class="col-xs-12">
+            <div class="form-group">
+                @if (RightsHelper.HasRight(UserRights.Health_Medication_Refill_Add))
+                {
+                    if (Model.History.Count() > 0)
+                    {
+                        @Html.ActionLink(Labels.PillCountAdjustment, "RefillMedication", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = Model.History.First().MedicationID, medicationName = Model.History.First().MedicationName }, new { @class = "addButton", alt=Labels.PillCountAdjustment, aria_label = Labels.PillCountAdjustment, @role = "button" })
+                    }
+                }
+                @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+
+</div>
+

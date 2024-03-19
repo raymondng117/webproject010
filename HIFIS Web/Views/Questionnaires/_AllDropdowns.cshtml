@@ -1,0 +1,48 @@
+﻿@model IEnumerable<QuestionnaireQuestionDropdownViewModel>
+
+
+
+<table id="allDropdowns" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+    <thead>
+        <tr>
+            <th>@Labels.DropdownValues</th>
+            <th>@Labels.ActiveYN</th>
+            @if (ViewBag.QuestionDropdowns == null)
+            {
+                <th> @Labels.Action</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.IsEmptyOrNull())
+        {
+            foreach (var dropdown in Model)
+            {
+                <tr>
+                    <td>@dropdown.Name</td>
+                    <td class="align-text-center wdth-20">
+                        @if(dropdown.ActiveYN)
+                        {
+                            @Labels.Yes   
+                        }
+                        else
+                        {
+                            @Labels.No   
+                        }
+                    </td>
+                    @if (ViewBag.QuestionDropdowns == null)
+                    {
+                        <td class="align-text-center wdth-30">
+                            
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_DropDowns_Edit))
+                            { 
+                                @Html.ActionLink(Labels.Edit, "EditDropdown", new { id = dropdown.QuestionPickListID }, new { @class = " editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+                            
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -1,0 +1,56 @@
+﻿@model ProgramEditServiceProviderViewModel
+@{
+    ViewBag.ViewTitle = Labels.EditServiceProviders;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+}
+
+@using (Html.BeginScriptContext())
+{
+    
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            @{
+                if(!(TempData["error"] == null)) {
+                    char message = Char.Parse(TempData["error"].ToString());
+                    switch (message)
+                    {
+                        case 'd':
+                            <text>displayNotification('error', null, '@Labels.DuplicateEntry');</text>
+                            break;
+                        case 't':
+                            <text>displayNotification('error', null, '@Labels.StartDateError');</text>
+                            break;
+                        case 'f':
+                            <text>displayNotification('error', null, '@Labels.FundsError');</text>
+                            break;
+                        case 'b':
+                            <text>displayNotification('error', null, '@Labels.BedsError');</text>
+                            break;
+                    }
+            }
+           }
+</script>
+    
+);
+}
+
+<div>
+    @using (Html.BeginForm("EditServiceProvider", "Programs", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        @Html.Partial("_EditServiceProvider")
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "Display", "Programs", new { @programID = Model.ProgramID }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

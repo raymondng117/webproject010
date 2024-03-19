@@ -1,0 +1,67 @@
+﻿@model ClientStorageViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayStorage;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}           
+
+<div class=" displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ItemDescription, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.ItemDescription)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ItemLocation, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.ItemLocation)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateStart)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateEnd)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList
+            {
+                ID = Model.OrganizationID,
+                List = ViewBag.Orgs as SelectList
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Comments)
+    </div>
+    <div>
+        @Html.HifisLabelFor(model => model.StorageOutcomeTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.StorageOutcomeTypeID,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_StorageOutcomeTypes, ViewBag.CurrentCulture, Model.StorageOutcomeTypeID)
+                        })
+    </div>
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Storage_Edit, Model.OrganizationID))
+        {
+            @Html.ActionLink(Labels.Edit, "Edit", "Storage", new { id = Model.ClientID, itemID = Model.StoredItemID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+
+        @Html.ActionLink(Labels.Cancel, "ClientList", "Storage", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"})
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+
+

@@ -1,0 +1,222 @@
+﻿@model GroupActivityViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_ManageGroupActivity;
+}
+
+
+
+<div class="mainDisplay">
+    <div id="displayForm" style="padding: 20px;">
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.GroupActivityTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.GroupActivityTypeID,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GroupActivitiesTypes, ViewBag.CurrentCulture, Model.GroupActivityTypeID)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.OwnerOrganizationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-2" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.OwnerOrganizationID,
+                                        List = Utilities.ConvertToSelectList(Model.OrgList)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.OrganizationID,
+                                        List = Utilities.ConvertToSelectList(Model.OrgList)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ProgramIDs, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-2" })
+                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                    new MultipleItemSelectList
+                                    {
+                                        IDs = ViewBag.CurrentSelectedProgramIDs as List<string>,
+                                        List = ViewBag.ProgramList_UnEncrypted as SelectList
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.LocationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-2" })
+                    @Html.DisplayFor(model => model.LocationName)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.HifisDisplayFor(model => model.DateStart, null, true, "DateAndTime")
+                    @Html.HiddenFor(model => model.DateStart.TimeOfDay)
+                    @Html.Hidden("datetimestart", Model.DateStart.ToString("yyyy-MM-dd HH:mm tt"), new { id = "Datestrt" })
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Hours, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.Hours)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Minutes, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.Minutes)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ReasonForServiceTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.ReasonForServiceTypeID,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, ViewBag.CurrentCulture, Model.ReasonForServiceTypeID)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.FromReferrerPlaceID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.DisplayFor(model => model.FromReferrerPlaceName)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ToReferrerPlaceID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.DisplayFor(model => model.ToReferrerPlaceName)
+                </div>
+            </div>
+        </div>
+        <br />
+
+        <div class="no-print">
+            @Html.ActionLink(Labels.Edit, "Edit", "GroupActivities", new { activityID = Model.GroupActivityID }, new { @class = "editButton ", title = Labels.Edit, id = "edit-btn", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+            @Html.ActionLink(Labels.Cancel, "List", "GroupActivities", new { }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+
+        @if (RightsHelper.HasRight(UserRights.GroupActivities_ClientList))
+        {
+            <li class="active">
+                <a class="tabButton" href="#Attendees" role="tab" data-toggle="tab">@Labels.Attendees</a>
+            </li>
+        }
+
+        <li>
+            <a class="tabButton" href="#Organizers" role="tab" data-toggle="tab">@Labels.Organizers</a>
+        </li>
+
+        <li>
+            <a class="tabButton" href="#Demographics" role="tab" data-toggle="tab">@Labels.Demographics</a>
+        </li>
+
+        <li>
+            <a class="tabButton" href="#Comments" role="tab" data-toggle="tab">@Labels.Comments</a>
+        </li>
+
+        @if (RightsHelper.HasRight(UserRights.GroupActivities_Add))
+        {
+            <li>
+                <a class="tabButton" href="#Replicate" role="tab" data-toggle="tab">@Labels.Replicate</a>
+            </li>
+        }
+
+    </ul>
+    <!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+        <div class="panel-body">
+            <div class="tab-content">
+
+                @if (RightsHelper.HasRight(UserRights.GroupActivities_ClientList))
+                {
+                    <!-- Tab Pane #1: Attendees -->
+                    <div class="tab-pane active" id="Attendees">
+                        @Html.Partial("_Attendees", Model)
+                    </div>
+                }
+
+                <!-- Tab Pane #2: Organizers -->
+                <div class="tab-pane" id="Organizers">
+                    @Html.Partial("_Organizers", Model)
+                </div>
+
+                <!-- Tab Pane #3: Demographics -->
+                <div class="tab-pane" id="Demographics">
+                    @Html.Partial("_Demographics", Model)
+                </div>
+
+                <!-- Tab Pane #4: Comments -->
+                <div class="tab-pane" id="Comments">
+                    @Html.Partial("_Comments", Model)
+                </div>
+
+                @if (RightsHelper.HasRight(UserRights.GroupActivities_Add))
+                {
+                    <!-- Tab Pane #5: Replicate -->
+                    <div class="tab-pane" id="Replicate">
+                        @Html.Partial("_Replicate", Model)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mrgn-tp-lg">
+    @Html.HiddenFor(model => model.GroupActivityID)
+    @Html.HiddenFor(model => model.LocationGeoID)
+    @Html.HiddenFor(model => model.FromReferrerGeoID)
+    @Html.HiddenFor(model => model.ToReferrerGeoID)
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.HiddenFor(model => model.DateStart)
+    @Html.HiddenFor(model => model.ReasonForServiceTypeID)
+    @Html.HiddenFor(model => model.GroupActivityTypeID)
+    @Html.Partial("_BaseFooter", Model)
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Scripts/Hifis/MultiDatePicker/css/bootstrap-datepicker3.min.css")" />
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script src="@Url.Content("~/Scripts/Hifis/MultiDatePicker/js/bootstrap-datepicker.min.js")" type="text/javascript"></script>);
+
+    Html.AddScriptBlock(
+        @<script src="@Url.Content("~/Scripts/Hifis/MultiDatePicker/locales/bootstrap-datepicker.fr.min.js")" type="text/javascript"></script>);
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            //resizes the data table columns when you switch tabs, hidden tabs break table width.
+            $(document).ready(function () {
+                $("#ServiceProgramsButton").hide();
+
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    if (jQuery().DataTable) {
+                        $('.dataTable').DataTable().columns.adjust();
+                    }
+                });
+            });
+
+            $(document).on('draw.dt', function () {
+                init_hifis();
+            });
+
+        </script>
+);
+}

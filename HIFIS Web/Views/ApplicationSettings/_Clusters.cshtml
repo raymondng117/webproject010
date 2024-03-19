@@ -1,0 +1,49 @@
+﻿@model List<AppSettingViewModel>
+
+<table id="ClusterTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                { "width": "40%", "data": "name"},
+                                                                                { "width": "15%", "data": "count"},
+                                                                                { "width": "20%", "data": "action"}
+                                                                            ],
+                                                                            "order": [ [0, "desc"] ],
+                                                                            "ajax": "@Url.Content("~/ApplicationSettings/GetClusterListJson")"                         
+                                                                        }'>
+    <thead>
+        <tr>
+            <th class="align-text-center">@Labels.ClusterName</th>
+            <th class="align-text-center">@Labels.SPCount</th>
+            <th class="align-text-center">@Labels.Action</th>
+        </tr>
+    </thead>
+    <tbody class="align-text-center">
+    </tbody>
+</table>
+
+<p>
+    <a href="@Url.Content("~/ApplicationSettings/GetNewClusterForm")" aria-controls="Modal_NewCluster" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewCluster</a>
+
+@if (HttpContext.Current.Request.Url.Host.ToLower() != "demo.hifis.ca" && (HttpContext.Current.Session[HIFIS.WEB.Controllers.MasterController.USER_VITALS_SESSION_KEY] as HIFIS.CONTRACTS.WCFContracts.DataContracts.UserProfile).UserID == 1)
+{
+    <a href="@Url.Content("~/Support/ClusterMerge")" class="forwardButton" role="button">@Labels.Merge</a>
+
+}
+
+</p>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+           
+             //This will decorate buttons an things correctly when table is drawn
+             $('#ClusterTable').on('draw.dt', function () {
+                 init_hifis();
+
+                 //This re-init any lightboxes that are dynamically added via the datables reload call
+                 $(".wb-lbx").trigger("wb-init.wb-lbx");
+             });
+
+        </script>
+    );
+}

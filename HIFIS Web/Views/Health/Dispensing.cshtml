@@ -1,0 +1,391 @@
+﻿@model MedicationDispensingViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DispenseMedication;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    int i = 0;
+    int j = 0;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+@Html.Partial("_ConfirmAction", new ConfirmActionViewModel(ConfirmActionTypes.Undo))
+
+<div>
+    @using (Html.BeginForm("Dispensing", "Health", FormMethod.Post, new { @class = "form-horizontal", id = "dispensingForm" }))
+    {
+        @Html.Partial("_Dispensing", Model.Dispensing)
+    }
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="pull-left" id="recurrence-filters">
+            <label class="pointerInput"><input id="FilterAll" type="radio" name="timeFilter" checked="checked" />@Labels.All</label>
+            <label class="pointerInput"><input id="FilterMorning" type="radio" name="timeFilter" />@Labels.Morning</label>
+            <label class="pointerInput"><input id="FilterNoon" type="radio" name="timeFilter" />@Labels.Noon</label>
+            <label class="pointerInput"><input id="FilterEvening" type="radio" name="timeFilter" />@Labels.Evening</label>
+            <label class="pointerInput"><input id="FilterBedtime" type="radio" name="timeFilter" />@Labels.Bedtime</label>
+            <label class="pointerInput"><input id="FilterPRN" type="radio" name="timeFilter" />@Labels.PRN</label>
+        </div>
+        <div id="progress-div" class="pull-left mrgn-lft-sm">
+            <label>@Labels.Loading</label>
+            <progress id="tablesProgress" value="0" max="18"><span class="wb-inv"></span></progress>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#ByClient" role="tab" data-toggle="tab">@Labels.ByClient</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#ByRoom" role="tab" data-toggle="tab">@Labels.ByRoom</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="ByClient">
+				<div class="mrgn-tp-md">
+					<label for="ClientSearch">@Labels.SearchForAClient</label>
+					<input type="text" id="ClientSearch"/>
+				</div>
+				<datalist id="clientsAutocomplete">
+					@{
+						Model.MedicationDispensingList = Model.MedicationDispensingList.OrderBy(mdl => mdl.ClientVitals.LastName).ToList();
+						foreach (var client in Model.MedicationDispensingList)
+						{
+							<option label="@client.ClientVitals.ClientFullName (@Html.DisplayFor(model => client.ClientVitals.DOB))" 
+									value="ClientView-@i"></option>
+							{ i++; }
+						}
+						i = 0;
+					}
+				</datalist>
+
+                <div class="panel-group" id="accordionByClient">
+
+				    @foreach (var dispenseItem in Model.MedicationDispensingList)
+				    {
+                        i++;
+                    
+                        <div class="panel panel-default medPanel">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" data-parent="#accordionByClient" href="#byClient@(i)">@dispenseItem.ClientVitals.ClientFullName, @Html.DisplayFor(model => dispenseItem.ClientVitals.DOB), @Labels.Room: @dispenseItem.RoomName@*#@dispenseItem.RoomNo*@, @Labels.Bed: @dispenseItem.BedName</a>
+                                </h4>
+                            </div>
+                            <div id="byClient@(i)" class="panel-collapse collapse">
+                                <div class="panel-body">
+						            <div class="table-responsive">
+                                        <table class="wb-tables table table-striped table-hover dispensing-table" 
+                                            data-wb-tables='{   "columns": [
+                                                                    { "width": "30%", "data": "medicationName", "sClass" : "text-left"},
+                                                                    { "width": "20%", "data": "dosage", "sClass" : "text-center"},
+                                                                    { "width": "20%", "data": "dispensedToday", "sClass" : "text-center"},
+                                                                    { "width": "40%", "data": "dispensing", "sClass" : "text-left"} 
+                                                                ],
+                                                                "columnDefs": [
+                                                                    { "type": "date", "targets": 1 }
+                                                                ],
+                                                                "processing": true,
+                                                                "order": [ [1, "desc"] ], 
+											                    "info": false, 
+											                    "searching": true, 
+											                    "paging": false,
+                                                                "ajax": "@Url.Action("GetMedicationDispensingListJson", "Health", new { id = dispenseItem.ClientVitals.ClientID})"                     
+                                                            }' data-client-id="@dispenseItem.ClientVitals.ClientID">  
+					                        <thead>
+						                        <tr>
+                                                    <th class="align-text-center">@Labels.MedicationName</th>
+                                                    <th class="align-text-center">@Labels.Dosage</th>
+                                                    <th class="align-text-center">@Labels.DispensedToday</th>
+                                                    <th class="align-text-center">@Labels.Dispensing</th>
+						                        </tr>
+					                        </thead>
+							                <tbody>								                
+							                </tbody>
+						                </table>
+
+                                    </div>
+					            </div>
+                            </div>
+                        </div>
+				    }
+                </div>
+			</div>
+			<div class="tab-pane" id="ByRoom">
+				@{ var roomGrouping = Model.MedicationDispensingList.GroupBy(mdl => mdl.RoomName).OrderBy(mdl => mdl.Key); }
+					<div class="mrgn-tp-md">
+						<label for="RoomSearch">@Labels.SearchForARoom</label>
+						<input type="text" id="RoomSearch"/>
+					</div>
+					<datalist id="roomsAutocomplete">
+						@{
+							i = 0;
+							foreach (var room in roomGrouping)
+							{
+								<option label="@room.Key" 
+										value="RoomView-@i"></option>
+								{ i++; }
+							}
+							i = 0;
+						}
+					</datalist>
+                    <div class="panel-group" id="accordionByRoom">
+					@foreach (var room in roomGrouping)
+					{
+                        i++;
+         
+                        <div class="panel panel-default medPanel">
+                            <div class="panel-heading">
+                                <h4 class="panel-title panel-room-title">
+                                    <a data-toggle="collapse" data-parent="#accordionByRoom" href="#byRoom@(i)">@room.Key</a>
+                                </h4>
+                            </div>
+                            <div id="byRoom@(i)" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <div class="panel-group" id="accordionClientByRoom@(i)">
+							            @foreach (var dispenseItem in room)
+                                        {
+                                            j++;
+                       
+								            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h4 class="panel-title">
+                                                        <a data-toggle="collapse" data-parent="#accordionClientByRoom@(i)" href="#clientByRoom@(j)">@dispenseItem.ClientVitals.ClientFullName, @Html.DisplayFor(model => dispenseItem.ClientVitals.DOB), @Labels.Room: @dispenseItem.RoomName@*@dispenseItem.RoomNo*@, @Labels.Bed: @dispenseItem.BedName</a>
+                                                    </h4>
+                                                </div>
+                                                <div id="clientByRoom@(j)" class="panel-collapse collapse">
+                                                    <div class="panel-body">
+									                    <div class="table-responsive mrgn-tp-md mrgn-lft-lg">
+                                                            <table class="wb-tables table table-striped table-hover dispensing-table" 
+                                                                data-wb-tables='{   "columns": [
+                                                                                        { "width": "30%", "data": "medicationName", "sClass" : "text-left"},
+                                                                                        { "width": "20%", "data": "dosage", "sClass" : "text-center"},
+                                                                                        { "width": "20%", "data": "dispensedToday", "sClass" : "text-center"},
+                                                                                        { "width": "40%", "data": "dispensing", "sClass" : "text-left"} 
+                                                                                    ],
+                                                                                    "columnDefs": [
+                                                                                        { "type": "date", "targets": 1 }
+                                                                                    ],                                                                                       
+                                                                                    "processing": true,
+                                                                                    "order": [ [1, "desc"] ], 
+											                                        "info": false, 
+											                                        "searching": true, 
+											                                        "paging": false,
+                                                                                    "ajax": "@Url.Action("GetMedicationDispensingListJson", "Health", new { id = dispenseItem.ClientVitals.ClientID})"                     
+                                                                                }' data-client-id="@dispenseItem.ClientVitals.ClientID">
+					                                            <thead>
+						                                            <tr>
+                                                                        <th class="align-text-center">@Labels.MedicationName</th>
+                                                                        <th class="align-text-center">@Labels.Dosage</th>
+                                                                        <th class="align-text-center">@Labels.DispensedToday</th>
+                                                                        <th class="align-text-center">@Labels.Dispensing</th>
+						                                            </tr>
+					                                            </thead>
+										                        <tbody>											                        
+										                        </tbody>
+									                        </table>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+								            </div>
+                                        }
+                                    </div>
+                                </div>
+						    </div>
+                        </div>
+                    }
+                </div>
+            </div>
+		</div>	
+	</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+         var medRows;
+         var rowToUpdate;
+         var updatednumber = 0;
+         var totalTableCount = @(Model.MedicationDispensingList.Count > 0 ? Model.MedicationDispensingList.Count * 2 : 0); //total count of client datatables in the view x2 because of 2  tabs... really need to remove this
+         var currentTableCount = 0;
+         $("#recurrence-filters").addClass("disabledFilters");
+
+         // OnLoad
+        $(function () {
+
+            // Hiding loading stuff if 0 count
+            if (totalTableCount == 0) {
+                $("#recurrence-filters").removeClass("disabledFilters");
+                $("#progress-div").addClass("hide");
+            }
+
+            $('input[name=timeFilter]').change(filterRecurrence);
+
+            $(document).on('init.dt', function () {
+                currentTableCount++;
+                $("#tablesProgress").val(currentTableCount);
+                if(currentTableCount == totalTableCount) {
+                    $("#recurrence-filters").removeClass("disabledFilters");
+                    $("#progress-div").addClass("hide");
+                }
+
+                // console.log('count '+totalTableCount+":"+currentTableCount);
+                });
+                // Set Dispensing
+                $(document).on('change', 'input[type=checkbox]', function (e) {
+                    setSaveDispensing(e, $(this));
+            });
+
+             // Set PRN
+            $(document).on('change', '.prnInput', function (e) {
+                setSaveDispensing(e, $(this));
+
+             });
+
+             // Change Service Provider
+             $('#OrganizationID').change(function (e) {
+                 if (e.target.value)
+                     $(e.target).parents('form').submit();
+             });
+
+             // Search for Clients
+             $('#ClientSearch').on('input', function (e) {
+                 var clients = accordionByClient.getElementsByClassName('panel-title');
+                 var search = $('#ClientSearch').val().toLowerCase();
+
+                 $('#clientNoResults').remove();
+
+                 for (var i = 0; i < clients.length; i++) {
+                     var client = clients[i].getElementsByTagName('a')[0].innerHTML.toLowerCase();
+
+                     if (client.indexOf(search) != -1) {
+                         $(clients[i]).parents('.medPanel').removeClass("hideClient");
+                     }
+                     else {
+                         $(clients[i]).parents('.medPanel').addClass("hideClient");
+                     }
+                 }
+
+                 if ($("#accordionByClient").children('.medPanel').filter(':not(.hideClient)').length == 0) {
+                     var noResults = document.createElement('p');
+                     noResults.id = 'clientNoResults';
+                     noResults.innerHTML = '@Labels.NoResults';
+                     $('#accordionByClient').append(noResults)
+                 }
+             });
+
+             $('#RoomSearch').on('input', function (e) {
+                 var rooms = accordionByRoom.getElementsByClassName('panel-room-title');
+                 var search = $('#RoomSearch').val().toLowerCase();
+
+                 $('#roomNoResults').remove();
+
+                 for (var i = 0; i < rooms.length; i++) {
+                     var room = rooms[i].getElementsByTagName('a')[0].innerHTML.toLowerCase();
+
+                     if (room.indexOf(search) != -1) {
+                         $(rooms[i]).parents('.medPanel').removeClass("hideRoom");
+                     }
+                     else {
+                         $(rooms[i]).parents('.medPanel').addClass("hideRoom");
+                     }
+                 }
+
+                 if ($("#accordionByRoom").children('.medPanel').filter(':not(.hideRoom)').length == 0) {
+                     var noResults = document.createElement('p');
+                     noResults.id = 'roomNoResults';
+                     noResults.innerHTML = '@Labels.NoResults';
+                     $('#accordionByRoom').append(noResults)
+                 }
+             });
+         }); // end OnLoad
+
+        function setSaveDispensing(e, $element) {
+            $element.attr('disabled', true);
+            $('#MedicationID').val($element.attr('data-medid'));
+            $("#RecurrenceTypeID").val($element.attr('data-rType'));
+            $('#NumberOfPills').val(e.target.value);
+            $('#ClientID').val($element.attr('data-client-id'));
+            saveDispensing(e);
+            rowToUpdate = $element.closest("tr");
+        }
+
+        function filterRecurrence(e) {
+             $('.dispensing-table tbody tr').removeClass('hide');
+             $('.dispensing-table tbody tr').parents('.medPanel').removeClass('hide');
+
+             var recurrenceType = "";
+             switch (e.target.id) {
+                 case "FilterMorning": recurrenceType = "@Labels.Morning"; break;
+                 case "FilterNoon": recurrenceType = "@Labels.Noon"; break;
+                 case "FilterEvening": recurrenceType = "@Labels.Evening"; break;
+                 case "FilterBedtime": recurrenceType = "@Labels.Bedtime"; break;
+                 case "FilterPRN": recurrenceType = "@Labels.PRN"; break;
+                 default:
+                     break;
+                 return;
+             }
+
+             var $selector = "";
+             console.log("The recurrenceType = " + recurrenceType);
+                if (recurrenceType != "@Labels.PRN") {
+                    $selector = $('.dispensing-table tbody tr:not(:has(td:contains("' + recurrenceType + '")))');
+                } else {
+                    $selector = $('.dispensing-table tbody tr:not(:has(td input[type="number"]))');
+                }
+
+                $selector.each(function (index, row) {
+                    $(row).addClass("hide");
+                    if ($(row).siblings('tr').filter(':not(.hide)').length == 0) {
+                        $(row).parents('.medPanel').addClass("hide");
+                 }
+             });
+         }
+
+        function saveDispensing(e, btn) {
+            formData = $("#dispensingForm").serialize();
+
+            $.ajax({
+                url: "@Url.Content("~/Health/AjaxNewDispensing")",
+                type: "POST",
+                data: formData
+            }).done(function (data) {
+
+                if (data.Success) {
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>"); //display the default error or success message
+
+                    rowToUpdate.parents('table').DataTable().ajax.reload(function(){
+                        reRunFilters();
+                    });
+
+                }
+                else {
+
+                    for (var i = 0; i < data.Result.ValidationMessages.length; i++) {
+                        if (data.Result.ValidationMessages[i] == "Already dispensed")
+                            displayNotification('error', '', "<p>@Labels.AlreadyDispensed</p>");
+                        else if (data.Result.ValidationMessages[i] == "Invalid stay or medication")
+                            displayNotification('error', '', "<p>@Labels.InvalidStayOrMedication</p>");
+                        else if (data.Result.ValidationMessages[i] == "Maximum number of pills per day limit is reached")
+                            displayNotification('error', '', "<p>@Labels.MaxNoOfPillsPerDayLimit</p>");
+                        else
+                            displayNotification('error', '', "<p>" + data.Result.ValidationMessages[i] + "</p>");
+                        btn.attr("disabled", false);//Enable the button incase there was an error
+                    }
+                }
+            });
+        }
+
+        function reRunFilters(){
+            $('input[name=timeFilter]:checked').trigger('change');
+        };
+
+    </script>);
+}

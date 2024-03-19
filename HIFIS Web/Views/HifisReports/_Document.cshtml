@@ -1,0 +1,52 @@
+﻿@model ReportDocViewModel 
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ReportID)  
+@Html.HiddenFor(model => model.ConfidentialYN)
+    
+<div>
+    @Html.HifisEditorFor(model => model.Name)
+</div>
+
+<div>
+    @*@Html.HifisEditorFor(model => model.ConfidentialYN, "YesNo")*@
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.Description, new { @class = "commentBoxSize" })
+</div>
+
+<div>
+    @Html.HifisListBoxFor(m => m.Categories, CachedTableTypes.HIFIS_ReportCategoriesTypes)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.ServiceProvidersIDs, ViewBag.OrganizationsList as SelectList)
+</div>
+
+<div>
+    @if (Model.ReportID == null || Model.ReportID == "0")
+    {
+        @Html.HifisTextBoxFor(model => model.UploadFile, new { @class = "wdth-strct-450", @type = "file" })
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.UploadFile)
+    }
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             var requiredIf = function () {
+
+                 var value = document.querySelector("#DocumentID").getAttribute("value");
+                 return value === "" || value === "0";
+             }
+        </script>
+    );
+}

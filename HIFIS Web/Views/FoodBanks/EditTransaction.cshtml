@@ -1,0 +1,76 @@
+﻿@model FoodBankEditViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_FoodBankTransactionEdit;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+ 
+
+<div class="panel panel-default mrgn-tp-md">
+	<div class="panel-heading" role="tab" id="fbDetailsHeader">
+		<h4 class="panel-title">
+			<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#fbDetailsPanel" aria-expanded="false" aria-controls="fbDetailsPanel">
+				@Labels.FoodBankTransaction
+				<span class="caret pull-right mrgn-tp-sm"></span>
+			</a>
+		</h4>
+	</div>
+
+	<div id="fbDetailsPanel" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="fbDetailsHeader">
+		<div class="panel-body">
+			@using (Html.BeginForm("EditTransaction", "FoodBanks", FormMethod.Post, new { @class = "form-horizontal" }))
+            {
+                @Html.Partial("_HIFISServiceEdit", Model.Transaction as ClientHIFISServiceViewModel)
+
+                <div class="form-group">
+			        <div class="col-sm-offset-3 col-sm-9">
+				        <button type="submit" class="saveButton  ">@Labels.Save</button>
+                        @Html.ActionLink(Labels.Cancel, "ClientList", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			        </div>
+		        </div> 
+            }
+		</div>
+	</div>
+</div>
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#FoodItem" role="tab" data-toggle="tab">@Labels.FoodItem</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="FoodItem">
+				<div id="FoodBankItemsTableDiv">
+					@*The entire viewmodel is passed due to a need for client vitals*@
+					@Html.Partial("_FoodBankItemTable", Model)
+
+                    <div class="panel panel-default mrgn-tp-md">
+	                    <div class="panel-heading" role="tab" id="addfbiHeader">
+		                    <h4 class="panel-title">
+			                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#addfbiPanel" aria-expanded="false" aria-controls="addfbiPanel">
+				                    @Labels.AddNewFoodBankItems
+				                    <span class="caret pull-right mrgn-tp-sm"></span>
+			                    </a>
+		                    </h4>
+	                    </div>
+	                    <div id="addfbiPanel" class="panel-collapse collapse" role="tabpanel" aria-labelledby="addfbiHeader">
+		                    <div class="panel-body">
+			                    @Html.Partial("AddFoodBankItem", Model.NewFoodBankItem)
+		                    </div>
+	                    </div>
+                    </div>
+                    
+				</div>
+			</div>
+		</div>	
+	</div>
+</div>         
+@Html.Partial("_gsJS")
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model.Transaction)</div>

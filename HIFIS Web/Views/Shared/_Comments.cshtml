@@ -1,0 +1,14 @@
+﻿@model CommentViewModel
+
+        @Html.HiddenFor(m => m.CommentsID)
+        @Html.HiddenFor(m => m.CommentTypeID)
+        @Html.HiddenFor(m => m.ClientID)
+        @Html.HiddenFor(m => m.DateCreated)
+
+<div>
+    @Html.HifisEditorFor(model => model.Subject)
+</div>  
+                
+<div>
+    @Html.HifisTextAreaFor(model => model.CommentBody, new { @class = "commentBoxSize" })
+</div> 

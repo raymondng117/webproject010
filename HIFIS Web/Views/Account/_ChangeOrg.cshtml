@@ -1,0 +1,44 @@
+﻿@model LogOnModel
+
+<div class="modal-header" style="background-color:white;">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">@Labels.ChangeOrg</h4>
+</div>
+
+@using (Html.BeginForm("LogOn", "Account", FormMethod.Post, new { @class = "form-horizontal", id = "ChangeOrgForm" }))//Because all of these OnTheFly forms are within another form, i had to use the callBackFunction variable as a unique identifier since these must be unique anyways
+{
+    <div class="modal-body" style="background-color:white; min-height: 65px;"> 
+        
+        @Html.HiddenFor(model => model.UserName)
+        @Html.HiddenFor(model => model.ReturnUrl)
+
+        <div>             
+            @Html.DropDownList("OrganizationID", ViewBag.OrgList as SelectList, new { id="OrganizationID_modal" })  
+        </div>        
+        <br />
+        <br />
+
+        <div>
+            <input type="password" name="Password" id="Password_Modal" class="form-control" placeholder="@Labels.UaPassword" style="display:none;" autocomplete="off" />       
+        </div>
+    </div>
+    
+    <div class="modal-footer" style="background-color:white;">
+        <button type="submit" class="randomButton" style="display:none;" id="ChangeSPButton">@Labels.ChangeSP</button>
+        <button type="button" class="cancelButton" data-dismiss="modal">@Labels.Close</button>            
+    </div>        
+}
+
+<script type="text/javascript">
+    init_hifis();
+
+    $('select#OrganizationID_modal').on('select2:select', function (e) {
+        $("#ChangeSPButton").fadeIn();
+        $("#Password_Modal").fadeIn();
+    });
+    $('select#OrganizationID_modal').on('select2:unselect', function (e) {
+        $("#ChangeSPButton").fadeOut();
+        $("#Password_Modal").fadeOut();
+    });
+
+</script>

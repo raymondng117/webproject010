@@ -1,0 +1,25 @@
+﻿@model ClientLifeEventsViewModel
+@{
+    if (Model.BailFactor == null){ Model.BailFactor = new ClientBailViewModel(); }
+}
+            
+@Html.HiddenFor(model => model.BailFactor.BailEventID)
+@Html.HiddenFor(model => model.LifeEventTypeID)
+
+<div class="row">
+        @Html.HifisLabelFor(model => model.BailFactor.RiskTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.BailFactor.RiskTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_RiskTypes, Culture, Model.BailFactor.RiskTypeID)
+                        })
+</div>
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.BailFactor.Curfew, null, false, "TimeOnly")
+</div>
+
+<div class="row" style="word-wrap:break-word;">
+    @Html.HifisDisplayFor(model => model.BailFactor.Comments)
+</div>

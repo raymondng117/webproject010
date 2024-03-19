@@ -1,0 +1,181 @@
+﻿@model SPDATIntakeViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayEvaluation + " " + Model.IntakeTypeName + " " + Labels.Intake;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    ViewBag.IsDisplay = true;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.HiddenFor(model => model.PrimaryClientID)
+
+<div class="row">
+    <div class="col-xs-12">
+
+        @using (Html.BeginForm("Edit", "SPDAT", FormMethod.Post, new { @class = "form-horizontal", id = "SPDATIntakeForm" }))
+        {
+            @Html.AntiForgeryToken()
+            <div id="Intake_FormPortion">
+                @Html.Partial("_SPDATIntake", Model)
+            </div>
+
+            <div class="row SPDATScoreCard" id="ScoreSummary">
+                <div class="col-md-12">
+
+                    <h2>@Labels.ScoreCard</h2>
+
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "searching": false, "paging": false, "ordering": false }'>
+                            <thead style="display:none;">
+                                <tr>
+                                    <th>Header</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_youth_v2 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_family_v3 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.PreSurvey</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.GIScore)</span></td>
+                                    </tr>
+                                }
+
+                                @if (Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_family_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.ChildrenWithinTheHouseHold</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.ChildrenWithinTheHouseHoldScore)</span></td>
+                                    </tr>
+                                }
+
+                                @if (Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_youth_v2 || Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_family_v3 || Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.PresentingNeeds</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.PresentingNeedScore)</span></td>
+                                    </tr>
+                                }
+
+                                <tr>
+                                    <td><span class="ScoreCardHeader">@Labels.HistoryOfHousingAndHomelessness</span></td>
+                                    <td><span class="ScoreCardScore">@(Model.ScoreSummary.HHHScore)</span></td>
+                                </tr>
+
+                                @if (Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_youth_v2 || Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_family_v3 || Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.VulnerabilitiesHousingSupportNeed</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.VulnerabilitiesHousingSupportNeedScore)</span></td>
+                                    </tr>
+                                }
+
+                                @if (Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_youth_v2 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_family_v3 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.SPDATRisk</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.RiskScore)</span></td>
+                                    </tr>
+                                }
+
+                                @if (Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_youth_v2 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_family_v3 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.SocializationAndDailyFunctions</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.SDFScore)</span></td>
+                                    </tr>
+                                }
+
+                                @if (Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_youth_v2 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_family_v3 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_singleAdult_v3)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.Wellness</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.WellnessScore)</span></td>
+                                    </tr>
+                                }
+
+                                @if (Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_f || Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_f2 || Model.IntakeTypeID == (short)SPDATTypes.spdat_f || Model.IntakeTypeID == (short)SPDATTypes.spdat_F_V2)
+                                {
+                                    <tr>
+                                        <td><span class="ScoreCardHeader">@Labels.Family</span></td>
+                                        <td><span class="ScoreCardScore">@(Model.ScoreSummary.FamilyScore)</span></td>
+                                    </tr>
+                                }
+
+
+                                <tr style="height: 80px;">
+                                    <td><span style="font-weight:bold; font-size:1.7em;" class="ScoreCardHeader">@Labels.TotalScore</span></td>
+                                    <td><span style="font-weight:bolder; font-size:2.2em;" class="ScoreCardScore">@(Model.ScoreSummary.TotalScore)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="Question_FormPortion">
+                @Html.Partial("_SPDATQuestionList", Model)
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-10">
+                    @if (RightsHelper.HasRight((UserRights)RightsHelper.GetRightIDFor_SPDATEdit(Model.IntakeTypeID), Model.OrganizationID))
+                    {
+                        @Html.ActionLink(Labels.Edit, "Edit", "SPDAT", new { intakeTypeID = Model.IntakeTypeID, intakeID = Model.IntakeID, clientID = Model.PrimaryClientID }, new { @class = "editButton no-print", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                    }
+
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "SPDAT", new { id = Model.PrimaryClientID }, new { @class = "cancelButton no-print", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     //
+     // When document is ready, get the client details
+     //
+
+     $(function () {
+         getROVitals($("#PrimaryClientID").val());
+     })
+
+     $(function DisplaysCalculateQ32() {
+         var intakeValue = document.querySelector("#IntakeTypeID").getAttribute("value");
+         if (intakeValue === "14") {
+             let answerYes = 'Yes';
+             let answerNo = 'No';
+             if (document.documentElement.lang.toLowerCase() === "fr") {
+                 answerYes = 'Oui';
+                 answerNo = 'Non';
+             }
+
+             let q12 = $('#QuestionsViewModel_33__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+             let q21a = $('#QuestionsViewModel_43__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+             let q21b = $('#QuestionsViewModel_44__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+             let q21c = $('#QuestionsViewModel_45__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+             let q21d = $('#QuestionsViewModel_46__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+             let q26 = $('#QuestionsViewModel_51__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+             let q29 = $('#QuestionsViewModel_57__QuestionAnswer_AssessmentQuestionID').parent().find('.spdatAnswers').text();
+
+             if (q12.indexOf(answerYes) >= 0 && (q21a.indexOf(answerYes) >= 0 || q21b.indexOf(answerYes) >= 0 || q21c.indexOf(answerYes) >= 0 || q21d.indexOf(answerYes) >= 0) && q26.indexOf(answerYes) >= 0 && q29.indexOf(answerYes) >= 0) {
+                 $('#QuestionsViewModel_65__QuestionAnswer_AssessmentQuestionID').parent().prepend('<div class="spdatAnswers">' + answerYes + '</div>');
+             }
+             else {
+                 $('#QuestionsViewModel_65__QuestionAnswer_AssessmentQuestionID').parent().prepend('<div class="spdatAnswers">' + answerNo + '</div>');
+             }
+         }
+     })
+
+</script>
+);
+}

@@ -1,0 +1,24 @@
+﻿@model FoodBankItemDetailViewModel
+
+@Html.AntiForgeryToken()
+
+@Html.HiddenFor(model => model.FoodBankItemID)
+
+@Html.HifisEditorFor(model => model.BehaviourTypeID, CachedTableTypes.HIFIS_BehaviorTypes, new { @class = "max_width_90" })
+
+@Html.HifisEditorFor(model => model.NameE)
+
+@Html.HifisEditorFor(model => model.NameF) 
+
+@Html.HifisEditorFor(model => model.DaysCovered)
+
+@Html.HifisEditorFor(model => model.UnitCost, "Money", new { @class = "money", style="width:180px;"})                    
+
+@Html.HifisEditorFor(model => model.NumberOfAdults)
+
+@Html.HifisEditorFor(model => model.NumberOfChildren)
+
+@Html.HifisEditorFor(model => model.ActiveYN, "YesNo")
+
+@Html.HifisEditorFor(model => model.ProductCode)
+ 

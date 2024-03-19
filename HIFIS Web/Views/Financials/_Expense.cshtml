@@ -1,0 +1,184 @@
+﻿@model ExpenseViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.ExpenseID)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.ExpenseTypeID, CachedTableTypes.HIFIS_ExpenseTypes, new { @class = "max_width_90" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor("ddlPayFrequencyType", Labels.PayFrequency, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.PayFrequencyTypeID, CachedTableTypes.HIFIS_PayFrequencyTypes, new { id = "ddlPayFrequencyType" }, true, null)
+        </div>
+    </div>
+
+    <div id="ExpenseFrequency" class="row mrgn-bttm-md">
+        @Html.HifisLabelFor("ExpenseFrequency_Input", Labels.Hourspermonth, new { id = "ExpenseHourMonth", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("ExpenseFrequency_Input", Labels.Dayspermonth, new { id = "ExpenseDayMonth", @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.TextBoxFor(model => model.ExpenseHoursDays, new { type = "number", id = "ExpenseFrequency_Input", @class = "form-control", step = "any" })
+        </div>
+    </div>
+
+    <div id="ExpenseWage" class="row">
+        @Html.HifisLabelFor("ExpenseWage_Input", Labels.HourlyExpense, new { id = "ExpenseHourlyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("ExpenseWage_Input", Labels.DailyExpense, new { id = "ExpenseDailyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("ExpenseWage_Input", Labels.WeeklyExpense, new { id = "ExpenseWeeklyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("ExpenseWage_Input", Labels.BiWeeklyExpense, new { id = "ExpenseBiWeeklyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("ExpenseWage_Input", Labels.MonthlyExpense, new { id = "ExpenseMonthlyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("ExpenseWage_Input", Labels.AnnualExpense, new { id = "ExpenseYearlyWage", @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ExpenseAmount, "Money", new { @class = "money", id = "ExpenseWage_Input" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ExpenseDateStart, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ExpenseDateEnd, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IsEssentialYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.IsEssentialYN, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing() && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.IsEssentialYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.IsEssentialYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.EditableYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        ShowHideFrequencyTypeDIV();
+
+        //Because of the way the input element and label are created for wage, the form group wrapper that gets created with all input elements needs to be removed.
+        $('#ExpenseAmount').closest('.form-group').removeClass('form-group');
+
+        $('#error').hide();
+
+        //required if hourly or daily
+        $('#ExpenseHoursDays').addClass("align-left");
+        $('#ExpenseHoursDays').after('<span id="hoursdaysStar" class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger "></span>');
+            toggleHoursDaysMandatory();
+        });
+
+        $('#ddlPayFrequencyType').ready(ShowHideFrequencyTypeDIV);
+        $('#ddlPayFrequencyType').change(ShowHideFrequencyTypeDIV);
+
+
+    function ShowHideFrequencyTypeDIV()
+    {
+        var expenseFrequencyTypeID = parseInt($('#ddlPayFrequencyType').val());
+        $("#ExpenseHourMonth").hide();
+        $("#ExpenseDayMonth").hide();
+        $("#ExpenseFrequency").hide();
+        $("#ExpenseHourlyWage").hide();
+        $("#ExpenseDailyWage").hide();
+        $("#ExpenseWeeklyWage").hide();
+        $("#ExpenseBiWeeklyWage").hide();
+        $("#ExpenseMonthlyWage").hide();
+        $("#ExpenseYearlyWage").hide();
+    
+        if (@((byte)PayFrequencyTypes.Hourly) == expenseFrequencyTypeID) {
+            $("#ExpenseWage").show();
+            $("#ExpenseHourMonth").show();
+            $("#ExpenseFrequency").show();
+            $("#ExpenseHourlyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Daily) == expenseFrequencyTypeID) {
+            $("#ExpenseWage").show();
+            $("#ExpenseDayMonth").show();
+            $("#ExpenseFrequency").show();
+            $("#ExpenseDailyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Weekly) == expenseFrequencyTypeID) {
+            $("#ExpenseWage").show();
+            $("#ExpenseWeeklyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Bi_Weekly) == expenseFrequencyTypeID) {
+            $("#ExpenseWage").show();
+            $("#ExpenseBiWeeklyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Monthly) == expenseFrequencyTypeID) {
+            $("#ExpenseWage").show();
+            $("#ExpenseMonthlyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Yearly) == expenseFrequencyTypeID) {
+            $("#ExpenseWage").show();
+            $("#ExpenseYearlyWage").show();
+        }
+        else
+        {
+            $("#ExpenseWage").hide();
+        }
+    
+        toggleHoursDaysMandatory();
+    }
+    
+    
+    function valueRequired() {
+        if($('#ddlPayFrequencyType').val() == "1" || $('#ddlPayFrequencyType').val() == "2" ){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    function toggleHoursDaysMandatory() {
+        var payfrequencyType =  $('#ddlPayFrequencyType').val();
+        switch(payfrequencyType){
+            case "@((short)PayFrequencyTypes.Hourly)":
+                case "@((short)PayFrequencyTypes.Daily)":
+                    $('#ExpenseHoursDays').siblings(".glyphicon-star").addClass("show");
+                    $('#ExpenseHoursDays').siblings(".glyphicon-star").removeClass("hide");
+                    break;
+            default:
+                $('#ExpenseHoursDays').siblings(".glyphicon-star").addClass("hide");
+                $('#ExpenseHoursDays').siblings(".glyphicon-star").removeClass("show");
+                //console.log('other frequency type: ' + payfrequencyType);
+                break;
+        }
+    }
+
+</script>
+		

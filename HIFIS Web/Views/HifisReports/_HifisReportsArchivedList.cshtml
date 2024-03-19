@@ -1,0 +1,59 @@
+﻿@model List<CrFileInfo>
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.ReportName</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.Description</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.Version</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.DateCreated</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.DateArchived</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                for (int i = 0; i < Model.Count(); i++)
+                {
+            <tr>
+                <td class="col-xs-3">
+                    @CultureHelper.CurrentNameSplit(Model[i].FileName, ViewBag.CurrentCulture)
+                </td>
+                <td class="col-xs-4">
+                    @CultureHelper.CurrentNameSplit(Model[i].Description, ViewBag.CurrentCulture)
+                </td>
+                <td class="col-xs-1">
+                    @(Model[i].DBVersion.ToString() + "." + Model[i].VersionNumber.ToString().PadLeft(2, '0'))
+                </td>
+                <td class="col-xs-2">
+                    @Model[i].DateCreated
+                </td>
+                <td class="col-xs-2">
+                    @Model[i].DateUsed
+                </td>
+                <td id="tdActions" class="align-text-left">
+
+                    @*@if (RightsHelper.HasRight(UserRights.ReportManager_Generate))
+            {
+                @Html.ActionLink(Labels.RunReport, "Generate", "HifisReports", new { id = Model[i].ReportID }, new { @class = "playButton noText" })
+            }
+
+            @if (RightsHelper.HasRight(UserRights.ReportManager_Edit))
+            {
+                @Html.ActionLink(Labels.Edit, "Edit", "HifisReports", new { id = Model[i].ReportID }, new { @class = "editButton noText" })
+            }*@
+
+                            @if (RightsHelper.HasRight(UserRights.ReportManager_Download))
+                            {
+                                @Html.ActionLink(Labels.Download, "Download", "HifisReports", new { id = Model[i].ReportID }, new { @class = "noText downloadButton", alt = Labels.Download, aria_label = Labels.Download, @role = "button" })
+                            }
+
+                </td>
+            </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

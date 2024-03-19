@@ -1,0 +1,167 @@
+﻿@using Microsoft.Ajax.Utilities
+@model HousingPlacementViewModel
+
+@Html.HiddenFor(model => model.HousePlacementID)
+@Html.HiddenFor(model => model.ClientHouseID)
+@Html.HiddenFor(model => model.ServiceID)
+
+<div class="displayView">
+
+    <div class="col-sm-12 col-md-12 col-lg-12">
+
+        <div class="row col-sm-6 col-md-6 col-lg-6">
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.CaseWorkerID, new { @class = "mrgn-rght-lg col-sm-3 col-md-3 col-lg-3" })
+                <div class="row col-sm-8 col-md-8 col-lg-8">
+                    @Html.ActionLink(Model.CaseWorkerName, "DisplayVitals", "PeopleTombstone", new { id = Model.CaseWorkerID }, new { alt = Model.CaseWorkerName, aria_label = Model.CaseWorkerName })
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "mrgn-rght-lg col-sm-3 col-md-3 col-lg-3" })
+
+                <div class="row col-sm-8 col-md-8 col-lg-8">
+                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                    new MultipleItemSelectList
+                                    {
+                                        IDs = Model.AssociatedProgramIDs.Select(s => s.ToString()).ToList(),
+                                        List = ViewBag.ProgramList as SelectList
+                                    })
+                </div>
+            </div>
+        </div>
+
+        <div class="row col-sm-6 col-md-6 col-lg-6">
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.NextScheduledFollowUp, new { @class = "mrgn-rght-lg col-sm-5 col-md-5 col-lg-5" })
+                <span id="FollowUpDate">
+                    @if (Model.NextScheduledFollowUp.HasValue)
+                    {
+                        @Model.NextScheduledFollowUp.Value.ToString("yyyy-MM-dd")
+                    }
+                    else
+                    {
+                        @Labels.NA
+                    }
+                </span>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(m => m.ServiceProviderName, new { @class = "mrgn-rght-lg col-sm-5 col-md-5 col-lg-5" })
+
+                <div class="row col-sm-6 col-md-6 col-lg-6">
+                    @Html.DisplayFor(m => m.ServiceProviderName)
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-sm-12 col-md-12 col-lg-12">
+
+        <div class="row col-sm-6 col-md-6 col-lg-6">
+
+            <div class="row">
+                @Html.HifisLabelFor(m => m.HousingUnit.HouseTypeID, new { @class = "mrgn-rght-lg col-sm-3 col-md-3 col-lg-3" })
+                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseTypes, ViewBag.CurrentCulture, Model.HousingUnit.HouseTypeID)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.HousingUnit.Rent, new { @class = "mrgn-rght-lg col-sm-3 col-md-3 col-lg-3" })
+                @(Model.HousingUnit.Rent != null ? "$" + Model.HousingUnit.Rent : Labels.Unknown_txt)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor("FullName", Labels.Landlord, new { @class = "mrgn-rght-lg col-sm-3 col-md-3 col-lg-3" })
+                @if (Model.HousingUnit.Landlord != null)
+                {
+                    <div class="row col-sm-8 col-md-8 col-lg-8">
+                        @Html.ActionLink(Model.HousingUnit.Landlord.FullName, "DisplayVitals", "PeopleTombstone", new { id = Model.HousingUnit.Landlord.PersonID }, new { alt = Model.HousingUnit.Landlord.FullName, aria_label = Model.HousingUnit.Landlord.FullName })
+                    </div>
+                }
+            </div>
+
+        </div>
+
+        <div class="row col-sm-6 col-md-6 col-lg-6">
+
+            <div class="row">
+                @Html.HifisLabelFor(m => m.DateMovedIn, new { @class = "mrgn-rght-lg col-sm-5 col-md-5 col-lg-5" })
+                @(Model.DateMovedIn.HasValue ? Model.DateMovedIn.Value.ToString("yyyy-MM-dd") : "")
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor("Address", Labels.Address, new { @class = "mrgn-rght-lg col-sm-5 col-md-5 col-lg-5" })
+                <div class="row col-sm-6 col-md-6 col-lg-6">
+                    @((Model.HousingUnit.Address.Unit == null ? "" : Model.HousingUnit.Address.Unit + " ") + Model.HousingUnit.Address.AddressLn1 + " " + Model.HousingUnit.Address.AddressLn2)
+                    @Html.DisplayFor(model => model.HousingUnit.Address.City)
+                </div>
+            </div>
+
+            @if (Model.HousingUnit.Landlord != null)
+            {
+                <div class="row">
+                    @Html.HifisLabelFor("Contact", Labels.ContactInfo, new { @class = "mrgn-rght-lg col-sm-5 col-md-5 col-lg-5" })
+                    <div class="row col-sm-6 col-md-6 col-lg-6">
+                        <a class="wb-lbx" title="@Labels.ContactInfo" href="#contactInfo">@Labels.HifisHelp_ViewAll</a>
+                    </div>
+                    <section id="contactInfo" class="mfp-hide modal-dialog modal-content overlay-def">
+                        <header class="modal-header">
+                            <h2 class="modal-title">@Labels.ContactInfo - @Model.HousingUnit.Landlord.FullName</h2>
+                        </header>
+                        <div class="modal-body">
+                            <ul class="pddng-lft-md">
+                                @foreach (DigitalContactViewModel dc in Model.HousingUnit.Landlord.ContactInfo)
+                                {
+                                    <li>
+                                        @switch (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_DigitalContactTypes, (short)dc.DigitalContactTypeID))
+                                        {
+                                            case (short)DigitalContactTypes.Fax:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.Fax, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.HomePhone:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.HomePhone, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.WorkPhone:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.WorkPhone, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.PersonalEmail:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.PersonalEmail, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.Web:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.Web, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.WorkEmail:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.WorkEmail, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.Pager:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.Pager, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.MobilePhone:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.MobilePhone, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.Telephone1:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.Telephone1, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                            case (short)DigitalContactTypes.Telephone2:
+                                                @Html.HifisLabelFor("DigitalContactValue", Labels.Telephone2, new { @class = "autowidth mrgn-rght-sm" })
+                                                break;
+                                        }
+                                        @Html.DisplayFor(m => dc.DigitalContactValue)
+                                        @if (dc.DigitalContactExt.HasValue)
+                                        {
+                                            @Labels.Ext
+                                            @Html.DisplayFor(m => dc.DigitalContactExt)
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            }
+        </div>
+    </div>
+</div>

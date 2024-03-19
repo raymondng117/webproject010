@@ -1,0 +1,105 @@
+﻿@model List<OrganizationBasicViewModel>           
+@{
+    ViewBag.ViewTitle = Labels.OrganizationsTitle;
+    
+    ViewBag.LayoutView = LayoutPage.SecNav;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Partial("Plugins/_jstree")
+
+<div>
+    <div class="mrgn-tp-lg mrgn-bttm-lg">
+        @Html.Button("ExpandCollapseTree", Labels.ExpandCollapseTree, HtmlButtonType.Button, null, new { id = "ExpandCollapseTree" })
+    </div>
+
+    <div>
+        @Html.TextBox("wetBoewSearchBox", "", new { placeholder = Labels.SearchTree })
+    </div>
+
+    <div class="hifis-tree" data-wet-boew='{"bCheckBoxes": false, "bCallBackFunction": "wetTreeCheckEvent", "bDisplayIcons": true }' >
+        <ul>
+            @if (ViewBag.disabledFlag)
+            {
+                <li data-jstree='{ "icon" : "glyphicon glyphicon-tree-deciduous", "disabled": true }' >
+                    @Html.ActionLink(Labels.ServiceProviders + (Model.Count > 0 ? " (" + Model.Count.ToString() + ")" : ""), "OrganizationDetails", "Organization", new { }, new { @class = "organizationAnchor nocheckbox", alt = Labels.ServiceProviders + (Model.Count > 0 ? " (" + Model.Count.ToString() + ")" : ""), aria_label = Labels.ServiceProviders + (Model.Count > 0 ? " (" + Model.Count.ToString() + ")" : "")})
+            
+                    <ul>
+                        @foreach (OrganizationBasicViewModel organization in Model.OrderBy(o=>o.Name))
+                        {
+                            @Html.Partial("_OrganizationTreeItem", organization)
+                        }  
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li data-jstree='{ "icon" : "glyphicon glyphicon-tree-deciduous", "disabled": false }' >
+                    @Html.ActionLink(Labels.ServiceProviders + (Model.Count > 0 ? " (" + Model.Count.ToString() + ")" : ""), "OrganizationDetails", "Organization", new { }, new { @class = "organizationAnchor nocheckbox", alt=Labels.ServiceProviders + (Model.Count > 0 ? " (" + Model.Count.ToString() + ")" : ""), aria_label = Labels.ServiceProviders + (Model.Count > 0 ? " (" + Model.Count.ToString() + ")" : "") })
+            
+                    <ul>
+                        @foreach (OrganizationBasicViewModel organization in Model.OrderBy(o=>o.Name))
+                        {
+                            @Html.Partial("_OrganizationTreeItem", organization)
+                        }  
+                    </ul>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-lg">
+        @if (RightsHelper.HasRight(UserRights.ServiceProviders_Add))
+        {
+            @Html.ActionLink(Labels.AddNewOrg, "OrganizationCreate", "Organization", null, new { @class = "addButton", title = @Labels.Add, alt=Labels.AddNewOrg, aria_label = Labels.AddNewOrg, @role = "button" }) 
+        }
+    </div>    
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             var isCollapsed = true;
+             $("#ExpandCollapseTree").click(function () {
+                 if (isCollapsed) {
+                     isCollapsed = false;
+                     $(".hifis-tree").jstree("open_all");
+                 }
+                 else {
+                     isCollapsed = true;
+                     $(".hifis-tree").jstree("close_all");
+                 }
+             });
+
+             var to = false;
+
+             $('#wetBoewSearchBox').keyup(function () {
+                 if (to) {
+                     clearTimeout(to);
+                 }
+                 to = setTimeout(function () {
+                     var v = $('#wetBoewSearchBox').val();
+                     $('.hifis-tree').jstree(true).search(v);
+                 }, 500);
+             });
+
+             function wetTreeCheckEvent(event, data, isRightAllowed) {
+
+                 if (data.node.id != "j1_1") {
+                     window.location.href = data.node.a_attr.href;
+                 }
+             }
+
+             function move_node(operation, node, node_parent, node_position, more) {
+                 return false;
+             }
+
+        </script>    
+    );
+}

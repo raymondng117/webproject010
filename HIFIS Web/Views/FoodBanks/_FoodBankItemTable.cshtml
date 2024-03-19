@@ -1,0 +1,54 @@
+﻿@model FoodBankEditViewModel
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+
+        <thead>
+            <tr>
+                <th>@Labels.NameE</th> 
+                <th>@Labels.Quantity</th>
+                <th>@Labels.UnitCostView</th>
+                <th>@Labels.Action</th>                                 
+            </tr> 
+        </thead> 
+
+        @if (Model.FoodBankItemList != null && Model.FoodBankItemList.Count > 0)
+        {
+            for (int i = 0; i < Model.FoodBankItemList.Count; i++)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(m => m.FoodBankItemList[i].FoodBankItemDetail.NameE)</td>
+                    <td>@Html.DisplayFor(m => m.FoodBankItemList[i].Quantity)</td>
+                    <td>@Html.DisplayFor(m => m.FoodBankItemList[i].UnitCost)</td>
+                    <td class="text-center">
+
+                        @if (RightsHelper.HasRight(UserRights.FoodBankItems_Edit))
+                        {
+                            @Html.ActionLink(Labels.Edit, "EditTransactionFoodBankItem", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID, transactionID = Model.Transaction.ServiceID, foodBankItemID = Model.FoodBankItemList[i].FoodBankID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+                    
+                        @if (RightsHelper.HasRight(UserRights.FoodBankItems_Delete))
+                        {
+                            @Html.ActionLink(Labels.Delete, "DeleteFoodBankItem", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID, foodBankItemID = Model.FoodBankItemList[i].FoodBankID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" }) 
+                        }
+                    
+                    </td>
+                </tr>
+            }
+            <tfoot>
+                <tr>
+                    <td><strong>@Labels.TotalItems</strong> @Html.DisplayFor(m => m.ItemCount)</td>
+                    <td><strong>@Labels.TotalQuantity</strong> @Html.DisplayFor(m => m.TotalQuantity)</td>
+                    <td><strong>@Labels.TotalValue</strong> $@Html.DisplayFor(m => m.TotalValue)</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        } 
+    </table>
+</div>                    
+                        
+
+
+
+
+

@@ -1,0 +1,60 @@
+﻿@model List<PeopleAddressViewModel> 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PersonAddressHistory;
+    
+    ViewBag.LayoutView = LayoutPage.People;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Address</th>
+                    <th>@Labels.Province</th>
+                    <th>@Labels.City</th>
+                    <th>@Labels.StartDate</th>
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.Action</th> 
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var address in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(model => address.Address.AddressLn1)</td>
+                        <td>@Html.DisplayFor(model => address.Address.Province)</td>
+                        <td>@Html.DisplayFor(model => address.Address.City)</td>
+                        <td>@Html.DisplayFor(model => address.DateStart)</td>
+                        <td>@Html.DisplayFor(model => address.DateEnd)</td>
+                        <td class="align-text-center">    
+
+                            @if (RightsHelper.HasRight(UserRights.People_Address_Edit))
+                            {    
+                                @Html.ActionLink(Labels.Edit, "EditAddress", "PeopleTombstone", new { id = address.PersonID, peopleAddressID = address.PeopleAddressID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+                        
+                            @if (RightsHelper.HasRight(UserRights.People_Address_Delete))
+                            { 
+                                @Html.ActionLink(Labels.Delete, "DeleteAddress", "PeopleTombstone", new { id = address.PeopleAddressID, PersonID = address.PersonID }, new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })  
+                            }
+                        
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.People_Address_Add))
+        { 
+            @Html.ActionLink(Labels.NewClientAddress, "NewAddress", "PeopleTombstone", new { id = ViewBag.ReadOnlyVitals.PersonID }, new { @class = "addButton", alt=Labels.NewClientAddress, aria_label = Labels.NewClientAddress, @role = "button" })
+        }
+    </div>
+</div>

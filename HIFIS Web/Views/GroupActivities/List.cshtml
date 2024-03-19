@@ -1,0 +1,107 @@
+﻿@model GroupActivitiesListViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_GroupActivities;  
+    int j = 1;   
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+    
+<div>
+    @* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+     Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values *@
+    @Html.Partial("_DateFilterList", Model.DateFilter)
+    <div class="clearfix"></div>
+    <br />
+
+    <div class="form-color-white module-form-block">
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order": [[2, "desc"]] }'>
+                <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.ActivityName</th>
+                        <th class="align-text-center">@Labels.Location</th>
+                        <th class="align-text-center">@Labels.Date</th>
+                        @*<th class="align-text-center">@Labels.Time</th>   512729 - no need to seperate time from date *@
+                        <th class="align-text-center">@Labels.Attendees</th>
+                        <th>@Labels.GeoRegion</th>
+                        <th class="align-text-center">@Labels.Action</th>
+                    </tr>
+                        </thead>
+                        <tbody class="align-text-center">
+                            @foreach (GroupActivityViewModel vm in Model.Activities)
+                            {
+                            <tr>
+                                <td>@vm.GroupActivityTypeName</td>
+                                <td>@vm.LocationName</td>
+                                <td>@DateHelper.DateTimeFormaterENFR(@vm.DateStart, Labels.CurrentCulture)</td>
+                                @*512729 - Date and Time are used together, no Display template needed *@
+                                @*
+                                <td>
+                                    @Html.DisplayFor(model => vm.DateStart)
+                                </td>
+                                <td>
+                                    @vm.DateStart.ToShortTimeString()
+                                </td>
+                                *@
+                                <td>@(vm.ClientAttendees + vm.AnonymousAttendees)</td>
+
+                                <td>
+                                    @if (vm.OutReachAddress.GeoIDs.Count > 2)
+                                    {
+                                        string prop = "";
+                                        prop = @Model.Activities.IndexOf(vm).ToString() + "prop";
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" role="button" data-parent="#accordion" href=@String.Format("#{0}", prop) class="btn btn-default btn-xs btn-block collapsed" style="text-align: left;" aria-expanded="false">
+                                                    @vm.OutReachAddress.GeoIDs.Count() - @Labels.Attributes<span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+
+                                            <div id=@prop class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var geoID in vm.OutReachAddress.GeoIDs)
+                                                    {
+                                                        <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture, geoID)</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var geoID in vm.OutReachAddress.GeoIDs)
+                                        {
+                                            <ul class="pddng-lft-md">
+                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture, geoID)</li>
+                                            </ul>
+                                        }
+                                    }
+                                </td>
+
+                                <td class="align-text-center no-print">
+                                    @if (RightsHelper.HasRight(UserRights.GroupActivities_Display))
+                                    {
+                                        @Html.ActionLink(Labels.Display, "Display", "GroupActivities", new { activityID = vm.GroupActivityID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                    }
+                                    @if (RightsHelper.HasRight(UserRights.GroupActivities_Edit))
+                                    {
+                                        @Html.ActionLink(Labels.Manage, "Manage", "GroupActivities", new { activityID = vm.GroupActivityID }, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                                    }
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="mrgn-tp-md no-print">
+                @if (RightsHelper.HasRight(UserRights.GroupActivities_Add))
+                {
+                    @Html.ActionLink(Labels.NewActivity, "New", "GroupActivities", new { }, new { @class = "addButton  ", title = Labels.NewActivity, alt=Labels.NewActivity, aria_label = Labels.NewActivity})
+                }
+            </div>
+        </div>

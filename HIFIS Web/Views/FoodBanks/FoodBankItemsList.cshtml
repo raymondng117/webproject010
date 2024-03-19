@@ -1,0 +1,62 @@
+﻿@{
+    ViewBag.ViewTitle = Labels.viewTitle_FoodBankItemsList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")   
+
+
+<div id="FoodBankItemsTableDiv">
+    <div class="table-responsive">
+        <table id="foodBankItemsList" class="wb-tables table table-striped table-hover" data-wb-tables='{ 
+                    "processing": "true", 
+                    "ajax": "@Url.Action("GetItemListJson", "FoodBanks")",
+                    "order": [[ 1, "desc" ]],
+                     "columns": [
+                         { "data": "productCode" },
+                         { "data": "itemName" },
+                         { "data": "daysCovered" },
+                         { "data": "unitCost" },
+                         { "data": "numberOfAdults" },
+                         { "data": "numberOfChildren" },
+                         { "data": "activeYN" },
+                         { "data": "action" }
+                     ] 
+            }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ProductCode</th>
+                    <th>@Labels.ItemName</th>
+                    <th>@Labels.DaysCovered</th>
+                    <th>@Labels.UnitCost</th>
+                    <th>@Labels.NumberOfAdults</th>
+                    <th>@Labels.NumberOfChildren</th>
+                    <th>@Labels.ActiveYN</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+</div>
+
+<a href="@Url.Content("~/FoodBanks/GetNewItemForm")" aria-controls="Modal_NewItem" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewFoodBankItem</a>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+           
+             //This will decorate buttons an things correctly when table is drawn
+             $('#foodBankItemsList').on('draw.dt', function () {
+                 init_hifis();
+
+                 //This re-init any lightboxes that are dynamically added via the datables reload call
+                 $(".wb-lbx").trigger("wb-init.wb-lbx");
+             });
+
+        </script>
+    );
+}

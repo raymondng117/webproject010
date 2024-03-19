@@ -1,0 +1,144 @@
+﻿@model IdentificationListViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientIdentifications;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.HiddenFor(model => model.ClientID)
+
+<div class=" form-color-white module-form-block">
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.IdentificationType</th> 
+                    <th>@Labels.IdentificationNumber</th> 
+                    <th>@Labels.ExpiryDate</th>
+                    <th>@Labels.Description</th>
+                    <th>@Labels.AttachedDocs</th> 
+                    <th>@Labels.Action</th> 
+                </tr> 
+            </thead>
+            <tbody>
+                @for (int k = 0; k < Model.ClientIdentifications.Count; k++)
+                {
+                    <tr>
+                        <td class="text-align-left wdth-strct-200">@Html.DisplayFor(ModelItem => Model.ClientIdentifications[k].IdentificationType)</td>
+                        <td>@Html.DisplayTextFor(ModelItem => Model.ClientIdentifications[k].IdentificationNo)</td>
+                        <td>@DateHelper.DateFormater(Model.ClientIdentifications[k].ExpiryDate, false)</td>
+                        <td>
+                            @if (Model.ClientIdentifications[k].Description != null && Model.ClientIdentifications[k].Description.Length > 20)
+                            {
+                                string description = "";
+                                description = Model.ClientIdentifications[k].Description.Substring(0, 17) + " ...";
+                                @description
+                            }
+                            else { 
+                                @Html.DisplayTextFor(ModelItem => Model.ClientIdentifications[k].Description)
+                            }
+                        </td>
+                        <td>
+                            @if (Model.ClientIdentifications[k].AttachmentsDisplay != null)
+                            {
+                                if (Model.ClientIdentifications[k].AttachmentsDisplay.Count > 1)
+                                {
+                                    <div class="panel-default">
+                                        <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#colone@(k)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                @Model.ClientIdentifications[k].AttachmentsDisplay.Count @Labels.Documents 
+                                                <span class="caret pull-right mrgn-tp-sm"></span>
+                                            </a>
+                                        </div>
+                                        <div id="colone@(k)" class="panel-collapse collapse">
+                                            <ul class="pddng-lft-md">
+                                                @for (int i = 0; i < Model.ClientIdentifications[k].AttachmentsDisplay.Count; i++)
+                                                {
+                                                    if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                                                    {
+                                                        <li class="align-text-left">
+                                                            @if(Model.ClientIdentifications[k].AttachmentsDisplay[i].Name.Length > 15){
+                                                                string fileName = "";
+                                                                fileName = Model.ClientIdentifications[k].AttachmentsDisplay[i].Name.Substring(0, 12) + " ..."; 
+                                                                @Html.ActionLink(fileName, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(Model.ClientIdentifications[k].AttachmentsDisplay[i].DocumentID), ClientID = Model.ClientID }, new { title=Model.ClientIdentifications[k].AttachmentsDisplay[i].Name, alt=fileName, aria_label = fileName}) 
+                                                            }
+                                                            else
+                                                            {
+                                                                @Html.ActionLink(Model.ClientIdentifications[k].AttachmentsDisplay[i].Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(Model.ClientIdentifications[k].AttachmentsDisplay[i].DocumentID), ClientID = Model.ClientID }, new { alt = Model.ClientIdentifications[k].AttachmentsDisplay[i].Name, aria_label = Model.ClientIdentifications[k].AttachmentsDisplay[i].Name }) 
+                                                            }
+                                                        </li>
+                                                    }
+                                                    else
+                                                    { 
+                                                        <li>@Model.ClientIdentifications[k].AttachmentsDisplay[i].Name</li>
+                                                    }
+                                                }
+                                        
+                                               @* @foreach (var org in Model.Bulletin[i].BulletinsOrganizations)
+                                                {                            
+                                                    <li>@org.OrganizationName</li>
+                                                }*@
+
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < Model.ClientIdentifications[k].AttachmentsDisplay.Count; i++)
+                                    {
+                                        if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                                        {
+                                            @Html.ActionLink(Model.ClientIdentifications[k].AttachmentsDisplay[i].Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(Model.ClientIdentifications[k].AttachmentsDisplay[i].DocumentID), ClientID = Model.ClientID }, new { alt = Model.ClientIdentifications[k].AttachmentsDisplay[i].Name, aria_label = Model.ClientIdentifications[k].AttachmentsDisplay[i].Name }) 
+                                            <br />
+                                        }
+                                        else
+                                        { 
+                                            @Model.ClientIdentifications[k].AttachmentsDisplay[i].Name
+                                            <br />
+                                        }
+                                    }
+                                }  
+                            }
+                        </td>
+                        <td class="align-text-center">
+                            @if (RightsHelper.HasRight(UserRights.Identification_Edit))
+                            {
+                                @Html.ActionLink(Labels.Edit, "EditIdentification", "Identification", new { id = Model.ClientID, pClientDocumentID = Model.ClientIdentifications[k].ClientIdentificationID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+
+                            @*@if (Model.ClientIdentifications[k].IdentificationTypeID == (short)IdentificationCategoryTypes.PersonalPictureDefault && RightsHelper.HasRight(UserRights.Client_ProfilePicture_Delete))*@
+                            @if (((short)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_IdentificationTypes, Model.ClientIdentifications[k].IdentificationTypeID) == (short)IdentificationCategoryTypes.PersonalPictureDefault)
+                                && (RightsHelper.HasRight(UserRights.Client_ProfilePicture_Delete)))
+                            {
+                                @Html.ActionLink(Labels.Delete, "RemoveIdentification", "Identification", new { id = Model.ClientID, pClientDocumentID = Model.ClientIdentifications[k].ClientIdentificationID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                            }
+                            //else if (Model.ClientIdentifications[k].IdentificationTypeID != (short)IdentificationCategoryTypes.PersonalPictureDefault && RightsHelper.HasRight(UserRights.Identification_Delete))
+                            else if (((short)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_IdentificationTypes, Model.ClientIdentifications[k].IdentificationTypeID) != (short)IdentificationCategoryTypes.PersonalPictureDefault)
+                                && (RightsHelper.HasRight(UserRights.Identification_Delete)))
+                            {
+                                @Html.ActionLink(Labels.Delete, "RemoveIdentification", "Identification", new { id = Model.ClientID, pClientDocumentID = Model.ClientIdentifications[k].ClientIdentificationID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+ 
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md"> 
+        
+        @if (RightsHelper.HasRight(UserRights.Identification_Add))
+        {
+            @Html.ActionLink(Labels.AddIdentification, "NewIdentification", "Identification", new { id = Model.ClientID }, new { @class = "addButton", alt=Labels.AddIdentification, aria_label = Labels.AddIdentification, @role = "button" })
+        }
+ 
+    </div>
+</div>  
+
+

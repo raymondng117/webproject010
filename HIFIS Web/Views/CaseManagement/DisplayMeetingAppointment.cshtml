@@ -1,0 +1,56 @@
+﻿@model SessionAppointmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseSessionAppDisplay;
+}
+
+<div class="displayView">
+    <div>
+        <label class= "autowidth">
+            @Labels.Goal
+        </label> 
+        @Model.DesiredOutcomeTypeName
+    </div>
+    <div>
+        @Html.HifisLabelFor(model => model.Appointment.AppointmentTypeID, new { @class = "autowidth" })
+        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AppointmentTypes, Culture, Model.Appointment.AppointmentTypeID)
+    </div>
+    <div>
+        @Html.HifisLabelFor(model => model.Appointment.StartDateTime, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Appointment.StartDateTime)
+    </div>
+        <div>
+        @Html.HifisLabelFor(model => model.Appointment.EndDateTime, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Appointment.EndDateTime)
+    </div>
+    <div>
+        @Html.HifisLabelFor(model => model.Appointment.Description, new { @class = "autowidth" })
+        @Html.DisplayTextFor(model => model.Appointment.Description)
+    </div>
+        
+    <div>
+        @Html.HifisLabelFor(model => model.Appointment.PersonID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Appointment.PersonName)
+    </div>
+    <div>
+        @Html.HifisLabelFor(model => model.Appointment.PlaceID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Appointment.PlaceName)
+    </div> 
+    
+    <div>
+
+        @Html.HifisLabelFor(model => model.Appointment.FollowedThroughYN, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.Appointment.FollowedThroughYN)
+    </div>
+    
+    <div>
+        @Html.HifisLabelFor(model => model.Appointment.Comments, new { @class = "autowidth" })
+        @Html.DisplayTextFor(model => model.Appointment.Comments)
+        @Html.ValidationImageFor(model => model.Appointment.Comments)
+    </div>
+    <div>
+        @Html.ActionLink(Labels.Back, "DisplayMeeting", "CaseManagement", 
+            new { id = Model.SessionID, client = Model.ReadOnlyVitals.ClientID, 
+                  goal = Model.DesiredOutcomeTypeID }, new { @class = "cancelButton", alt=Labels.Back, aria_label=Labels.Back, @role = "button" })
+    </div>
+</div>

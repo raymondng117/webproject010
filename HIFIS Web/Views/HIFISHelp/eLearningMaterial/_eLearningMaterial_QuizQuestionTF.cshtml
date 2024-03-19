@@ -1,0 +1,90 @@
+﻿@model ELearningMaterialQuizModel
+@Html.HiddenFor(model => model.ContentTypeID)
+@Html.HiddenFor(model => model.ELearningMaterialID)
+@Html.HiddenFor(model => model.QuizQuestionID)
+@Html.HiddenFor(model => model.QuizQuestion.QuizQuestionID)
+@Html.HiddenFor(model => model.QuizQuestion.QuestionType)
+@if (ViewBag.isTopic)
+{ 
+    @Html.HiddenFor(model => model.ELearningPageID)
+    @Html.HiddenFor(model => model.ELearningTopicID)
+    <div class="row">
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            { 
+                @Html.Label(Labels.HifisHelp_LayoutOrder) @:&nbsp
+                @Html.Partial("Common/_HelpMandatory")
+            }
+            else
+            {
+                @Html.Label(Labels.HifisHelp_LayoutOrder)<text>:</text> 
+            }
+        </div>
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            {
+                @Html.TextBoxFor(model => model.LayoutOrder)
+            }
+            else
+            {
+                @Html.HiddenFor(model => model.LayoutOrder)
+                @Model.LayoutOrder
+            }           
+        </div>
+    </div>         
+}
+<div class="row">
+    <div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuizQuestionNameE) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.MaterialNameE) 
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuizQuestionNameF) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.MaterialNameF) 
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionE) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.QuizQuestion.QuestionE) 
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionF) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.QuizQuestion.QuestionF) 
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionSummaryE)
+	</div>
+	<div class="col-sm-3"> 
+        @Html.TextAreaFor(model => model.QuizQuestion.DescriptionE) 
+	</div>
+	<div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionSummaryF)
+	</div>
+	<div class="col-sm-3"> 
+        @Html.TextAreaFor(model => model.QuizQuestion.DescriptionF) 
+	</div>
+</div>
+<div class="row">
+    <div class="form-group">
+		@Html.Label(Labels.HifisHelp_QuestionAnswerTF, new { @class = "col-sm-2 control-label" })
+		<div class="col-sm-10">
+            <p class="form-control-static">
+                @{   
+                    object first = new { @class = "YesAndNo", data_on_text = Labels.HifisHelp_True, data_off_text = Labels.HifisHelp_False, data_on_color = "info", data_off_color = "danger", id = "secondvictim" };
+                }
+                @Html.CheckBoxFor(m => m.QuizQuestion.QuestionAnswer, first)
+            </p>
+		</div>
+	</div>
+</div>

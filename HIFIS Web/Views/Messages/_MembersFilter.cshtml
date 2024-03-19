@@ -1,0 +1,14 @@
+﻿@model UsersFilterViewModel
+
+<section id="Modal_Filter" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">
+            @Labels.MailListMembersFilter
+        </h2>
+    </header>
+    @Html.Partial("_UsersFilter")
+    <div class="modal-footer" style="background-color: white;">
+        <button id="filterButton" class="saveButton">@Labels.Filter</button>
+        <button id="filterCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>

@@ -1,0 +1,313 @@
+﻿@model ELearningTopicModel
+@{
+	string lang = ViewBag.CurrentCulture;
+	string english = Constants.Eng;
+	ViewBag.LayoutView = LayoutPage.Help;
+	ViewBag.ViewTitle = Labels.HifisHelp_TopicDev + " - " + (lang == english ? Model.NameE : Model.NameF);
+	string breadcrumbsTitle = (lang == english ? Model.NameE : Model.NameF);
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Partial("Plugins/_TinyMCEScript")
+@Html.Partial("Plugins/_TinyMCE-HelpAjaxFix")
+
+<ol class="breadcrumb mrgn-tp-sm">
+	<li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+	<li><a class="ui-link" href='@Url.Content("~/HIFISHelp/CreateELearningPlaylist")'>@Labels.HifisHelp_ELearningPlaylistDev</a></li>
+    <li><a class="ui-link" href='@Url.Content("~/HIFISHelp/CreateELearningModule")'>@Labels.HifisHelp_ELearningModuleDev</a></li>
+	<li>@ViewBag.ViewTitle</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+
+<h5 class="mrgn-tp-sm">@Labels.HifisHelp_AssociatedGlossaryWords</h5>
+@using (Html.BeginForm("InsertOrUpdateGlossaryELearningTopicWords", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+{          
+	@Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.TopicID)    
+	
+	<div class="row">
+		<div class="mrgn-rght-md mrgn-lft-md">
+			@Html.ListBoxFor(model => model.GlossaryWordIDs, ViewBag.WordsViewBag as SelectList, new { @class ="wdth-90" })
+			<button type="submit" class="inline-block pull-right saveButton">@Labels.Save</button>
+		</div>
+	</div>
+} 
+<hr class="mrgn-bttm-sm"/>
+<div class="row">
+    <div class="col-xs-6">
+        <h5 class="mrgn-tp-0">@Labels.HifisHelp_ExistingTopicMaterial</h5>     
+    </div>
+    <div class="col-xs-6">
+        <div class="pull-right mrgn-bttm-sm">
+            @if (Model.PlaylistID != null || Model.PlaylistID != 0)
+            { 
+                @Html.ActionLink(Labels.HifisHelp_ViewTopic, "TrainingTopic", "HIFISHelp", new { id = Model.TopicID, playlistId = Model.PlaylistID }, new { @class = "searchButton", target="_blank", alt=Labels.HifisHelp_ViewTopic, aria_label = Labels.HifisHelp_ViewTopic, @role = "button" }) 
+            }		    		        
+	    </div>
+    </div>
+</div>
+@if (!Model.TopicMaterals.IsEmptyOrNull())
+{
+	<div class="panel-group" id="accordion">
+		@for (int i = 0; i < Model.TopicMaterals.Count; i++)
+		{ 
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<a data-toggle="collapse" data-parent="#accordion" href="#collapse@(i)">
+						<div class="row">                           
+							<div class="col-md-4">
+								@Model.TopicMaterals[i].MaterialName
+							</div>
+							<div class="col-md-4">
+								<div class="text-center">
+									@Labels.HifisHelp_LayoutOrder: 
+									@Model.TopicMaterals[i].LayoutOrder
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="pull-right">
+									@Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningTopicMaterial", "HIFISHelp", new { id = Model.TopicMaterals[i].MaterialID, contentTypeID = Model.TopicMaterals[i].ELearningMaterial.ContentTypeID }, new { @class = "editButton editMatButton", data_Id = Model.TopicMaterals[i].MaterialID, data_Content = Model.TopicMaterals[i].ELearningMaterial.ContentTypeID, data_Topic = Model.TopicMaterals[i].TopicID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+									@Html.ActionLink(Labels.HifisHelp_MaterialRemove, "RemoveELearningMaterialFromTopic", "HIFISHelp", new { topicID = Model.TopicID, materialID = Model.TopicMaterals[i].MaterialID }, new { @class = "deleteButton", alt=Labels.HifisHelp_MaterialRemove, aria_label = Labels.HifisHelp_MaterialRemove, @role = "button" }) 
+								</div>
+							</div>
+						</div>
+					</a>
+				</div>                    
+				<div id="collapse@(i)" class="panel-collapse collapse">
+                    @Html.Partial("eLearningPartials/_DisplayLearningMaterial", Model.TopicMaterals[i].ELearningMaterial)      									 
+				</div>            
+			</div>
+		}
+	</div>
+}        
+<hr class="mrgn-tp-0"/>
+<div class="row">
+	<div class="col-sm-3">
+		<h5 id="newContent" class="mrgn-tp-0">@Labels.HifisHelp_NewMaterial</h5>
+		<h5 id="editContent" class="mrgn-tp-0">@Labels.HifisHelp_MaterialEdit</h5>
+		<div class="newContentDropdown">
+			@using (Html.BeginForm("", "", FormMethod.Post, new { @class = "form-horizontal" }))
+	  { 
+				@Html.DropDownListFor(model => model.ContentTypeID, ViewBag.HelpContentTypes as SelectList) 
+	  } 
+		</div>
+	</div>
+	<div class="col-sm-4">
+		<div class="newContentDropdown">   
+			<h5 id="existMat" class="mrgn-tp-0">@Labels.HifisHelp_ChooseExistingMaterial</h5>                         
+			@Html.Partial("eLearningPartials/_CreateTopic_ExistingMaterial", new ELearningTopicMaterialModel { TopicID = Model.TopicID })
+		</div>
+	</div>
+	<div class="col-sm-5">   
+	</div>
+</div>
+
+<div id="ajaxContentArea">      
+	@using (Html.BeginForm("InsertOrUpdateELearningTopicMaterial", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+	{
+		
+        @Html.AntiForgeryToken()
+    <div id="replaceHere">
+   
+		</div> 
+				
+		<div class="mrgn-tp-sm">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "CreateELearningTopic", "HIFISHelp", new { id = Model.TopicID, playlistId = Model.PlaylistID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>                
+
+	}
+</div>
+	 
+<div id="ajaxContentAreaImage">      
+	@using (Html.BeginForm("InsertOrUpdateELearningTopicMaterialImage", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+	{
+		@Html.AntiForgeryToken()
+        <div id="replaceHereImage">
+   
+		</div>               
+		<div class="mrgn-tp-sm">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "CreateELearningTopic", "HIFISHelp", new { id = Model.TopicID, playlistId = Model.PlaylistID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>
+	}
+</div>
+<div id="ajaxContentAreaQuiz">      
+    @using (Html.BeginForm("InsertOrUpdateELearningMaterialQuiz", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        
+        @Html.AntiForgeryToken()
+    <div id="replaceHereQuiz" class="mrgn-bttm-md">
+   
+        </div>               
+        <div>
+	        <button type="submit" class="saveButton">@Labels.Save</button>
+	        @Html.ActionLink(Labels.Cancel, "CreateELearningTopic", "HIFISHelp", new { id = Model.TopicID, playlistId = Model.PlaylistID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    }
+</div>	
+
+<div id="ajaxMaterialPreview">
+	<hr class="mrgn-tp-sm mrgn-bttm-sm"/>  
+	<h5 class="mrgn-tp-0">@Labels.HifisHelp_MaterialPreview</h5> 
+    <hr class="mrgn-tp-sm mrgn-bttm-sm"/>   
+	<div id="replaceHerePreview">
+   
+	</div>   
+</div>
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+			 function resetTinyMCE() {
+				 var i, t = tinyMCE.editors;
+				 for (i in t) {
+					 if (t.hasOwnProperty(i)) {
+						 t[i].remove();
+					 }
+				 }
+			 }
+
+			 function fixCheckbox() {
+			     $(document).ready(function () {
+			         $(".YesAndNo").parent().removeClass("form-control");
+			         $(".YesAndNo").bootstrapSwitch();
+			     });
+			 }
+
+			 $('#ajaxContentArea').hide();
+			 $('#ajaxContentAreaImage').hide();
+			 $('#ajaxContentAreaQuiz').hide();
+			 $('#editContent').hide();
+			 $('#ajaxMaterialPreview').hide();
+
+			 $('#ContentTypeID').change(function () {
+			     var id = $(this).val();
+			     var topic = $('#TopicID').val();		        
+			     resetTinyMCE();
+
+			     $.ajax({
+			         url: '@Url.Content("~/HifisHelp/NewELearningTopicMaterial")',
+			         type: "GET",
+			         data: { contentTypeID: id, TopicID: topic, uniq_param: (new Date()).getTime() },
+			         beforeSend: function(jqXHR, settings) { 
+			             @{ 
+							<text> 
+			             if (typeof window.hifis_numAjaxCalls === 'undefined') { window.hifis_numAjaxCalls = 0; } 
+			             window.hifis_numAjaxCalls += 1; 
+
+			             if ($('#overlay-div').length < 1) { 
+			                 $('<div id="overlay-div"><div id="inner-overlay"><img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading" /> <p>@Labels.Loading</p></div></div>').appendTo('body');
+			             } 
+			             </text> 
+						}
+			         } 
+			     })
+				.done(function (partialViewResult) {
+				    $('.newContentDropdown').hide();
+				    $("#overlay-div").hide(); 
+				    if (id ==  @((byte)HIFISHelp_HelpContentTypes.Image)) {
+						$('#ajaxContentArea').hide();
+				    $('#ajaxMaterialPreview').hide();
+				    $('#ajaxContentAreaImage').show();
+				    $('#ajaxContentAreaQuiz').hide();
+				    $("#replaceHereImage").html(partialViewResult);
+				    $(function () {
+				        $(document).scrollTop($("#replaceHereImage").offset().top);
+				    });  
+				}
+			    else if (id ==  @((short)HIFISHelp_HelpContentTypes.QuizQuestionTF) || id ==  @((short)HIFISHelp_HelpContentTypes.QuizQuestionMulti)) 
+			     {
+                    $('#ajaxContentArea').show();
+			     $('#ajaxMaterialPreview').hide();
+			     $('#ajaxContentAreaImage').hide();             
+			     $('#ajaxContentAreaQuiz').show();
+			     $("#replaceHereQuiz").html(partialViewResult);
+			     $(function () {
+			         fixCheckbox();
+			         initTinyMCE();
+			     }); 
+			    }
+			     else {
+                 $('#ajaxContentArea').show();
+		         $('#ajaxMaterialPreview').hide();
+		         $('#ajaxContentAreaImage').hide();
+		         $('#ajaxContentAreaQuiz').hide();
+		         $("#replaceHere").html(partialViewResult);                       
+		             $(function () {
+		                 initTinyMCE();
+		                 $(document).scrollTop($("#replaceHere").offset().top);
+		             });	
+				}				    
+				});
+			 });
+
+			 $('#MaterialID').change(function () {
+				 var id = $(this).val();
+
+				 $.ajax({
+					 url: '@Url.Content("~/HifisHelp/GetELearningMaterialPreview")',
+					 type: "GET",
+					 data: { id: id, uniq_param: (new Date()).getTime() }
+				 })
+				.done(function (partialViewResult) {
+					$('#ajaxMaterialPreview').show();
+					$("#replaceHerePreview").html(partialViewResult);		    
+				});
+			 });
+
+			$('.editMatButton').click(function (e) {
+				e.preventDefault();
+
+				$('#newContent').hide();
+				$('.newContentDropdown').hide();
+				resetTinyMCE();
+
+				var editDataID = $(this).attr('data-id')
+				var contentType = $(this).attr('data-content')
+				var topicID = $(this).attr('data-topic')
+				$.ajax({
+					url: '@Url.Content("~/HifisHelp/EditELearningTopicMaterial")',
+					type: "GET",
+					data: { id: editDataID, contentTypeID: contentType, TopicID: topicID, uniq_param : (new Date()).getTime() },
+					beforeSend: function(jqXHR, settings) { 
+						@{ 
+							<text> 
+							if (typeof window.hifis_numAjaxCalls === 'undefined') { window.hifis_numAjaxCalls = 0; } 
+							window.hifis_numAjaxCalls += 1; 
+
+							if ($('#overlay-div').length < 1) { 
+								$('<div id="overlay-div"><div id="inner-overlay"><img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading" /> <p>@Labels.Loading</p></div></div>').appendTo('body');
+							} 
+							</text> 
+						}
+					} 
+				 })
+				.done(function (partialViewResult) {
+					$("#overlay-div").hide();  
+					if (contentType !=  @((byte)HIFISHelp_HelpContentTypes.Image)) {
+						$('#ajaxContentArea').show();
+						$('#ajaxMaterialPreview').hide();
+						$('#ajaxContentAreaImage').hide(); 			        
+						$("#replaceHere").html(partialViewResult);
+						$(function () {
+							initTinyMCE();
+							$(document).scrollTop($("#replaceHere").offset().top);
+						});
+					}
+					else {
+						$('#ajaxContentArea').hide();
+						$('#ajaxMaterialPreview').hide();
+						$('#ajaxContentAreaImage').show();
+						$("#replaceHereImage").html(partialViewResult);
+						$(function () {
+							$(document).scrollTop($("#replaceHereImage").offset().top);
+						});  
+					}
+				});
+			});
+		</script>
+);
+} 

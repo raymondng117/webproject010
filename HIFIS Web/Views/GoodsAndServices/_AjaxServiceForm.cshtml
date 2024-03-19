@@ -1,0 +1,232 @@
+﻿@model ClientServicesViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        @if (!string.IsNullOrEmpty(Model.ActivitiesID))
+        {
+            <h2 class="modal-title">@Labels.EditService</h2>
+            
+        }
+        else
+        {
+            <h2 class="modal-title">@Labels.AddNewService</h2>
+        }
+    </header>
+    <div class="modal-body">
+        <form id="serviceForm" class="form-horizontal">
+            @Html.Partial("_BaseHiddenFor")
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.ActivitiesTypeID, new { autocomplete = "off" })
+            @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+            @Html.HiddenFor(model => model.ServiceID)
+            @Html.HiddenFor(model => model.GoodsActivitiesID)
+
+            @if (!string.IsNullOrEmpty(Model.ActivitiesID))
+            {
+                @Html.HiddenFor(model => model.ActivitiesID)
+            }
+
+            @*//Need to pass Enumerable.Empty<SelectListItem>() so GoodItemID is created as a 'select' element as opposed to an input element.*@
+            <div>
+                @Html.HifisEditorFor(model => model.ActivityItemID, Enumerable.Empty<SelectListItem>())
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime")
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.Hours)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.Minutes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ServiceCost, "Money", new { @class = "money" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ServicePrice, "Money", new { @class = "money" })
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        @if (!string.IsNullOrEmpty(Model.ActivitiesID))
+        {
+            <button type="submit" id="editServiceSaveBtn" class="saveButton">@Labels.Save</button>
+        }
+        else
+        {
+            <button type="submit" id="newServiceSaveBtn" class="saveButton">@Labels.AddNewService</button>
+        }
+        <button id="serviceCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+@if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Service_Add))
+{
+    <text>
+        <script type="text/javascript">
+            $(function () {
+                $.ajax({
+                    url: "@Url.Action("GetServicesItemsList", "GoodsAndServices")",
+                    type: "POST",
+                }).done(function (data) {
+                    $('#ActivityItemID').prepend('<optgroup label="@Labels.ExpressServices">' + makeOptions(data.Result.data) + '</optgroup>');
+                }).always(function () {
+                    reinitSelect2($('#ActivityItemID'));
+                });
+            });
+        </script>
+    </text>
+}
+
+<script type="text/javascript">
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $('#ActivityItemID').append('<option value=""/>');
+
+    $(function () {
+        $.ajax({
+            url: "@Url.Action("GetServicesTypeListJson", "GoodsAndServices")?selectedID=@Model.ActivityItemID",
+            type: "POST",
+        }).done(function (data) {
+            $('#ActivityItemID').append('<optgroup label="@Labels.StandardServices">' + makeOptions(data.Result.data) + '</optgroup>');
+        }).always(function () {
+            reinitSelect2($('#ActivityItemID'));
+            if ($('#ActivitiesTypeID').val() != 0) {
+                var setVal = $('#ActivitiesTypeID').val() + ",T";
+                $('#ActivityItemID').val(setVal);
+                $('select').trigger('change');
+            }
+        });
+
+        // $("#serviceForm").hifisValidation();
+    });
+
+    function makeOptions(res) {
+        var str = "";
+        if (res.length > 0) {
+            for (i = 0; i < res.length; i++) {
+                str += '<option value="' + res[i].value + '">' + res[i].label + '</option>';
+            }
+        }
+        else {
+            str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+        }
+        return str;
+    };
+
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+    }
+
+    $('#ActivityItemID').on("select2:unselect", function (e) {
+        $('#innerListWrapper').hide("slow");
+        $('#NoResultsDiv').show('slow');
+        $('#ActivitiesTypeID').val('');
+        $('#Hours').val(0);
+        $('#Minutes').val(0);
+        $('#ServiceCost').val('');
+        $('#ServicePrice').val('');
+        $('select').trigger('change');
+    });
+
+    $('#ActivityItemID').on("select2:select", function (e) {
+        var substrings = $(this).val().split(',');
+
+        var Details;
+
+        if (substrings[1] == 'D') {
+            $.ajax({
+                url: "@Url.Action("GetServicesItemInfo", "GoodsAndServices")",
+                type: "POST",
+                data: { "itemID": substrings[0] },
+            }).done(function (data) {
+                $('#ActivitiesTypeID').val(data.Result.data[0].typeID);
+                $('#Hours').val(data.Result.data[0].hours);
+                $('#Minutes').val(data.Result.data[0].minutes);
+                if (data.Result.data[0].unitCost === "N/A") {
+                    $('#ServiceCost').val(0);
+                }
+                else {
+                    $('#ServiceCost').val(parseInt(data.Result.data[0].unitCost));
+                }
+                if (data.Result.data[0].unitCost === "N/A") {
+                    $('#ServicePrice').val(0);
+                }
+                else {
+                    $('#ServicePrice').val(parseInt(data.Result.data[0].unitPrice));
+                }
+            }).fail(function () {
+            }).always(function () {
+            });
+        }
+        else {
+            $('#ActivitiesTypeID').val('');
+            $('#Hours').val(0);
+            $('#Minutes').val(0);
+            $('#ServiceCost').val('');
+            $('#ServicePrice').val('');
+        }
+    });
+
+    $("#newServiceSaveBtn").click(function () {
+        if ($("#serviceForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/GoodsAndServices/NewService")",
+                type: "POST",
+                data: $('#serviceForm').serialize()
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#serviceCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $('#servicesTable').DataTable().ajax.reload();
+                }
+            });
+        }
+    });
+
+    $("#editServiceSaveBtn").click(function () {
+        if ($("#serviceForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/GoodsAndServices/EditService")",
+                type: "POST",
+                data: $('#serviceForm').serialize()
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#serviceCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $('#servicesTable').DataTable().ajax.reload();
+                }
+            });
+        }
+    });
+</script>

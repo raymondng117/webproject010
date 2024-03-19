@@ -1,0 +1,43 @@
+﻿@model PITVIIntakeViewModel
+
+<section id="Modal_ExistingAssessments" class="modal-dialog modal-content overlay-def" style="width: 500px;">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.ExistingAssessments</h2>
+    </header>
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table id="existingAssessmentsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                { "width": "30%", "data": "organization", "orderable": false, "type": "string"},
+                                                                { "width": "30%", "data": "type", "orderable": false, "type": "string"},
+                                                                { "width": "30%", "data": "date", "orderable": false, "type": "string"},
+                                                                { "width": "10%", "data": "actions", "orderable": false, "type": "string"}
+                                                            ],
+                                                            "order": [ [2, "desc"] ],
+                                                            "bFilter" : false,
+                                                            "ajax": "@Url.Content("~/SPDAT/GetExistingVIAssessments/?ClientID=" + Model.PrimaryClientID + "&SurveyID=" + Model.PITSurveyID)"}'>
+                <thead>
+                    <tr>
+                        <th>@Labels.ServiceProviders</th>
+                        <th>@Labels.AssetType</th>
+                        <th>@Labels.Date</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="existingAssessmentsCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.ContinueWithNewAssessment</button>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    $(".wb-tables").trigger("wb-init.wb-tables");
+    init_hifis();
+    autoWidthBoot('.modal-body');
+</script>
+
+

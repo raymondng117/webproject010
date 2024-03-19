@@ -1,0 +1,429 @@
+﻿@model HIFIS.WEB.ViewModels.HousingPlacementViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@{
+    /*This section determines what Actions are available and what status is displayed depending on status of placement*/
+    MvcHtmlString HousingUnitSearchLink = null;
+    MvcHtmlString NewPlacementAttemptLink = null;
+    MvcHtmlString FinalPlacementAttemptLink = null;
+    MvcHtmlString MoveInLink = null;
+    MvcHtmlString Status = null;
+    MvcHtmlString EditButton = null;
+    MvcHtmlString NewHousingUnit = null;
+    MvcHtmlString NewPlacement = null;
+
+    string status = null;
+    
+    // We only want to use the following when the lookup table is modifiable 
+    //switch ((PlacementStatusTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus))
+    switch (Model.PlacementStatus)
+    {
+        case PlacementStatusTypes.Failed:
+            Status = new MvcHtmlString("<p>" + Labels.PlacementHasEnded + "</p>" + "<p>" + Labels.PlacementFailed + "</p>");
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Add, Model.OrganizationID))
+            {
+                NewPlacement = Html.ActionLink(Labels.NewPlacement, "New", "HousingPlacements", new { id = Model.PrimaryClient.ClientID }, new { @class = "addButton", alt=Labels.NewPlacement, aria_label = Labels.NewPlacement, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Edit, Model.OrganizationID))
+            {
+                EditButton = Html.ActionLink(Labels.Edit, "Edit", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" });
+            }
+
+            status = "<span class='text-danger'>" + Labels.PlacementFailed + "</span>";
+
+            break;
+
+        case PlacementStatusTypes.FollowUpsCompleted:
+            Status = new MvcHtmlString("<p>" + Labels.PlacementHasEnded + "</p>" + "<p>" + Labels.FollowUpsCompleted + "</p>");
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Add, Model.OrganizationID))
+            {
+                NewPlacement = Html.ActionLink(Labels.NewPlacement, "New", "HousingPlacements", new { id = Model.PrimaryClient.ClientID }, new { @class = "addButton", alt=Labels.NewPlacement, aria_label = Labels.NewPlacement, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Edit, Model.OrganizationID))
+            {
+                EditButton = Html.ActionLink(Labels.Edit, "Edit", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" });
+            }
+
+            status = "<span class='text-success'>" + Labels.FollowUpsCompleted + "</span>";
+
+            break;
+
+        case PlacementStatusTypes.HousingSecured:
+            Status = new MvcHtmlString("<p>" + Labels.HousingSecuredOn + ": " + Html.DisplayFor(model => model.DateHousingSecured) + "</p>" + "<p>" + Labels.DateExpectedMoveIn + ": " + Html.DisplayFor(model => model.DateExpectedMoveIn) + "</p>");
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Search, Model.OrganizationID))
+            {
+                HousingUnitSearchLink = Html.ActionLink(Labels.NewHousingSearch, "HousingUnitSearch", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "searchButton", alt=Labels.NewHousingSearch, aria_label = Labels.NewHousingSearch, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_MoveIn, Model.OrganizationID))
+            {
+                MoveInLink = Html.ActionLink(Labels.MoveIn, "MoveIn", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID, HouseID = Model.HousingUnit.HouseID }, new { @class = "forwardButton", alt=Labels.MoveIn, aria_label = Labels.MoveIn, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Attempt_Add, Model.OrganizationID))
+            {
+                NewPlacementAttemptLink = Html.ActionLink(Labels.NewPlacementAttempt, "NewAttempt", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "addButton", alt=Labels.NewPlacementAttempt, aria_label = Labels.NewPlacementAttempt, @role = "button" });
+                FinalPlacementAttemptLink = Html.ActionLink(Labels.EndHousingPlacement, "NewAttempt", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID, FinalAttempt = true }, new { @class = "cancelButton", alt=Labels.EndHousingPlacement, aria_label = Labels.EndHousingPlacement, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Edit, Model.OrganizationID))
+            {
+                EditButton = Html.ActionLink(Labels.Edit, "Edit", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" });
+            }
+
+            status = "<span class='text-warning'>" + Labels.HousingSecured + "</span>";
+
+            break;
+
+        case PlacementStatusTypes.MovedIn:
+            Status = new MvcHtmlString("<p>" + Labels.MovedIntoHousingOn + ": " + Html.DisplayFor(model => model.DateMovedIn) + "</p>" + "<p>" + Labels.NextScheduledFollowUp + ": " + (Model.NextScheduledFollowUp.HasValue ? Html.DisplayFor(model => model.NextScheduledFollowUp).ToString() : Labels.NA));
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Edit, Model.OrganizationID))
+            {
+                EditButton = Html.ActionLink(Labels.Edit, "Edit", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button"});
+            }
+
+            status = "<span class='text-primary'>" + Labels.MovedIntoHousing + "</span>";
+            break;
+
+        default:
+            Status = new MvcHtmlString("<p>" + Labels.HousingNotSecured + "</p>");
+
+            status = "<span class='text-danger'>" + Labels.HousingNotSecured + "</span>";
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Search, Model.OrganizationID))
+            {
+                HousingUnitSearchLink = Html.ActionLink(Labels.NewHousingSearch, "HousingUnitSearch", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "searchButton", alt=Labels.NewHousingSearch, aria_label = Labels.NewHousingSearch, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Attempt_Add, Model.OrganizationID))
+            {
+                FinalPlacementAttemptLink = Html.ActionLink(Labels.EndHousingPlacement, "NewAttempt", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID, FinalAttempt = true }, new { @class = "cancelButton", alt=Labels.EndHousingPlacement, aria_label = Labels.EndHousingPlacement, @role = "button" });
+                NewPlacementAttemptLink = Html.ActionLink(Labels.NewPlacementAttempt, "NewAttempt", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "addButton", alt=Labels.NewPlacementAttempt, aria_label = Labels.NewPlacementAttempt, @role = "button" });
+            }
+
+            if (RightsHelper.HasRight(UserRights.HousingPlacements_Edit, Model.OrganizationID))
+            {
+                EditButton = Html.ActionLink(Labels.Edit, "Edit", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" });
+            }
+
+            //if (RightsHelper.HasRight(UserRights.HousingUnits_Add, Model.OrganizationID))
+            //{
+            //    NewHousingUnit = Html.Partial("_OnTheFlyButton",
+            //                        new OnTheFlyButtonViewModel()
+            //                        {
+            //                            ButtonName = Labels.NewUnit,
+            //                            Title = Labels.NewUnit,
+            //                            ActionName = "AjaxNewHousingUnit",
+            //                            ControllerName = "HousingUnit",
+            //                            PartialName = "~/Views/HousingUnit/_HousingPlacementUnit.cshtml",
+            //                            CallBackFunction = "onTheFlyCallback",
+            //                            ViewModel = new HousingUnitViewModel(),
+            //                            PopulateListFunction = "getHousingDropdowns",
+            //                        });
+            //}
+            break;
+    }
+}
+
+<h3 class="pddng-tp-0 mrgn-tp-0">@Labels.Status</h3>
+<strong>@Html.Raw(status)</strong>
+
+<div class="mrgn-bttm-md mrgn-tp-md">
+    @*@NewHousingUnit*@
+    @MoveInLink
+    @HousingUnitSearchLink
+    @FinalPlacementAttemptLink
+    @NewPlacement
+    @Html.ActionLink(Labels.BacktoPlacementList, "ClientList", new { id = Model.PrimaryClient.ClientID }, new { @class = "prevButton", alt=Labels.BacktoPlacementList, aria_label = Labels.BacktoPlacementList, @role = "button" })
+</div>
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#HousingUnit" role="tab" data-toggle="tab">@Labels.HousingUnit</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#Attempts" role="tab" data-toggle="tab">@Labels.Attempts</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#FollowUps" role="tab" data-toggle="tab">@Labels.FollowUps</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#HPDocuments" role="tab" data-toggle="tab">@Labels.Documents</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane active" id="Details">
+                <div>
+                    <h4>@Labels.PlacementInfo</h4>
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "searching": false, "paging": false, "ordering": false }'>
+                            <thead>
+                                <tr>
+                                    <th class="wdth-20">@Labels.Client</th>
+                                    <th class="wdth-20">@Labels.Family</th>
+                                    <th class="wdth-20">@Labels.HousingTypesSought</th>
+                                    <th class="wdth-10">@Labels.DateSearchStarted</th>
+                                    <th class="wdth-10">@Labels.TargetDate</th>
+                                    <th class="wdth-10">@Labels.ServiceProvider</th>
+                                    <th class="wdth-10">@Labels.CaseWorker</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>@Html.ActionLink(Model.PrimaryClient.LastName + ", " + Model.PrimaryClient.FirstName, "DisplayVitals", "ClientTombstone", new { id = Model.PrimaryClient.ClientID }, new { alt = Model.PrimaryClient.LastName + ", " + Model.PrimaryClient.FirstName, aria_label = Model.PrimaryClient.LastName + ", " + Model.PrimaryClient.FirstName })</td>
+                                    <td>
+                                        @if (!Model.ClientsFamily.IsEmptyOrNull())
+                                        {
+                                            <ul class="list-bullet-none mrgn-0">
+                                                @foreach (var fam in Model.ClientsFamily)
+                                                {
+                                                    <li>@Html.ActionLink(fam.LastName + ", " + fam.FirstName, "DisplayVitals", "ClientTombstone", new { id = fam.ClientID }, new { alt = fam.LastName + ", " + fam.FirstName, aria_label = fam.LastName + ", " + fam.FirstName })</li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <strong>@Labels.NA</strong>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#unitsSought" class="btn btn-default btn-sm btn-block" style="text-align:left;">
+                                                    @Labels.HousingTypesSought
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="unitsSought" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var type in Model.HTS)
+                                                    {
+                                                        <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseTypes, Culture, type)</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@Html.DisplayFor(model => model.DateSearchStarted)</td>
+                                    <td>@(Model.TargetDate.HasValue ? Html.DisplayFor(model => model.TargetDate).ToString() : Labels.NA)</td>
+                                    <td>@Model.ServiceProviderName</td>
+                                    <td>@Model.CaseWorkerName</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+					<p class="mrgn-tp-md">@EditButton</p>
+				</div>
+			</div>
+			<div class="tab-pane" id="HousingUnit">
+				@if (Model.HousingUnit != null)
+				{
+					<h4>@Labels.SecuredHousingUnit</h4>
+					<p>@Labels.HousingSecuredOn: @Html.DisplayFor(model => model.DateHousingSecured)</p>        
+					if (Model.DateMovedIn.HasValue)
+					{
+						<p>@Labels.MovedIntoHousing: @Html.DisplayFor(model => model.DateMovedIn)</p>
+					}
+					else
+					{
+						<p>@Labels.DateExpectedMoveIn: @Html.DisplayFor(model => model.DateExpectedMoveIn)</p>
+					}
+					
+					@Html.Partial(Url.Content("~/Views/HousingUnit/_HousingVitals.cshtml"), new HousingUnitVitalsWrapper(Model.HousingUnit))
+					<div class="clearfix"></div>
+					@MoveInLink
+				}
+				else
+				{
+					<strong><p>@Labels.No @Labels.SecuredHousingUnit</p></strong>
+					@HousingUnitSearchLink
+				}
+			</div>
+			<div class="tab-pane" id="Attempts">
+				@if (!Model.Attempts.IsEmptyOrNull() || Model.DateHousingSecured.HasValue)
+				{
+					<div class="table-responsive"><div class="container wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+						<div style="display: table-header-group; vertical-align: middle; border-color: inherit;">
+							<div class="row">
+								<div class="col-lg-1 wdth-10">@Labels.DateAttempted</div>
+								<div class="col-lg-1 wdth-10">@Labels.CaseWorker</div>
+								<div class="col-lg-5 wdth-40">@Labels.ReasonHousingNotSecured</div>
+								<div class="col-lg-5 wdth-40">@Labels.Comments</div>
+							</div>
+						</div>
+						<div style="display: table-row-group; vertical-align: middle; border-color: inherit;">
+							@foreach (HousingPlacementAttemptViewModel attempt in Model.Attempts)
+							{
+								<div class="row">
+									<div class="col-lg-3">@Html.DisplayFor(model => attempt.AttemptedDate)</div>
+									<div class="col-lg-3">@attempt.CaseWorkerName</div>
+									<div class="col-lg-3">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReasonHousingNotSecuredTypes, Culture, attempt.ReasonHousingNotSercuredID)</div>
+									<div class="col-lg-3">@attempt.Comment</div>
+								</div>
+							}
+							@if (Model.DateHousingSecured.HasValue)
+							{
+								<div class="row">
+									<div class="col-lg-3">@Html.DisplayFor(model => Model.DateHousingSecured)</div>
+									<div class="col-lg-3">@Model.CaseWorkerName</div>
+									<div class="col-lg-3">@Labels.NA</div>
+									<div class="col-lg-3">@Labels.HousingSecured</div>
+								</div>
+							}
+						</div>
+					</div></div>
+				}
+				else
+				{
+					<strong><p>@Labels.NoAttempts</p></strong>
+                }
+                <div class="clearfix"></div>
+                <p>@NewPlacementAttemptLink</p>
+            </div>
+            <div class="tab-pane" id="FollowUps">
+                @* We only want to use the following when the lookup table is modifiable *@
+                @*@if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) == (short)PlacementStatusTypes.MovedIn)
+        || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) == (short)PlacementStatusTypes.FollowUpsCompleted))*@
+                @if (Model.PlacementStatus == PlacementStatusTypes.MovedIn || Model.PlacementStatus == PlacementStatusTypes.FollowUpsCompleted)
+                {
+                    @Html.Partial("~/Views/FollowUps/_FollowUpList.cshtml", new ClientHousingViewModel()
+                   {
+                       ClientID = Model.ReadOnlyVitals.ClientID,
+                       ClientHouseID = Model.ClientHouseID,
+                       HousePlacementID = Model.HousePlacementID,
+                       HousePlacementServiceID = WebHelper.EncryptID(Model.ServiceID),
+                       HousePlacementOrganizationID = Model.OrganizationID,
+                       HousePlacementFollowUpCompleted = Model.PlacementStatus == PlacementStatusTypes.FollowUpsCompleted ? true : false
+                   })
+                }
+                @* We only want to use the following when the lookup table is modifiable *@
+                @*else if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) == (short)PlacementStatusTypes.HousingNotSecured)
+        || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) == (short)PlacementStatusTypes.HousingSecured))*@
+                else if (Model.PlacementStatus == PlacementStatusTypes.HousingNotSecured ||
+                            Model.PlacementStatus == PlacementStatusTypes.HousingSecured)
+
+                {
+                    <strong><p>@Labels.ClientsHaveNotBeenPlacedYet</p></strong>
+                }
+                else
+                {
+                    <strong><p>@Labels.NoFollowUps</p></strong>
+                }
+            </div>
+            <div class="tab-pane" id="HPDocuments">
+
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.DateCreated</th>
+                                <th>@Labels.Name</th>
+                                <th>@Labels.Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var document in ViewBag.Documents as List<HIFIS.CONTRACTS.WCFContracts.DataContracts.DocumentsDisplay>)
+                            {
+                                <tr>
+                                    <td>@document.DateUploaded</td>
+                                    <td>
+                                        @if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                                        {
+                                            if (document.ConfidentialYN)
+                                            {
+                                                if (RightsHelper.HasRight(UserRights.Documents_Confidential))
+                                                {
+                                                    @Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = document.DocumentID, ClientID = Model.PrimaryClient.ClientID, target = "_blank" }, new { alt = document.Name, aria_label = document.Name })
+                                                }
+                                                else
+                                                {
+                                                    @document.Name
+                                                }
+                                            }
+                                            else
+                                            {
+                                                @Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = document.DocumentID, ClientID = Model.PrimaryClient.ClientID, target = "_blank" }, new { alt = document.Name, aria_label = document.Name })
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @document.Name
+                                        }
+                                    </td>
+                                    <td>@document.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <hr />
+
+                <h3>@Labels.NewDocument</h3>
+
+                @using (Html.BeginForm("NewDocument", "Documents", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+                {
+
+                    @Html.Partial("~/Views/Documents/_Document.cshtml", new DocumentViewModel() { DocumentTypeID = (byte)DocumentTypes.HousingPlacement, ReferenceID = Model.HousePlacementID, ClientID = Model.PrimaryClient.ClientID, PersonID = Model.PrimaryClient.PersonID, ReadOnlyVitals = Model.PrimaryClient, ReturnUrl = Url.Content("~/HousingPlacements/Display/") + Model.PrimaryClient.ClientID + "?placementID=" + Model.HousePlacementID });
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="saveButton  ">@Labels.Save</button>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<p>
+
+       @MoveInLink
+        @HousingUnitSearchLink
+        @FinalPlacementAttemptLink
+        @NewPlacement
+        @Html.ActionLink(Labels.BacktoPlacementList, "ClientList", new { id = Model.PrimaryClient.ClientID }, new { @class = "prevButton" })
+    </p>*@
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+            function onTheFlyCallback(objectID) {
+                $("#secureUnitDialog").dialog({
+                    buttons: {
+                        "@Html.Encode(Labels.Yes)": function () {
+                            window.location.href = '/HousingPlacements/SecureHousingUnit/@(Model.PrimaryClient.ClientID)?placementID=@(Model.HousePlacementID)&houseID=' + objectID;
+                                @*'@Html.Action("SecureHousingUnit", "HousingPlacements", new { id = Model.PrimaryClientID, placementID = Model.HousePlacementID })'
+                                                    + '&houseID=' + objectID;*@
+                        },
+                        "@Html.Encode(Labels.No)": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+
+                $("#secureUnitDialog").dialog("open");
+            }
+
+</script>);
+}

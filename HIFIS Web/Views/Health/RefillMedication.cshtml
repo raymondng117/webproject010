@@ -1,0 +1,57 @@
+﻿@model RefillViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PillCountAdjustment + " " + ViewBag.MedicationName;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="col-xs-12 mrgn-tp-md">    
+    @using (Html.BeginForm("RefillMedication", "Health", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model) 
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.MedicationID)
+        @Html.HiddenFor(model => model.MedicationName)
+        
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DispensingDate, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.DispensingDate, null, null, true, null)
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DispensingTypeID, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.DispensingTypeID, CachedTableTypes.HIFIS_DispensingTypes, null, true, null)
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.HifisLabelFor(model => model.NumberOfPills, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.NumberOfPills, null, null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.OnBehalfOfPersonID, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.OnBehalfOfPersonID, ViewBag.AllUsers as SelectList, null, null, true, null)
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-offset-3 col-sm-9">
+                <div class="form-group">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "MedicationDispensingHistory", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = Model.MedicationID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        </div>       
+    }   
+</div>

@@ -1,0 +1,195 @@
+﻿@model ClientHealthViewModel 
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.HealthIssueID)
+    @Html.HiddenFor(model => model.HealthIssueName)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.HealthIssueTypeID, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisEditorFor(model => model.HealthIssueTypeID, CachedTableTypes.HIFIS_HealthIssueTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateFrom, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisEditorFor(model => model.DateFrom, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateTo, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisEditorFor(model => model.DateTo, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Description, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisTextAreaFor(model => model.Description, new { @class = "commentBoxSize" }, true)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing() && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(m => m.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(m => m.EditableYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+
+    @*<div class="row">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-9">
+            <div class="row">
+                <div class="col-xs-3">
+                    <div class="checkbox-inline text-nowrap">
+                        <div class="col-xs-1">
+                            @Html.CheckBoxFor(model => model.SelfReportedYN)
+                        </div>
+                        @Html.HifisLabelFor(model => model.SelfReportedYN, new { @class = "col-xs-11" })
+                    </div>
+                </div>
+                <div class="col-xs-3">
+                    <div class="checkbox-inline text-nowrap">
+                        <div class="col-xs-1">
+                            @Html.CheckBoxFor(model => model.SuspectedYN)
+                        </div>
+                        @Html.HifisLabelFor(model => model.SuspectedYN, new { @class = "col-xs-11" })
+                    </div>
+                </div>
+                <div class="col-xs-3">
+                    <div class="checkbox-inline text-nowrap">
+                        <div class="col-xs-1">
+                            @Html.CheckBoxFor(model => model.DiagnosedYN)
+                        </div>
+                        @Html.HifisLabelFor(model => model.DiagnosedYN, new { @class = "col-xs-11" })
+                    </div>
+                </div>
+                <div class="col-xs-3">
+                    <div class="checkbox-inline text-nowrap">
+                        <div class="col-xs-1">
+                            @Html.CheckBoxFor(model => model.ContagiousYN)
+                        </div>
+                        @Html.HifisLabelFor(model => model.ContagiousYN, new { @class = "col-xs-11" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+    <div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.SelfReportedYN, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.SelfReportedYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.SuspectedYN, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.SuspectedYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DiagnosedYN, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.DiagnosedYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ContagiousYN, new { @class = "col-xs-3 control-label" })
+            <div class="col-xs-9">
+                @Html.HifisEditorFor(model => model.ContagiousYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        @Html.Partial("Plugins/_TinyMCEScript")
+
+        @Html.HifisLabelFor(model => model.Symptoms, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisTextAreaFor(model => model.Symptoms, new { @class = "mceEditor_Messaging" }, true)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Medication, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisTextAreaFor(model => model.Medication, new { @class = "mceEditor_Messaging" }, true)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Treatment, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.HifisTextAreaFor(model => model.Treatment, new { @class = "mceEditor_Messaging" }, true)
+        </div>
+    </div>
+
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(document).ready(function () {
+                if ($('#txtNewMedication').val() == '') {
+                    $('#txtNewMedication')
+                        .val('@Labels.txtNewMedicationPrompt')
+                        .css('color', 'gray');
+                }
+            });
+
+            $(document).ready(function () {
+                if ($('#txtNewTreatment').val() == '') {
+                    $('#txtNewTreatment')
+                        .val('@Labels.txtNewTreatmentPrompt')
+                        .css('color', 'gray');
+                }
+            });
+
+            function ClearDefaultTextMedication() {
+                if ($('#txtNewMedication').val() == '@Labels.txtNewMedicationPrompt') {
+                    $('#txtNewMedication')
+                        .val('')
+                        .css('color', 'black');
+                }
+            }
+
+            function ClearDefaultTextTreatment() {
+                if ($('#txtNewTreatment').val() == '@Labels.txtNewTreatmentPrompt') {
+                    $('#txtNewTreatment')
+                        .val('')
+                        .css('color', 'black');
+                }
+            }
+        </script>
+    );
+}

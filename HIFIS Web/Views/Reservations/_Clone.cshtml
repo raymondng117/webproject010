@@ -1,0 +1,8 @@
+﻿@model ReservationCloneViewModel
+
+@Html.HiddenFor(model => model.PrimaryClientID)
+@Html.HiddenFor(model => model.ReservationID)
+
+<div>
+    @Html.HifisEditorFor(model => model.numOfClones)
+</div>

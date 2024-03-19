@@ -1,0 +1,37 @@
+﻿@model HIFIS.WEB.ViewModels.HousingPlacementViewModel      
+@{
+    if (Model.PrimaryClientID == null)
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_NewPlacement;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_NewClientHousingPlacement;
+    }
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div>
+    @Html.Partial("_ValidationSummaryOuter")
+    @using (Html.BeginForm("New", "HousingPlacements", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_HousingPlacement")
+
+        <div class="row">
+            <div class="col-sm-offset-3 col-sm-9">
+                <div class="btn-group">
+                    <button type="submit" class="saveButton" name="submitBtn" value="details">@Labels.StartHousingPlacement</button>
+                    @if (Model.ReadOnlyVitals.ClientID == null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "List", "HousingPlacements", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "ClientList", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                </div>
+			</div>
+		</div>  
+    }
+</div>

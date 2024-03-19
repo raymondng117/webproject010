@@ -1,0 +1,25 @@
+﻿@model AppointmentViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_AddAppointment;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("New", "Appointment", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    <div class="mrgn-0">
+        @Html.Partial("_Appointments")
+    </div>
+    
+    <div id="Calendar" class="mrgn-0"></div>
+    
+    <div class="clearfix"></div>
+        
+    <div class="form-group">
+	    <div class="col-sm-offset-3 col-sm-9">
+		    <button type="submit" class="saveButton">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "ClientList", "Appointment", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role="button" })
+	    </div>
+    </div>
+}

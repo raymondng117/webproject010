@@ -1,0 +1,149 @@
+﻿@model System.String
+
+<section id="Modal_DaysConverter" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.ToNumberOfDaysConverter</h2>
+    </header>
+    <div class="modal-body">
+        <div class="form-group row">
+            @Html.Label(Labels.YearYears, new { @class = "control-label col-sm-6" })
+            <div class="col-sm-6">
+                @Html.TextBox("noOfYears", null, new { @class = "form-control", type = "number", max="1", min = "0" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            @Html.Label(Labels.MonthMonths, new { @class = "control-label col-sm-6 " })
+            <div class="col-sm-6">
+                @Html.TextBox("noOfMonths", null, new { @class = "form-control", type = "number", min = "0" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            @Html.Label(Labels.WeekWeeks, new { @class = "control-label col-sm-6" })
+            <div class="col-sm-6">
+                @Html.TextBox("noOfWeeks", null, new { @class = "form-control", type = "number", min = "0" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            @Html.Label(Labels.DayDays, new { @class = "control-label col-sm-6" })
+            <div class="col-sm-6">
+                @Html.TextBox("noOfDays", null, new { @class = "form-control", type = "number", min = "0" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            @Html.Label(Labels.Date, new {@class = "control-label col-sm-6"})
+            <div class="col-sm-6">
+                @Html.TextBox("datepicker", null, new {@class = "form-control", type = "date"})
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="control-label col-sm-6" for="Total_Days">
+                Total Days
+                @if (Request.QueryString["max"] != null)
+                { 
+                    <span class="text-danger">(Maximum @Request.QueryString["max"])</span>
+                }
+            </label>
+            <div class="col-sm-6">
+                @Html.TextBox("totaldays", null, new {@class = "form-control", type = "text", disabled = true})
+                <span class="text-danger" id="errorMsg">@Labels.ValueMaxExceeded @Request.QueryString["max"]</span>
+            </div>
+        </div>
+     </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="toDaysSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="toDaysCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    
+    var btn;
+    var newValue = 0;
+    var errMsg;
+    $(document).ready(function () {
+        init_hifis();
+        autoWidthBoot('.modal-body');
+        DebugLog("NumberOfDaysConverter Ready...");
+        btn = $("#toDaysSaveBtn");
+        errMsg = $("#errorMsg");
+        validate();
+    });
+
+    function validate() {
+        var y = parseInt($("#noOfYears").val()) || 0;;
+        var m = parseInt($("#noOfMonths").val()) || 0;;
+        var w = parseInt($("#noOfWeeks").val()) || 0;;
+        var d = parseInt($("#noOfDays").val()) || 0;;
+        var daysCount = y * 365 + m * 30 + w * 7 + d;
+        daysCount = parseInt(daysCount) || 0;
+
+        var todaysDate = new Date();
+        var selectedDate = new Date($("#datepicker").val());
+        var daysDiff = Math.floor((todaysDate - selectedDate) / 86400000);
+        daysDiff = parseInt(daysDiff) || 0;
+
+        newValue = Math.max(daysDiff, daysCount);
+        $("#totaldays").val(newValue);
+
+        @{
+            var ifPredicate = "true";
+
+            // Check to see if this value should be bounded
+            if (Request.QueryString["max"] != null)
+            {
+                ifPredicate = "newValue <= " + Request.QueryString["max"];
+            }
+        }
+
+        if (@Html.Raw(ifPredicate))
+        {
+            btn.attr("disabled", false);
+            errMsg.hide();
+            return true;
+        }
+        else
+        {
+            btn.attr("disabled", true);
+            errMsg.show();
+            return false;
+        }
+    }
+
+    // Verify that the current value does not exceed the maximum specified
+    $('#noOfYears, #noOfMonths, #noOfWeeks, #noOfDays').change(function (elm) {
+    DebugLog("Change!");
+    var v = $(this).val();
+    DebugLog(v);
+    if (validate())
+        DebugLog("Good values!");
+    else
+        DebugLog("No so good values.. :(");
+    });
+
+    //Disable decimals
+    $('#noOfYears, #noOfMonths, #noOfWeeks, #noOfDays').keypress(function (e) {
+        if (e.which < 48 || e.which > 57) {
+            return(false);
+        }
+    });
+
+    $("#toDaysSaveBtn").click(function () {
+        DebugLog("NumberOfDaysConverter Save Click...");
+        var btn = $(this);
+        btn.attr("disabled", true); // Disable the button so multiple request don't go through
+
+        if (validate())
+        {
+            $("#SurveyQuestion_@Model").val(newValue); //.focusout();
+            $("#SurveyQuestion_@Model").trigger("change");
+            $("#toDaysCloseBtn").click(); //Close the modal window
+        } else {
+            btn.attr("disabled", false); // Disable the button so multiple request don't go through
+        }
+    });
+</script>

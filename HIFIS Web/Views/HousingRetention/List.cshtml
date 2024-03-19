@@ -1,0 +1,207 @@
+﻿@model HousingRetentionListViewModel
+@{
+    if (ViewBag.ReadOnlyVitals == null)
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.Client;
+    }
+    ViewBag.ViewTitle = Labels.viewTitle_RetentionList;
+
+}
+
+<div id="radio" class="btn-group mrgn-bttm-md">
+    <ul class="list-unstyled">
+        <li class="btn-group btn-group-sm">
+            @{ string classlink1 = (!Model.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @if (ViewBag.ReadOnlyVitals == null)
+            { @Html.ActionLink(Labels.Active, "List", "HousingRetention", new { showAll = false, filterTime = Model.DateFilter.DateFilterID }, new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" }) }
+            else
+            { @Html.ActionLink(Labels.Active, "ClientList", "HousingRetention", new { showAll = false }, new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" }) }
+
+            @{ string classlink2 = (Model.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @if (ViewBag.ReadOnlyVitals == null)
+            { @Html.ActionLink(Labels.All, "List", "HousingRetention", new { showAll = true, filterTime = Model.DateFilter.DateFilterID }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" }) }
+            else
+            { 
+                @Html.ActionLink(Labels.All, "ClientList", "HousingRetention", new { showAll = true }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+            }
+        </li>
+    </ul>
+    <div class="clearfix"></div>
+</div>
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view. *@
+@Html.Partial("_DateFilterList", Model.DateFilter)
+<div class="clearfix"></div>
+
+@if (ViewBag.ReadOnlyVitals == null)
+{
+    <div class="mrgn-tp-md mrgn-bttm-md">
+        @if (!Model.HousingRetentionsWithFollowUpsThisMonth.IsEmptyOrNull())
+        {
+            <a class="displayButton wb-lbx" href="#PlacementsWithFollowUpsThisMonth">
+                @Labels.UpcomingFollowUps (@Model.HousingRetentionsWithFollowUpsThisMonth.Count())
+            </a>
+            <section id="PlacementsWithFollowUpsThisMonth" class="mfp-hide modal-dialog modal-content overlay-def width-50-percent">
+                <header class="modal-header">
+                    <h2 class="modal-title">@Labels.UpcomingFollowUps</h2>
+                </header>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false,
+                                                                "order": [ [2, "asc"] ] }'>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.ClientFullName</th>
+                                    <th>@Labels.DateStart</th>
+                                    <th>@Labels.CaseWorker</th>
+                                    <th>@Labels.Status</th>
+                                    <th>@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (HousingRetentionViewModel item in Model.HousingRetentionsWithFollowUpsThisMonth)
+                                {
+
+                                    <tr>
+                                        <td>
+                                            <p>
+                                                @if (RightsHelper.HasRight(UserRights.Client_Vitals_Display))
+                                                {
+                                                    @Html.ActionLink(item.PrimaryClientName, "DisplayVitals", "ClientTombstone", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID) }, new { alt = item.PrimaryClientName, aria_label = item.PrimaryClientName })
+                                                }
+                                                else
+                                                {
+                                                    @item.PrimaryClientName
+                                                }
+                                            </p>
+                                        </td>
+                                        <td>@Html.DisplayFor(model => item.DateStart)</td>
+                                        <td>@item.CaseWorkerName</td>
+                                        <td>
+                                            @Labels.NextScheduledFollowUp<text>:</text> @(item.NextScheduledFollowUp.HasValue ? Html.DisplayFor(model => item.NextScheduledFollowUp).ToString() : @Labels.NA)
+                                            @if (item.NextScheduledFollowUp.HasValue)
+                                            {
+                                                <br />
+                                                if (item.NextScheduledFollowUp >= DateTime.Now
+                                                    && item.NextScheduledFollowUp <= DateTime.Now.AddDays(ViewBag.upcomingNotificationDays))
+                                                {
+                                                    <span class="fa fa-exclamation-triangle" style="color:goldenrod;"> @Labels.UpcomingFollowUp!</span>
+
+                                                }
+                                                else if (item.NextScheduledFollowUp <= DateTime.Now)
+                                                {
+                                                    <span class="fa fa-exclamation-triangle" style="color:darkred;"> @Labels.PastFollowUpDate!</span>
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (RightsHelper.HasRight(UserRights.HousingRetention_Display, item.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "Display", "HousingRetention", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID), retentionId = item.HouseRetentionID }, new { @class = "displayButton noText",alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                            }
+
+                                            @if (RightsHelper.HasRight(UserRights.HousingRetention_Edit, item.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Manage, "Manage", "HousingRetention", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID), retentionId = item.HouseRetentionID }, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </section>
+        }
+    </div>
+}
+<div class="clearfix"></div>
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                @if (ViewBag.ReadOnlyVitals == null)
+                {
+                    <th>@Labels.ClientName</th> }
+                else
+                {
+                    <th>@Labels.ServiceProvider</th> }
+                <th>@Labels.DateStart</th>
+                <th>@Labels.CaseWorker</th>
+                <th>@Labels.Status</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{int i = 0;}
+            @foreach (HousingRetentionViewModel item in Model.HousingRetentions)
+            {
+                <tr class="MovedIn">
+                    @if (ViewBag.ReadOnlyVitals == null)
+                    {
+                            <td>
+                                <p>
+                                    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Display))
+                                    {
+                                        @Html.ActionLink(item.PrimaryClientName, "DisplayVitals", "ClientTombstone", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID) }, new { alt = item.PrimaryClientName, aria_label = item.PrimaryClientName })
+                                    }
+                                    else
+                                    {
+                                        @item.PrimaryClientName
+                                    }
+                                </p>
+                            </td>
+                            <!-- Replaced with above as per Ryan Lynch's request via Lync Nov 01/18 --<td>@item.PrimaryClientName </td> -->
+                    }
+                    else
+                    {
+                        <td>@item.ServiceProviderName</td> }
+                    <td>@Html.DisplayFor(model => item.DateStart)</td>
+                    <td>@item.CaseWorkerName</td>
+                    <td>
+                        @Labels.NextScheduledFollowUp<text>:</text> @(item.NextScheduledFollowUp.HasValue ? Html.DisplayFor(model => item.NextScheduledFollowUp).ToString() : @Labels.NA)
+                        @if (item.NextScheduledFollowUp.HasValue)
+                        {
+                            <br />
+                            if (item.NextScheduledFollowUp >= DateTime.Now
+                                && item.NextScheduledFollowUp <= DateTime.Now.AddDays(ViewBag.upcomingNotificationDays))
+                            {
+                                <span class="fa fa-exclamation-triangle" style="color:goldenrod;"> @Labels.UpcomingFollowUp!</span>
+
+                            }
+                            else if (item.NextScheduledFollowUp <= DateTime.Now)
+                            {
+                                <span class="fa fa-exclamation-triangle" style="color:darkred;"> @Labels.PastFollowUpDate!</span>
+                            }
+                        }
+                    </td>
+                    <td>
+
+                        @if (RightsHelper.HasRight(UserRights.HousingRetention_Display, item.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Display, "Display", "HousingRetention", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID), retentionId = item.HouseRetentionID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.HousingRetention_Edit, item.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Manage, "Manage", "HousingRetention", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID), retentionId = item.HouseRetentionID }, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.HousingRetention_Edit, item.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Edit, "Edit", "HousingRetention", new { id = (ViewBag.ClientID == null ? item.PrimaryClientID : ViewBag.ClientID), retentionId = item.HouseRetentionID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

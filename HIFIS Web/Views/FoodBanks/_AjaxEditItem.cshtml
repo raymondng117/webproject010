@@ -1,0 +1,56 @@
+﻿@model FoodBankItemDetailViewModel
+
+<section id="Modal_EditItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.viewTitle_EditFoodBankItem</h2>
+	</header>
+	<div class="modal-body">
+        <form id="editItemForm" class="form-horizontal">
+		    @Html.Partial("_FoodBankItemDetails", Model)
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="editItemSaveBtn" class="saveButton">@Labels.Save</button>
+		<button id="editItemCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(function () { $("#editItemForm").hifisValidation(); });
+
+    $("#editItemSaveBtn").click(function () {
+
+        if ($("#editItemForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/FoodBanks/EditFoodBankItemDetails")",
+                type: "POST",
+                data: $("#editItemForm").serialize()
+
+            }).done(function (data) {
+                
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#foodBankItemsList').DataTable().ajax.reload(); // Re-load the datatable
+                    $("#editItemCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+    
+</script>
+
+

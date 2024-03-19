@@ -1,0 +1,63 @@
+﻿@model List<PitShiftViewModel>
+@{
+    ViewBag.ViewTitle = Labels.PitEventShift;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div>
+    @*<p>
+        @Labels.PitEventShift
+    </p>*@
+    <div>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.PitQuestionnaires</th>
+                        <th>@Labels.PitSurveyor</th>
+                        <th>@Labels.StartTime</th>
+                        <th>@Labels.EndTime</th>                        
+                        <th>@Labels.Location</th>
+                        <th>@Labels.PitReportingOrg</th>
+                        <th>@Labels.Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.IsEmptyOrNull())
+                    {
+                        foreach (var pitShift in Model)
+                        {
+                            <tr>
+                                <td>@pitShift.PitQuestionnaireName</td>
+                                <td>@pitShift.PersonFullName</td>                                                            
+                                <td>@DateHelper.DateTimeFormaterENFR(pitShift.StartDateTime.Value, Labels.CurrentCulture)</td>
+                                <td>@DateHelper.DateTimeFormaterENFR(pitShift.EndDateTime.Value, Labels.CurrentCulture)</td>     
+                                <td>@pitShift.PlaceName @pitShift.OrgName</td>                           
+                                <td>@pitShift.ReportingOrgName</td>                               
+                                <td class="align-text-center">
+                                    @if (RightsHelper.HasRight(UserRights.PiT_Shifts_Edit))
+                                    {
+                                        @Html.ActionLink(Labels.EditPitShift, "EditPitShift", "PitEvents", new { PitShiftID = pitShift.PitShiftID }, new { @class = "editButton noText", alt=Labels.EditPitShift, aria_label = Labels.EditPitShift, @role = "button" })
+                                    }
+                                    @if (RightsHelper.HasRight(UserRights.PiT_Shifts_Delete))
+                                    {
+                                        @Html.ActionLink(Labels.RemovePitShift, "RemovePitShift", "PitEvents", new { PitShiftID = pitShift.PitShiftID }, new { @class = "noText deleteButton", alt=Labels.RemovePitShift, aria_label = Labels.RemovePitShift, @role = "button" })
+                                    }
+                                </td>   
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="clearfix"></div>
+        <p>
+            @if (RightsHelper.HasRight(UserRights.PiT_Shifts_Add))
+            {
+                @Html.ActionLink(Labels.CreatePitShift, "CanCreatePitShift", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.CreatePitShift, aria_label = Labels.CreatePitShift, @role = "button" })
+
+            }
+        </p>
+    </div>
+</div>

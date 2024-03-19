@@ -1,0 +1,242 @@
+﻿@model SessionViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseSessionDisplay;
+}
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#Appointments" role="tab" data-toggle="tab">@Labels.Appointments</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#Comments" role="tab" data-toggle="tab">@Labels.Comments</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <!-- Details Tab -->
+            <div class="tab-pane active" id="Details" style="padding: 10px;">
+
+                <div class="displayView">
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+
+                        <div class="row">
+                            <label class="col-sm-5">
+                                @Labels.Goal
+                            </label>
+                            @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, Model.DesiredOutcomeTypeID)
+                        </div>
+
+                        @*if appointment exists then disable the Activity drop down*@
+                        @if (true || Model.Appointments != null && Model.Appointments.Count > 0)
+                        {
+                            <div class="row">
+                                <label class="col-sm-5">
+                                    @Labels.Activity
+                                </label>
+                                @Model.SessionActivityName
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                <label class="col-sm-5">
+                                    @Labels.Activity
+                                </label>
+                                @Labels.NA
+                            </div>
+                        }
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.SessionDescription, new { @class = "col-sm-5" })
+                            @Html.EditorFor(model => model.SessionDescription, "TinyMCE_Print")
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.SessionDate, new { @class = "col-sm-5" })
+                            @Html.DisplayFor(model => model.SessionDate)
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.Hours, new { @class = "col-sm-5" })
+                            @Html.DisplayFor(model => model.Hours)
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.Minutes, new { @class = "col-sm-5" })
+                            @Html.DisplayFor(model => model.Minutes)
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "col-sm-5" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                new SingleItemSelectList { ID = Model.OrganizationID, List = ViewBag.Orgs as SelectList })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.CaseWorkerID, new { @class = "col-sm-5" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                new SingleItemSelectList { ID = Model.CaseWorkerID, List = ViewBag.CaseWorker as SelectList })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ResponsibilityTypeID, new { @class = "col-sm-5" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                new SingleItemSelectList
+                                {
+                                    ID = Model.ResponsibilityTypeID,
+                                    List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ResponsibilityTypes,
+                                                ViewBag.CurrentCulture, Model.ResponsibilityTypeID)
+                                })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ReferralTypeID, new { @class = "col-sm-5" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                new SingleItemSelectList
+                                {
+                                    ID = Model.ReferralTypeID,
+                                    List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReferrerCategTypes,
+                                                ViewBag.CurrentCulture, Model.ReferralTypeID)
+                                })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ClientPresent, new { @class = "col-sm-5" })
+                            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ClientPresent)
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.FamilyPresent, new { @class = "col-sm-5" })
+                            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.FamilyPresent)
+                        </div>
+
+                        <div class="row mrgn-tp-md">
+                            <div class="col-sm-12">
+                                @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Edit, Model.OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.Edit, "EditMeeting", "CaseManagement",
+                                        new
+                                        {
+                                            sessionID = Model.SessionID,
+                                            caseID = Model.CaseID,
+                                            id = Model.ReadOnlyVitals.ClientID,
+                                            goalID = Model.DesiredOutcomeTypeID
+                                        }, new { @class = "editButton", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+                                @Html.ActionLink(Labels.Cancel, "Display", "CaseManagement",
+                                        new { caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID },
+                                        new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Tab -->
+            <div class="tab-pane" id="Appointments" style="padding: 10px;">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.AppointmentDate</th>
+                                <th>@Labels.AppointmentTime</th>
+                                <th>@Labels.Description</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Appointments.IsEmptyOrNull())
+                            {
+                                for (int i = 0; i < Model.Appointments.Count; i++)
+                                {
+                                    <tr>
+                                        <td>@Model.Appointments[i].Appointment.StartDateTime.ToString("yyyy-MM-dd")</td>
+                                        <td>@DateHelper.TimeFormaterENFR(Model.Appointments[i].Appointment.StartDateTime, Labels.CurrentCulture)</td>
+                                        <td>@Html.DisplayFor(m => m.Appointments[i].Appointment.Description)</td>
+                                        <td class="align-text-center">
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Appointment_Display, Model.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "DisplayMeetingAppointment", "CaseManagement",
+                                                new
+                                                {
+                                                    sessionAppointmentID = Model.Appointments[i].SessionAppointmentID,
+                                                    sessionID = Model.Appointments[i].SessionID,
+                                                    caseID = Model.Appointments[i].CaseID,
+                                                    id = Model.ReadOnlyVitals.ClientID,
+                                                    goalID = Model.DesiredOutcomeTypeID,
+                                                    goalDesc = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes,
+                                                      Culture, Model.DesiredOutcomeTypeID)
+                                                }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Comments Tab -->
+            <div class="tab-pane" id="Comments" style="padding: 10px;">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.User</th>
+                                <th>@Labels.Subject</th>
+                                <th>@Labels.Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.SessionComments != null && Model.SessionComments.Count > 0)
+                            {
+                                for (int i = 0; i < Model.SessionComments.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            @(Model.SessionComments[i].CreatedDate.HasValue &&
+                                                Model.SessionComments[i].CreatedDate.Value != default(DateTime) ?
+                                                Model.SessionComments[i].CreatedDate.Value.ToString("yyyy-MM-dd") :
+                                                Model.SessionComments[i].DateCreated.ToString("yyyy-MM-dd"))
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(m => m.SessionComments[i].UserName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(m => m.SessionComments[i].Subject)
+                                        </td>
+                                        <td class="text-center">
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Comment_Display, Model.OrganizationID))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "DisplayMeetingComment", "CaseManagement",
+                                                    new
+                                                    {
+                                                        sessionCommentID = Model.SessionComments[i].SessionCommentID,
+                                                        caseID = Model.CaseID,
+                                                        goalID = Model.DesiredOutcomeTypeID,
+                                                        id = Model.ReadOnlyVitals.ClientID
+                                                    }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+</div>

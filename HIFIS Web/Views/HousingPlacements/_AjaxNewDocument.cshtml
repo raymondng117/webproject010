@@ -1,0 +1,79 @@
+﻿@model DocumentViewModel 
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.NewDocument</h2>
+	</header>
+	<div class="modal-body">
+        <form id="newDocumentForm" class="form-horizontal">
+		    @Html.Partial("_Document", Model)
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newDocumentSaveBtn" class="saveButton">@Labels.Save</button>
+		<button id="newDocumentCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(function () {
+        $("#newDocumentForm").hifisValidation();
+    });
+        
+    function gettoken() {
+        var token = '@Html.AntiForgeryToken()';
+        token = $(token).val();
+        return token;
+    }
+
+    $("#newDocumentSaveBtn").click(function () {
+
+        if ($("#newDocumentForm").valid()) {
+            
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            //File upload has to be appended to form data during ajax call to post back to action.
+            //Need to append other VM properties to the form data to merge the file with the VM.
+            var formData = new FormData();
+            formData.append('UploadFile', document.getElementById("UploadFile").files[0]);
+            formData.append('Name', $('#Name').val());
+            formData.append('ConfidentialYN', $('input[type=checkbox][name=ConfidentialYN]')[0].checked);
+            formData.append('Description', $('#Description').val());
+            formData.append('ClientID', $('#ClientID').val());
+            formData.append('ReferenceID', $('#ReferenceID').val());
+            formData.append('PersonID', $('#PersonID').val());
+            formData.append('IsClient', $('#IsClient').val());
+            formData.append('DocumentTypeID', $('#DocumentTypeID').val());
+			formData.append('__RequestVerificationToken', gettoken());  
+
+            $.ajax({
+
+                url: "@Url.Content("~/Documents/NewDocument")",
+                type: "POST",
+                processData: false,
+                contentType: false,
+                data: formData
+            }).done(function (data) {
+                
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#newDocumentCloseBtn").click(); //Close the modal window on success
+                    $('#documentsTable').DataTable().ajax.reload();
+                }
+            });
+        }
+    });
+
+</script>
+
+

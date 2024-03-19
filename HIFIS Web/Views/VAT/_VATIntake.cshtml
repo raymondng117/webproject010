@@ -1,0 +1,245 @@
+﻿@model VATIntakeViewModel
+
+@Html.HiddenFor(model => model.IntakeID)
+@Html.HiddenFor(model => model.IntakeTypeID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.ServiceTypeID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+@if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+{
+    @Html.HiddenFor(model => model.AttachmentsDisplay.Name)
+    @Html.HiddenFor(model => model.AttachmentsDisplay.PersonID)
+    @Html.HiddenFor(model => model.AttachmentsDisplay.DocumentID)
+}
+
+@if ((Model.PrimaryClientID != null) && (Model.ReadOnlyVitals != null))
+{
+    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+}
+
+@* If the clientID doesn't exist, show the client search field. *@
+@if (Model.PrimaryClientID == null)
+{
+    <div class="row">
+        @Html.HifisAutocompleteFor(
+            model => model.PrimaryClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.PrimaryClientName,
+            new AutocompleteViewModelOptions
+            {
+                    OnSelect = "callGetROVitals();"
+                    ,
+                     HiddenValue = true
+                    //, HiddenID = "PrimaryClientID"
+            })
+    </div>
+}
+else if (ViewBag.IsEdit)
+{
+    <div>
+        @Html.HiddenFor(model => model.PrimaryClientID)
+            <div class="row">
+                @Html.HifisAutocompleteFor(
+                    model => model.PrimaryClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.PrimaryClientName,
+                    new AutocompleteViewModelOptions
+                    {
+                        OnSelect = "callGetROVitals();"
+                        ,
+                             HiddenValue = true
+                        //,HiddenID = "PrimaryClientID"
+                    }
+                    , new { disabled = true })
+            </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <label class="col-sm-3 control-label autowidth">@Labels.FileOnRecord</label>
+            <div class="row col-sm-9">
+                <div id="currentAttachment" class="col-sm-5 nopadding">
+                    <p class="form-control align-left form-control-static wordBreak" data-locale="en-CA">
+                        @if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+                        {
+                            @Html.DisplayFor(model => model.AttachmentsDisplay.Name)
+                        }
+                        else
+                        {
+                            <span>@Labels.None</span>
+                        }
+                    </p>
+
+                    
+                </div>
+                <div class="col-sm-1 nopadding">
+                    @if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+                    {
+                        @Html.ActionLink(Labels.DeleteAttachedDocument, "RemoveVATDocument", new { intakeID = Model.IntakeID }, new { @class = "noText deleteButton", data_callback = "uploadedFileDeleted", alt = Labels.DeleteAttachedDocument, aria_label = Labels.DeleteAttachedDocument, @role = "button" })
+                    }  
+                </div>
+                <div id="newAttachment" class="col-sm-6">
+                    @Html.HifisEditorFor(model => model.UploadedFile, "File", null, true)
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @* Otherwise, retrieve the client profile from the hidden field *@
+
+    @Html.HiddenFor(model => model.PrimaryClientID)
+
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+
+                 //
+                 // When document is ready, get the client details
+                 //
+
+                 $(function () {
+                     getROVitals($("#PrimaryClientID").val());
+                 })
+
+            </script>);
+    }
+}
+
+@if (ViewBag.IsDisplay == null)
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.CaseworkerID, ViewBag.CaseWorker as SelectList)
+    </div>
+
+    <div class="row">
+            @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+    </div>
+    
+    @*<div>
+        @Html.HifisEditorFor(model => model.AssessmentPeriodTypeID, CachedTableTypes.HIFIS_VAT_AssessmentPeriodTypes)
+    </div>*@
+
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ConsentYN, "YesNo")
+    </div>
+
+    if (Model.IntakeID == null)
+    {
+        <div class="row">
+            @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.Programs as SelectList)         
+        </div>
+
+        <div class="row">
+            @Html.HifisEditorFor(model => model.UploadedFile, "File", new { @id = "inputfile" })
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @Html.Partial("DisplayViewTemplates/_DisplayStringList",
+                            new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.AssociatedProgramIDs).ToString() })
+        </div>
+    }
+
+    <div class="row">
+        @Html.Partial("Plugins/_TinyMCEScript")
+        @Html.HifisTextAreaFor(model => model.Description, new { @class = "mceEditor_Messaging" })
+    </div>
+}
+else
+{
+    <div class="displayView">
+        <div class="row">
+            @Html.HifisLabelFor(m => m.CaseworkerID, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.CaseworkerName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.OrganizationID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.OrganizationID,
+                                List = ViewBag.OrgLists as SelectList
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.DateStart, new { @class = "autowidth" })
+            @Html.HifisDisplayFor(m => m.DateStart, null, true, "DateAndTime")
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.AssessmentPeriodTypeID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.AssessmentPeriodTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_VAT_AssessmentPeriodTypes, ViewBag.CurrentCulture)
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.ConsentYN, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ConsentYN)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                                    new MultipleItemSelectList
+                                                    {
+                                                        IDs = Model.AssociatedProgramIDs,
+                                                        List = ViewBag.Programs as SelectList
+                                                    })
+        </div>
+        
+        <div class="row">
+            @Html.HifisLabelFor(model => model.UploadedFile, new { @class = "autowidth" })
+            @if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+            {
+                @Html.DisplayFor(model => model.AttachmentsDisplay.Name)
+            }
+            else
+            {
+                <span>@Labels.None</span>
+            }
+        </div>
+
+        <div>
+            <label class="autowidth">@Labels.Description</label>
+            @Html.EditorFor(model => model.Description, "TinyMCE_Print")
+        </div>
+    </div>
+}
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     var requiredIf1 = function () {
+
+         var value = document.querySelector("#IntakeTypeID").getAttribute("value");
+         return value === "1" || condition === "2";
+     }
+
+     var requiredIf2 = function () {
+
+         var value = document.querySelector("#IntakeTypeID").getAttribute("value");
+         return value === "3" || condition === "4";
+     }
+     function uploadedFileDeleted() {
+                  //clear input file
+                  $('#currentAttachment').children('p').html("@Labels.None");
+                  $('#AttachmentsDisplay_DocumentID').val("");
+                  $('#AttachmentsDisplay_Name').val("");
+              }
+
+</script>
+);
+}

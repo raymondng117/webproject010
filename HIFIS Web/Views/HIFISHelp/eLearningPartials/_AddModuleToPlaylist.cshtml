@@ -1,0 +1,11 @@
+﻿@model ELearningAddToPlaylistModel 
+
+@using (Html.BeginForm("AddModuleToPlaylist", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.HiddenFor(model => model.PlaylistID)
+    <div>
+        <div><label>@Labels.HifisHelp_AddModulestoPlaylist</label></div>
+        @Html.ListBoxFor(model => model.ModuleIDs, ViewBag.ELearningModulesList as SelectList)
+		<button type="submit" class="saveButton">@Labels.Save</button>
+    </div>
+}

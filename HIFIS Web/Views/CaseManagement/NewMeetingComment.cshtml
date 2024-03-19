@@ -1,0 +1,30 @@
+﻿@model SessionCommentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_SessionCommentNew;
+    
+}
+        
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewMeetingComment", "CaseManagement", new { sessionID = Model.SessionID, caseID = Model.CaseID, goalID = Model.GoalID }, FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_BaseHiddenFor", Model)
+        @Html.Partial("_CaseComments", Model)
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.SessionID)
+        @Html.HiddenFor(model => model.SessionCommentID)
+        @Html.HiddenFor(model => model.CaseID)
+        @Html.HiddenFor(model => model.GoalID)
+           
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		         <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "EditMeeting", "CaseManagement", new { caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID, goalID = Model.GoalID, sessionID = Model.SessionID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+	        </div>
+        </div> 
+    }
+</div>

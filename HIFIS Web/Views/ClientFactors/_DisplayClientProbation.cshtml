@@ -1,0 +1,22 @@
+﻿@model ClientLifeEventsViewModel
+@{
+    if (Model.ProbationFactor == null){ Model.ProbationFactor = new ClientProbationViewModel(); }
+}
+          
+@Html.HiddenFor(model => model.ProbationFactor.ProbationEventID)
+@Html.HiddenFor(model => model.LifeEventTypeID)
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ProbationFactor.ProbationOfficerID, new { @class = "autowidth" })
+    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                    new SingleItemSelectList 
+                    {
+                        ID = Model.ProbationFactor.ProbationOfficerID,
+                        List = ViewBag.ProbationWorkerList,
+                    })
+</div>
+        
+<div class="row" style="word-wrap:break-word;">
+    @Html.HifisDisplayFor(model => model.ProbationFactor.Comments)
+</div>
+   

@@ -1,0 +1,92 @@
+﻿@model DistinguishingFeatureViewModel
+
+<section id="Modal_AddDistinguishingFeature" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.AddDistinguishingFeature</h2>
+    </header>
+    <div class="modal-body">
+        @using (Html.BeginForm("AddDistinguishingFeature", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal", id = "addDistinguishingFeatureForm" }))
+        {
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+            @Html.HiddenFor(m => m.ClientID)
+            
+
+            <div class="row">
+                <label for="SelectedHouseTypes" class="col-sm-4 control-label">
+                    @Labels.DistinguishingFeature
+                </label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        @Html.HifisEditorFor(m => m.DistinguishingFeatureTypeID, CachedTableTypes.HIFIS_DistinguishingFeatureTypes, null, true)
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <label for="SelectedHouseTypes" class="col-sm-4 control-label">
+                    @Labels.Description
+                </label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        @Html.HifisEditorFor(m => m.Description, "TextAreaSimple", new { }, true)
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button id="addDistinguishingFeatureSaveBtn" class="saveButton">@Labels.Save</button>
+            <button id="addDistinguishingFeatureCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    //Setup all the button Ids to make changes easier
+    var formId     = "#addDistinguishingFeatureForm";
+    var saveBtnId = "#addDistinguishingFeatureSaveBtn";
+    var closeBtnId = "#addDistinguishingFeatureCloseBtn";
+    var tableId    = "#distinguishingFeatureTable";
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () { $(formId).hifisValidation(); });
+
+    $(saveBtnId).click(function () {
+
+        if ($(formId).valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/ClientTombstone/AddDistinguishingFeature")",
+                type: "POST",
+                data: $(formId).serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $(tableId).DataTable().ajax.reload(function () {
+                        $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        //$(".expandableSummary").trigger("wb-init.wb-details");
+                    }); // Re-load the datatable
+
+                    $(closeBtnId).click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>

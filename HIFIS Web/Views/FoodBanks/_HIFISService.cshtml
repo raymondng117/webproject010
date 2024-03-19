@@ -1,0 +1,184 @@
+﻿ @model ClientHIFISServiceViewModel
+
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.HifisRowVersion)
+@Html.HiddenFor(model => model.LastUpdatedBy)
+
+<div id="serviceRestrictionAlert" class="row hide">
+    <div class="col-sm-12">
+		<div class="alert exception-panel">
+			<div class="mrgn-bttm-sm align-center">                                   
+				<h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+			</div>
+			<div>
+				<p>@Labels.FoodBanksRestrictionAjax</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+@if (Model.ReadOnlyVitals == null)//if adding for known client then disable client search box
+{
+    @*<div class="row">    
+        <div class="col-sm-offset-2 mrgn-bttm-md">
+		    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Client_Add))
+            {
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.NewClient,
+                        Title = Labels.NewClient,
+                        ActionName = "NewVitals",
+                        ControllerName = "ClientTombstone",
+                        PartialName = "~/Views/ClientTombstone/_ClientVitalsEdit.cshtml",
+                        CallBackFunction = "OnTheFlyCallBack",
+                        ViewModel = new ClientVitalsViewModel() { IsStealth = false }
+                    }
+                )
+            }
+        </div>
+    </div>*@
+    
+    <div class="clearfix"></div>
+    
+    <div>
+        @Html.HifisAutocompleteFor(
+            model => model.ClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.ClientName
+            , new AutocompleteViewModelOptions
+            {
+                HiddenValue = true
+                , OnSelect = "getROVitalsOnSelect()"
+            })            
+            
+        @if (Model.ClientID == null)
+        {
+            //This will show the details of the clients last visit.
+            @Html.Partial("_LastVisitDetails")
+        }  
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+}
+
+@Html.HiddenFor(model => model.OrganizationID)  
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+</div> 
+
+<div>
+	@Html.HifisListBoxFor(model => model.ProgramIDs, ViewBag.ProgramList as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReferredByName)
+</div>
+
+
+@if (Model.isGeoRegionEnforced)
+{
+<div>
+    @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.GeoFilter.GeoRegionID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.GeoFilter.GeoRegionID, FilterType = (short)GeoFilterTypes.ReferTo })))
+</div>
+}
+else
+{
+<div>
+    @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+</div>
+} 
+                
+<div>
+    @Html.HifisEditorFor(model => model.SessionID, ViewBag.SessionList as SelectList)
+    <img id="SessionSelectionLoader" alt="Loader animation" src="@Url.Content("~/Content/images/Loaders/loader-30.gif")" class="hide" />
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.NumberOfPeople)
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+		     $(function () {
+		         $("#OrganizationID").on("change", isClientRestricted);
+		         $("#DateStart").on("change", isClientRestricted);
+		     });
+
+            function OnTheFlyCallBack(objectID, formData) {
+
+                if ($("#ClientID").val() == "" || $("#ClientID").val() == " ") {
+                    getROVitals($("#ClientID").val());
+                }
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+        $("#ClientID").val(objectID);
+                $('#LastVisitInfo').hide();
+
+                getROVitals(objectID);
+            }
+
+            function getROVitalsOnSelect() {
+                if (typeof (callGetROVitals()) === 'function')
+                    callGetROVitals();
+                else
+                    getROVitals($('#ClientID').val());
+
+                isClientRestricted();
+            }
+
+            function isClientRestricted() {
+                var formData = $("form").serialize();
+                var id = $('#ClientID').val();
+
+        if (!!$("#DateStart").val().trim()) {
+
+            $.ajax({
+                url: "@Url.Action("IsServiceRestrictedAjax", "Master")",
+                type: "GET",
+                data: { "id": id, "moduleType": "@ServiceRestrictionModules.FoodBanks", "requestDate": ($("#DateStart").val()) + " " + $("#DateStart_TimeOfDay").val().toString() },
+            }).done(function (data) {
+
+                if (data) {
+                    if ("@RightsHelper.HasRight(UserRights.Barred_Override)" === "False") {
+                        $("#serviceRestrictionAlert").removeClass("hide");
+                        $("#submitButton").addClass("hide");
+                        $("#LastVisitInfoPanel").addClass("hide");
+                    } else {
+                        $("#serviceRestrictionAlert").removeClass("hide");
+                    }
+                } else {
+                    $("#submitButton").removeClass("hide");
+                    $("#serviceRestrictionAlert").addClass("hide");
+                    $("#LastVisitInfoPanel").removeClass("hide");
+                }
+            });
+        } else {
+            $("#serviceRestrictionAlert").addClass("hide");
+            $("#submitButton").addClass("hide");
+            $("#LastVisitInfoPanel").addClass("hide");
+        }
+            }
+
+        </script>
+    );
+}

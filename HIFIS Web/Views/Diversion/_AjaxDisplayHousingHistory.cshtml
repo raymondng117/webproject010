@@ -1,0 +1,73 @@
+﻿@model DiversionHousingViewModel
+<section id="Modal_HousingHistoryDisplay" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_ClientHousingHistory</h2>
+    </header>
+
+    <div class="modal-body">
+
+        <form id="HousingHistoryDisplayForm" class="form-horizontal">
+            <div class="row">
+                @Html.HifisLabelFor(model => model.HouseTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                    new SingleItemSelectList
+                    {
+                        ID = Model.HouseTypeID,
+                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseTypes, ViewBag.CurrentCulture, Model.HouseTypeID)
+                    })
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.DateStart)
+            </div>
+            <div class="row">
+                @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.DateEnd)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AddressDetails.AddressLn1, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.AddressDetails.AddressLn1)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AddressDetails.Unit, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.AddressDetails.Unit)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AddressDetails.ProvinceID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.AddressDetails.Province)
+            </div>
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AddressDetails.CityID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.AddressDetails.City)
+            </div>
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AddressDetails.PostalCode, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-4" })
+                @Html.DisplayFor(model => model.AddressDetails.PostalCode)
+            </div>
+
+
+        </form>
+
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+
+        <button id="HousingHistoryCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+
+</section>
+
+
+<script type="text/javascript">
+
+    //Onload
+    $(document).ready(function () {
+
+        //Get everything to display correctly
+        init_hifis();
+        //autoWidthBoot('.modal-body');
+    });
+</script>

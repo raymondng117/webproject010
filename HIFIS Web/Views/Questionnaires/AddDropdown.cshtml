@@ -1,0 +1,88 @@
+﻿@model HIFIS.WEB.ViewModels.QuestionnaireQuestionViewModel
+@{
+    ViewBag.ViewTitle = Labels.AddDropdownValue;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default mrgn-tp-md">
+	        <div class="panel-heading" role="tab" id="qDetailsHeader">
+		        <h4 class="panel-title">
+			        <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#qDetailsPanel" aria-expanded="false" aria-controls="qDetailsPanel">
+				        @Labels.QuestionDetails
+				        <span class="caret pull-right mrgn-tp-sm"></span>
+			        </a>
+		        </h4>
+	        </div>
+	        <div id="qDetailsPanel" class="panel-collapse collapse" role="tabpanel" aria-labelledby="qDetailsHeader">
+		        <div class="panel-body">
+			        <div>
+                        @Html.HifisDisplayFor(model => model.QuestionaireName)
+                    </div>
+                    <div>
+                        @Html.HifisDisplayFor(model => model.QuestionNo)
+                    </div>
+                    <div>
+                        @Html.HifisDisplayFor(model => model.Question)
+                    </div>
+                    <div>
+                        @Html.HifisDisplayFor(model => model.QuestionTypeName)
+                    </div>
+		        </div>
+	        </div>
+        </div>
+        <div class="panel panel-default mrgn-tp-md">
+	        <div class="panel-heading" role="tab" id="addQuestionHeader">
+		        <h4 class="panel-title">
+			        <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#addQuestionPanel" aria-expanded="false" aria-controls="addQuestionPanel">
+				        @Labels.AddDropdownValue
+				        <span class="caret pull-right mrgn-tp-sm"></span>
+			        </a>
+		        </h4>
+	        </div>
+	        <div id="addQuestionPanel" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="addQuestionHeader">
+		        <div class="panel-body">
+			        @using (Html.BeginForm("AddDropdown", "Questionnaires", new { questionNumber = ViewBag.questionNumber }, FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        @Html.HiddenFor(m => m.QuestionnaireID)
+                        @Html.HiddenFor(m => m.QuestionID)
+
+                        <div>
+                            @Html.Partial("_EditDropdown", new QuestionnaireQuestionDropdownViewModel())
+                        </div>
+        
+                        <div class="form-group">
+			                <div class="col-sm-offset-2 col-sm-10">
+				                <button type="submit" class="addButton">@Labels.AddDropdownValue</button>
+                                <button id="saveQuestionButton" type="submit" class="addButton">@Labels.SaveValueAndFinishQuestion</button>
+                                @Html.ActionLink(Labels.DiscardValueAndFinishQuestion, "AddQuestion", new { id = Model.QuestionnaireID }, new { @class = "saveButton", alt=Labels.DiscardValueAndFinishQuestion, aria_label = Labels.DiscardValueAndFinishQuestion, @role = "button" })
+			                </div>
+		                </div>
+                    }
+		        </div>
+	        </div>
+        </div>
+    </div>
+    
+    <div>
+        <h2>@Labels.DropdownValues</h2>
+        @Html.Partial("_AllDropdowns", Model.DropdownValues)
+    </div>
+    
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $("#saveQuestionButton").click(function (e) {
+                 $("#SaveQuestion").val("true");
+             });
+        </script>
+    );
+}

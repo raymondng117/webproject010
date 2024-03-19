@@ -1,0 +1,73 @@
+﻿@model EducationListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_Education;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="col-sm-12">
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.EducationalFacility</th>
+                    <th>@Labels.DateStart</th>
+                    <th>@Labels.DateEnd</th>
+                    <th>@Labels.EducationLevel</th>
+                    <th>@Labels.Completed</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (EducationViewModel item in Model.list)
+                {
+                    <tr>
+                        <td class="align-text-center">@item.PlaceName</td>
+                        <td class="align-text-center">@Html.DisplayFor(m => item.DateStart)</td>
+                        <td class="align-text-center">@Html.DisplayFor(m => item.DateEnd)</td>
+                        <td class="align-text-center">@item.EducationLevel</td>
+                        <td class="align-text-center"> 
+                            @Html.HiddenFor(m => item.Completed)
+                            @if (item.Completed) { <span class="glyphicon glyphicon-ok"></span> }
+                        </td>
+                        <td class="align-text-center">
+
+                            @if (RightsHelper.HasRight(UserRights.Education_Display))
+                            {
+                                @Html.ActionLink(Labels.Display, "Display", new { id = Model.ClientID, educationID = item.ClientEducationLevelID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                            }
+                    
+                            @if (RightsHelper.HasRight(UserRights.Education_Edit))
+                            {
+                                @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ClientID, educationID = item.ClientEducationLevelID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+                            }
+                    
+                            @if (RightsHelper.HasRight(UserRights.Education_Delete))
+                            {
+                                @Html.ActionLink(Labels.Delete, "Delete", new { id = Model.ClientID, educationID = item.ClientEducationLevelID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label=Labels.Delete, @role = "button" })
+                            }
+                    
+                        </td>
+                    </tr>
+                }    
+            </tbody>  
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md row"> 
+        
+        @if (RightsHelper.HasRight(UserRights.Education_Add))
+        {
+            <div class="col-sm-12">
+                @Html.ActionLink(Labels.NewRecord, "New", new { id = Model.ClientID }, new { @class = "addButton", alt=Labels.NewRecord, aria_label = Labels.NewRecord, @role = "button" })
+            </div>
+        }
+        
+    </div>
+</div>
+

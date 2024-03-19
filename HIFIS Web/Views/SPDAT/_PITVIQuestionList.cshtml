@@ -1,0 +1,555 @@
+﻿@model PITVIIntakeViewModel
+@{
+    //Get initial category id
+    short? questionCategoryID = Model.QuestionsViewModel.FirstOrDefault().CategoryTypeID;
+    //Get initial category name
+    string categoryName = Model.QuestionsViewModel.FirstOrDefault().CategoryTypeName;
+
+    string type = ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString();
+
+    bool isSPDAT = Model.QuestionsViewModel.FirstOrDefault().IntakeTypeID == 1 || Model.QuestionsViewModel.FirstOrDefault().IntakeTypeID == 2 || Model.QuestionsViewModel.FirstOrDefault().IntakeTypeID == 7 || Model.QuestionsViewModel.FirstOrDefault().IntakeTypeID == 8 || Model.QuestionsViewModel.FirstOrDefault().IntakeTypeID == 9;
+}
+
+@BuildTopOfPanel(categoryName)
+
+@for (int index = 0; index < Model.QuestionsViewModel.Count; index++)
+{
+    if (Model.QuestionsViewModel[index].CategoryTypeID == questionCategoryID)
+    { 
+        @BuildUpQuestion(index)
+    }
+    else
+    {
+        questionCategoryID = Model.QuestionsViewModel[index].CategoryTypeID;
+        categoryName = Model.QuestionsViewModel[index].CategoryTypeName;
+                  
+        @BuildBottomOfPanel()        
+        
+         @BuildTopOfPanel(categoryName)
+          
+             @BuildUpQuestion(index)
+    }
+}
+
+@BuildBottomOfPanel()
+
+
+@helper BuildTopOfPanel(string categoryName)
+{
+    @Html.Raw("<div class=\"panel panel-default\">")
+            @Html.Raw("<div class=\"panel-heading\">")
+                @Html.Raw("<h3 class=\"panel-title\">")
+                    @categoryName
+                @Html.Raw("</h3>")
+            @Html.Raw("</div>")
+        @Html.Raw("<div class=\"panel-body\">") 
+            @Html.Raw("<table class=\"wb-tables table table-striped table-hover\" data-wb-tables='{ \"sorting\": false, \"info\": false, \"paging\": false, \"filter\": false }'>")            
+                <thead>
+                    <tr>
+                        <th style="width:5%;">#</th>
+                        <th style="width:45%; padding:5px;">@Labels.Question</th>
+                        <th style="width:20%;">@Labels.Answer</th>
+
+                        @switch (Model.IntakeTypeID)
+                        {
+                            case (short)SPDATTypes.spdat_vi:
+                            case (short)SPDATTypes.spdat_vi_f:
+                            case (short)SPDATTypes.spdat_vi2:
+                            case (short)SPDATTypes.spdat_vi_f2:
+                            case (short)SPDATTypes.spdat_vi_tay:
+                            case (short)SPDATTypes.spdat_vi_jd:
+                            case (short)SPDATTypes.spdat_vi_hd:
+                            case (short)SPDATTypes.spdat_vi_pr:
+                                <th style="width:10%;">@Labels.Refused</th>
+                                break;
+                            default:
+                                break;
+                        }
+
+                    </tr>
+                </thead>
+                
+                @Html.Raw("<tbody>")
+}
+@helper BuildBottomOfPanel()
+{
+    @Html.Raw("</tbody></table></div></div>")
+}
+
+@helper BuildUpQuestion(int index)
+{    
+    <tr>
+        <td class="align-text-center">@Model.QuestionsViewModel[index].Component</td>
+        <td>
+            <div style="max-width:97%">
+
+                @switch (Model.IntakeTypeID)
+                {
+                    case (short)SPDATTypes.spdat_vi:
+                    case (short)SPDATTypes.spdat_vi_f:
+                    case (short)SPDATTypes.spdat_vi2:
+                    case (short)SPDATTypes.spdat_vi_f2:
+                    case (short)SPDATTypes.spdat_vi_tay:
+                    case (short)SPDATTypes.spdat_vi_jd:
+                    case (short)SPDATTypes.spdat_vi_hd:
+                    case (short)SPDATTypes.spdat_vi_pr:
+                        @Html.Raw(Model.QuestionsViewModel[index].Description) 
+                        break;
+                    default:   
+                        <div class="panel panel-default" style="margin-left:-15px; margin-right:-15px; margin-top:10px; margin-bottom:0px; ">
+                            <div class="panel-heading" role="tab" id="heading@(Model.QuestionsViewModel[index].Component)" style="background-color:white;">
+                                <h4 class="panel-title" >
+                                    <a data-toggle="collapse" href="#collapse@(Model.QuestionsViewModel[index].Component)" aria-expanded="true" aria-controls="collapse@(Model.QuestionsViewModel[index].Component)" style="text-decoration:none; font-weight:500; font-size:1em;">
+                                        @Model.QuestionsViewModel[index].Question
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapse@(Model.QuestionsViewModel[index].Component)" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading@(Model.QuestionsViewModel[index].Component)">
+                                <div class="panel-body">
+                                @Html.Raw(Model.QuestionsViewModel[index].Description) 
+                                </div>
+                            </div>
+                        </div>                              
+                        break;
+                }                
+                
+                @AddComment(index)
+            </div>
+        </td>
+        <td>@BuildUpQuestionType(index)</td>
+
+        @switch (Model.IntakeTypeID)
+        {
+            case (short)SPDATTypes.spdat_vi:
+            case (short)SPDATTypes.spdat_vi_f:
+            case (short)SPDATTypes.spdat_vi2:
+            case (short)SPDATTypes.spdat_vi_f2:
+            case (short)SPDATTypes.spdat_vi_tay:
+            case (short)SPDATTypes.spdat_vi_jd:
+            case (short)SPDATTypes.spdat_vi_hd:
+            case (short)SPDATTypes.spdat_vi_pr:
+                if (ViewBag.IsDisplay == null)
+                {
+                    if (Model.QuestionsViewModel[index].QuestionTypeID != null)
+                    {
+                        <td>@Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.RefusedYN, "YesNo", new { @class = "RefusedQuestionYN" }, true)</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+                }
+                else
+                {
+                    <td class="spdatAnswers">
+                        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.QuestionsViewModel[index].QuestionAnswer.RefusedYN)
+                    </td>
+                }
+                break;
+            default:
+                break;
+        }
+    </tr>   
+}
+
+@helper BuildUpQuestionType(int index)
+{
+    switch (Model.IntakeTypeID)
+    {
+        case (short)SPDATTypes.spdat_vi:
+        case (short)SPDATTypes.spdat_vi_f:
+        case (short)SPDATTypes.spdat_vi2:
+        case (short)SPDATTypes.spdat_vi_f2:
+        case (short)SPDATTypes.spdat_vi_tay:
+        case (short)SPDATTypes.spdat_vi_jd:
+        case (short)SPDATTypes.spdat_vi_hd:
+        case (short)SPDATTypes.spdat_vi_pr:
+            //All types are found in the database
+            switch (Model.QuestionsViewModel[index].QuestionTypeID)
+            {
+                case 1: // Number Type
+                    if (ViewBag.IsDisplay == null)
+                    { 
+                        @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.ScoreValue, "String", new { style = "width:100px;", @class = "ScoreQuestionNumber", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                    }
+                    else
+                    {
+                        <div class="spdatAnswers">
+                            @if (Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue != null)
+                            { 
+                                @Html.DisplayFor(m => m.QuestionsViewModel[index].QuestionAnswer.ScoreValue)
+                            }
+                            else
+                            {
+                                @Labels.NA
+                            }
+                        </div>
+                    }
+                    break;
+                case 2: // YesNo Type
+
+                    if (ViewBag.IsDisplay == null)
+                    { 
+                        <div class="ScoreQuestionYN" data-question-number="@Model.QuestionsViewModel[index].Component" data-question-category="@Model.QuestionsViewModel[index].CategoryTypeName" data-question-answered="false" data-question-categoryid="@Model.QuestionsViewModel[index].CategoryTypeID">
+                            @Html.RadioButtonFor(model => Model.QuestionsViewModel[index].QuestionAnswer.ScoreYN, true, new { id = index + "ScoreQuestionY", style = "cursor:pointer;" }) <label for="@(index + "ScoreQuestionY")" style="cursor:pointer;">Yes</label> 
+                            @Html.RadioButtonFor(model => Model.QuestionsViewModel[index].QuestionAnswer.ScoreYN, false, new { id = index + "ScoreQuestionN", style = "cursor:pointer;" }) <label for="@(index + "ScoreQuestionN")" style="cursor:pointer;">No</label>
+                       </div>
+                    }
+                    else
+                    {                        
+                        <div class="spdatAnswers">
+                            @if (Model.QuestionsViewModel[index].QuestionAnswer.ScoreYN != null)
+                            {
+                                @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.QuestionsViewModel[index].QuestionAnswer.ScoreYN)
+                            }
+                            else
+                            {
+                                @Labels.NA
+                            }
+                        </div>
+                    }
+                    break;
+                case 3: // CommonPlaceType
+                    SelectList CommonPlaceTypes = WebHelper.GetSelectListFromCache(
+                                                                CachedTableTypes.HIFIS_SPDAT_CommonPlaceTypes,
+                                                                ViewBag.CurrentCulture,
+                                                                Model.QuestionsViewModel[index].QuestionAnswer.DDCommonPlaceTypeID)
+                                                                as SelectList;
+                    if (ViewBag.IsDisplay == null)
+                    { 
+                        if (ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString().Equals("Edit"))
+                        {
+                            Model.DDCommonPlaceType = Model.QuestionsViewModel[index].QuestionAnswer.DDCommonPlaceTypeID;
+                            @Html.HifisEditorFor(m => m.DDCommonPlaceType, CommonPlaceTypes, "DropDownList", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                        else
+                        {
+                            @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.DDCommonPlaceTypeID, CommonPlaceTypes, "DropDownList", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                    }
+                    else
+                    {
+                        <div class="spdatAnswers">
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.QuestionsViewModel[index].QuestionAnswer.DDCommonPlaceTypeID,
+                                                List = CommonPlaceTypes
+                                            })
+                        </div>
+                    }
+                    break;
+                case 4: // HealthCareType
+                    SelectList HealthCareTypes = WebHelper.GetSelectListFromCache(
+                                                            CachedTableTypes.HIFIS_SPDAT_HealthCareTypes,
+                                                            ViewBag.CurrentCulture,
+                                                            Model.QuestionsViewModel[index].QuestionAnswer.DDHealthCareTypeID)
+                                                            as SelectList;
+                    if (ViewBag.IsDisplay == null)
+                    {                        
+                        if (ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString().Equals("Edit"))
+                        {
+                            Model.DDHealthCareType = Model.QuestionsViewModel[index].QuestionAnswer.DDHealthCareTypeID;
+                            @Html.HifisEditorFor(m => m.DDHealthCareType, HealthCareTypes, "", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                        else
+                        {
+                            @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.DDHealthCareTypeID, HealthCareTypes, "", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                    }
+                    else
+                    {
+                        <div class="spdatAnswers">
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.QuestionsViewModel[index].QuestionAnswer.DDHealthCareTypeID,
+                                                List = HealthCareTypes
+                                            })
+                        </div>
+                    }
+                    break;
+                case 5: // HousingHistoryType
+                    SelectList HousingHistoryTypes = WebHelper.GetSelectListFromCache(
+                                                            CachedTableTypes.HIFIS_SPDAT_HistoryofHousingTypes,
+                                                            ViewBag.CurrentCulture,
+                                                            Model.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryTypeID)
+                                                            as SelectList;
+                    if (ViewBag.IsDisplay == null)
+                    {                        
+                        if (ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString().Equals("Edit"))
+                        {
+                            Model.DDHousingHistoryType = Model.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryTypeID;
+                            @Html.HifisEditorFor(m => m.DDHousingHistoryType, HousingHistoryTypes, "", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                        else
+                        {
+                            @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryTypeID, HousingHistoryTypes, "", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                    }
+                    else
+                    {
+                        <div class="spdatAnswers">
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryTypeID,
+                                                List = HousingHistoryTypes
+                                            })
+                        </div>
+                    }
+                    break;
+                case 6: // HousingHistoryFamilyType
+                    SelectList HousingHistoryFamilyTypes = WebHelper.GetSelectListFromCache(
+                                                            CachedTableTypes.HIFIS_SPDAT_HistoryofHousingFamilyTypes,
+                                                            ViewBag.CurrentCulture,
+                                                            Model.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryFamilyTypeID)
+                                                            as SelectList;
+                    if (ViewBag.IsDisplay == null)
+                    {
+                        if (ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString().Equals("Edit"))
+                        {
+                            Model.DDHousingHistoryFamilyType = Model.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryFamilyTypeID;
+                            @Html.HifisEditorFor(m => m.DDHousingHistoryFamilyType, HousingHistoryFamilyTypes, "", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                        else
+                        {
+                            @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryFamilyTypeID, HousingHistoryFamilyTypes, "", new { style = "width:200px;", @class = "ScoreQuestionDD", data_question_number = Model.QuestionsViewModel[index].Component, data_question_category = Model.QuestionsViewModel[index].CategoryTypeName, data_question_answered = "false", data_question_categoryid = Model.QuestionsViewModel[index].CategoryTypeID }, true)
+                        }
+                    }
+                    else
+                    {
+                        <div class="spdatAnswers">
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.QuestionsViewModel[index].QuestionAnswer.DDHousingHistoryFamilyTypeID,
+                                                List = HousingHistoryFamilyTypes
+                                            })
+                        </div>
+                    }
+                    break;
+            }
+            break;
+        default:
+            if (ViewBag.IsDisplay == null)
+            {
+                <div class="ScoreQuestion1_4" style="padding-left:10px;" data-question-number="@Model.QuestionsViewModel[index].Component" data-question-category="@Model.QuestionsViewModel[index].CategoryTypeName" data-question-answered="false" , data-question-categoryid="@Model.QuestionsViewModel[index].CategoryTypeID">
+                    @for (int i = 0; i <= 4; i++)
+                    { 
+                        @Html.RadioButtonFor(m => m.QuestionsViewModel[index].QuestionAnswer.ScoreValue, i, new { id = "ScoreQuestion1_4" + index + i, style = "cursor:pointer;" })
+
+                        <label for="@("ScoreQuestion1_4" + index + i)" data-toggle="popover" data-trigger="hover" title="Score Description" data-content="@HttpUtility.HtmlDecode(Model.QuestionsViewModel[index].QuestionScoreMeanings[i])" style="padding-left:5px; width:30%; cursor:pointer;">@i.ToString()</label>
+              
+                        <br />
+                    }
+                </div>
+            }
+            else
+            {
+                if (Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue != null)
+                { 
+                    <label for="@("ScoreQuestion1_4" + Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue)" data-toggle="popover" data-trigger="hover" title="Score Description" data-content="@HttpUtility.HtmlDecode(Model.QuestionsViewModel[index].QuestionScoreMeanings[(short)Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue])" style="padding-left:5px; width:30%; cursor:pointer; text-align:center; font-size:2.5em; color:#3d3d3d;">@Model.QuestionsViewModel[index].QuestionAnswer.ScoreValue.ToString()</label>
+                }
+                else
+                {
+                    <div style="padding-left:5px; width:30%; cursor:pointer; text-align:center; font-size:2.5em; color:#3d3d3d;">
+                        @Labels.NA
+                    </div>
+                }
+            }
+            break;
+    }
+        
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.AssessmentQuestionID)
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.IntakeID, new { @class = "IntakeIDForSaving" })
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.IntakeQuestionsAnswerID)
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].QuestionAnswer.Component)
+    @Html.HiddenFor(m => m.QuestionsViewModel[index].CategoryTypeID)
+}
+
+@helper AddComment(int index)
+{          
+    switch (Model.IntakeTypeID)
+    {
+        case (short)SPDATTypes.spdat_vi:
+        case (short)SPDATTypes.spdat_vi_f:
+        case (short)SPDATTypes.spdat_vi2:
+        case (short)SPDATTypes.spdat_vi_f2:
+        case (short)SPDATTypes.spdat_vi_tay:
+        case (short)SPDATTypes.spdat_vi_jd:
+        case (short)SPDATTypes.spdat_vi_hd:
+        case (short)SPDATTypes.spdat_vi_pr:
+            break;
+        default:
+            if (ViewBag.IsDisplay == null)
+            {
+                @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.Comment, "", new { style = "width:100%; margin-top:10px;" }, true)
+            }
+            else
+            {
+                @Html.HifisEditorFor(m => m.QuestionsViewModel[index].QuestionAnswer.Comment, "", new { style = "background-color: white; width:100%; margin-top:10px;", disabled = true }, true)
+            }
+            break;
+    }
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             /****************************************************************
+             *
+             *                          SPDAT INTAKE FORM
+             *
+             *****************************************************************/
+
+             //
+             // Validate a SPDAT intake form to ensure it is safe to submit
+             //
+
+             //Only want to display this message once
+             var displayedAutoSaveMessage = false;
+
+             //Checks if the main form is valid or not.
+             function validateForm() {
+                 //Check that form fields are filled out
+                 if (($("#PrimaryClientID").val() !== "" || $('#LastName').val() != "" ) && $("#DateStart").val() !== "" && $("#DateStart_TimeOfDay").val() !== "" && $("#OrganizationID").val() !== "" && $("#CaseworkerID").val() !== "") {
+
+                     if (typeof $("#PreScreenPeriodTypeID").val() !== "undefined" && $("#PreScreenPeriodTypeID").val() !== "" || typeof $("#AssessmentPeriodTypeID").val() !== "undefined" && $("#AssessmentPeriodTypeID").val() !== "") {
+
+                         //Everything is correct, form is submitable
+                         return true;
+                     }
+                 }
+
+                 //Form not correct, inform that autosaving wont work until this is done
+                 if (!displayedAutoSaveMessage) {
+                     alert("@Labels.EnableAutoSave");
+
+                     displayedAutoSaveMessage = true;
+                 }
+
+                 return false;
+             }
+
+             //
+             // Checks if SPDAT intake form has been submitted or not
+             //
+
+             //Check if main intake form has been submitted yet
+            function formsubmitted() {
+                 var isInitFormSubmitted = $("#FormSubmitted").val();
+
+                 //If the hidden field doesn't exist or is set to true, it is safe to save questions
+                 //Aditional check is done before db save
+                 if (typeof isInitFormSubmitted === "undefined" || isInitFormSubmitted === 'true') {
+
+                     return true;//Okay to save questions
+                 }
+                 else {
+                     return false;//No okay to save questions
+                 }
+             }
+
+
+             /****************************************************************
+             *
+             *                  SPDAT QUESTION ANSWERS FORM
+             *
+             *****************************************************************/
+
+             //
+             // Auto Saves question answer form as user is inputing data
+             //
+
+             //Will auto save as responses are entered, to prevent loss of data
+             function autoSave() {
+                 var success = false;
+                 //Has the init form been submitted?
+                 if (!formsubmitted()) { //NO
+
+                         //Submit main form first
+                        @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/SPDAT/PITVI") + "'",
+                        Data = "$('#Intake_FormPortion :input').serialize(); $('#SPDATIntakeForm').serialize() ",
+                        OnSuccess = "$('#FormSubmitted').val('true'); success = true; $('.IntakeIDForSaving').val(data.id); $('#IntakeID').val(data.id); console.log($('#FormSubmitted').val());",//Set form as saved
+                        LoaderGif = false,
+                        OnComplete = "",
+                        OnFailure = "console.log($('#FormSubmitted').val()); console.log(data.id);",
+                        Async = false
+                    });
+
+                        SaveQuestions();
+                    }
+
+
+                 return success;
+                 }
+                
+            function SaveQuestions() {
+                console.log("function SaveQuestions()");
+                 //Save Question
+                 @Html.Partial("_Ajax", new AjaxViewModel()
+            {
+                Url = "'" + Url.Content("~/SPDAT/SaveQuestions") + "'",
+                Data = "$('#SPDATIntakeForm').serialize()",
+                OnSuccess = "$('#FormSubmitted').val('true'); success = true;", //Set form as saved
+                LoaderGif = false,
+                OnComplete = "",
+                Async = true
+            });
+
+                 setTimeout(SaveQuestions, 60000);
+             }
+
+             //
+             // Final Form Submit For Question Answers
+             //
+
+            $("#SPDATIntakeForm").submit(function (event) {
+
+                 if (!formsubmitted() && validateForm()) {
+                     //Submit main form first
+                     @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/SPDAT/PITVI") + "'",
+                            Data = "$('#Intake_FormPortion :input').serialize()",
+                            OnSuccess = "$('#FormSubmitted').val('true'); success = true; $('.IntakeIDForSaving').val(data.id); $('#IntakeID').val(data.id); console.log($('#FormSubmitted').val());",//Set form as saved
+                            LoaderGif = true,
+                            OnComplete = "",
+                            OnFailure = "console.log($('#FormSubmitted').val()); console.log(data.id);",
+                            Async = false
+                        });
+                 }
+
+                 if (adjustProgress() === 100 && formsubmitted()) {
+                     // main spdate intake form is complete and submitted
+                     // All questions have been answered, progress is 100%
+                     // It is now safe to submit form
+
+                     // cancel all remaining ajax request to ensure no overwrites occur
+                     if ($.xhrPool.length <= 0) {
+                         //Everything is good to go, submit the form
+                         return;
+                     }
+                     else {
+                         alert("@Labels.WaitForProcessToComplete");
+                     }
+
+                 }
+                 else {
+                     alert("@Labels.CompleteTheForm");
+                 }
+
+                 // Form is not yet safe to submit
+                 // Prevent form from submitting
+                 event.preventDefault(); //Don't submit for until it is complete
+
+                 
+             });
+
+        </script>);
+}

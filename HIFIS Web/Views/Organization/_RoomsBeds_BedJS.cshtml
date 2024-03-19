@@ -1,0 +1,91 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            function refreshBedsJquery() {
+                // jQuery UI
+                $(".bed-box").button();
+
+                $('.bed-box').droppable({
+                    accept: function(draggable){
+                            return (!$(this).hasClass('bed-occupied') && draggable.hasClass('client'));
+                        },
+                    greedy: true,
+                    hoverClass: 'ui-state-hover',
+                    drop: function(event, ui) {
+                        addClientToBed(ui.draggable, $(this));
+                    }
+                });
+                $(".bed-new-box").button();
+
+
+                // Add Bed
+                $("#bed-add-dialog").dialog({
+                    autoOpen: false,
+                    modal: true,
+                    resizable: false,
+                    show: 0.4,
+                    hide: 0.4,
+                    appendTo: '#graphical-bookin'
+                });
+                $(".bed-add a").click(function (e) {
+                    $("#bed-add-dialog").dialog({
+                        buttons: {
+                            "@Labels.Save": function () {
+                                    var form = $(this).find('form')
+                                    var formData = form.serialize();
+                                    var bedName = form.find('input[name=name]').val();
+                                    var bedsDiv = getBedsDiv(getRoomId(e.currentTarget));
+                                    @Html.Partial("_Ajax", new AjaxViewModel()
+                               {
+                                   Url = "e.currentTarget.href",
+                                   Data = "formData",
+                                   OnSuccess = @"var bed = new Bed();
+                                            bed.id = data;
+                                            bed.name = bedName;
+                                            addBed(bed, bedsDiv, true);"
+                               });
+                                $(this).dialog("close");
+                            },
+                            "@Labels.Cancel": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    }).dialog("open");
+                    return false;
+                });
+
+        
+                // Delete Bed
+                $('#bed-delete-dialog').dialog({
+                    autoOpen: false,
+                    modal: true,
+                    resizable: false,
+                    show: 0.4,
+                    hide: 0.4,
+                    appendTo: '#graphical-bookin'
+                });
+                $('.bed-delete a.deleteButton').click(function (e) {
+                    $('#bed-delete-dialog')
+                        .dialog({
+                            buttons: {
+                                "@Labels.Save": function() {
+                                    @Html.Partial("_Ajax", new AjaxViewModel()
+                               {
+                                   Url = "e.currentTarget.href",
+                                   OnSuccess = "deleteBed($(e.currentTarget));"
+                               });
+
+                                    $(this).dialog('close');
+                                },
+                                "@Labels.Cancel": function() {
+                                    $(this).dialog('close');
+                                }
+                            }
+                        })
+                        .dialog('open');
+                    return false;
+                });
+            }
+        </script>);
+}

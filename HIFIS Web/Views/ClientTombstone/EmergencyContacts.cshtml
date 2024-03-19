@@ -1,0 +1,71 @@
+﻿@model ClientEmergencyContactViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    ViewBag.ViewTitle = Labels.viewTitle_ClientContacts;
+
+    string ajaxUrl = Url.Content(String.Format("~/ClientTombstone/EmergencyContactListJson?clientID={0}",
+       new object[] { Model.ReadOnlyVitals.ClientID }));
+
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+            <table id="contactsTable" class="wb-tables table table-striped table-hover"
+                   data-wb-tables='{ "columns": [
+                                       { "width": "20%", "data": "name" },
+                                       { "width": "20%", "data": "relationship" },
+                                       { "width": "20%", "data": "phone" },
+                                       { "width": "20%", "data": "email" },
+                                       { "width": "20%", "data": "actions" }
+		                                ], 
+                                    "info": false, 
+                                    "processing": true,
+                                    "ajax": "@ajaxUrl" }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.EmergencyContactName</th>
+                        <th>@Labels.Relationship</th>
+                        <th>@Labels.Phones</th>
+                        <th>@Labels.Email</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="row mrgn-tp-md">
+            @if (RightsHelper.HasRight(UserRights.Client_Contacts_Add))
+            {
+                <div class="col-sm-12">
+                    <div class="btn-group">
+                        @Html.ActionLink(Labels.AddContact, "NewEmergencyContact", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", title = Labels.AddContact, @role = "button"  })
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(document).on('draw.dt', '.dataTable', function (event) {
+                init_hifis();
+                //This re-init any lightboxes that are dynamically added via the datables reload call
+                $(".wb-lbx").removeClass("wb-init").removeClass("wb-lbx-inited");
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+                $("div[id^='tooltip']").remove();
+            });
+
+        </script>);
+}

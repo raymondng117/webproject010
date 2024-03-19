@@ -1,0 +1,24 @@
+﻿@model PeopleLanguageViewModel
+
+<div class="mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LanguageID, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.LanguageID, CachedTableTypes.HIFIS_LanguageTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IsLanguageOfService, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.IsLanguageOfService, "YesNo", null, true, null)
+        </div>
+    </div>
+
+</div>

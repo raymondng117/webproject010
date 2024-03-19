@@ -1,0 +1,476 @@
+﻿@model GroupActivityViewModel
+
+@Html.HiddenFor(model => model.AnonDemoAboriginalCount)
+@Html.HiddenFor(model => model.AnonDemoAdultCount)
+@Html.HiddenFor(model => model.AnonDemoChildYouthCount)
+@Html.HiddenFor(model => model.AnonDemoDisabledCount)
+@Html.HiddenFor(model => model.AnonDemoFemaleCount)
+@Html.HiddenFor(model => model.AnonDemoMaleCount)
+@Html.HiddenFor(model => model.AnonDemoNonAboriginalCount)
+@Html.HiddenFor(model => model.AnonDemoNonDisabledCount)
+@Html.HiddenFor(model => model.AnonDemoOtherCount)
+@Html.HiddenFor(model => model.AnonDemoSeniorCount)
+
+<div class="col-sm-12">
+    <table id="demoTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="align-text-center">@Labels.Client_txt</th>
+                <th class="align-text-center">@Labels.Anonymous_txt</th>
+                <th class="align-text-center">@Labels.Total</th>
+                <th></th>
+                <th></th>
+                <th class="align-text-center">@Labels.Client_txt</th>
+                <th class="align-text-center">@Labels.Anonymous_txt</th>
+                <th class="align-text-center">@Labels.Total</th>
+            </tr>
+        </thead>
+        <tbody class="align-text-center">
+            <tr>
+                <th class="align-text-center">@Labels.Youth</th>
+                <td><span id="cliYouth"></span></td>
+                <td>        
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonYouth" class="demoNum" type="number" min="0" style="width: 3em;" onchange="chYouth()"/>
+                    }
+                    else
+                    {
+                        <input id="anonYouth" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chYouth()" readonly="true"/>
+                    }
+                    <input id="hdnYouth" type="hidden" />
+                </td>
+                <td><span id="ttlYouth"></span></td>
+
+                <td rowspan="4"></td>
+
+                <th class="align-text-center">@Labels.Females</th>
+                <td><span id="cliFemale"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonFemale" class="demoNum" type="number" min="0" style="width: 3em" onchange="chFemale()"/>
+                    }
+                    else
+                    {
+                        <input id="anonFemale" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chFemale()" readonly="true"/>
+                    }
+                    <input id="hdnFemale" type="hidden" />
+                </td>
+                <td><span id="ttlFemale"></span></td>
+            </tr>
+            <tr>
+                <th class="align-text-center">@Labels.Adults_txt</th>
+                <td><span id="cliAdult"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonAdult" class="demoNum" type="number" min="0" style="width: 3em;" onchange="chAdult()"/>
+                    }
+                    else
+                    {
+                        <input id="anonAdult" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chAdult()" readonly="true"/>
+                    }
+                    <input id="hdnAdult" type="hidden" />
+                </td>
+                <td><span id="ttlAdult"></span></td>     
+                
+                <th class="align-text-center">@Labels.Males</th>
+                <td><span id="cliMale"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonMale" class="demoNum" type="number" min="0" style="width: 3em" onchange="chMale()"/>
+                    }
+                    else
+                    {
+                        <input id="anonMale" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chMale()" readonly="true"/>
+                    }
+                    <input id="hdnMale" type="hidden" />
+                </td>
+                <td><span id="ttlMale"></span></td>
+            </tr>
+            <tr>
+                <th class="align-text-center">@Labels.Seniors_txt</th>
+                <td><span id="cliSenior"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonSenior" class="demoNum" type="number" min="0" style="width: 3em" onchange="chSenior()"/>
+                    }
+                    else
+                    {
+                        <input id="anonSenior" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chSenior()" readonly="true"/>
+                    }
+                    <input id="hdnSenior" type="hidden" />
+                </td>
+                <td><span id="ttlSenior"></span></td>
+                                
+                <th class="align-text-center">@Labels.Other</th>
+                <td><span id="cliOther"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonOther" class="demoNum" type="number" min="0" style="width: 3em" onchange="chOther()"/>
+                    }
+                    else
+                    {
+                        <input id="anonOther" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chOther()" readonly="true"/>
+                    }
+                    <input id="hdnOther" type="hidden" />
+                </td>
+                <td><span id="ttlOther"></span></td>
+            </tr>
+            <tr>
+                <th class="align-text-center">@Labels.Unknown_txt</th>
+                <td><span id="cliAgeUnknown"></span></td>
+                <td>
+                    <input id="savedAgeUnknown" type="hidden" />
+                    <span id="anonAgeUnknown"/>
+                </td>
+                <td><span id="ttlAgeUnknown"></span></td>
+
+                <th class="align-text-center">@Labels.Unknown_txt</th>
+                <td><span id="cliSexUnknown"></span></td>
+                <td>
+                    <input id="savedSexUnknown" type="hidden" />
+                    <span id="anonSexUnknown"/>
+                </td>
+                <td><span id="ttlSexUnknown"></span></td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td colspan="9"></td>
+            </tr>
+        </tbody>
+        <tbody class="align-text-center">
+            <tr>
+                <th class="align-text-center">@Labels.Aboriginal_txt</th>
+                <td><span id="cliAboriginal"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonAboriginal" class="demoNum" type="number" min="0" style="width: 3em" onchange="chAboriginal()"/>
+                    }
+                    else
+                    {
+                        <input id="anonAboriginal" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chAboriginal()" readonly="true"/>
+                    }
+                    <input id="hdnAboriginal" type="hidden" />
+                </td>
+                <td><span id="ttlAboriginal"></span></td>
+                
+                <td rowspan="3"></td>
+
+                <th class="align-text-center">@Labels.Disabled</th>
+                <td><span id="cliDisabled"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonDisabled" class="demoNum" type="number" min="0" style="width: 3em" onchange="chDisabled()"/>
+                    }
+                    else
+                    {
+                        <input id="anonDisabled" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chDisabled()" readonly="true"/>
+                    }
+                    <input id="hdnDisabled" type="hidden" />
+                </td>
+                <td><span id="ttlDisabled"></span></td>
+            </tr>
+            <tr>
+                <th class="align-text-center">@Labels.NonAboriginal_txt</th>
+                <td><span id="cliNonAboriginal"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonNonAboriginal" class="demoNum" type="number" min="0" style="width: 3em" onchange="chNonAboriginal()"/>
+                    }
+                    else
+                    {
+                        <input id="anonNonAboriginal" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chNonAboriginal()" readonly="true"/>
+                    }
+                    <input id="hdnNonAboriginal" type="hidden" />
+                </td>
+                <td><span id="ttlNonAboriginal"></span></td>
+                
+                <th class="align-text-center">@Labels.NonDisabled_txt</th>
+                <td><span id="cliNonDisabled"></span></td>
+                <td>
+                    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+                    {
+                        <input id="anonNonDisabled" class="demoNum" type="number" min="0" style="width: 3em" onchange="chNonDisabled()"/>
+                    }
+                    else
+                    {
+                        <input id="anonNonDisabled" class="demoNum" type="number" min="0" style="width: 3em; text-align:center; -moz-appearance:textfield;" onchange="chNonDisabled()" readonly="true"/>
+                    }
+                    <input id="hdnNonDisabled" type="hidden" />
+                </td>
+                <td><span id="ttlNonDisabled"></span></td>
+            </tr>
+            <tr>
+                <th class="align-text-center">@Labels.Unknown_txt</th>
+                <td><span id="cliAbrUnknown"></span></td>
+                <td>
+                    <input id="savedAbrUnknown" type="hidden" />
+                    <span id="anonAbrUnknown"/>
+                </td>
+                <td><span id="ttlAbrUnknown"></span></td>
+
+                <th class="align-text-center">@Labels.Unknown_txt</th>
+                <td><span id="cliDisUnknown"></span></td>
+                <td>
+                    <input id="savedDisUnknown" type="hidden" />
+                    <span id="anonDisUnknown"/>
+                </td>
+                <td><span id="ttlDisUnknown"></span></td>
+            </tr>
+        </tbody>
+    </table>
+    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <button type="button" id="saveDemos" class="saveButton">@Labels.Save</button>
+    }
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             initDemo();
+             // initialize the table values
+             function initDemo() {
+                 populateAnonymousDemograhpics($('input[id=GroupActivityID]').val());
+                 populateClientDemograhpics($('input[id=GroupActivityID]').val());
+             };
+
+             $('.demoNum').on('keypress', function (e) {
+                 return e.metaKey || // cmd/ctrl
+                   e.which <= 0 || // arrow keys
+                   e.which == 8 || // delete key
+                   /[0-9]/.test(String.fromCharCode(e.which)); // numbers
+             })
+
+             function populateClientDemograhpics(aid) {
+                 $.ajax({
+
+                     url: "@Url.Action("ClientDemographicsJson", "GroupActivities")",
+                     type: "POST",
+                     dataType: 'json',
+                     data: { "activityID": aid },
+
+                 }).done(function (data) {
+                     $('#cliYouth').text(data[0].youth);
+                     $('#cliAdult').text(data[0].adult);
+                     $('#cliSenior').text(data[0].senior);
+                     $('#cliAgeUnknown').text(0);
+                        
+                     $('#cliMale').text(data[0].male);
+                     $('#cliFemale').text(data[0].female);
+                     $('#cliOther').text(data[0].other);
+                     $('#cliSexUnknown').text(0);
+                        
+                     $('#cliAboriginal').text(data[0].aboriginal);
+                     $('#cliNonAboriginal').text(data[0].nonaboriginal);
+                     $('#cliAbrUnknown').text(data[0].unknownaboriginal);
+                     
+                     $('#cliDisabled').text(data[0].disabled);
+                     $('#cliNonDisabled').text(data[0].nondisabled);
+                     $('#cliDisUnknown').text(0);
+                     calculateTotals();
+                 });
+             };
+
+             function populateAnonymousDemograhpics(aid) {
+                 $.ajax({
+
+                     url: "@Url.Action("AnonDemographicsJson", "GroupActivities")",
+                     type: "POST",
+                     dataType: 'json',
+                     data: { "activityID": aid },
+                     success: calculateTotals(),
+
+                 }).done(function (data) {
+                     $('#anonYouth').val(parseInt(data[0].youth));
+                     $('#hdnYouth').val($('#anonYouth').val());
+                     $('#anonAdult').val(parseInt(data[0].adult));
+                     $('#hdnAdult').val($('#anonAdult').val());
+                     $('#anonSenior').val(parseInt(data[0].senior));
+                     $('#hdnSenior').val($('#anonSenior').val());
+                     $('#anonAgeUnknown').text(parseInt(data[0].anonymouscount) - (parseInt(data[0].youth) + parseInt(data[0].adult) + parseInt(data[0].senior)));
+                     $('#savedAgeUnknown').val(parseInt($('#anonAgeUnknown').text()));
+
+                     $('#anonMale').val(parseInt(data[0].male));
+                     $('#hdnMale').val($('#anonMale').val());
+                     $('#anonFemale').val(parseInt(data[0].female));
+                     $('#hdnFemale').val($('#anonFemale').val());
+                     $('#anonOther').val(parseInt(data[0].other));
+                     $('#hdnOther').val($('#anonOther').val());
+                     $('#anonSexUnknown').text(parseInt(data[0].anonymouscount) - (parseInt(data[0].male) + parseInt(data[0].female) + parseInt(data[0].other)));
+                     $('#savedSexUnknown').val(parseInt($('#anonSexUnknown').text()));
+
+
+                     $('#anonAboriginal').val(parseInt(data[0].aboriginal));
+                     $('#hdnAboriginal').val($('#anonAboriginal').val());
+                     $('#anonNonAboriginal').val(parseInt(data[0].nonaboriginal));
+                     $('#hdnNonAboriginal').val($('#anonNonAboriginal').val());
+                     $('#anonAbrUnknown').text(parseInt(data[0].anonymouscount) - (parseInt(data[0].nonaboriginal) + parseInt(data[0].aboriginal)));
+                     $('#savedAbrUnknown').val(parseInt($('#anonAbrUnknown').text()));
+
+                     $('#anonDisabled').val(parseInt(data[0].disabled));
+                     $('#hdnDisabled').val($('#anonDisabled').val());
+                     $('#anonNonDisabled').val(parseInt(data[0].nondisabled));
+                     $('#hdnNonDisabled').val($('#anonNonDisabled').val());
+                     $('#anonDisUnknown').text(parseInt(data[0].anonymouscount) - (parseInt(data[0].nondisabled) + parseInt(data[0].disabled)));
+                     $('#savedDisUnknown').val(parseInt($('#anonDisUnknown').text()));
+                     calculateTotals();
+                 });
+             };
+
+             function calculateTotals() {
+                 $('#ttlYouth').text(parseInt($('#cliYouth').text()) + parseInt($('#anonYouth').val()));
+                 $('#ttlAdult').text((parseInt($('#cliAdult').text()) + parseInt($('#anonAdult').val())));
+                 $('#ttlSenior').text((parseInt($('#cliSenior').text()) + parseInt($('#anonSenior').val())));
+                 $('#ttlAgeUnknown').text((parseInt($('#cliAgeUnknown').text()) + parseInt($('#anonAgeUnknown').text())));                 
+                      
+                 $('#ttlMale').text((parseInt($('#cliMale').text()) + parseInt($('#anonMale').val())));
+                 $('#ttlFemale').text((parseInt($('#cliFemale').text()) + parseInt($('#anonFemale').val())));
+                 $('#ttlOther').text((parseInt($('#cliOther').text()) + parseInt($('#anonOther').val())));
+                 $('#ttlSexUnknown').text((parseInt($('#cliSexUnknown').text()) + parseInt($('#anonSexUnknown').text())));
+                      
+                 $('#ttlAboriginal').text((parseInt($('#cliAboriginal').text()) + parseInt($('#anonAboriginal').val())));
+                 $('#ttlNonAboriginal').text((parseInt($('#cliNonAboriginal').text()) + parseInt($('#anonNonAboriginal').val())));
+                 $('#ttlAbrUnknown').text((parseInt($('#cliAbrUnknown').text()) + parseInt($('#anonAbrUnknown').text())));
+                      
+                 $('#ttlDisabled').text((parseInt($('#cliDisabled').text()) + parseInt($('#anonDisabled').val())));
+                 $('#ttlNonDisabled').text((parseInt($('#cliNonDisabled').text()) + parseInt($('#anonNonDisabled').val())));
+                 $('#ttlDisUnknown').text((parseInt($('#cliDisUnknown').text()) + parseInt($('#anonDisUnknown').text())));
+             };
+
+             //Inserts the selected clients from the client multiselect into the group activity
+             $(function () {
+                 $("#saveDemos").on("click", function (e) {
+                     var aID = $('input[id=GroupActivityID]').val();;
+                     var you = parseInt($('#anonYouth').val());
+                     var adu = parseInt($('#anonAdult').val());
+                     var sen = parseInt($('#anonSenior').val());
+                     var fem = parseInt($('#anonFemale').val());
+                     var mal = parseInt($('#anonMale').val());
+                     var oth = parseInt($('#anonOther').val());
+                     var abr = parseInt($('#anonAboriginal').val());
+                     var nabr = parseInt($('#anonNonAboriginal').val());
+                     var dis = parseInt($('#anonDisabled').val());
+                     var ndis = parseInt($('#anonNonDisabled').val());
+                    
+
+                     @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/GroupActivities/SaveDemographics") + "'",
+                    Data = "{activityID: aID, youth: you, adult: adu, senior: sen, female: fem, male: mal, other: oth, aboriginal: abr, nonaboriginal: nabr, disabled: dis, nondisabled: ndis}",
+                    OnSuccess = "savedDemos()",
+                    OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.FailedToSave + "</p>\");",
+                    OnComplete = "",
+                    Type = "POST"
+                });
+                 });
+             });
+
+             function savedDemos() {
+                 displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                 $('#savedAgeUnknown').val(parseInt($('#anonAgeUnknown').text()));
+                 $('#savedSexUnknown').val(parseInt($('#anonSexUnknown').text()));
+                 $('#savedAbrUnknown').val(parseInt($('#anonAbrUnknown').text()));
+                 $('#savedDisUnknown').val(parseInt($('#anonDisUnknown').text()));
+             };
+             //**********************************************
+             //
+             // Number input on change functions
+             //
+             //**********************************************
+             
+             function chYouth() {
+                 calChange($('#hdnYouth'), $('#anonYouth'), $('#anonAgeUnknown'));
+             };
+
+             function chAdult() {
+                 calChange($('#hdnAdult'), $('#anonAdult'), $('#anonAgeUnknown'));
+             };
+
+             function chSenior() {
+                 calChange($('#hdnSenior'), $('#anonSenior'), $('#anonAgeUnknown'));
+             };
+
+             function chFemale() {
+                 calChange($('#hdnFemale'), $('#anonFemale'), $('#anonSexUnknown'));
+             };
+
+             function chMale() {
+                 calChange($('#hdnMale'), $('#anonMale'), $('#anonSexUnknown'));
+             };
+
+             function chOther() {
+                 calChange($('#hdnOther'), $('#anonOther'), $('#anonSexUnknown'));
+             };
+
+             function chAboriginal() {
+                 calChange($('#hdnAboriginal'), $('#anonAboriginal'), $('#anonAbrUnknown'));
+             };
+
+             function chNonAboriginal() {
+                 calChange($('#hdnNonAboriginal'), $('#anonNonAboriginal'), $('#anonAbrUnknown'));
+             };
+
+             function chDisabled() {
+                 calChange($('#hdnDisabled'), $('#anonDisabled'), $('#anonDisUnknown'));
+             };
+
+             function chNonDisabled() {
+                 calChange($('#hdnNonDisabled'), $('#anonNonDisabled'), $('#anonDisUnknown'));
+             };
+
+             //**********************************************
+             //
+             // Handle changes in number inputs
+             // hdn = hidden field for previous value selector
+             // num = input number selector
+             // unk = unknown count for section selector
+             //
+             //**********************************************
+             
+             function calChange(hdn, num, unk) {
+                 //if the change is less than 0
+                 if (parseInt(num.val()) <= 0) {
+                     num.val(0);
+                     unk.text(parseInt(unk.text()) + parseInt(hdn.val()));
+                     hdn.val(parseInt(num.val()));
+                 }
+                 //if the change is greater than the number of unknown attendees
+                 else if (parseInt(num.val()) > parseInt(hdn.val()) + parseInt(unk.text())) {
+                     num.val(parseInt(hdn.val()) + parseInt(unk.text()));
+                     unk.text(0);
+                     hdn.val(parseInt(num.val()));
+
+                 }
+                 else {
+                     //Count increment down.
+                     if (hdn.val() > num.val()) {
+                         var diff = parseInt(hdn.val()) - parseInt(num.val());
+                         unk.text(parseInt(unk.text()) + diff);
+                         hdn.val(parseInt(num.val()));
+                     }
+                     else {
+                         var diff = parseInt(num.val()) - parseInt(hdn.val());
+                         unk.text(parseInt(unk.text()) - diff);
+                         hdn.val(parseInt(num.val()));
+                     }
+                 }
+                 calculateTotals();
+             }
+
+         </script>
+    );
+}

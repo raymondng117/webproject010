@@ -1,0 +1,11 @@
+﻿.displayView div
+{
+    padding-bottom:10px;
+    font-size:1em;
+}
+
+.displayView label
+{
+    font-size:1.03em;
+    font-weight:600;
+}

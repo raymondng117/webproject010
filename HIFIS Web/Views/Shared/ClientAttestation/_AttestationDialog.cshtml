@@ -1,0 +1,101 @@
+﻿@model AttestationViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Partial("ClientAttestation/_AttestationModal")
+
+<script>
+    var femaleGenderId = "@((short)GenderTypes.Female)";
+    var femalePictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+    var malePictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+    var clientPictureUrl = "@Url.Action("GetClientPhotoThumbnail", "Documents")?id=@Model.ClientROVitals.ClientID";
+
+    var clientHasPicture = "@Model.ClientROVitals.HasPicture.ToString().ToLower()";
+    var clientGenderId = "@Model.ClientROVitals.GenderID";
+
+    function removeSelectedClient() {
+        var fieldType = '@Model.FieldType';
+
+        if (fieldType != '@SelectClientFieldTypes.FileNumber') {
+            var $dropdown = $('select#@Model.InputName');
+
+            if ($.isArray($dropdown.val())) {
+                var $option = $('select#@Model.InputName option[value="@Model.ClientROVitals.ClientID"]');
+                $option.prop("selected", false).parent().trigger("change");
+            } else {
+                $dropdown.val(null);
+            }
+
+            $dropdown.trigger("change");
+        } else {
+            $('input#@Model.InputName').val(null);
+            resetROV();
+            noClient();
+        }
+
+        if (fieldType == '@SelectClientFieldTypes.ClientID') {
+            if ($("#hifis-client-profile").length) {
+                getROVitals('');
+            }
+        }
+        $("#attestationDialog").modal('toggle');
+    }
+
+    $(function () {
+        $('#yes-button').on('click', function () {
+            //go ahead and save the attestation
+            $.ajax({
+                url: "@Url.Action("SaveClientAttestation", "Master")",
+                type: "POST",
+                data: $('#attestationForm').serialize(),
+            }).done(function (data) {
+                if (data.Success) {
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                    @if (appSettings.EnforceConsent() && !Model.ClientROVitals.HasActiveConsent)
+                    {
+                        /*Now I have to go to the consent...*/
+                    <text>
+                    $.post('@Url.Action("DisplayConsentDialog", "Master")',
+                        {
+                            fieldType: '@Model.FieldType',
+                            inputName: '@Model.InputName',
+                            callback: '@Model.Callback',
+                            id: '@Model.ClientROVitals.ClientID',
+                            personID: '@Model.ClientROVitals.PersonID',
+                            fullName: '@(Model.ClientROVitals.FirstName + " " + Model.ClientROVitals.LastName)',
+                            age: '@Model.ClientROVitals.AproximativeAge'
+                        },
+                    function (data) {
+                        $("#attestationDialog").modal('toggle');
+                        $("#@Model.InputName-attestation-result").html(data);
+                    });
+                    </text>
+                    }
+                    else
+                    {
+                        //continue with normal flow
+                        @Html.Raw(Model.Callback)
+                        @:$("#attestationDialog").modal('toggle');
+                                                            }
+                } else {
+                    displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                    //$("#attestationDialog").modal('toggle');
+                    removeSelectedClient();
+                }
+            });
+        });
+
+        $('#no-button').on('click', function () {
+            removeSelectedClient();
+        });
+
+        $('#attestationDialog').on('hidden.bs.modal', function (e) {
+            $("div[id*='attestation-result']").html("");
+        });
+
+    });
+</script>
+@Scripts.Render("~/Scripts/Hifis/AttestationDialog.js")

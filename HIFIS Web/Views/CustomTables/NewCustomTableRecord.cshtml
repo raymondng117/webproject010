@@ -1,0 +1,118 @@
+﻿@model CustomTableRecordViewModel
+@{
+    ViewBag.ViewTitle = Model.CustomTable.DisplayName;
+    if(Model.ReadOnlyVitals.ClientID != null){
+        ViewBag.LayoutView = LayoutPage.Client;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+}
+
+<div class="col-sm-12">
+
+    @Html.Partial("_ValidationSummaryOuter")
+    <div class="">
+        @if (Model.CustomTable.Fields.Count() != 0)
+        {
+            using (Html.BeginForm("NewCustomTableRecord", "CustomTables", FormMethod.Post, (Model.CustomTable.Fields.Any(f => f.FieldTypeID == (short)CustomTableFieldTypes.Attachments) ? new { @class = "form-horizontal", enctype = "multipart/form-data", @role = "button"  } : null)))
+            {
+                <div class="col-sm-12">
+                    @Html.AntiForgeryToken()
+                    @Html.Partial("_BaseHiddenFor", Model)
+
+                    @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+                    @Html.HiddenFor(model => model.ReadOnlyVitals.PersonID)
+                    @Html.HiddenFor(model => model.ReturnUrl)
+
+                    @Html.Partial("_CustomTableRecord", Model)
+
+                    <div class="row mrgn-tp-md">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <div class="btn-group">
+                                <button type="submit" class="saveButton">@Labels.Save</button>
+                                @if (Model.ReturnUrl != null)
+                                {
+                                    <a href="@Model.ReturnUrl" class="cancelButton mrgn-lft-sm" type="button">@Labels.Cancel</a>
+                                }
+                                else
+                                {
+                                    @Html.ActionLink(Labels.Cancel, "CustomTableRecordList", "CustomTables", new { id = Model.RecordID, moduleType = Model.CustomTable.ModuleTypeID }, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        }
+        else
+        {
+            <section class="alert alert-info">
+                <h5>@Labels.NoCustomFields</h5>
+                @Labels.ThereAreNoCustomFields
+            </section>
+            if (Model.ReturnUrl != null)
+            {
+                <a href="@Model.ReturnUrl" class="cancelButton">@Labels.Back</a>
+            }
+            else
+            {
+                @Html.ActionLink(Labels.Back, "CustomTableRecordList", "CustomTables", new { id = Model.RecordID, moduleType = Model.CustomTable.ModuleTypeID }, new { @class = "backButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button"  })
+            }
+        }
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function otherVisibility(sender, targetId) {
+                 var val = sender.value;
+                 if (val != -2) {
+                     $("#" + targetId + " *").prop("disabled", true);
+                     $("#" + targetId + " *").parent().hide();
+                 } else {
+                     $("#" + targetId + " *").prop("disabled", false);
+                     $("#" + targetId + " *").parent().show();
+                 }
+             };
+
+
+
+
+
+             function toggleEnableOther() {
+                 var fieldType = $('#FieldTypeID').val();
+                 var enableOtherDiv = $('#enableOther');
+
+                 switch (fieldType) {
+                     case '@((byte)CustomTableFieldTypes.DropDownList)':
+                         enableOtherDiv.show();
+                         break;
+
+                     default:
+                         enableOtherDiv.hide();
+                         break;
+                 };
+             }
+
+             $(function () {
+                 toggleEnableOther();
+                 //$('#Mask').change(regexValidation);
+             });
+
+
+
+         </script>
+
+
+
+
+
+
+
+        );
+}

@@ -1,0 +1,81 @@
+﻿@model FollowUpViewModel
+
+<section id="Modal_FollowUpEdit" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditFollowUp</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editFollowUpForm" class="form-horizontal">
+            <div>
+                @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.FollowUpID)
+                @Html.HiddenFor(model => model.ServiceID)
+                @Html.HiddenFor(model => model.OrganizationID)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateOfCheck)
+            </div>
+            @*@if (Model.ServiceTypeID == (short)ServiceTypes.HousingSubsidy)*@
+            @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ServiceTypes, Model.ServiceTypeID) == (short)ServiceTypes.HousingSubsidy)
+            {
+                <div class="form-group">
+                    <label class="control-label col-sm-3">@Labels.Subsidy:</label>
+                    <span class="control-text col-sm-9">@ViewBag.subsidy</span>
+                </div>
+            }
+            <div>
+                @Html.HifisTextAreaFor(model => model.Comments, new { @class = "wdth-strct-250 hght-strct-150" })
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="editFollowUpSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#editFollowUpForm").hifisValidation();
+    });
+
+    var clientID = "@ViewBag.ClientID";
+    var clientHouseID = "@ViewBag.ClientHouseID";
+
+    $("#editFollowUpSaveBtn").click(function () {
+
+        if ($("#editFollowUpForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/FollowUps/EditFollowUp")",
+                type: "POST",
+                data: $('#editFollowUpForm').serialize() + "&clientID=" + clientID + "&ClientHouseID=" + clientHouseID
+
+        }).done(function (data) {
+                
+            defaultNotify(data.Success); //display the default error or success message
+
+            btn.attr("disabled", false); //Enable the button incase there was an error
+
+            if (data.Success) {
+                $("#editFollowUpCloseBtn").click(); //Close the modal window on success
+                //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                $('#followUpsTable').DataTable().ajax.reload();
+                $('#subsidyFollowUpsTable').DataTable().ajax.reload();
+            }
+        });
+    }
+    });
+</script>

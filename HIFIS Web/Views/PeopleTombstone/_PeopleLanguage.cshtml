@@ -1,0 +1,15 @@
+﻿@model PeopleLanguageViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.AntiForgeryToken()
+
+@Html.HiddenFor(model => model.PersonID)
+
+<div>
+    @Html.HifisEditorFor(model => model.LanguageID, CachedTableTypes.HIFIS_LanguageTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.IsLanguageOfService, "YesNo")
+</div>

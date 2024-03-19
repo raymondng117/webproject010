@@ -1,0 +1,58 @@
+﻿
+/*
+    This file is intended to be used by HIFIS users to customize their implementation of the application.
+   
+    It is recommended to limit the changes to small visual changes only.
+    Like aligning the colour of modules to colours that represent your community.
+*/
+
+
+/* 
+    The top bar 
+    Default: black 
+*/
+#wb-bar {
+    /*background: blue;*/
+}
+
+/* 
+    The Mid Bar 
+    Default: blue 
+*/
+#wb-bnr {
+    /*background: orange;*/
+}
+
+/* 
+    Navigation Bar 
+    Default: dark blue 
+*/
+#wb-sm {
+    /*background: red;*/
+}
+
+/* The currently selected navigation item */
+.wb-navcurr {
+    /*background: pink !important;*/
+}
+
+/* The menu panel of each navigation item */
+.menu-panel {
+    /*background: black !important;*/
+}
+
+/* Menu items under a nav category(Front Desk, Communications...) */
+.menu-panel > li > a {
+    /*color: red !important;*/
+}
+
+/* Menu item as you hover over them */
+.menu-panel > li > a:hover {
+    /*background: yellow !important;*/
+}
+
+/* The footer */
+#wb-info {
+    /*background: green;*/
+}
+

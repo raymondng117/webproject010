@@ -1,0 +1,41 @@
+﻿@model BedStatusHistoryListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_BedStatusHistoryList + " - " + Model.ShelterName + ": " + Model.BedName;
+
+    ViewBag.LayoutView = LayoutPage.SecNav;
+}
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "ordering" : true, "order": [[ 2, "asc" ]] }'>
+        <thead>
+            <tr>
+                <th>@Labels.BedStatus</th>
+                <th>@Labels.StartDate</th>
+                <th>@Labels.EndDate</th>
+                <th>@Labels.Comments</th>
+                <th>@Labels.Edit</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bedhistory in Model.ClientBedStatusHistory)
+            {
+                <tr>    
+                    <td class="align-text-center">@Html.DisplayFor(model => bedhistory.BedStatusTypeName)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => bedhistory.StartDate)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => bedhistory.EndDate)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => bedhistory.Comments)</td>
+                    <td class="align-text-center">
+                        @if (RightsHelper.HasRight(UserRights.ServiceProviders_Rooms_Beds_Add))
+                        {
+                            @Html.ActionLink(Labels.Edit, "BedStatusHistoryEdit", "Organization", new { bedStatusHistoryID = bedhistory.BedStatusHistoryID, bedStatusTypeID = bedhistory.BedStatusTypeID, bedID = bedhistory.BedID, bedName = Model.BedName, roomID = Model.RoomID, roomName = Model.RoomName, shelterID = Model.OrganizationID, shelterName = Model.ShelterName }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table> 
+</div>
+
+<div>
+    @Html.ActionLink(Labels.Back, "ShelterBedsList", "Organization", new { roomID = Model.RoomID, roomName = Model.RoomName, shelterID = Model.OrganizationID, shelterName = Model.ShelterName }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+</div>

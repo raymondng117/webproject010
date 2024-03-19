@@ -1,0 +1,27 @@
+﻿@model ClientHealthViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_HealthDetailNew;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewHealth", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" })) 
+    {      
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        <fieldset class="color-white">
+            @Html.HiddenFor(model => model.ClientID)
+            @Html.Partial("_ClientHealth", Model) 
+        </fieldset>
+    
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		        <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "HealthList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	        </div>
+        </div> 
+    }
+</div>

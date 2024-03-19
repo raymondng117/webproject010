@@ -1,0 +1,25 @@
+﻿@model ClientLifeEventsViewModel
+@{
+    //TODO: Why is this being done in the view -JdV
+    if (Model.GangFactor == null){ Model.GangFactor = new ClientGangViewModel(); }
+}
+    
+@Html.HiddenFor(model => model.GangFactor.GangAffiliationID)
+@Html.HiddenFor(model => model.LifeEventTypeID)       
+
+<fieldset class="color-white">
+    <legend>@Labels.NewGang</legend>   
+    
+    <div>
+        @Html.HifisEditorFor(model => model.GangFactor.GangName)
+   </div>
+
+   <div>
+        @Html.HifisEditorFor(model => model.GangFactor.DirectInvolvementYN, "YesNo")
+   </div>
+
+    <div>
+        @Html.HifisTextAreaFor(model => model.GangFactor.Comments, new { @class = "commentBoxSize max_width_90" })
+        @Html.ValidationImageFor(model => model.GangFactor.Comments)
+    </div>      
+</fieldset>

@@ -1,0 +1,16 @@
+﻿@model ELearningPlaylistModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;    
+    ViewBag.ViewTitle = "Training temp";
+}
+@Html.Partial("Common/_TopArea")  
+<div class="row">
+    <div class="col-sm-3">         
+        @Html.Partial("eLearningPartials/_eLearningSidebar", Model)
+    </div>
+    <div class="col-sm-9">
+        @(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.DescriptionE)) : Html.Raw(HttpUtility.HtmlDecode(Model.DescriptionF)))
+    </div>
+</div>

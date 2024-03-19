@@ -1,0 +1,46 @@
+﻿@model ClientVitalsViewModel
+
+<div class="ClientBirthUS_Section">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.StateOfBirth, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.StateOfBirth, ViewBag.Provinces as SelectList, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.USACityFreeText, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.USACityFreeText, null, null, true, null)
+        </div>
+    </div>
+
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(document).ready(function()
+            {
+                $(".Country").change(function()
+                {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/ClientTombstone/AjaxGetProvinceList") + "'",
+                    Data = "{CountryID: $(this).val()}",
+                    OnSuccess = @"var select = document.getElementById('StateOfBirth');
+                                    select.options.length = 0; // clear out existing items
+                                    for(var i=0; i < data.length; i++) {
+                                        var d = data[i];
+                                        select.options.add(new Option(d.Text, d.Value))
+                                    }
+                                    $('#StateOfBirth').trigger('change');
+                                    "
+                })
+                });
+            });
+        </script>
+    );
+}

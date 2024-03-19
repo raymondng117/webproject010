@@ -1,0 +1,391 @@
+﻿@model CaseViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseManagementDisplay;
+}
+
+<div class="row">
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+        </li>
+        <li>
+            <a class="tabButton" href="#Sessions" role="tab" data-toggle="tab">@Labels.Sessions</a>
+        </li>
+        <li>
+            <a class="tabButton" href="#Documents" role="tab" data-toggle="tab">@Labels.Documents</a>
+        </li>
+        <li>
+            <a class="tabButton" href="#CaseComments" role="tab" data-toggle="tab">@Labels.CaseComments</a>
+        </li>
+        @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+        {
+            <li>
+                <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                    @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+                </a>
+            </li>
+        }
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+        <div class="panel-body">
+            <div class="tab-content">
+
+                <div class="tab-pane active" id="Details" style="padding: 10px;">
+                    <div class="form-horizontal row">
+
+                        <div class="displayView col-sm-offset-1 col-sm-11">
+
+                            <div class="row">
+                                @Html.HifisLabelFor(Labels.Goal, Labels.Goal, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="@Labels.Goal" name="@Labels.Goal"
+                                           value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, Model.DesiredOutcomeTypeID))" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.ClientsFamilyIDs, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    @if (Model.ClientsFamilyIDs.Count() > 0)
+                                    {
+                                        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                            new MultipleItemSelectList
+                                            {
+                                                IDs = Model.ClientsFamilyIDs,
+                                                List = ViewBag.clientFamilyList as SelectList
+                                            })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="inputTextOnly" id="ClientsFamilyIDs" name="ClientsFamilyIDs"
+                                               value="" readonly />
+                                    }
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.CaseWorkerID, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="CaseWorkerID" name="CaseWorkerID"
+                                           value="@(Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                new SingleItemSelectList
+                                                {
+                                                    ID = Model.CaseWorkerID,
+                                                    List = ViewBag.CaseWorker as SelectList
+                                                }))" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="OrganizationID" name="OrganizationID"
+                                           value="@(Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                  new SingleItemSelectList
+                                                  {
+                                                      ID = Model.OrganizationID,
+                                                      List = ViewBag.Orgs as SelectList
+                                                  }))" style="width: 100%;" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.CaseStateTypeID, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="CaseStateTypeID" name="CaseStateTypeID"
+                                           value="@(Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                        new SingleItemSelectList
+                                                        {
+                                                            ID = Model.CaseStateTypeID,
+                                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CaseStateTypes, ViewBag.CurrentCulture, Model.CaseStateTypeID)
+                                                        }))" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.ClientFactors, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    @if (Model.ClientFactors.Count() > 0)
+                                    {
+                                        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                            new MultipleItemSelectList
+                                            {
+                                                IDs = Model.ClientFactors,
+                                                List = ViewBag.Factors as SelectList
+                                            })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="inputTextOnly" id="ClientFactors" name="ClientFactors"
+                                               value="" readonly />
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    @if (Model.ClientFactors.Count() > 0)
+                                    {
+                                        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                            new MultipleItemSelectList
+                                            {
+                                                IDs = Model.AssociatedProgramIDs,
+                                                List = ViewBag.Programs as SelectList
+                                            })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="inputTextOnly" id="AssociatedProgramIDs" name="AssociatedProgramIDs"
+                                               value="" readonly />
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(Labels.DateStart.Replace(" ", "_"), Labels.DateStart, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="@Labels.DateStart.Replace(" ", "_")" name="@Labels.DateStart.Replace(" ", "_")"
+                                           value="@(Html.HifisDisplayFor(model => model.DateStart, null, true, "DateAndTime"))" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(Labels.TargetDate.Replace(" ", "_"), Labels.TargetDate, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="@Labels.TargetDate.Replace(" ", "_")" name="@Labels.TargetDate.Replace(" ", "_")"
+                                           value="@Html.DisplayFor(model => model.TargetDate)" readonly />
+                                </div>
+                            </div>
+
+                            @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_CaseStateTypes, Model.CaseStateTypeID) != (short)CaseStateType.Open)
+                            {
+                                <div class="row">
+                                    @Html.HifisLabelFor(Labels.DateEnd.Replace(" ", "_"), Labels.DateEnd, new { @class = "col-sm-3" })
+                                    <div class="col-sm-9">
+                                        <input type="text" class="inputTextOnly" id="@Labels.DateEnd.Replace(" ", "_")" name="@Labels.DateEnd.Replace(" ", "_")"
+                                               value="@(Html.HifisDisplayFor(model => model.DateEnd, null, true, "DateAndTime"))" readonly />
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="row">
+                                @Html.HifisLabelFor(Labels.ExpendedTime.Replace(" ", "_"), Labels.ExpendedTime, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="@Labels.ExpendedTime.Replace(" ", "_")" name="@Labels.ExpendedTime.Replace(" ", "_")"
+                                           value="@(string.Format("{0} {1} {2} {3}", this.Model.Hours, @Labels.Hrs, this.Model.Minutes, @Labels.Mins))" 
+                                           style="font-weight: bold;" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(Labels.TotalElapsedTime.Replace(" ", "_"), Labels.TotalElapsedTime, new { @class = "col-sm-3" })
+                                <div class="col-sm-9">
+                                    <input type="text" class="inputTextOnly" id="@Labels.TotalElapsedTime.Replace(" ", "_")" name="@Labels.TotalElapsedTime.Replace(" ", "_")"
+                                           value="@(string.Format("{0} {1} ", this.Model.TotalElapsedTime, @Labels.Days))" 
+                                           style="font-weight: bold;" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        <div class="col-sm-offset-1 col-sm-11">
+                            <div class="row" style="padding-left: 15px;">
+                                <div class="btn-group">
+                                    @if (RightsHelper.HasRight(UserRights.CaseManagement_Edit, Model.OrganizationID))
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "Edit", "CaseManagement", new { id = Model.PrimaryClientID, caseID = Model.CaseID }, new { @class = "editButton mrgn-rght-sm", alt=Labels.Edit, aria_label = Labels.Edit, @role="button" })
+                                    }
+                                    @Html.ActionLink(Labels.Cancel, "ClientList", "CaseManagement", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role="button"})
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+		    <div class="tab-pane" id="Sessions" style="padding: 10px;">
+			    <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+					    <thead>
+						    <tr>
+							    <th class="align-text-center">@Labels.Activity</th>
+							    <th class="align-text-center">@Labels.Date</th>
+							    <th class="align-text-center">@Labels.CaseWorker</th>
+							    <th class="align-text-center no-print">@Labels.Action</th>
+						    </tr>
+					    </thead>
+                        <tbody>
+					        @if (Model.Sessions != null && Model.Sessions.Count > 0)
+                            {
+                                foreach (var item in Model.Sessions)
+                                {
+							        <tr>
+								        <td>@item.SessionActivityName
+								        </td>
+								        <td>@item.SessionDate.ToString("yyyy-MM-dd")
+								        </td>
+								        <td>@item.CaseWorkerFullName
+								        </td>
+								        <td class="align-text-center">
+									        @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Details, Model.OrganizationID))
+                                            { 
+										        @Html.ActionLink(Labels.Display, "DisplayMeeting", "CaseManagement", new { id = item.SessionID, client = Model.PrimaryClientID, goal = Model.DesiredOutcomeTypeID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role="button" })
+                                            }
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Edit, Model.OrganizationID))
+									        { 
+										        @Html.ActionLink(Labels.Edit, "EditMeeting", "CaseManagement", new { sessionID = item.SessionID, caseID = item.CaseID, id = Model.PrimaryClientID, goalID = Model.DesiredOutcomeTypeID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role="button" })
+									        }
+											
+									        @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Delete, Model.OrganizationID))
+									        { 
+										        @Html.ActionLink(Labels.Delete, "DeleteMeeting", "CaseManagement", new { pSessionID = item.SessionID, id = Model.PrimaryClientID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label=Labels.Delete, @role="button" })
+									        }
+								        </td>
+							        </tr>
+                                }
+                            }
+                        </tbody>
+				    </table>
+			    </div>
+                <div class="mrgn-tp-sm">
+                    @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Add, Model.OrganizationID))
+			        { 
+				        @Html.ActionLink(Labels.NewSession, "NewMeeting", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID, goalID = Model.DesiredOutcomeTypeID }, new { @class = "addButton", alt=Labels.NewSession, aria_label= Labels.NewSession, @role="button" })
+			        }
+                    @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Details, Model.OrganizationID))
+				    { 
+					    @Html.ActionLink(Labels.ViewAllSessionDetails, "AllMeetingDetails", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, new { @class = "viewButton", alt=Labels.ViewAllSessionDetails, aria_label=Labels.ViewAllSessionDetails, @role="button" })
+				    }
+                </div>
+		    </div>
+
+            <div class="tab-pane" id="Documents" style="padding: 10px;">
+			    <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.ExistingAttachments</th>
+                                <th>@Labels.Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.CaseDocumentsDisplay.IsEmptyOrNull())
+                            {
+                                foreach (DocumentDisplayViewModel document in Model.CaseDocumentsDisplay)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                                            { 
+                                                @Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(document.DocumentID), ClientID = Model.PrimaryClientID }, new { alt=document.Name, aria_label=document.Name, @role="button" })
+                                            }
+                                            else
+                                            { 
+                                                @document.Name   
+                                            }                                                
+                                        </td>
+                                        <td>
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Documents_Delete))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "DeleteCaseDocument", new { documentID = document.DocumentID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role="button" })
+                                            }
+                                        </td>
+
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @if (RightsHelper.HasRight(UserRights.CaseManagement_Documents_Add, Model.OrganizationID))
+                    {
+                        using (Html.BeginForm("NewDocument", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+                        {
+                            @Html.Partial("_BaseHiddenFor")
+                            @Html.Partial("_CaseDocument", new CaseDocumentsViewModel { CaseID = Model.CaseID, ClientID = Model.PrimaryClientID })
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <button type="submit" class="saveButton">@Labels.Save</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+            <div class="tab-pane" id="CaseComments" style="padding: 10px;">
+			    <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order" : [[0, "desc"]] }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.User</th>
+                                <th>@Labels.Subject</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.CaseComments != null && Model.CaseComments.Count > 0)
+                            {
+                                foreach (var item in Model.CaseComments)
+                                {
+                                    <tr>
+                                        <td>
+                                            @(item.CreatedDate.HasValue && item.CreatedDate.Value != default(DateTime) ? item.CreatedDate.Value.ToString("yyyy-MM-dd") : item.DateCreated.ToString("yyyy-MM-dd"))
+                                        </td>
+                                        <td>@item.UserName</td>
+                                        <td>@item.Subject</td>
+                                        <td>
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Display, Model.OrganizationID))
+                                            { 
+                                                @Html.ActionLink(Labels.Display, "DisplayCaseComment", "CaseManagement", new { caseCommentID = item.CaseCommentID, caseID = item.CaseID, id = Model.PrimaryClientID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role="button" })
+                                            }
+
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Edit, Model.OrganizationID))
+                                            { 
+                                                @Html.ActionLink(Labels.Edit, "EditCaseComment", "CaseManagement", new { caseCommentID = item.CaseCommentID, caseID = item.CaseID, id = Model.PrimaryClientID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role="button" })
+                                            }
+                                                
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Delete, Model.OrganizationID))
+                                            { 
+                                                @Html.ActionLink(Labels.Delete, "DeleteCaseComment", "CaseManagement", new { id = Model.PrimaryClientID, commentID = item.CommentsID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role="button" })
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+			    </div>
+                <div class="clearfix">
+				</div>
+				<div class="mrgn-tp-md mrgn-bttm-md">
+					@if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Add, Model.OrganizationID))
+					{ 
+						@Html.ActionLink(Labels.NewComment, "NewCaseComment", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, new { @class = "addButton", alt=Labels.NewComment, aria_label=Labels.NewComment, @role="button" })
+					}
+							
+				</div>
+		    </div>
+
+                @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+                {
+                    <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                        @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-offset-1 col-sm-11">
+        @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+    </div>
+</div>

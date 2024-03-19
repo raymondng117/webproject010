@@ -1,0 +1,159 @@
+﻿@model GoodsAndServices_ServiceListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientGoodsAndServices;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+    int j = 1;
+}
+
+@if (Model.ReadOnlyVitals.IsGoodsServiceRestricted)
+{
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="alert exception-panel">
+                <div class="mrgn-bttm-sm align-center">
+                    <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+                </div>
+                <div>
+                    <p>@Labels.GoodsServiceRestriction</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md no-print">
+         
+        @{ string classlink1 = (ViewBag.FilterType == 1 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(30 + " " + Labels.Days, "ClientList", new {filterType = 1 }, new { @class = classlink1, title=30+" "+Labels.Days, aria_label = 30+" " + Labels.Days, @role = "button" })
+
+        @{ string classlink2 = (ViewBag.FilterType == 2 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(90 + " " + Labels.Days, "ClientList", new { filterType = 2 }, new { @class = classlink2, title=90+" "+Labels.Days, aria_label = 90+" "+Labels.Days, @role = "button" })
+
+        @{ string classlink3 = (ViewBag.FilterType == 3 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(180 + " " + Labels.Days, "ClientList", new { filterType = 3 }, new { @class = classlink3, title=180+" "+Labels.Days, aria_label=180+" "+Labels.Days, @role = "button" })
+    
+        @{ string classlink4 = (ViewBag.FilterType == 4 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.All, "ClientList", new { filterType = 4 }, new { @class = classlink4, title=Labels.All, aria_label = Labels.All, @role = "button" })
+
+        <div class="clearfix"></div>
+
+    </div>
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.Date</th>
+                    <th>@Labels.Details</th>
+                    <th>@Labels.Action</th>         
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Service != null && Model.Service.Count > 0)
+                {
+                    foreach (var item in Model.Service)
+                    {
+                        <tr>
+                            <td>@item.OrganizationName</td>
+                            <td>@Html.DisplayFor(model => item.DateStart) - @Html.DisplayFor(model => item.DateEnd)</td>
+                            <td>
+                                @if ((item.ClientGoodList.Count + item.ClientActivityList.Count) > 1)
+                                {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" role="button" style="text-align:left;"> 
+                                                    @(item.ClientGoodList.Count() + item.ClientActivityList.Count)  @Labels.Goods / @Labels.Services 
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    <li>
+                                                        @Labels.Goods
+                                                        <ul class="pddng-lft-md">
+                                                            @foreach (var st in item.ClientGoodList)
+                                                    {
+                                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GoodsTypes, Culture, st.GoodTypeID)</li>
+                                                    }
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        @Labels.Services
+                                                        <ul class="pddng-lft-md">
+                                                            @foreach (var st in item.ClientActivityList)
+                                                            {
+                                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ActivitiesTypes, Culture, st.ActivitiesTypeID)</li>
+                                                            }
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                                    j++;
+                                }
+                                else
+                                {
+                                    foreach (var st in item.ClientGoodList)
+                                    {
+                                        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GoodsTypes, Culture, st.GoodTypeID)
+                                    }
+                                    foreach (var st in item.ClientActivityList)
+                                    {
+                                        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ActivitiesTypes, Culture, st.ActivitiesTypeID)
+                                    }
+                                }
+                            </td>
+                            <td class="text-center">
+                        
+                                @if (RightsHelper.HasRight(UserRights.Goods_Services_Display, item.OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.Display, "Display", "GoodsAndServices", new { id = item.ClientIDs.First(), serviceID = item.ServiceID, GoodActivityID = item.GoodsActivitiesID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+                                
+                                @if (RightsHelper.HasRight(UserRights.Goods_Services_Edit, item.OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.Manage, "Manage", "GoodsAndServices", new { id = item.ClientIDs.First(), serviceID = item.ServiceID, GoodActivityID = item.GoodsActivitiesID }, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Goods_Services_Edit, item.OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.EditGoodsServicesDetails, "Edit", "GoodsAndServices", new { id = item.ClientIDs.First(), serviceID = item.ServiceID, GoodActivityID = item.GoodsActivitiesID }, new { @class = "editButton noText", alt=Labels.EditGoodsServicesDetails, aria_label = Labels.EditGoodsServicesDetails, @role = "button" })
+                                }
+                            
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md"> 
+
+        @if (RightsHelper.HasRight(UserRights.Goods_Services_Add))
+        {
+            if ((!Model.ReadOnlyVitals.IsGoodsServiceRestricted && !Model.ReadOnlyVitals.IsServicesServiceRestricted) || RightsHelper.HasRight(UserRights.Barred_Override))
+            {
+                @Html.ActionLink(Labels.NewGoodsAndService, "New", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton  ", alt=Labels.NewGoodsAndService, aria_label = Labels.NewGoodsAndService, @role = "button" })
+            }
+        }
+        @if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Good_Add) && !Model.ReadOnlyVitals.IsGoodsServiceRestricted)
+        {
+            @Html.ActionLink(Labels.AddExpressGood, "NewExpressGoods", "GoodsAndServices", new { returnTo = "Client", id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton  ", alt=Labels.AddExpressGood, aria_label = Labels.AddExpressGood, @role = "button" }) 
+        }
+
+        @if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Service_Add) && !Model.ReadOnlyVitals.IsServicesServiceRestricted)
+        {
+            @Html.ActionLink(Labels.AddExpressService, "NewExpressServices", "GoodsAndServices", new { returnTo = "Client", id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton  ", alt=Labels.AddExpressService, aria_label = Labels.AddExpressService, @role = "button" }) 
+        }         
+    </div>  
+</div>

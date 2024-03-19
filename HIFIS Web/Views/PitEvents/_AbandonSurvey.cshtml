@@ -1,0 +1,28 @@
+﻿@model PitSurveyViewModel
+
+
+<section id="Modal_AbandonSurvey" class="mfp-hide modal-dialog modal-content overlay-def">
+	@using (Html.BeginForm("AbandonSurvey", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+	{
+		<header class="modal-header">
+			<h2 class="modal-title">@Labels.AbandonConfirmation</h2>
+		</header>
+		<div class="modal-body">
+			@Html.HiddenFor(model => model.PitSurveyID)
+			<div class="alert alert-info" role="alert">
+				<p>@Labels.AbandonSurveyInfo</p>
+			</div>
+			<div>
+				@Html.HifisEditorFor(m => m.ReasonForAbandonedTypeID,CachedTableTypes.HIFIS_PiTReasonForAbandonedTypes)
+			</div>
+			<div>
+				@Html.HifisTextAreaFor(m => m.ReasonForAbandonedFreeText)
+			</div>
+		</div>
+
+		<div class="modal-footer" style="background-color: white;">
+			<button type="submit" class="saveButton">@Labels.Confirmation</button>
+			<button class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+		</div>
+	}
+</section>

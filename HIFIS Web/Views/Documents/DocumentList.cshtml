@@ -1,0 +1,134 @@
+﻿@model DocumentListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientDocument; 
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class=" form-color-white module-form-block">
+    
+    <div>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.DocumentType</th>
+                        <th>@Labels.Documents</th>
+                        <th>@Labels.Description</th>
+                        <th>@Labels.Date</th>
+                        <th>@Labels.Action</th> 
+                    </tr> 
+                </thead>
+
+                @foreach (DocumentViewModel document in Model.Documents)
+                {
+                    <tr>
+                        <td class="align-text-left">
+                            @* TODO: This is taking up so many resources just to get a name!! should not be done here... - JdV *@
+
+                            @if (WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID) == "Identification")
+                            {
+                                if (RightsHelper.HasRight(UserRights.Identification_List))
+                                {
+                                    @Html.ActionLink(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID), "IdentificationList", "Identification", new { id = Model.ClientID }, new { alt = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID), aria_label=WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID)}) 
+                                }
+                                else
+                                {
+                                    WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID).ToString();
+                                }                    
+                            }
+                            else if (WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID) == "Document")
+                            { 
+                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID)
+                            }
+                            else if (WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID) == "CaseManagement")
+                            {
+                                @Html.ActionLink(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID), "ClientCaseList", "CaseManagement", new { id = Model.ClientID }, new { alt = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes,Culture, document.DocumentTypeID), aria_label = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes,Culture, document.DocumentTypeID)})
+                            }
+                            else if (WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID) == "Incident")
+                            {
+                                if (RightsHelper.HasRight(UserRights.Incidents_Display))
+                                {
+                                    @Html.ActionLink(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID), "IncidentList", "Incident", null, new { alt=WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID), aria_label = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID)})
+                                }
+                            }
+                            else
+                            {
+                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DocumentTypes, Culture, document.DocumentTypeID)
+                            }
+
+                            @if (document.ConfidentialYN)
+                            {
+                                <span class= "glyphicon glyphicon-lock align-bottom"></span>
+                            }
+            
+                        </td>
+                        <td>
+
+                            @if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                            {
+                                if (document.ConfidentialYN){
+                                    if (RightsHelper.HasRight(UserRights.Documents_Confidential))
+                                    {
+                                        @Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(document.DocumentID), ClientID = Model.ClientID, target = "_blank" }, new { alt = document.Name, aria_label = document.Name})
+                                    }
+                                    else
+                                    {
+                                        @document.Name
+                                    }
+                                }
+                                else{
+                                    @Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(document.DocumentID), ClientID = Model.ClientID, target = "_blank" }, new { alt = document.Name, aria_label = document.Name})
+                                }
+                            }
+                            else
+                            {
+                                @document.Name
+                            }
+                
+                            (@document.MimeType, 
+                            @(((float)document.Size / 1024.0).ToString("0.00")
+                            )kB)
+                        </td>
+                        <td>@Html.Raw(document.Description)</td> @*Removing paragraph tags from description field in the documents list page for a consent document*@
+                        <td>@Html.DisplayFor(ModelItem => document.DateUploaded)</td>
+                        <td class="align-text-center">
+                            @if (document.DocumentTypeID == (byte)DocumentTypes.Document)
+                            {
+                                if (RightsHelper.HasRight(UserRights.Documents_Edit))
+                                {
+                                    if (!document.ConfidentialYN || RightsHelper.HasRight(UserRights.Documents_Confidential))
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "EditDocument", "Documents", new { id = Model.ClientID, pDocumentID = document.DocumentID }, new { @class = "editButton noText", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+                                }
+
+                                if (RightsHelper.HasRight(UserRights.Documents_Delete))
+                                {
+                                    if (!document.ConfidentialYN || RightsHelper.HasRight(UserRights.Documents_Confidential))
+                                    {
+                                        @Html.ActionLink(Labels.Delete, "RemoveDocument", "Documents", new { id = Model.ClientID, pDocumentID = document.DocumentID }, new { @class = "deleteButton noText", id=Labels.Delete, alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                    }
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md"> 
+        
+        @if (RightsHelper.HasRight(UserRights.Documents_Add))
+        {
+            @Html.ActionLink(Labels.NewDocument, "NewDocument", "Documents", new { id = Model.ClientID }, new { @class = "addButton", alt=Labels.NewDocument, aria_label = Labels.NewDocument, @role = "button" })
+        }
+       
+    </div>
+</div>

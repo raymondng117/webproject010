@@ -1,0 +1,66 @@
+﻿@model ELearningMaterialModel
+@Html.HiddenFor(model => model.ContentTypeID)
+@Html.HiddenFor(model => model.ELearningMaterialID)
+@if (ViewBag.isTopic)
+{ 
+    @Html.HiddenFor(model => model.ELearningTopicID)
+    @Html.HiddenFor(model => model.ELearningPageID)
+    <div class="row">
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            { 
+                @Html.Label(Labels.HifisHelp_LayoutOrder) @:&nbsp
+                @Html.Partial("Common/_HelpMandatory")
+            }
+            else
+            {
+                @Html.Label(Labels.HifisHelp_LayoutOrder)<text>:</text> 
+            }
+        </div>
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            {
+                @Html.TextBoxFor(model => model.LayoutOrder)
+            }
+            else
+            {
+                @Html.HiddenFor(model => model.LayoutOrder)
+                @Model.LayoutOrder
+            }           
+        </div>
+        <div class="col-sm-3">            
+            @Html.Label(Labels.HifisHelp_ApplyStyle) 
+        </div>
+        <div class="col-sm-3">
+            @Html.DropDownListFor(model => model.MaterialStyleID, ViewBag.StylesList as SelectList)    
+        </div>
+    </div>        
+}
+<div class="row">
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_MaterialNameE) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.MaterialNameE) 
+    </div>
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_MaterialNameF) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.MaterialNameF) 
+    </div>
+</div>    
+<div class="row">
+    <div class="col-sm-12"> 
+        @Html.Label(Labels.HifisHelp_HowToE) @Html.Partial("Common/_HelpMandatory")
+	    <br />
+	    @Html.EditorFor(model => model.ContentE, "TinyMCE_MaterialHelp")
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12"> 
+        @Html.Label(Labels.HifisHelp_HowToF) @Html.Partial("Common/_HelpMandatory")
+	    <br />
+	    @Html.EditorFor(model => model.ContentF, "TinyMCE_MaterialHelp")
+    </div>
+</div>

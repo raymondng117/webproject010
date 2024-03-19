@@ -1,0 +1,65 @@
+﻿@model PeopleCarsViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PersonCars;
+    
+    ViewBag.LayoutView = LayoutPage.People;
+}
+
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div> 
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Make</th>
+                    <th>@Labels.Model</th>
+                    <th>@Labels.Colour</th>
+                    <th>@Labels.LicensePlate</th>
+                    <th>@Labels.StartDate</th> 
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.Action</th> 
+                </tr>
+            </thead>          
+            <tbody>    
+                @if (Model.PeopleCars != null && Model.PeopleCars.Count > 0)
+                {                    
+                    for (int i = 0; i < Model.PeopleCars.Count; i++)
+                    {
+                        <tr>    
+                            <td>@Html.DisplayFor(v => Model.PeopleCars[i].Make)</td>
+                            <td>@Html.DisplayFor(v => Model.PeopleCars[i].Model)</td>
+                            <td>@Html.DisplayFor(v => Model.PeopleCars[i].Colour)</td>
+                            <td>@Html.DisplayFor(v => Model.PeopleCars[i].LicencePlate)</td>
+                            <td>@Html.DisplayFor(v => Model.PeopleCars[i].DateStart)</td>
+                            <td>@Html.DisplayFor(v => Model.PeopleCars[i].DateEnd)</td>
+                            <td class="text-center">
+                            
+                                @if (RightsHelper.HasRight(UserRights.Client_Cars_Edit))
+                                { 
+                                    @Html.ActionLink(Labels.Edit, "EditVehicle", "PeopleTombstone", new { id = Model.PersonID, vehicleID = Model.PeopleCars[i].PeopleCarID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.Client_Cars_Delete))
+                                {
+                                    @Html.ActionLink(Labels.Delete, "DeleteVehicle", "PeopleTombstone", new { id = Model.PersonID, peopleCarID = Model.PeopleCars[i].PeopleCarID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                }
+                            </td>
+                        </tr>                    
+                    }
+                }               
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md"> 
+        @if (RightsHelper.HasRight(UserRights.Client_Cars_Add))
+        {
+            @Html.ActionLink(Labels.AddVehicle, "NewVehicle", "PeopleTombstone", new { id = Model.PersonID }, new { @class = "addButton  ", alt=Labels.AddVehicle, aria_label = Labels.AddVehicle, @role = "button" })
+        }
+    </div>
+</div>
+

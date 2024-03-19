@@ -1,0 +1,39 @@
+﻿@model Help_HIFISDictionaryModel 
+@{
+    Layout = null;
+}
+
+<div class="panel panel-primary" style="min-width:300px; max-width:60%; margin-left:20% !important;">
+    <h3 class="panel-title panel-heading">
+        @Labels.HifisHelp_CustomDictItem
+        <button title="@Labels.Close" type="button" class="wet-lightbox-close-fix mfp-close">x</button>   
+    </h3>
+    <div class="panel-body">
+        @using (Html.BeginForm("InsertOrUpdateCustomDictionary", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ID)
+            @Html.HiddenFor(model => model.LabelKey)
+            @Html.HiddenFor(model => model.LabelNameE)
+            @Html.HiddenFor(model => model.LabelNameF)
+            @Html.HiddenFor(model => model.IsCustom);
+            <div class="row">
+                <div class="col-sm-6">
+                    @Html.Label(Labels.HifisHelp_TermE)
+                    <br /> 
+                    @Html.TextAreaFor(model => model.LabelDescriptionE)                 
+                </div>
+                <div class="col-sm-6">
+                    @Html.Label(Labels.HifisHelp_TermF) 
+                    <br />
+                    @Html.TextAreaFor(model => model.LabelDescriptionF)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">  
+                    <button type="submit" class="saveButton btn">@Labels.Save</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

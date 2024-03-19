@@ -1,0 +1,90 @@
+﻿@model DigitalContactViewModel
+
+<div class="mrgn-tp-md">
+
+    @Html.HiddenFor(model => model.DigitalContactID)
+    @Html.HiddenFor(model => model.PersonID)
+    @Html.HiddenFor(model => model.ClientID)
+
+    @Html.HiddenFor(model => model.UserID)
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.Partial("_BaseHiddenFor", Model)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DigitalContactTypeID, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.DigitalContactTypeID, CachedTableTypes.HIFIS_DigitalContactTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DigitalContactValue, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.DigitalContactValue, null, null, true, null)
+        </div>
+    </div>
+
+    <div id="extDiv" class="row">
+        @Html.HifisLabelFor(model => model.DigitalContactExt, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.DigitalContactExt, null, null, true, null)
+        </div>
+    </div>
+
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+        function toggleMask(e)
+        {
+            switch(e.target.value)
+            {
+                case '@((short)DigitalContactTypes.HomePhone)':
+                case '@((short)DigitalContactTypes.MobilePhone)':
+                case '@((short)DigitalContactTypes.WorkPhone)':
+                case '@((short)DigitalContactTypes.Telephone1)':
+                case '@((short)DigitalContactTypes.Telephone2)':
+                case '@((short)DigitalContactTypes.Fax)':
+                    $('#DigitalContactValue').mask("(999) 999-9999", { placeholder: " " });
+                    $('#extDiv').show();
+                break;
+
+                default: $('#DigitalContactValue').unmask(); $('#extDiv').hide();
+            }
+        }
+
+        
+        function refreshTable(id) {
+           
+            var table = $(id);
+            table.DataTable().ajax.reload();
+            
+        }
+
+        function submitContactForm(e) 
+        {
+            e.preventDefault(); 
+
+            if ($(this).valid()) {
+                var formData = $(this).serialize();
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/PeopleTombstone/AjaxAdditionalContactInfo") + "'",
+                    Data = "formData",
+                    OnSuccess = "$('#contactForm').find('input:visible, select').val('').trigger('change'); refreshTable('#digitalContactTable');",
+                    OnFailure = ""
+                });
+            }
+        }
+
+        $(function () {
+            $('#DigitalContactTypeID').change(toggleMask).change();
+
+            $('#contactForm').submit(submitContactForm);
+        });
+    </script>
+);
+}

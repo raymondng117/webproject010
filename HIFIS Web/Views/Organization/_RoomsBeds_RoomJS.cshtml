@@ -1,0 +1,24 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            function refreshRoomsJquery() {
+               
+            }
+
+            function refreshRoomForm() {
+                var nameInput = $('#room-add-dialog').find('input[name=name]');
+                var currentName = nameInput.val();
+                var roomNumberString = currentName.match(/\d+$/);
+
+                if (roomNumberString != null) {
+                    var roomNameWithoutNumber = currentName.slice(0, currentName.length - roomNumberString[0].length);
+                    var nextRoomNumber = parseInt(roomNumberString) + 1;
+                    nameInput.val(roomNameWithoutNumber + nextRoomNumber);
+                } else {
+                    nameInput.val('');
+                }
+
+            }
+        </script>);
+}

@@ -1,0 +1,38 @@
+﻿@model ProgramViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ProgramEdit;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+    ViewBag.programID = Model.ProgramID;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="clearfix"></div>
+
+<div>
+    @using (Html.BeginForm("Edit", "Programs", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_BaseHiddenFor", Model)
+
+        @Html.Partial("_Program", Model);
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "All", "Programs", new { }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    }
+    <hr />
+
+    @Html.Partial("_FixedCostList", Model.FixedCosts)
+    <hr />
+
+    @Html.Partial("_ServiceProviderList", Model.ServiceProviders)
+    <hr />
+</div>
+<div>@Html.Partial("_BaseFooter", Model)</div>

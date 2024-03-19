@@ -1,0 +1,55 @@
+﻿@model List<FoodBankItemDetailViewModel>
+ 
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th>@Labels.ProductCode</th>
+                <th></th>
+                <th>@Labels.Name</th>
+                <th>@Labels.DaysCovered</th>
+                <th>@Labels.UnitCost</th>
+                <th>@Labels.NumberOfAdults</th>
+                <th>@Labels.NumberOfChildren</th>
+                <th>@Labels.ActiveYN</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody> 
+            @foreach (var foodBankitem in Model)
+            {
+                <tr>
+                    <td class="align-text-center">@foodBankitem.ProductCode</td>
+                    <td>@foodBankitem.FoodBankItemSorterID</td>
+                    <td class="align-text-center">@foodBankitem.NameE</td>
+                    <td class="align-text-center">@foodBankitem.DaysCovered</td>
+                    <td class="align-text-center">@foodBankitem.UnitCost</td>
+                    <td class="align-text-center">@foodBankitem.NumberOfAdults</td>
+                    <td class="align-text-center">@foodBankitem.NumberOfChildren</td>
+                    <td class="align-text-center">@foodBankitem.ActiveYN</td>
+                    <td class="align-text-center">
+                        @if (RightsHelper.HasRight(UserRights.FoodBankItems_Edit))
+                        {
+                            @Html.ActionLink(Labels.Edit, "EditFoodBankItemDetails", new { foodBankItemDetailsId = foodBankitem.FoodBankItemID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.FoodBankItems_Delete))
+                        {
+                            if (foodBankitem.Deletable)
+                            {
+                                @Html.ActionLink(Labels.Delete, "DeleteFoodBankItemDetails", "FoodBanks", new { foodBankItemDetailsID = foodBankitem.FoodBankItemID }, new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                            }
+                        }                        
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+                      
+                        
+
+
+
+
+

@@ -1,0 +1,49 @@
+﻿@model AddressListViewModel 
+@{ 
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("UpdateCar", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        @Html.HiddenFor(m => m.ClientID)
+
+        <div class="form-color-white module-form-block">    
+            @if (Model.Addresses != null && Model.Addresses.Count > 0)
+            {
+                <table class="wet-boew-zebra DataTable">
+                    <thead>
+                        <tr>
+                            <th>@Labels.Address</th>
+                            <th>@Labels.City</th>
+                            <th>@Labels.Building</th>
+                            <th>@Labels.PostalCode</th>
+                            <th>@Labels.IntlPostalCode</th>
+                        </tr>
+                    </thead> 
+           
+                    <tbody>
+                        @for (int i = 0; i < Model.Addresses.Count; i++)
+                        {
+                            @Html.HiddenFor(m => m.Addresses[i].AddressID)
+                            <tr>
+                                <td>@Html.ActionLink(Model.Addresses[i].AddressLn1 + " " + Model.Addresses[i].AddressLn2, "ClientAddressDetail", "ClientTombstone", new { id = Model.ClientID, pAddressID = Model.Addresses[i].AddressID }, new { alt = Model.Addresses[i].AddressLn1 + " " + Model.Addresses[i].AddressLn2, aria_label=Model.Addresses[i].AddressLn1 + " " + Model.Addresses[i].AddressLn2})</td>                                                                                                                                                                                                                                                                  
+                                <td>@Html.DisplayFor(m => m.Addresses[i].City)</td>
+                                <td>@Html.DisplayFor(m => m.Addresses[i].Building)</td>
+                                <td>@Html.DisplayFor(m => m.Addresses[i].PostalCode)</td>
+                                <td>@Html.DisplayFor(m => m.Addresses[i].InternationalPostalCode)</td>
+                            </tr>                    
+                        }                
+                    </tbody>
+
+                </table>                  
+            }
+        </div>
+
+        @Html.ActionLink(Labels.NewClientAddress, "ClientAddressSearch", "ClientTombstone", new { id = Model.ClientID, }, new { @class = "addButton", alt=Labels.NewClientAddress, aria_label=Labels.NewClientAddress, @role="button" }) 
+        @Html.ActionLink(Labels.Cancel, "ClientHousingHistory", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button" }) 
+    }
+</div>

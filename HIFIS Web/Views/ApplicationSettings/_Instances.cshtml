@@ -1,0 +1,108 @@
+﻿@model List<InstanceViewModel>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">
+        <p>@Labels.NhisConnectionMessage_Instances</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "bFilter": false, "bSort": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Type</th>
+                    <th>@Labels.Date</th>
+                    <th>@Labels.ShowBanner</th>
+                    <th>@Labels.BannerText</th>
+                    <th>@Labels.TextColour</th>
+                    <th>@Labels.BackgroundColour</th>
+                    <th>@Labels.Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var instance in Model)
+                {
+                    var rowID = (instance.IsME ? "currentInstance" : "");
+                    var current = (instance.IsME ? "(This Instance)" : "");
+                    <tr ID="@rowID">
+                        @if (instance.IsProduction)
+                        {
+                            <td>Production @current</td>
+                        }
+                        else
+                        {
+                            <td>@instance.InstanceType @current</td>
+                        }
+                        <td>@instance.Date.ToShortDateString()</td>
+                        <td>@Html.Partial("DisplayViewTemplates/_YesNoDisplay", instance.ShowBanner)</td>
+                        <td>@instance.BannerText</td>
+                        <td>
+                            <i style="background-color: @instance.TextColour;width: 16px;height: 16px;display: inline-block;vertical-align: text-top;"></i>
+                            @instance.TextColour
+                        </td>
+                        <td>
+                            <i style="background-color: @instance.BackgroundColour;width: 16px;height: 16px;display: inline-block;vertical-align: text-top;"></i>
+                            @instance.BackgroundColour
+                        </td>
+                        <td>
+                            @if (!instance.IsProduction || instance.IsME)
+                            {
+                                <a class="btn btn-default btn-sm wb-lbx lbx-modal" title="@Labels.Edit" aria-controls='Modal_EditInstance' role='button'
+                                   href="@Url.Action("EditInstanceForm", "ApplicationSettings", new { ID = instance.ID })">
+                                    <span class='glyphicon glyphicon-pencil'></span>
+                                </a>
+                            }
+                            @if (instance.Approved == false)
+                            {
+                                <button class="btn btn-default" type="button" onclick="OpenApproveInstanceConfirm('@instance.ID');" role="button">
+                                    @Labels.ApproveInstance
+                                </button>
+                                @*@Html.ActionLink("Approve Instance", "ApproveInstance",new { ID = instance.ID }, new { @class = "btn btn-default" })*@
+                                @Html.ActionLink(Labels.DenyInstance, "DenyInstance", new { ID = instance.ID }, new { @class = "btn btn-default", alt = Labels.DenyInstance, aria_label = Labels.DenyInstance, @role="button"  })
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <style>
+        #currentInstance:hover {
+            background-color: #96d2fb !important;
+        }
+
+        #currentInstance {
+            background-color: #b3d9f3 !important;
+        }
+    </style>
+
+    @Html.ActionLink(Labels.SetInstanceAsProd, "SetInstanceAsProd", null, new { @class = "btn btn-default", alt = Labels.SetInstanceAsProd, aria_label = Labels.SetInstanceAsProd, @role="button"  })
+
+    <section id="ApproveInstanceConfirmation_Modal" class="mfp-hide modal-dialog modal-content overlay-def">
+        <header class="modal-header">
+            <h2 class="modal-title">@Labels.ApproveInstanceConfirmation</h2>
+        </header>
+        <div class="modal-body">
+            @Labels.ApproveInstanceConfirmationText
+            @*<div class="alert alert-warning " id="alert-warning" open="">
+                    text
+                </div>*@
+        </div>
+        <div class="modal-footer" style="background-color: white;">
+            @Html.ActionLink(Labels.Yes, "ApproveInstance", null, new { @class = "btn btn-danger", id = "ApproveInstanceButton", alt=Labels.Yes, aria_label=Labels.Yes, @role="button"  })
+            <button class="btn btn-primary popup-modal-dismiss cancelButton" type="button" role="button" >@Labels.No</button>
+        </div>
+    </section>
+}
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+			function OpenApproveInstanceConfirm(id) {
+				$('#ApproveInstanceButton').attr('href', '@Url.Action("ApproveInstance", "ApplicationSettings")' + '/' + id);
+				$('#ApproveInstanceConfirmation_Modal').trigger('open.wb-lbx', [[{ src: '#ApproveInstanceConfirmation_Modal', type: 'inline' }], true]);
+			}
+</script>);
+} 

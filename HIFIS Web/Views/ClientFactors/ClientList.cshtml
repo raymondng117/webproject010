@@ -1,0 +1,215 @@
+﻿@model ClientFactorViewModelList
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientFactors;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    TempData["culture"] = Culture;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#ClientContributingFactors" role="tab" data-toggle="tab">@Labels.ClientContributingFactors</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#ClientBehaviouralFactors" role="tab" data-toggle="tab">@Labels.ClientBehaviouralFactors</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#ClientWatchConcerns" role="tab" data-toggle="tab">@Labels.ClientWatchConcerns</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#ClientLifeEvents" role="tab" data-toggle="tab">@Labels.ClientLifeEvents</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+
+            <!-- Client Contributing Factors -->
+			<div class="tab-pane active" id="ClientContributingFactors">
+				<div class="table-responsive">
+                    <table id="contributingTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                            { "width": "55%", "data": "cont"},
+                                                                            { "width": "15%", "data": "start"},
+                                                                            { "width": "15%", "data": "end"},
+                                                                            { "width": "15%", "data": "action"}
+                                                                        ],
+                                                                        "order": [ [0, "desc"] ],
+                                                                        "ajax": "@Url.Content("~/ClientFactors/ContributingListJson?clientID=" + ViewBag.ClientID)"                         
+                                                                    }'>
+					    <thead>
+						    <tr>
+							    <th>@Labels.ContributingFactor</th>
+							    <th>@Labels.DateStart</th>
+							    <th>@Labels.DateEnd</th>
+							    <th>@Labels.Action</th>
+						    </tr>
+					    </thead>
+					    <tbody>
+					    </tbody>
+				    </table>
+				</div>
+				<div class="clearfix"></div>
+				<div class="mrgn-bttm-md mrgn-tp-md">
+					@if (RightsHelper.HasRight(UserRights.ClientFactors_Contributing_Add))
+					{ 
+						@Html.ActionLink(Labels.NewContributingFactor, "AddContributingFactor", "ClientFactors", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddCFactor", alt=Labels.NewContributingFactor, aria_label=Labels.NewContributingFactor, @role = "button" })
+					}
+				</div>
+			</div>
+
+            <!-- Client Bahavioural Factors -->
+			<div class="tab-pane" id="ClientBehaviouralFactors">
+				<div class="table-responsive"><table id="behaviourTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                            { "width": "40%", "data": "behaviour"},
+                                                                            { "width": "15%", "data": "start"},
+                                                                            { "width": "15%", "data": "end"},
+                                                                            { "width": "15%", "data": "severity"},
+                                                                            { "width": "15%", "data": "action"}
+                                                                        ],
+                                                                        "order": [ [0, "desc"] ],
+                                                                        "ajax": "@Url.Content("~/ClientFactors/BehaviourListJson?clientID=" + ViewBag.ClientID)"                         
+                                                                    }'>
+					<thead>
+						<tr>
+							<th>@Labels.BehaviouralFactor</th>
+							<th>@Labels.DateStart</th>							
+							<th>@Labels.DateEnd</th>
+							<th>@Labels.Severity</th>
+							<th>@Labels.Action</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table></div>
+				<div class="clearfix"></div>
+				<div class="mrgn-bttm-md mrgn-tp-md">                        
+					@if (RightsHelper.HasRight(UserRights.ClientFactors_Behavioural_Add))
+					{ 
+						@Html.ActionLink(Labels.NewBehaviouralRisk, "AddBehaviouralFactor", "ClientFactors", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddBFactor", alt=Labels.NewBehaviouralRisk, aria_label=Labels.NewBehaviouralRisk, @role = "button" })
+					}                        
+				</div>
+			</div>
+			<div class="tab-pane" id="ClientWatchConcerns">
+				<div class="table-responsive">
+                    <table id="concernsTable" class="wb-tables table table-striped"  data-wb-tables='{ "columns": [
+                                                                            { "width": "40%", "data": "concern"},
+                                                                            { "width": "15%", "data": "start"},
+                                                                            { "width": "15%", "data": "end"},
+                                                                            { "width": "15%", "data": "severity"},
+                                                                            { "width": "15%", "data": "action"}
+                                                                        ],
+                                                                        "order": [ [0, "desc"] ],
+                                                                        "ajax": "@Url.Content("~/ClientFactors/ConcernsListJson?clientID=" + ViewBag.ClientID)"                         
+                                                                    }'>
+					    <thead>
+						    <tr>
+							    <th>@Labels.WatchConcern</th>
+							    <th>@Labels.DateStart</th>
+							    <th>@Labels.DateEnd</th>
+                                <th>@Labels.Severity</th>
+							    <th>@Labels.Action</th>
+						    </tr>
+					    </thead>
+                        <tbody>
+						   </tbody>
+				    </table>
+				</div>
+				<div class="clearfix"></div>
+				<div class="mrgn-bttm-md mrgn-tp-md">
+					@if (RightsHelper.HasRight(UserRights.ClientFactors_WatchConcerns_Add))
+					{ 
+						@Html.ActionLink(Labels.NewWatchConcern, "AddWatchConcern", "ClientFactors", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddConcern", alt=Labels.NewWatchConcern, aria_label=Labels.NewWatchConcern, @role = "button" })
+					}                        
+				</div>
+			</div>
+            <!-- Client Life Events -->
+			<div class="tab-pane" id="ClientLifeEvents">
+				<div class="table-responsive">
+                    <table id="eventsTable" class="wb-tables table table-striped" data-wb-tables='{ "columns": [
+                                                                            { "width": "55%", "data": "evt"},
+                                                                            { "width": "15%", "data": "start"},
+                                                                            { "width": "15%", "data": "end"},
+                                                                            { "width": "15%", "data": "action"}
+                                                                        ],
+                                                                        "order": [ [0, "desc"] ],
+                                                                        "ajax": "@Url.Content("~/ClientFactors/EventsListJson?clientID=" + ViewBag.ClientID)"                         
+                                                                    }'>
+					    <thead>
+						    <tr>
+							    <th>@Labels.LifeEvents</th>
+							    <th>@Labels.DateStart</th>
+							    <th>@Labels.DateEnd</th>
+							    <th>@Labels.Action</th>
+						    </tr>
+					    </thead>
+					    <tbody>                            
+						   </tbody>
+				    </table>
+				</div>
+				<div class="clearfix"></div>
+				<div class="mrgn-bttm-md mrgn-tp-md">                        
+					@if (RightsHelper.HasRight(UserRights.ClientFactors_Life_Event_Add))
+					{ 
+						@Html.ActionLink(Labels.NewLifeEvent, "AddLifeEvent", "ClientFactors", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal ", aria_controls = "Modal_AddLifeEvent", alt=Labels.NewLifeEvent, aria_label=Labels.NewLifeEvent, @role = "button" })
+					}
+				</div>
+			</div>
+		</div>	
+	</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+    //resizes the data table columns when you switch tabs, hidden tables break tab width.
+    $(document).ready(function () {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if (jQuery().DataTable) {
+                $('.dataTable').DataTable().columns.adjust();
+            }
+        });
+    });
+
+    $('#behaviourTable').on('draw.dt', function () {
+        init_hifis();
+        $(".wb-lbx").trigger("wb-init.wb-lbx");
+    })
+    $('#concernsTable').on('draw.dt', function () {
+        init_hifis();
+        $(".wb-lbx").trigger("wb-init.wb-lbx");
+    })
+    $('#contributingTable').on('draw.dt', function () {
+        init_hifis();
+        $(".wb-lbx").trigger("wb-init.wb-lbx");
+    })
+    $('#eventsTable').on('draw.dt', function () {
+        init_hifis();
+        $(".wb-lbx").trigger("wb-init.wb-lbx");
+    })
+
+    $(function () {
+        @{
+            var temp = TempData["factor"];
+            if(temp != null){
+                switch(temp.ToString()){
+                    case "w":
+                        <text>$('.nav-tabs a[href="#ClientWatchConcerns"]').tab('show');</text>
+                        break;
+                    case "b":
+                        <text>$('.nav-tabs a[href="#ClientBehaviouralFactors"]').tab('show');</text>
+                        break;
+                }
+            }
+           <text>$(document).scrollTop(0);</text>
+        }
+    });
+</script>
+                );
+                }

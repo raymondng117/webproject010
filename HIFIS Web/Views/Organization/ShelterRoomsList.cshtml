@@ -1,0 +1,77 @@
+﻿@model SheltersViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_RoomsBedsat + " " + Model.Shelters.FirstOrDefault().Name;
+
+    if (Model.Shelters.Count() > 0 && ViewBag.IsAdminView)
+    {
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    } 
+}
+
+<style>
+    td {
+        text-align: right;
+    }
+</style>
+
+@* TODO: Is this still being used here? - JdV *@
+@Html.Partial("_ConfirmDeactivate")
+
+<div> 
+    <div>
+        @Html.Partial("_ShelterRoomsTable", Model)
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="form-group">
+        <div class="container">
+            <div class="row">                              
+                <div class="col-lg-6">
+                    @if (RightsHelper.HasRight(UserRights.ServiceProviders_Rooms_Beds_Add))
+                    {
+                        @*@Html.Partial("_OnTheFlyButton", new OnTheFlyButtonViewModel()
+                        {       
+                            ButtonName = Labels.AddRoom,
+                            Title = Labels.NewRoom, 
+                            ActionName = "AjaxAddShelterRoom",
+                            ControllerName = "Organization",
+                            PartialName = "~/Views/Organization/_ShelterRooms.cshtml",
+                            CallBackFunction = "OnTheFlyCallBack",
+                            ViewModel = new RoomViewModel { 
+                                ShelterID = Model.Shelters.FirstOrDefault().ID, 
+                                ShelterName = Model.Shelters.FirstOrDefault().Name
+                            }
+                        })*@
+
+                        @Html.ActionLink(Labels.AddRooms, "RoomsAddMultiple", "Organization", new { id = Model.Shelters.First().ID, shelterID = Model.Shelters.First().ID, shelterName = Model.Shelters.FirstOrDefault().Name }, new { @class = "addButton", alt=Labels.AddRooms, aria_label = Labels.AddRooms, @role = "button" })
+                    }
+                </div>
+                <div class="col-lg-6"></div>                               
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function OnTheFlyCallBack(objectID, formData) {
+                 var table = $("#shelterRoomsTable");
+                 table.DataTable().ajax.reload();
+             }
+
+             // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+             $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                 initButtons();
+                 $(".editButton").parents("td").addClass("align-text-center");
+                 $(".manageButton").parents("td").addClass("align-text-center");
+             });
+        </script>
+    );
+}

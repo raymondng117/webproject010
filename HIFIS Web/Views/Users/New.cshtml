@@ -1,0 +1,35 @@
+﻿@model UserProfileViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_UserProfileNew;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm(Model.IsCloning? "Clone" : "New", "Users", null, FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_UserAdmin", Model)
+        
+        <div>
+            @Html.Button("save", Labels.Save, HtmlButtonType.Submit, null, new { @class = "saveButton" })
+            @Html.ActionLink(Labels.Cancel, "List", "Users", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    }
+
+    @using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+                $('#Email').on('input', function () {
+                    if (this.value == '') {
+                        $('#emailInfo').show();
+                    } else {
+                        $('#emailInfo').hide();
+                    }
+                });
+            </script>
+        );
+    }
+</div>

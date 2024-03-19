@@ -1,0 +1,61 @@
+﻿
+@model GeoRegionViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.ManageGeoRegion</h2>
+	</header>
+	<div class="modal-body">
+        <form id="newItemForm" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            @Html.Partial("_GeoRegionDetails", Model)
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newItemSaveBtn" class="saveButton">@Labels.Save</button>
+		<button id="newItemCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(function () { $("#newItemForm").hifisValidation(); });
+
+    $("#newItemSaveBtn").click(function () {
+
+        if ($("#newItemForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/ApplicationSettings/ManageGeoRegion")",
+                type: "POST",
+                data: $("#newItemForm").serialize()
+
+            }).done(function (data) {
+                
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+                
+                if (data.Success) {
+                    $('#GeoTable').DataTable().ajax.reload( function () { 
+                        $(".wb-lbx").trigger("wb-init.wb-lbx"); 
+                    }); // Re-load the datatable
+
+                    $("#newItemCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+    
+</script>
+
+

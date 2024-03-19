@@ -1,0 +1,49 @@
+﻿@model CustomTablesListViewModel
+
+@{bool isFirstCustomTable = true;
+  int index1 = 0;
+  int index2 = 0;
+  }
+
+<div class="mrgn-tp-md">    
+    <ul class="nav nav-tabs" role="tablist">
+        
+        @foreach (var customTableRecordList in Model.CustomTableList)
+        {          
+            <li class="@(isFirstCustomTable ? "active" : "")">
+			    <a class="tabButton" href="#CustomTables_tabs_@index1" role="tab" data-toggle="tab">@customTableRecordList.DisplayName</a>
+		    </li>
+            
+            isFirstCustomTable = false;
+
+            index1++;
+        }
+
+        @{isFirstCustomTable = true;}
+	</ul>
+
+	<!-- Tab panes -->
+	<div class="panel panel-default border-top-fix-tabs">
+		<div class="panel-body">
+			<div class="tab-content">
+                @foreach (var customTable in Model.CustomTableList)
+                { 
+                    <div class="tab-pane @(isFirstCustomTable ? "active" : "")" id="CustomTables_tabs_@index2">
+                        @if (customTable.One2Many)
+                        {
+                            @Html.Partial(Url.Content("~/Views/CustomTables/_BuildOne2ManyView.cshtml"), customTable)
+                        }
+                        else
+                        {
+                            @Html.Partial(Url.Content("~/Views/CustomTables/_BuildOne2OneView.cshtml"), customTable)
+                        }
+                    </div>
+                    
+                    isFirstCustomTable = false;
+                    index2++;
+                }								    
+			</div>
+		</div>
+	</div>
+</div>
+

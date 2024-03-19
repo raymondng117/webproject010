@@ -1,0 +1,306 @@
+﻿@model List<ELearningModuleModel>
+@{
+    string lang = ViewBag.CurrentCulture;
+	string english = Constants.Eng;
+	ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_ELearningModuleDev; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@Html.Partial("Plugins/_TinyMCEScript")
+@Html.Partial("Plugins/_TinyMCE-HelpAjaxFix")
+@Html.Partial("Plugins/_ActiveAccordion")
+
+<ol class="breadcrumb mrgn-tp-sm">
+	<li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+	<li><a class="ui-link" href='@Url.Content("~/HIFISHelp/CreateELearningPlaylist")'>@Labels.HifisHelp_ELearningPlaylistDev</a></li>
+    <li>@Labels.HifisHelp_ELearningModuleDev</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+<div class="panel-group" id="accordion">
+	@for (int i = 0; i < Model.Count; i++)
+	{ 
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<a data-toggle="collapse" data-parent="#accordion" href="#@(Model[i].ModuleID)">
+					<div class="row"> 
+						<div class="col-md-4">
+							<strong>@(lang == english ? Model[i].NameE : Model[i].NameF)</strong>
+						</div>
+						<div class="col-md-4">
+							<div class="text-center">
+								@if (Model[i].ModuleTopics.Count >= 1)
+								{ 
+									@Model[i].ModuleTopics.Count @: @Labels.HifisHelp_NoOfTopics
+								}
+							</div>
+						</div>
+						<div class="col-md-4">
+							@Html.ActionLink(Labels.HifisHelp_ModuleEdit, "EditModule", "HIFISHelp", new { id = Model[i].ModuleID }, new { @class = "pull-right editButton editModuleButton", data_Id = Model[i].ModuleID, alt=Labels.HifisHelp_ModuleEdit, aria_label = Labels.HifisHelp_ModuleEdit, @role = "button" })
+						</div>
+					</div>
+				</a>
+			</div>
+			<div id="@(Model[i].ModuleID)" class="panel-collapse collapse">
+				<div class="mrgn-sm-md mrgn-lft-sm">
+					@Html.Raw((lang == english ? Model[i].DescriptionE : Model[i].DescriptionF))  
+				</div>
+				<div class="mrgn-lft-sm mrgn-rght-sm mrgn-bttm-md">
+					<div class="table-responsive"><table class="wb-tables table table-striped" data-wb-tables='{ "ordering" : false,  "paging" : false,  "searching" : false, "info": false }'>
+						<thead>
+							<tr>
+								<th class="text-center">@Labels.HifisHelp_TopicName</th>
+                                <th class="text-center">@Labels.HifisHelp_IsSubTopic</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicType</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicRank</th>
+								<th class="text-center">@Labels.HifisHelp_Action</th>
+							</tr> 
+						</thead>
+						<tbody>
+							@foreach (var top in Model[i].ModuleTopics)
+							{
+								if (top.ModuleID == Model[i].ModuleID)
+								{    
+									<tr>
+										<td class="col-md-3">
+											@(lang == english ? top.NameE : top.NameF)
+										</td>
+                                        <td class="col-md-1 text-center">
+                                            @if (top.IsSubTopicYN)
+                                            { 
+                                                @Labels.Yes
+                                            }
+                                            else
+                                            {
+                                                @Labels.No
+                                            }
+										</td>
+                                        <td class="col-md-1 text-center">
+                                            @switch(top.TopicTypeID)
+                                            {
+                                                case (short)HIFISHelp_TopicTypes.Default:
+                                                    <span>@Labels.HifisHelp_Default</span>
+                                                    break;
+                                                case (short)HIFISHelp_TopicTypes.ChallengeYourself:
+                                                    <span>@Labels.HifisHelp_Knowledge</span>
+                                                    break;
+                                                case (short)HIFISHelp_TopicTypes.Demonstration:
+                                                    <span>@Labels.HifisHelp_Demo</span>
+                                                    break;
+                                                case (short)HIFISHelp_TopicTypes.Simulation:
+                                                    <span>@Labels.HifisHelp_Sim</span>
+                                                    break;
+                                            }
+										</td>
+                                        <td class="col-md-2 text-center">                            
+                                            @Html.Partial("eLearningPartials/_TopicSequence", new ELearningTopicModel { SequenceList = top.SequenceList, TopicID = top.TopicID, ModuleID = top.ModuleID, Sequence = top.Sequence }) 
+                                        </td>
+										<td class="col-md-5">
+											<div class="pull-right">
+												@Html.ActionLink(Labels.HifisHelp_DevelopTopic, "CreateELearningTopic", "HIFISHelp", new { id = top.TopicID, playlistId = top.PlaylistID }, new { @class = "editButton", alt=Labels.HifisHelp_DevelopTopic, aria_label = Labels.HifisHelp_DevelopTopic, @role = "button" })                    
+												@Html.ActionLink(Labels.HifisHelp_TopicEdit, "EditELearningTopic", "HIFISHelp", new { id = top.TopicID, playlistId = top.PlaylistID }, new { @class = "editButton editTopicButton", data_Id = top.TopicID, data_playId = top.PlaylistID, alt=Labels.HifisHelp_TopicEdit, aria_label = Labels.HifisHelp_TopicEdit, @role = "button" })
+												@Html.ActionLink(Labels.HifisHelp_TopicDelete, "DeleteELearningTopic", "HIFISHelp", new { id = top.TopicID }, new { @class = "deleteButton", alt=Labels.HifisHelp_TopicDelete, aria_label = Labels.HifisHelp_TopicDelete, @role = "button" })  
+											</div>
+										</td>
+									</tr>
+                                }
+                            }  
+						</tbody>                      
+					</table></div>
+				</div> 
+				<div class="row mrgn-bttm-md mrgn-rght-sm"> 
+					<div class="col-md-12">
+						@Html.ActionLink(Labels.HifisHelp_TopicNew, "NewELearningTopic", "HIFISHelp", new { id = Model[i].ModuleID }, new { @class = "pull-right addButton newTopicButton", data_Id = Model[i].ModuleID, alt=Labels.HifisHelp_TopicNew, aria_label = Labels.HifisHelp_TopicNew, @role = "button" }) 
+					</div>
+				</div>              
+			</div>            
+		</div>
+    }
+</div>
+
+<div id="newModButton">
+	@Html.ActionLink(Labels.HifisHelp_ModuleNew, "NewELearningModule", "HIFISHelp", null, new { @class = "addButton newModuleButton", alt=Labels.HifisHelp_ModuleNew, aria_label = Labels.HifisHelp_ModuleNew, @role = "button" })                
+</div> 
+@* Module Div *@
+<div id="moduleDiv">
+	<h5 id="newmod" class="mrgn-tp-sm">@Labels.HifisHelp_ModuleNew</h5>
+    <h5 id="editmod" class="mrgn-tp-sm">@Labels.HifisHelp_ModuleEdit</h5>  
+	<hr />
+
+	@using (Html.BeginForm("InsertOrUpdateELearningModule", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+ {
+		<div id="moduleUpdate">
+		</div>
+		  
+		<div class="mrgn-tp-md">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "CreateELearningModule", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>  			                
+ }
+</div>
+@* Topic Div *@
+<div id="topicDiv">
+	<h5 id="newtop" class="mrgn-tp-sm">@Labels.HifisHelp_TopicNew</h5>
+    <h5 id="edittop" class="mrgn-tp-sm">@Labels.HifisHelp_TopicEdit</h5>  
+	<hr />
+
+	@using (Html.BeginForm("InsertOrUpdateELearningTopic", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+ {
+		<div id="topicUpdate">
+		</div>
+		  
+		<div class="mrgn-tp-md">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "CreateELearningModule", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>  			                
+ }
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+	@<script type="text/javascript">
+		 function resetTinyMCE() {
+			var i, t = tinyMCE.editors;
+			for (i in t){
+				if (t.hasOwnProperty(i)){
+					t[i].remove();
+				}
+			}
+		 }         
+
+		 $(function () {
+			 $('#moduleDiv').hide();
+			 $('#topicDiv').hide();
+
+		     // Changing the Sequence of the Topic
+			 $('.TopicSequenceOrder').on('select2:select', function (e) {
+			     var modid = $(this).attr('data-id');
+			     var topid = $(this).attr('data-topid');
+			     var order = $(this).val();
+			     var thisHolder = $(this);
+
+			     $.ajax({
+			         url: '@Url.Content("~/HifisHelp/ChangeTopicSequence")',
+			         type: "GET",
+			         data: { topId: topid, modId: modid, rank: order, uniq_param: (new Date()).getTime() }
+			     }).done(function (data) {
+			         var elements = thisHolder.closest("tbody").find("select option:selected[value='" + order + "']");
+			         elements.each(function (index, element) {
+			             if ($(element).parent().attr("data-topid") !== topid && $(element).parent().attr("data-modid") !== modid) {
+			                 $(element).removeAttr("selected").parent().trigger("change");
+			             }
+			         });
+			         if (data.Success) { 
+			             displayNotification('success', null, data.DataSavedMessage || '@Labels.DefaultDataSavedMessage');
+                     }
+			     });
+			 });
+
+			 //Edit Module
+			 $('.editModuleButton').click(function (e) {
+				e.preventDefault();
+				$('#topicDiv').hide();
+				$('#newModButton').hide();
+
+				resetTinyMCE();
+				var editDataID = $(this).attr('data-id')
+				$.ajax({
+					url: '@Url.Content("~/HifisHelp/EditELearningModule")',
+					type: "GET",
+					data: { id: editDataID,  uniq_param : (new Date()).getTime() }
+				})
+				.done(function (partialViewResult) {
+					$('#moduleDiv').show();
+					$('#editmod').show();
+					$('#newmod').hide();
+
+					$("#moduleUpdate").html(partialViewResult);
+					$(function () {
+						initTinyMCE();
+						$(document).scrollTop($("#moduleUpdate").offset().top);
+					});                    
+				});
+			 });
+	
+			 //New Module
+			 $('.newModuleButton').click(function (e) {
+				e.preventDefault();
+				resetTinyMCE();
+				$.ajax({
+					url: '@Url.Content("~/HifisHelp/NewELearningModule")',
+					type: "GET",
+					data: null,
+				})
+				.done(function (partialViewResult) {
+				    $('#topicDiv').hide();
+				    $('#moduleDiv').show();
+					$('#editmod').hide();
+					$('#newmod').show();
+					$('#newModButton').hide();
+
+					$("#moduleUpdate").html(partialViewResult);
+					$(function () {
+						initTinyMCE();
+						$(document).scrollTop($("#moduleUpdate").offset().top);
+					});
+				});
+			 });
+
+		     //Edit Topic
+		     $('.editTopicButton').click(function (e) {
+		         e.preventDefault();
+		         $('#topicDiv').show();
+		         $('#moduleDiv').hide();
+		         $('#newModButton').hide();
+
+		         resetTinyMCE();
+		         var editDataID = $(this).attr('data-id')
+		         var editPlayID = $(this).attr('data-playid')
+		         $.ajax({
+		             url: '@Url.Content("~/HifisHelp/EditELearningTopic")',
+				    type: "GET",
+				    data: { id: editDataID, playlistId: editPlayID, uniq_param: (new Date()).getTime() }
+				})
+				.done(function (partialViewResult) {
+				    $('#moduleDiv').hide();
+				    $('#edittop').show();
+				    $('#newtop').hide();
+
+				    $("#topicUpdate").html(partialViewResult);
+				    $(function () {
+				        initTinyMCE();
+				        $(document).scrollTop($("#topicUpdate").offset().top);
+				    });
+				});
+			 });
+
+		     //New Topic
+		     $('.newTopicButton').click(function (e) {
+		         e.preventDefault();
+		         resetTinyMCE();
+		         $('#topicDiv').show();
+		         $('#moduleDiv').hide();
+		         $('#edittop').hide();
+		         $('#newtop').show();
+		         $('#newModButton').hide();
+
+		         var editDataID = $(this).attr('data-id')
+		         $.ajax({
+		             url: '@Url.Content("~/HifisHelp/NewELearningTopic")',
+				    type: "GET",
+				    data: { id: editDataID, uniq_param: (new Date()).getTime() }
+				})
+				.done(function (partialViewResult) {
+				    $("#topicUpdate").html(partialViewResult);
+				    $(function () {
+				        initTinyMCE();
+				        $(document).scrollTop($("#topicUpdate").offset().top);
+				    });
+				});
+			 });
+		 });
+		</script>
+	);
+}

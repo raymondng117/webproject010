@@ -1,0 +1,9 @@
+﻿@model ConflictViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayConflict;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Conflicts/_DisplayConflicts.cshtml"), ViewModel = Model })
+

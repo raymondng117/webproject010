@@ -1,0 +1,124 @@
+﻿@model List<AppSettingViewModel>
+@{
+	ViewBag.ViewTitle = Labels.ApplicationSettings;
+
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+	var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div>
+@Html.Partial("_ValidationSummaryOuter")
+    <ul class="nav nav-tabs" role="tablist">
+    
+        <li class="active">
+            <a class="tabButton" href="#Settings" role="tab" data-toggle="tab">@Labels.Settings</a>
+        </li>
+
+        <li>
+            <a class="tabButton" href="#Clusters" role="tab" data-toggle="tab">@Labels.Clusters</a>
+        </li>     
+		@if (ViewBag.ShowInstanceTab)
+		{
+			<li>
+				<a class="tabButton" href="#Instances" role="tab" data-toggle="tab">@Labels.Instances</a>
+			</li>   
+		}
+
+        @if (ViewBag.EnableGeoRegion) {
+            <li>
+		        <a class="tabButton" href="#GeoRegion" role="tab" data-toggle="tab">@Labels.GeoRegMapping</a>
+	        </li>
+		}
+
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+	    <div class="panel-body">
+		    <div class="tab-content">                       
+            
+                <!-- Tab Pane #1: Settings -->
+			    <div class="tab-pane active" id="Settings">
+                    @Html.Partial("_Settings", Model)
+                </div>
+                
+                <!-- Tab Pane #2: Clusters -->
+                <div class="tab-pane" id="Clusters">
+                    @Html.Partial("_Clusters", Model)
+                </div>   
+                @if (ViewBag.ShowInstanceTab)
+				{
+					<!-- Tab Pane #3: Instances -->
+					<div class="tab-pane" id="Instances">
+						@{ Html.RenderAction("InstanceTabPartial", "ApplicationSettings"); }
+					</div>   
+				}
+                @if (ViewBag.EnableGeoRegion){
+                    <!-- Tab Pane #4: Geo Region Mapping -->                  
+                    <div class="tab-pane" id="GeoRegion">
+                        @Html.Partial("_GeoRegion", Model)
+                    </div> 
+                }            
+    
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("Plugins/_TinyMCEScript")
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $(function () {
+                 $("#editForm").hide();
+                 
+                 //Select2 does not properly initialize inside a hidden tab, the tab must be marked active when the page loads.
+                 //Though no matter which tab is selected, all tabs with the active class will draw inside it.
+                 //Any tabs with a select2 must be active for the page load, then you can remove active so the initial tab doesn't have 
+                 //extra unnecessary content.
+                 //For some reason this works with a 0ms delay, yet outside of the setTimeout function this doesn't work.
+                 //Doing this to just move on, will come back to it.
+                 setTimeout(function () {
+                     if ($('a[href="#Organizers"]').parent('li').hasClass('active') == false) {
+                         $('#Organizers').removeClass('active');
+                     }
+                 }, 0);
+
+                 $("#ServiceProgramsButton").hide();
+             });
+
+             //resizes the data table columns when you switch tabs, hidden tables break tab width.
+             $(document).ready(function () {
+                 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                     if (jQuery().DataTable) {
+                         $('.dataTable').DataTable().columns.adjust();
+                     }                     
+                 });
+             });
+
+             $(".mainDisplay").on("click", "#edit-btn", function (event) {
+                 $.ajax({
+                     url: "@Url.Action("GetEditForm", "GroupActivities")",
+                     type: "GET",
+                     data: { activityID: $("#GroupActivityID").val() },
+                 }).done(function (data) {
+                     $("#ga-partial").html(data.Result);
+                     init_hifis();
+                     $("#editForm").fadeIn(800);
+                     $("#ServiceProgramsButton").fadeIn(800);
+                 });
+
+                 $(".mainDisplay").fadeOut(800);
+                 event.preventDefault();
+             });             
+
+             //$("#cancel-edit").on("click", function (event) {
+             //    $("#editForm").hide();
+             //    $(".mainDisplay").fadeIn(800);
+             //    event.preventDefault();
+             //});
+        </script>
+);
+}
+    

@@ -1,0 +1,34 @@
+﻿@model BaseViewModel 
+
+<div class="col-md-6">
+
+    <div class="row form-inline">
+        @Html.HifisLabelFor(Labels.CreatedByName.Replace(" ", "_"), Labels.CreatedByName):
+        <input type="text" class="inputTextOnly" id="@Labels.CreatedByName.Replace(" ", "_")" name="@Labels.CreatedByName.Replace(" ", "_")"
+                    value="@Html.DisplayFor(model => model.CreatedByName)" readonly />
+    </div>
+
+    <div class="row form-inline">
+        @Html.HifisLabelFor(Labels.DateCreated.Replace(" ", "_"), Labels.DateCreated):
+        <input type="text" class="inputTextOnly" id="@Labels.DateCreated.Replace(" ", "_")" name="@Labels.DateCreated.Replace(" ", "_")"
+                value="@Html.DisplayFor(model => model.CreatedDate)" readonly />
+    </div>
+
+</div>
+<div class="mrgn-tp-sm visible-sm visible-xs"></div>
+
+<div class="col-md-6">
+
+    <div class="row form-inline">
+        @Html.HifisLabelFor(Labels.LastUpdatedByName.Replace(" ", "_"), Labels.LastUpdatedByName):
+        <input type="text" class="inputTextOnly" id="@Labels.LastUpdatedByName.Replace(" ", "_")" name="@Labels.LastUpdatedByName.Replace(" ", "_")"
+                value="@Html.DisplayFor(model => model.LastUpdatedByName)" readonly />
+    </div>
+
+    <div class="row form-inline">
+        @Html.HifisLabelFor(Labels.DateLastUpdated.Replace(" ", "_"), Labels.DateLastUpdated):
+        <input type="text" class="inputTextOnly" id="@Labels.DateLastUpdated.Replace(" ", "_")" name="@Labels.DateLastUpdated.Replace(" ", "_")"
+                value="@Html.DisplayFor(model => model.LastUpdatedDate)" readonly />
+    </div>
+
+</div>

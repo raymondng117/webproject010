@@ -1,0 +1,43 @@
+﻿@model ConsentViewModel
+
+<div class="displayView">
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.StartDate, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.StartDate)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpiryDate, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.ExpiryDate)
+    </div>
+
+    @*<div class="row">
+        @Html.HifisLabelFor(model => model.AcceptYN, new { @class = "autowidth" })
+        @if (Model.AcceptYN == true) { <span>Yes</span> } else { <span>No</span> }
+    </div>*@
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.UploadedFile, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.AttachmentsDisplay.Name)
+    </div>
+        
+    <br />
+
+    <div class="row">
+        <label class="control-label wdth-strct-200">@Labels.Comment</label>
+        @Html.EditorFor(model => model.Comment, "TinyMCE_Print")
+    </div>
+
+    <div class="row">
+        <div class="mrgn-tp-md mrgn-bttm-md">
+
+         @if (RightsHelper.HasRight(UserRights.Consent_Edit, Model.OrganizationID))
+         { 
+            @Html.ActionLink(Labels.Edit, "ConsentEdit", new { id = Model.ReadOnlyVitals.ClientID, consentID = Model.ConsentID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+         }
+        
+        @Html.ActionLink(Labels.Cancel, "ConsentList", "Consent", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>  
+
+</div>

@@ -1,0 +1,59 @@
+﻿@model ClientFindViewModel 
+@{ 
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class=" form-color-white ">
+    @using (Html.BeginForm("ClientFind", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => Model.ClientID) 
+        @Html.HiddenFor(model => Model.CurrentClientID) 
+        @Html.HiddenFor(model => Model.GroupID)
+        @Html.HiddenFor(model => Model.FamilyHeadID) 
+   
+        <div>
+            @Html.TextBoxFor(model => model.SearchString) <input id="btnSave" type="submit" value="@Labels.LayoutSearchLabel"/>
+        </div>
+
+        if (Model.ResultList != null && Model.ResultList.Count() > 0)
+        {
+            <table class="wdth-100" id="resultset">
+                <caption class="color-accent" title="@Labels.viewTitle_ClientEmergencyContact" ></caption>
+                <thead>
+                    <tr>
+                        <th>@Labels.ContactName</th>
+                        <th>@Labels.DOB</th>
+                        <th>@Labels.Gender</th>
+                        <th>@Labels.Aka1</th>
+                        <th>@Labels.Action</th>
+
+                    </tr>
+                </thead>
+                @for (int i = 0; i < Model.ResultList.Count(); i++)
+                {                
+                    <tr>
+                        <td>@Html.DisplayFor(model => model.ResultList[i].FullName) </td>
+                        <td>@Html.DisplayFor(model => Model.ResultList[i].DOB)</td>
+                        <td>@Html.DisplayTextFor(model => Model.ResultList[i].Gender)</td>
+                        <td>@Html.DisplayFor(model => Model.ResultList[i].Aka1)</td>
+                       <td>
+                            <div class="align-center">
+                                @if (RightsHelper.HasRight(UserRights.Client_Family_Add))
+                                {
+                                    @Html.ActionLink(Labels.Add, "GetNewFamilyMember", "ClientTombstone", new { pGroupID = Model.GroupID, pFamilyHeadID = Model.FamilyHeadID, pClientID = Model.ResultList[i].PersonID, pCurrentClientID = Model.CurrentClientID }, new { @class = "noText addButton", alt=Labels.Add, aria_label = Labels.Add, @role = "button"  })
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </table>
+        }
+    }
+            
+    <div>
+        @Html.ActionLink(Labels.Cancel, "DisplayFamily", "ClientTombstone", new { id = Model.CurrentClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button"  })   
+    </div>
+</div>

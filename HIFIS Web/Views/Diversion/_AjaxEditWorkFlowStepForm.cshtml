@@ -1,0 +1,111 @@
+﻿@model DiversionWorkFlowStepsViewModel
+@{
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+}
+
+
+<section id="Modal_EditContact" class="modal-dialog-800 modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">Edit WorkFlow Steps</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editWorkFlowStepForm" class="form-horizontal mrgn-tp-sm">
+
+            @Html.Partial("_BaseHiddenFor")
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.Title)
+            @Html.HiddenFor(model => model.Description)
+
+
+            <div>
+                @*@Html.HifisEditorFor(model => model.StepID,null, new { @readonly = "true" })*@
+                @Html.HifisEditorFor(model => model.StepID)
+            </div>
+
+
+            <div>
+                @Html.HifisEditorFor(model => model.TitleE)
+            </div>
+
+
+            <div>
+                @Html.HifisTextAreaFor(model => model.DescriptionE, new { @class = "mceEditor_Messaging" })
+
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.TitleF)
+            </div>
+
+            <div>
+                @Html.HifisTextAreaFor(model => model.DescriptionF, new { @class = "mceEditor_Messaging" })
+            </div>
+
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button type="submit" id="editBtn" class=" ">@Labels.Save</button>
+            <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function ()
+    {
+
+        //Get everything to display correctly
+        init_hifis();
+        //fixWidth();
+        autoWidthBoot('.modal-body');
+        initMCE();
+
+    });
+
+    function fixWidth() {
+        var $elements = $('.modal-body label.col-sm-2');
+        $elements.each(function () {
+            $(this).removeClass("col-sm-2").addClass("col-sm-3")
+                .parent().find(".col-sm-10").removeClass("col-sm-10").addClass("col-sm-9");
+        });
+    }
+
+    $("#editBtn").click(function () {
+
+        tinyMCE.triggerSave();//able mce to save changes
+
+        if ($("#editWorkFlowStepForm").valid())
+        {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/Diversion/EditWorkFlowStep")",
+                type: "POST",
+                data: $('#editWorkFlowStepForm').serialize()
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+
+                    $('#workflowstepstable').DataTable().ajax.reload(function () {
+                        $(".wb-lbx").trigger("wb-init.wb-lbx");
+                    }); // Re-load the datatable   
+
+                    $("#closeBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+
+    });
+</script>

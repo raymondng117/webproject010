@@ -1,0 +1,64 @@
+﻿@if (ViewBag.SideMenuList != null)
+{
+    <div class="btn-group-vertical-sidebar row">          
+        @foreach (var parent in (List<HIFIS.CONTRACTS.WCFContracts.DataContracts.SideMenuContract>)ViewBag.SideMenuList)
+        {
+
+            if (parent.SubMenutItems.Count > 0)
+            {
+                <div class="col-xs-12 btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle whiteBackground wdth-100" data-toggle="dropdown">
+                          @parent.Title
+                          <span class="caret pull-right mrgn-tp-sm"></span>
+                    </button>
+                
+                    <ul class="dropdown-menu" role="menu" style="width: calc(100% - 30px); left: 15px;">
+                        
+                        @foreach (var child in parent.SubMenutItems)
+                        {
+                            if (child.ParrentItemID == parent.MVCViewMenuItemID)
+                            {
+                                if (child.HasShortcutYN == "Y")
+                                {                                
+                                    <li>                                                                            
+                                        @Html.ActionLink(child.Title, child.ActionName, child.ControllerName, child.RouteValues, new Dictionary<string, object> { { "class", "align-left wdth-80" }, { "style", "display:inline-block;" }, {"alt", child.Title }, { "aria-label", child.Title } }) 
+                                        @if (child.Title == "Food Banks" && ViewBag.IsFoodBankRestricted == true)
+                                        {
+                                            <div class="pull-right" style="margin: 0px 1px 13px 0px;">
+                                                <a style="text-decoration: none; color: #e45e5e;" class="glyphicon glyphicon-ban-circle align-inline-block wdth-20 noText">@Labels.ServiceRestricted</a>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="pull-right pddng-rght-sm pddng-tp-xs">
+                                                <a style="text-decoration:none;" class="glyphicon glyphicon-plus-sign align-inline-block wdth-20" title="@Labels.New @child.Title" href="@Url.Action(child.ShortcutActionName, child.ShortcutControllerName, child.RouteValues)"></a>
+                                            </div>
+                                        }                                      
+                                    </li>
+                                }
+                                else
+                                {    
+                                    <li>
+                                        @Html.ActionLink(child.Title, child.ActionName, child.ControllerName, child.RouteValues, new Dictionary<string, object> { { "class", "align-left wdth-80" }, { "style", "display:inline-block;" }, { "alt", child.Title }, { "aria-label", child.Title } })
+                                        @if (child.Title == "Stays" && ViewBag.IsStayRestricted == true)
+                                        {
+                                            <div class="pull-right" style="margin: 0px 1px 13px 0px;">
+                                                <a style="text-decoration: none; color: #e45e5e;" class="glyphicon glyphicon-ban-circle align-inline-block wdth-20 noText">@Labels.ServiceRestricted</a>
+                                            </div>
+                                        }
+                                    </li> 
+                                }
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <div></div>
+            }
+        }
+
+    </div>
+}
+    

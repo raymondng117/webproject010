@@ -1,0 +1,5 @@
+﻿@model HousingUnitViewModel
+           
+@Html.Partial(Url.Content("~/Views/HousingUnit/_HousingUnit.cshtml"), Model)
+<h4>@Labels.Address</h4>
+@Html.Partial(Url.Content("_AddressSearch"), Model.Address ?? new AddressViewModel { CountryID = (short)CountryTypes.Canada, isAddressRequired = true }, "Address.")

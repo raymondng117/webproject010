@@ -1,0 +1,78 @@
+﻿<!-- BEGIN VALIDATION SUMMARY OUTER -->
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     $(function () {
+         var vsContainer = $('#validationSummaryText');
+         if (vsContainer.children().hasClass('validation-summary-valid')) {
+             vsContainer.addClass("hide").removeClass("show");
+         } else {
+             showValidationSummary();
+         }
+     });
+
+    function validationSummary(newValidationSummary, isOnTheFly) {
+        var vsContainer = (isOnTheFly ? $('#onTheFlyValidationSummary') : $("#validationWrapper"));
+        newValidationSummary = $(newValidationSummary);        
+
+        //By checking for validation-summary-valid we can stop the error from clearing out if an ajax call completes successfully. 
+        if (!newValidationSummary.hasClass('validation-summary-valid')) {
+            $("#validationWrapper").html('<section id="validationSummary" class="alert alert-danger fade in hide" role="alert"><button class="close" data-dismiss="alert" type="button"><span aria-hidden="true">×</span><span class="sr-only">@Labels.Close</span></button><div id="validationSummaryText"></div></section>');
+            vsContainer.find('#validationSummaryText').html(newValidationSummary); // replaces the contents of the div below with something else 
+            showValidationSummary();
+        } 
+    }
+
+    function showValidationSummary() {
+        var vsContainer = $('#validationSummary');
+        vsContainer.addClass("show").removeClass("hide").alert();
+
+        if ($(window).scrollTop() > vsContainer.offset().top || // if the top of the validation summary is cut off 
+            $(window).scrollTop() + $(window).height() < vsContainer.offset().top + vsContainer.height()) { // or the bottom is cut off
+            $('html').animate({ 
+                scrollTop: vsContainer.offset().top - 1 // scroll to the validation summary (the '-1' is for the border)
+
+            }, 600); 
+        } 
+    }
+
+    function rebuildValidationSummary() {
+        $('#validationWrapper').append("<section id=\"validationSummary\" class=\"alert alert-danger fade in hide\" role=\"alert\">" +
+                                                    "<button id=\"validationCloser\" class=\"close\" data-dismiss=\"alert\" type=\"button\">" +
+                                                        "<span aria-hidden=\"true\">×</span>" +
+                                                        "<span class=\"sr-only\">" + "@Labels.Close" + "</span>" +
+                                                    "</button>" +
+                                                    "<div id=\"validationSummaryText\">" +
+                                                        "<div data-valmsg-summary=\"true\" class=\"validation-summary-valid mrgn-lft-md mrgn-rght-0 mrgn-tp-0 mrgn-bttm-0\">" +
+                                                            "<span>" + "@Labels.HifisHelp_Error" + "</span>" +
+                                                            "<ul>" +
+                                                                "<li style=\"display:none\"></li>" +
+                                                            "</ul>" +
+                                                        "</div>" +
+                                                    "</div>" +
+                                                "</section>");
+    }
+
+    $('#validationCloser').on('click', function () {
+        rebuildValidationSummary();
+    })
+
+</script> 
+);
+}
+
+<div id="validationWrapper">
+    <section id="validationSummary" class="alert alert-danger fade in hide" role="alert">
+        <button id="validationCloser" class="close" data-dismiss="alert" type="button">
+            <span aria-hidden="true">×</span>
+            <span class="sr-only">@Labels.Close</span>
+        </button>
+        <div id="validationSummaryText">@Html.Partial("_ValidationSummaryInner")</div>
+    </section>
+</div>
+
+<div class="clearfix"></div>
+
+<!-- END VALIDATION SUMMARY OUTER -->

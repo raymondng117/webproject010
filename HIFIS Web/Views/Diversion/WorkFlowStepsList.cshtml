@@ -1,0 +1,33 @@
+﻿@model DiversionViewModel
+@{
+    ViewBag.ViewTitle = Labels.DiversionWorkflowSteps;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="table-responsive">
+
+    <table id="workflowstepstable" class="wb-tables table table-striped table-hover" data-wb-tables='{
+                "ajax": "@Url.Action("GetWFStepsListJson", "Diversion")",
+                "order": [[ 0, "asc" ]],
+                    "columns": [
+                        { "data": "stepid" },
+                        { "data": "title" },
+                        { "data": "description" },
+                        { "data": "action" }
+                    ]
+        }'>
+        <thead>
+            <tr>
+                <th>Step ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+
+    </table>
+</div>
+
+@Html.Partial("Plugins/_TinyMCEScript")

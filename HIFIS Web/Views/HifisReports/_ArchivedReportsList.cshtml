@@ -1,0 +1,56 @@
+﻿@model Dictionary<string, List<CrFileInfo>>
+
+@if (Model != null)
+{
+    foreach (string ArchiveDir in Model.Keys) 
+    {
+        <h2>@ArchiveDir</h2>
+    
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.ReportName</th>
+                        <th>Version</th>
+                        <th>@Labels.Type</th>
+                        <th>@Labels.DateCreated</th>
+                        <th>@Labels.DateLastEdited</th>
+                        <th>@Labels.Description</th>
+                        <th>@Labels.Action</th>         
+                    </tr>
+                </thead>                
+                <tbody>
+                    @foreach (CrFileInfo FileParam in Model[ArchiveDir])
+                    {
+                        <tr>
+                            <td>@FileParam.FileName</td>
+                            <td class="align-text-center">@FileParam.VersionNumber</td>
+                            <td>Crystal Report</td>
+                            <td class="align-text-center">@FileParam.DateCreated</td>
+                            <td class="align-text-center">@FileParam.DateUsed</td>
+                            <td>@FileParam.Description</td>
+                            <td class="align-text-center">     
+                        
+                                @if (RightsHelper.HasRight(UserRights.ReportManager_Generate))
+                                {
+                                     @Html.ActionLink(Labels.RunReport, "Generate", "HifisReports", new { id = FileParam.DocumentID }, new { @class = "playButton noText", alt=Labels.RunReport, aria_label = Labels.RunReport, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.ReportManager_Download))
+                                {
+                                     @Html.ActionLink(Labels.Download, "Download", "HifisReports", new { id = FileParam.DocumentID }, new { @class = "noText downloadButton", alt=Labels.Download, aria_label = Labels.Download, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.ReportManager_Delete))
+                                {
+                                     @Html.ActionLink(Labels.Delete, "Delete", "HifisReports", new { id = FileParam.DocumentID }, new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                }
+
+                            </td>
+                        </tr>
+                    }        
+                </tbody>
+            </table>
+        </div>
+    }
+}

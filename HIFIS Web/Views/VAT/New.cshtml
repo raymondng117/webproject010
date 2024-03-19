@@ -1,0 +1,44 @@
+﻿@model VATIntakeViewModel
+@{
+    ViewBag.ViewTitle = Labels.ThirdPartyToolsNew + " " + Model.IntakeTypeName + " " + Labels.ThirdPartyToolsIntake;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Hidden("FormSubmitted", "false")
+
+<div class="row">
+    <div class="col-xs-12">
+        @using (Html.BeginForm("New", "VAT", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal", id = "VATIntakeForm" }))
+        {
+            <div id="Intake_FormPortion">
+                @Html.AntiForgeryToken()
+                @Html.Partial("_VATIntake", Model)
+            </div>
+
+            <div id="Question_FormPortion">
+                @Html.Partial("_VATQuestionList", Model)
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="saveButton no-print">@Labels.Save</button>
+                    @*Correctly redirect to the List action when the user clicks Cancel button*@
+                    @if (Model.PrimaryClientID == null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "List", "VAT", null, new { @class = "cancelButton no-print", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "ClientList", "VAT", new { id = Model.PrimaryClientID }, new { @class = "cancelButton no-print", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                    @*@Html.ActionLink(Labels.Cancel, "List", "VAT", new { }, new { @class = "cancelButton no-print" })*@
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_VATProgressPanel")

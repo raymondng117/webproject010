@@ -1,0 +1,29 @@
+﻿@model ClientListViewModel 
+
+<div class=" form-color-white module-form-block">
+    <table class="wdth-100">
+        <thead>
+            <tr>
+                <th>@Html.HifisLabelFor(model => Model.ClientHeaderModel.FullName )</th>  
+                <th>@Html.HifisLabelFor(model => Model.ClientHeaderModel.Gender )</th> 
+                <th>@Html.HifisLabelFor(model => Model.ClientHeaderModel.Aka1 )</th> 
+                <th>@Html.HifisLabelFor(model => Model.ClientHeaderModel.DOB )</th> 
+                <th>@Html.HifisLabelFor(model => Model.ClientHeaderModel.AproximativeAge )</th> 
+                <th>@Html.HifisLabelFor(model => Model.ClientHeaderModel.FileNumber )</th> 
+                <th>Action</th>
+            </tr> 
+        </thead>
+
+        @foreach(var viewModelItem in Model.ClientViewModels)
+        {
+            <tr>
+                <td>@Html.ActionLink(viewModelItem.FullName, "SelectFamilyHead", new { controller = "ClientTombstone", pViewModel = viewModelItem }, new { alt=viewModelItem.FullName, aria_label = viewModelItem.FullName})</td>
+                <td>@Html.DisplayTextFor(ModelItem => viewModelItem.Gender)</td>
+                <td>@Html.DisplayTextFor(ModelItem => viewModelItem.Aka1)</td>
+                <td>@viewModelItem.DOB.Value.ToString("yyyy-MM-dd")</td>
+                <td>@Html.DisplayTextFor(ModelItem => viewModelItem.AproximativeAge)</td>
+                <td>@Html.DisplayTextFor(ModelItem => viewModelItem.FileNumber)</td>
+            </tr>
+        }
+    </table>
+</div> 

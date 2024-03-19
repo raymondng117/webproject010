@@ -1,0 +1,25 @@
+﻿@model QuestionnaireQuestionDropdownViewModel
+
+<div>
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.SaveQuestion)
+
+    @if (!Model.QuestionID.IsEmptyOrNull())
+    {
+          @Html.HiddenFor(m => m.QuestionnaireID)
+          @Html.HiddenFor(m => m.QuestionID)
+          @Html.HiddenFor(m => m.QuestionPickListID)
+    }
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.Name)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.NameF)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+</div>  

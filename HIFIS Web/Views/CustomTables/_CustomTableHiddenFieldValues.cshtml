@@ -1,0 +1,22 @@
+﻿@model CustomTableFieldViewModel
+@if (Model.Data == null)
+{
+    Model.Data = new CustomTableFieldDataViewModel{
+                    CustomTableFieldID = Model.CustomFieldID,
+                 };
+}
+
+@Html.HiddenFor(model => model.CustomFieldID)
+@Html.HiddenFor(model => model.CustomTableID)
+@Html.HiddenFor(model => model.FieldTypeID)
+@Html.HiddenFor(model => model.Data.CustomTableFieldID)
+@Html.HiddenFor(model => model.Data.CustomTableLinkID)
+@Html.HiddenFor(model => model.NameE)
+@Html.HiddenFor(model => model.NameF)
+@Html.HiddenFor(model => model.DisplayName)
+@Html.HiddenFor(model => model.Maximum)
+@Html.HiddenFor(model => model.Minimum)
+@Html.HiddenFor(model => model.IsMandatory)
+@Html.HiddenFor(model => model.XCoordinate)
+@Html.HiddenFor(model => model.YCoordinate)
+@Html.HiddenFor(model => model.Position)

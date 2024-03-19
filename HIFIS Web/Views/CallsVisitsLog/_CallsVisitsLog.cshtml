@@ -1,0 +1,64 @@
+﻿@model CallsVisitsLogViewModel
+
+
+<div class="col-sm-12">
+
+    @Html.Partial("_BaseHiddenFor")
+
+    @Html.HiddenFor(m => m.ClientID)
+    @Html.HiddenFor(m => m.ClientContactEventTypeID)
+    @Html.HiddenFor(m => m.OrganizationID)
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ContactEventTypeID, CachedTableTypes.HIFIS_ContactEventTypes)
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            @Html.HifisLabelFor("IncomingYNbool", Labels.Type, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                @{
+                    object call = new { @class = "YesAndNo", data_on_text = Labels.Incoming, data_off_text = Labels.Outgoing, id = "IncomingYNbool" };
+                }
+                @Html.CheckBoxFor(m => m.IncomingYNbool, call)
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.NatureOfContactTypeID, CachedTableTypes.HIFIS_NatureOfContactTypes)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.Subject)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.EventDateTime, "DateAndTime")
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.OtherPartyName)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ExResidentYNbool, "YesNo")
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.Hours)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.Minutes)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.GeoRegionTypeID, CachedTableTypes.HIFIS_GeoRegionTypes)
+    </div>
+
+    <div class="row">
+        @Html.Partial("Plugins/_TinyMCEScript")
+        @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+    </div>
+</div>

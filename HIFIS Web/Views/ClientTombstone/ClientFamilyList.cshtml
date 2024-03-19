@@ -1,0 +1,94 @@
+﻿@model ClientFamilyMembersViewModel
+@{
+    ViewBag.ViewTitle = Labels.FamilyHistory;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div id="ClientFamilyList_Form" class="col-sm-12">
+
+    <div class="row">
+        <div id="radio" class="btn-group mrgn-bttm-md">
+            <button class="btn btn-primary btn-sm" id="filterActive">@Labels.Active</button>
+            <button class="btn btn-default btn-sm" id="filterAll">@Labels.All</button>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="table-responsive">
+            <table id="clientFamilyListTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                            { "width": "25%", "data": "isactive", "type": "string"},
+                                                            { "width": "30%", "data": "familyhead", "type": "string"},
+                                                            { "width": "35%", "data": "familymembers", "type": "string"},
+                                                            { "width": "10%", "data": "actions", "type": "string"}
+                                                        ],
+                                                        "order": [ [0, "asc"] ],
+                                                        "processing": true,
+                                                        "bFilter" : false,
+                                                        "ajax": "@Url.Content("~/ClientTombstone/GetClientFamilies/" + Model.ReadOnlyVitals.PersonID + "?showAll=" + false)"}'>
+                <thead>
+                    <tr>
+                        <th>@Labels.Status</th>
+                        <th>@Labels.FamilyHead</th>
+                        <th>@Labels.FamilyMembers</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                @if (RightsHelper.HasRight(UserRights.Client_Family_Add) && ViewBag.CanCreate)
+                {
+                    @Html.ActionLink(Labels.StartFamily, "CreateFamily", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton mrgn-rght-sm", title = @Labels.StartFamily, alt=Labels.StartFamily, aria_label = Labels.StartFamily, @role = "button"  })
+                }
+
+    @if (RightsHelper.HasRight(UserRights.Client_Family_Group_Memberships_Join) && ViewBag.CanJoin)
+    {
+        @Html.ActionLink(Labels.JoinFamily, "JoinGroupMembership", "ClientTombstone", new { pClientID = Model.ReadOnlyVitals.ClientID, pCurrentClientID = Model.ReadOnlyVitals.ClientID }, new { @class = "moveRightButton  ", title = @Labels.JoinFamily, alt=Labels.JoinFamily, aria_label = Labels.JoinFamily, @role = "button" })
+    }
+
+    @if (RightsHelper.HasRight(UserRights.Client_Family_Display))
+    {
+        @Html.ActionLink(Labels.ClientFamily, "ClientFamily", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "prevButton", alt=Labels.ClientFamily, aria_label = Labels.ClientFamily, @role = "button" })
+    }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $('#filterActive').on('click', function () {
+                $('#clientFamilyListTable').DataTable().ajax.url('@Url.Content("~/ClientTombstone/GetClientFamilies/" + Model.ReadOnlyVitals.PersonID + "?showAll=" + false)').load(null, false);
+
+                if ($(this).hasClass('btn-default'))
+                {
+                    $(this).removeClass('btn-default');
+                    $(this).addClass('btn-primary')
+
+                    $('#filterAll').removeClass('btn-primary');
+                    $('#filterAll').addClass('btn-default');
+                }
+            });
+
+            $('#filterAll').on('click', function () {
+                $('#clientFamilyListTable').DataTable().ajax.url('@Url.Content("~/ClientTombstone/GetClientFamilies/" + Model.ReadOnlyVitals.PersonID + "?showAll=" + true)').load(null, false);
+
+                if ($(this).hasClass('btn-default')) {
+                    $(this).removeClass('btn-default');
+                    $(this).addClass('btn-primary')
+
+                    $('#filterActive').removeClass('btn-primary');
+                    $('#filterActive').addClass('btn-default');
+                }
+            });
+</script>
+);
+}

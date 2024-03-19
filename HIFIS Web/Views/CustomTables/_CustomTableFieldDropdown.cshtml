@@ -1,0 +1,22 @@
+﻿@model CustomTableFieldDropdownViewModel
+
+@Html.HiddenFor(model => model.CustomTableID)
+@Html.HiddenFor(model => model.CustomFieldID)
+@Html.HiddenFor(model => model.CustomFieldDropdownID)
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+<div>
+    @Html.HifisEditorFor(model => model.NameE)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.NameF)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.IsActive, "YesNo")
+</div>
+
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="addButton">@Labels.AddDropdownValue</button>
+    </div>
+</div>

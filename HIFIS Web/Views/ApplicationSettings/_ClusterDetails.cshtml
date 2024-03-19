@@ -1,0 +1,48 @@
+﻿@model ClusterViewModel
+@{
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+}
+
+<div>
+    @Html.HiddenFor(model => model.ClusterID)
+	@Html.HiddenFor(model => model.RegistrationID)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.Name)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.EnforceConsent, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.ConsentExpiryDays, null, new { @class = "wdth-strct-100" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.EnableSharing, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.RestrictClientSearch, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.ShelterStaysInHousing , "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.TriggerMinAgeConsent, null, new { @class = "wdth-strct-100" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.EnableAttestation, "YesNo")
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.DiversionFollowUpDays, null, new { @class = "wdth-strct-100" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.InactivityThreshold, null, new { @class = "wdth-strct-100" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.HousingInactivityThreshold, null, new { @class = "wdth-strct-100" })
+</div>
+<div>
+    @Html.HifisTextAreaFor(model => model.AttestationTextEng, new { @class = "mceEditor_Messaging" })
+</div>
+<div>
+    @Html.HifisTextAreaFor(model => model.AttestationTextFr, new { @class = "mceEditor_Messaging" })
+</div>

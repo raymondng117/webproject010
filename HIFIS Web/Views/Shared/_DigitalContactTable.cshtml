@@ -1,0 +1,59 @@
+﻿@model List<DigitalContactViewModel>
+
+ @if (RightsHelper.HasRight(UserRights.Client_Contacts_Display))
+{
+    <div class="table-responsive">
+        <table id="digitalContactTable" class="wb-tables table table-striped table-hover"
+               data-wb-tables='{ "columns": [
+                                       { "width": "30%", "data": "ContactType"},
+                                       { "width": "25%", "data": "Value"},
+                                       { "width": "20%", "data": "Extension"},
+                                       { "width": "25%", "data": "Action"}
+                                   ],
+                                   "order": [ [0, "desc"] ],
+                                   "ajax": "@Url.Content("~/ClientTombstone/ContactListJson?id=" + ViewBag.id + "&pID=" + ViewBag.pID)"
+                               }'>
+            <thead>
+                <tr>
+                    <th class="align-text-center">@Labels.ContactType</th>
+                    <th class="align-text-center">@Labels.Value</th>
+                    <th class="align-text-center">@Labels.Extension</th>
+                    <th class="align-text-center">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     $(function () {
+
+		         $("#digitalContactTable").on("click", "a.deleteButton", function (event) {
+
+		             event.preventDefault();
+		             //$.ajax({
+		             //    url: $(this).attr("href"),
+		             //    type: "POST",
+		             //}).done(function (data) {
+		             //    $('#digitalContactTable').dataTable().fnDeleteRow($(this).parents("td").parents("tr"));
+		             //});
+		             
+		         });
+
+		         $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+
+		             var btns = $(".deleteButton");
+		             btns.addClass("noText");
+		             initButtons();
+		             btns.parents("td").addClass("align-text-center");
+
+		         });
+
+		     });
+        </script>
+    );
+}

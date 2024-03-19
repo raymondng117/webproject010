@@ -1,0 +1,189 @@
+﻿@model MultiGoalSessionViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.MultiGoalSession;
+    var formAction = Url.Action("NewMultiGoalMeeting", "CaseManagement", new { viewModel = Model, hoursInputList = "{0}", minutesInputList = "{1}", splitChkbox = "{2}" });
+    var goalList = ViewBag.GoalList as SelectList;
+}
+   
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("NewMultiGoalMeeting", "CaseManagement", FormMethod.Post, new { @class = "form-horizontal", id = "NewMultiGoalMeeting" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.Partial("_BaseHiddenFor", Model)
+    @Html.HiddenFor(model => model.OrganizationID)
+
+    <input type="hidden" id="GoalSelectedList" value="" />
+
+    @Html.HiddenFor(model => model.HoursList, new { id = "HoursInputList" })
+    @Html.HiddenFor(model => model.MinutesList, new { id = "MinutesInputList" })
+
+    if (Model.ReadOnlyVitals == null)
+    {
+        @Html.HifisAutocompleteFor(
+             model => model.ClientID
+             , Url.Content("~/ClientTombstone/AjaxGetClientList")
+             , null
+             , new AutocompleteViewModelOptions
+             {
+                 OnSelect = "callGetROVitals();"
+                 , HiddenValue = true
+             })
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.ClientID)
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+    }
+
+    <div>
+        @Html.HifisListBoxFor(model => model.SelectedGoalCaseIDs, ViewBag.GoalList as SelectList)
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.SessionActivityID, ViewBag.Activities as SelectList)
+    </div>
+    <div>
+        @Html.HifisTextAreaFor(model => model.SessionDescription, new { @class = "commentBoxSize" })
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.SessionDate, "DateAndTime")
+    </div>
+
+    <div class="col-sm-offset-2 brdr-tp mrgn-bttm-md"></div>
+
+    <div id="ExpendedTimeSection">
+        <div id="ExpendedTime_Total">
+            <div class="col-sm-offset-3">
+                <strong>@Labels.ExpendedTime - @Labels.Total</strong>
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.Hours, null, new { id = "Hours_Total", name = "Hours_Total" })
+                <div class="col-sm-offset-4 col-sm-8 col-md-8 col-lg-8">
+                    <span class="align-left field-validation-error hourError" data-valmsg-for="Hours_Total" data-valmsg-replace="true"></span>
+                </div>
+                @Html.HifisEditorFor(model => model.Minutes, null, new { id = "Minutes_Total", name = "Minutes_Total" })
+                <div class="col-sm-offset-4 col-sm-8 col-md-8 col-lg-8">
+                    <span class="align-left mrgn-bttm-sm field-validation-error minuteError" data-valmsg-for="Minutes_Total" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-offset-3 mrgn-bttm-sm">
+            @Html.CheckBoxFor(model => model.SplitExpendedTimeEqually, new { id = "ExpendedTime_ChckBox_EquallySplit" })
+            <span>@Labels.ExpendedTime_SplitTimeChkbox</span>
+        </div>
+
+        <div id="ExpendedTime_AddSection" style="display:block">
+            @* Will append by Javascript the ExpendedTime individual section *@
+
+        </div>
+    </div>
+
+    <div class="col-sm-offset-2 brdr-bttm mrgn-bttm-md"></div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorker as SelectList)
+    </div>  
+    <div>
+        @Html.HifisEditorFor(model => model.ResponsibilityTypeID, CachedTableTypes.HIFIS_ResponsibilityTypes)
+    </div> 
+    <div>
+        @Html.HifisEditorFor(model => model.ReferralTypeID, CachedTableTypes.HIFIS_ReferrerCategTypes)
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.ClientPresent, "YesNo")
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.FamilyPresent, "YesNo")
+    </div>
+    
+    <div class="form-group">
+	    <div class="col-sm-offset-3 col-sm-9">
+		    <button type="button" class="saveButton" id="NewMultiGoalMeeting_SaveBtn">@Labels.Save</button>
+            @if (Model.ReadOnlyVitals != null)
+            {
+                @Html.ActionLink(Labels.Cancel, "ClientList", "CaseManagement", new { id = Model.ClientID}, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+            }
+            else
+            {
+                @Html.ActionLink(Labels.Cancel, "List", "CaseManagement", new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+            }            
+	    </div>
+    </div> 
+    
+    
+    @* WARNING MODAL FOR EXPENDED TIME THAT ARE AT ZERO *@
+    <section id="ExpendedTime_WarningModal" class="mfp-hide modal-dialog modal-content overlay-def">
+        <header class="modal-header">
+            <h2 class="modal-title">@Labels.AreYouSure</h2>
+        </header>
+        <div class="modal-body">
+            <p>@Labels.ExpendedTime_WarningModal_Msg</p>
+            <br />
+            <div class="form-inline">
+                <button type="submit" id="NewMultiGoalMeeting_SaveBtn_Confirm" class="saveButton">@Labels.Save</button>
+                <button type="button" id="NewMultiGoalMeeting_CloseModalBtn" class="btn btn-primary popup-modal-dismiss" title="Close overlay">@Labels.Close</button>
+            </div>
+        </div>
+    </section>
+
+}
+
+<div id="ExpendedTimeTemplate" hidden>
+    <div>
+        <div id="ExpendedTime_Goal{0}" hidden>
+            <div class="col-sm-offset-2">
+                <strong>@Labels.ExpendedTime - {1}</strong>
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.Hours, Constants.TEMPLATE_NAME_EXPENDEDTIME, new { id = "Hours_{0}", name = "Hours_{0}" })
+                <div class="col-sm-offset-4 col-sm-8 col-md-8 col-lg-8">
+                    <span class="align-left field-validation-error hourError" data-valmsg-for="Hours_{0}" data-valmsg-replace="true"></span>
+                </div>
+                @Html.HifisEditorFor(model => model.Minutes, Constants.TEMPLATE_NAME_EXPENDEDTIME, new { id = "Minutes_{0}", name = "Minutes_{0}"})
+                <div class="col-sm-offset-4 col-sm-8 col-md-8 col-lg-8">
+                    <span class="align-left mrgn-bttm-sm field-validation-error minuteError" data-valmsg-for="Minutes_{0}" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            function UpdateGoals(clientid) {
+                $.ajax({
+                    url: '@Url.Content("~/CaseManagement/AjaxClientOpenGoalsList")',
+                     type: "GET",
+                     data: { id: clientid, uniq_param: (new Date()).getTime() }
+                 })
+		    	.done(function (jsonResultList) {
+		    	    $.each(jsonResultList.Result, function () {
+
+		    	        var Name = this.Text;
+		    	        $("#SelectedGoalCaseIDs").append($("<option />").val(this.Value).text(Name));
+		    	    });
+		    	})
+                .complete(function () {
+                    //Since no goal are listed before a client is choose, wait for the client 
+                    //to be assign before populating the individual "Expended Time - <Goal Name>"
+                    HIFIS_CaseManagement.Init();
+                });
+            }
+
+            function callGetROVitals() {
+                var clientid = $('#ClientID').val();
+                getROVitals(clientid);
+                UpdateGoals(clientid);
+            }
+
+            //MPT - 251794 -Case Sessions expended hours issue
+            //Created a new script: hifis_CaseManagementModule.js
+        </script>
+    );
+}
+

@@ -1,0 +1,171 @@
+﻿@model CoordinatedAccessSearchFilterViewModel
+
+    <form id="caFilterForm" class="form-horizontal mrgn-bttm-sm mrgn-lft-lg">
+        <div class="row">
+            <div class="col-md-6">
+                <h3>@Labels.ClientTombstone</h3>
+                <div>
+                    @Html.HifisEditorFor(model => model.FH, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.Img, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.Ind, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.Refug, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.RefugC, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.VS, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisListBoxFor(model => model.GendIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisListBoxFor(model => model.GeRgIDs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3>@Labels.Age</h3>
+                <div>
+                    @Html.HifisEditorFor(model => model.A16, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.A16To24, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.A25To49, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.A50To64, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.A65Plus, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>@Labels.ClientHousingStatusType</h3>
+                <div>
+                    @Html.HifisEditorFor(model => model.FE, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.EpIn30, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.ClReH, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.NChH, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.ChH, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3>@Labels.ClientStateType</h3>
+                <div>
+                    @Html.HifisEditorFor(model => model.NewCl30, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.ClReInAct, "YesNo", new { @class = "fixedContainer", style = "width:250px;" })
+                </div>
+            </div>
+        </div>
+
+            <div class="form-group">
+                <div class="col-xs-11">
+                    <button type="button" id="filterListButton" class="filterButton">@Labels.ApplyFilters</button>
+                </div>
+            </div>
+    </form>
+@using (Html.BeginScriptContext())
+{
+                        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+    $("#filterListButton").click(function () {
+        if ($("#caFilterForm").valid()) {
+            var btn = $(this);
+            let dataTable = $('#caListTable').DataTable();
+            filterFormData = JSON.stringify(formArrayToJSON($('#caFilterForm').find(":input:not(:hidden)").serializeArray()));
+
+            // Disable Apply button
+            btn.attr("disabled", true);
+
+            // Close Overlay
+            $('#caListTable').on('xhr.dt', function () {
+                btn.attr("disabled", false);
+                $('#filter-panel').trigger('close.wb-overlay');
+            });
+            dataTable.ajax.reload();
+        }
+    });
+
+    // convert form array into a JavaScript Object
+    function formArrayToJSON(formArray) {
+        //serialize data function
+        var formObject = {};
+        for (var i = 0; i < formArray.length; i++){
+            if (formArray[i]['name'] in formObject) {
+                // if key exists already, it's an array and has already been handled
+                continue;
+            }
+            else {
+                // if the key is new, isolate it
+                var tempArray = formArray.filter((element) => element.name == formArray[i]['name']);
+                // if there is more than 1 value it's a list
+                if (tempArray.length > 1) {
+                    var flatArray = [];
+                    tempArray.forEach(function (val) {
+                        flatArray.push(val['value']);
+                    })
+                    formObject[formArray[i]['name']] = flatArray;
+                }
+                else { // else single value add normally
+                    switch (formArray[i]['name']) {
+                        case "GeRgIDs":
+                            formObject[formArray[i]['name']] = [];
+                            formObject[formArray[i]['name']].push(formArray[i]['value']);
+                            break;
+                        case "GendIDs":
+                            formObject[formArray[i]['name']] = [];
+                            formObject[formArray[i]['name']].push(formArray[i]['value']);
+                            break;
+                        default:
+                            formObject[formArray[i]['name']] = formArray[i]['value'];
+                            break;
+                    }
+                }
+            }
+        }
+        return formObject;
+    }
+
+    // Switches the State of Not Chronically Homeless to false if Chronically homeless is set to true
+    $('input[name=ChH]').on('switchChange.bootstrapSwitch', function (event, state) {
+        if (state == true) {
+            if ($('[name="NChH"]').is(':checked')) {
+                $('#NChH').bootstrapSwitch('toggleState');
+            }
+        }
+    });
+
+    // Switches the State of Chronically Homeless to false if Not Chronically homeless is set to true
+    $('input[name=NChH]').on('switchChange.bootstrapSwitch', function (event, state) {
+        if (state == true) {
+            console.log(state)
+            console.log(event)
+            if ($('[name="ChH"]').is(':checked')) {
+                $('#ChH').bootstrapSwitch('toggleState');
+            }
+        }
+    });
+
+</script>);
+}

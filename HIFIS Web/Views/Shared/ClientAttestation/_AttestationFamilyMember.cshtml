@@ -1,0 +1,16 @@
+﻿@model AttestationMember
+<tr>
+    <td>
+        @(Model.FirstName + " " + Model.LastName)
+    </td>
+    <td>
+        <form>
+            @Html.HiddenFor(m => m.ClientID)
+            @Html.HiddenFor(m => m.FirstName)
+            @Html.HiddenFor(m => m.LastName)
+            @Html.HifisEditorFor(m => m.IsConfirmed, "YesNo", null, true)
+            @Html.HiddenFor(m => m.IsReadOnly)
+            @Html.HiddenFor(m => m.HasCurrentOrgAttestation)
+        </form>
+    </td>
+</tr>

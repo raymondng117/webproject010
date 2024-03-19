@@ -1,0 +1,27 @@
+﻿@model BedStatusHistoryViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditBedStatusHistory + ": " + Model.BedName;
+
+    ViewBag.LayoutView = LayoutPage.SecNav;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+    <div class="span-6">
+        @if (RightsHelper.HasRight(UserRights.ServiceProviders_Rooms_Beds_Add))
+        {
+            using (Html.BeginForm("BedStatusHistoryEdit", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Partial("_BedStatusHistoryEdit", Model)
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="saveButton">@Labels.Save</button>
+                        @Html.ActionLink(Labels.Cancel, "BedStatusHistoryList", "Organization", new { bedID = Model.BedID, bedName = Model.BedName, roomID = Model.RoomID, roomName = Model.RoomName, shelterID = Model.OrganizationID, shelterName = Model.ShelterName }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    </div>
+                </div>
+            }
+        }
+
+    </div>

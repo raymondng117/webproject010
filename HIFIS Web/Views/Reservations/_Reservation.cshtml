@@ -1,0 +1,198 @@
+﻿@model ReservationViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model) 
+
+@Html.HiddenFor(model => model.PrimaryClientID)
+@Html.HiddenFor(model => model.ServiceID)
+
+@{
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+}
+
+@if (ViewBag.clientFamilyCount > 0) { 
+    <div class="familyInputs">
+        @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList)   
+    </div>
+}else {
+    <div class="familyInputs hide">
+        @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList)   
+    </div>
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.OrganizationID, ViewBag.orgList as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateOfReservation)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.RequestingAgencyTypeID, CachedTableTypes.HIFIS_RequestingAgencyTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReferredByName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReferrerCategTypeID, ViewBag.fromPlaces as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.StatusTypeID, CachedTableTypes.HIFIS_ReservationStatusTypes)
+</div>
+
+<div id="roomAndBedRow">
+    <div class="form-group">
+        <label for="RoomID" class="col-sm-2 control-label">@Labels.Room & @Labels.Bed</label>
+        <div id="room-bed-table"class="col-sm-10">
+            @Html.DropDownListFor(m => m.RoomID, new List<SelectListItem>(), new { @class = "room-select form-control", style="float:left;" }) @Html.Partial("_Mandatory")
+            @Html.DropDownListFor(m => m.BedID, new List<SelectListItem>(), new { @class = "bed-select form-control", style="float:left;"  }) @Html.Partial("_Mandatory")
+        </div>
+    </div>
+</div>
+
+<div>
+   @Html.HifisTextAreaFor(model => model.Description, new { @class = "commentBoxSize mrgn-tp-xs" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             var rooms;
+             var beds;
+
+             // get the select elements
+             var shelter_dropdown;
+             var room_dropdowns;
+             var bed_dropdowns;
+             $(function () {
+                rooms = @Html.Raw(jsSerializer.Serialize(ViewBag.Shelters.Rooms));
+                beds = @Html.Raw(jsSerializer.Serialize(ViewBag.Shelters.Beds));
+                // get the select elements
+                shelter_dropdown = $("#OrganizationID");
+                room_dropdowns = $("select.room-select");
+                bed_dropdowns = $("select.bed-select");
+                //// hooks:
+                shelter_dropdown.change(shelterChange);
+                room_dropdowns.change(roomChange);
+                //init
+                shelterChange();
+                room_dropdowns.val("@Html.Raw(Model.RoomID)").change();
+                bed_dropdowns.val("@Html.Raw(Model.BedID)");
+            });
+
+             $('.familyInputs').change(function () {
+                
+             });
+
+            function PopulateFamilyList(data)
+            {
+                var select = document.getElementById('ClientsFamilyIDs'); 
+                var familyBox = $('#ClientsFamilyIDs');
+
+                select.options.length = 0; // clear out existing items 
+
+                console.log(data);
+
+                if(data.length == 1){ 
+                    $('.familyInputs').addClass("hide");
+                    $('#SelectAllFamilyButton').hide();
+                    familyBox.prop('disabled', true); 
+                    familyBox.trigger('change'); 
+                    return; 
+                }     
+
+                for(var i=0; i < data.length; i++) { 
+                    var d = data[i]; 
+                    select.options.add(new Option(d.Text, d.Value)) 
+                } 
+                
+                $('.familyInputs').removeClass("hide");
+                $('#SelectAllFamilyButton').show();
+                familyBox.prop('disabled',false);
+                familyBox.trigger('change');
+            }
+
+            function GetFamilyList(id)
+            {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                    Data = "{clientID: id}",
+                    OnSuccess = "PopulateFamilyList(data);",
+                });
+            }
+
+            function ClientSelectHandler(event, ui)
+            {
+                event.preventDefault();
+                $(this).val(ui.item.labelToInsert);
+                GetFamilyList(ui.item.value);
+                getROVitals(ui.item.value);
+            }
+
+            function SelectAllClients() {
+                var familyInput = $('#ClientsFamilyIDs');
+
+                familyInput.children('option').each(function (index, element) {
+                    if (element.value != "") {
+                        element.selected = true;
+                    }
+                });
+
+                familyInput.trigger('change');
+            }            
+
+             // when the shelter is changed, change the available rooms
+             function shelterChange() {
+                 selectedShelterId = shelter_dropdown.val();
+                 $(".client-shelter").val(selectedShelterId);
+                 
+                 //addClientToDock($('.client').filter(':not(.existing)')); //Move clients back to dock
+
+                 //populate room dropdowns
+                 room_dropdowns.html("");
+                 //room_dropdowns.append(new Option());
+                 room_dropdowns.append('<option value="" selected disabled>@Labels.Room</option>');
+                 bed_dropdowns.html("");
+                 //bed_dropdowns.append(new Option());
+                 bed_dropdowns.append('<option value="" selected disabled>@Labels.Bed</option>');
+                 for (var i = 0; i < rooms.length; i++) {
+                     if (rooms[i].ShelterID == selectedShelterId) {
+                         var newOption = '<option value="' + rooms[i].ID + '">' + rooms[i].Name + '</option>';
+                         room_dropdowns.append(newOption);
+                     }
+                 }
+             }   
+
+             // when the room is changed, change the available beds
+             function roomChange(event, option) {
+                 var roomDropdown = $(event.currentTarget);
+
+                 bed_dropdowns.html("");
+                 //bedDropdown.append(new Option());
+                 bed_dropdowns.append('<option value="" selected disabled>@Labels.Bed</option>');
+                 for (var i = 0; i < beds.length; i++) {
+                     if (beds[i].RoomID == roomDropdown.val() && 
+                         ($(document.getElementById('bed-' + beds[i].ID)).children('.bed-occupied').length == 0 ||
+                         isBedOccupiedByClient(beds[i].ID, bed_dropdowns.data('bed-dd-client-id')))) 
+                     {
+                         var newOption = '<option value="' + beds[i].ID + '">' + beds[i].Name + '</option>';
+                         bed_dropdowns.append(newOption);
+                     }
+                 }
+
+                 console.log(beds.toString);
+
+                 bed_dropdowns 
+                     .change()
+                     .trigger('change');
+             }            
+
+        </script>
+    );
+}

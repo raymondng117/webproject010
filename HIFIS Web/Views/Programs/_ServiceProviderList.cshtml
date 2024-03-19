@@ -1,0 +1,113 @@
+﻿@model IEnumerable<ProgramServiceProviderViewModel>
+           @{
+               //var ShowAll = ViewBag.ShowAll;
+               //if (ViewBag.ShowAll == null)
+               //{
+               //    ViewBag.ShowAll = "Active";
+               //}
+               TempData["temp"] = "y";
+           }
+
+@Html.Partial("_ConfirmClose")
+
+<div id="programServiceProviders" style="padding: 20px;">
+    <div id="radio" class="btn-group">
+        <ul class="list-unstyled">
+            <li class="btn-group btn-group-sm">
+                @{ string classlink1 = (ViewBag.ShowAll.Equals("Active") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.Active, "Display", new { programID = ViewBag.programID, @ShowAll = "Active" }, new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+                @{ string classlink2 = (ViewBag.ShowAll.Equals("Inactive") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.Inactive, "Display", new { programID = ViewBag.programID, @ShowAll = "Inactive" }, new { @class = classlink2, alt=Labels.Inactive, aria_label = Labels.Inactive, @role = "button" })
+
+                @{ string classlink3 = (ViewBag.ShowAll.Equals("All") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.All, "Display", new { programID = ViewBag.programID, @ShowAll = "All" }, new { @class = classlink3, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" 
+            data-wb-tables='{  "info": false,
+                                "ajax": "@Url.Action("ServiceProvidersJson", "Programs", new { id = ViewBag.programID, ShowAll = ViewBag.ShowAll })",
+                                "columns": [
+                                    { "width": "25%", "data": "name"},
+                                    { "width": "20%", "data": "start-date"},
+                                    { "width": "20%", "data": "end-date"},
+                                    { "width": "10%", "data": "funds"},
+                                    { "width": "10%", "data": "beds"},
+                                    { "width": "15%", "data": "action"}
+                                ] }'>
+            <thead>
+                <tr>
+                    <th class="align-text-center">@Labels.ServiceProvider</th>
+                    <th class="align-text-center">@Labels.DateStart</th>
+                    <th class="align-text-center">@Labels.DateEnd</th>
+                    <th class="align-text-center">@Labels.AllocatedFunding</th>
+                    <th class="align-text-center">@Labels.AllocatedBeds</th>
+                    <th class="align-text-center no-print">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    @{
+        if (!(TempData["funds"] == null) && !(TempData["beds"] == null) && !(TempData["maxFunds"] == null) && !(TempData["maxBeds"] == null) && !(TempData["stay"] == null))
+        {
+            <text>
+                <div id="totals" class="align-text-center">
+                     <h5>Total Allocated Funds: @string.Format("{0:c}", Decimal.Parse(TempData["funds"].ToString())) / @string.Format("{0:c}", Decimal.Parse(TempData["maxFunds"].ToString()))</h5>
+                     <h5>Total Allocated Beds: @TempData["beds"].ToString() / @TempData["maxBeds"].ToString()  </h5>
+                </div>
+         <script>$("#totals").show()</script>
+            </text>
+        }
+        else if (!(TempData["funds"] == null) && !(TempData["maxFunds"] == null))
+        {
+            <div id="totals" class="align-text-center">
+                <h5>Total Allocated Funds: @string.Format("{0:c}", Decimal.Parse(TempData["funds"].ToString())) / @string.Format("{0:c}", Decimal.Parse(TempData["maxFunds"].ToString()))</h5>
+            </div>
+             <script>$("#totals").show()</script>
+        }
+        else
+        {
+            <script>$("#totals").hide()</script>
+        }
+}
+    
+
+<div class="no-print">
+
+    @if (ViewBag.CurrentProgOrgID == null || ViewBag.CurrentProgOrgID == ViewBag.CurrentOrgID)
+    {
+        if (RightsHelper.HasRight(UserRights.Programs_Service_Providers_Add))
+        {
+            @Html.ActionLink(Labels.AddNewServiceProvider, "NewServiceProvider", "Programs", new { @programID = ViewBag.programID }, new { @class = "addButton", alt=Labels.AddNewServiceProvider, aria_label = Labels.AddNewServiceProvider, @role = "button" })
+        }
+    }
+
+</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function OnTheFlyCallBack(objectID, formData) {
+                 var table = $(".table");
+                 table.DataTable().ajax.reload();
+             }
+             // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+             $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                 $("td").addClass("align-text-center");
+                 initButtons();
+                 $(".editButton").parents("td").addClass("align-text-center");
+                 $(".cancelButton").parents("td").addClass("align-text-center");
+             });
+        </script>
+    );
+}

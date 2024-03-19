@@ -1,0 +1,78 @@
+﻿@model ClientContactViewModel
+
+<section id="Modal_EditContact" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.EditContact</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editContactForm" class="form-horizontal mrgn-tp-sm">
+
+            @Html.Partial("_BaseHiddenFor")
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ClientGroupID)
+            @Html.HiddenFor(model => model.PersonID)
+            @Html.HiddenFor(model => model.ClientID)
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.Name, new { @class = "col-sm-4 control-label" })
+                <div class="col-sm-8">
+                    @Html.HifisEditorFor(model => model.Name, null, new { disabled = "disabled" }, true, null)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.PeopleEmergencyRelationshipTypeID, new { @class = "col-sm-4 control-label" })
+                <div class="col-sm-8">
+                    @Html.HifisEditorFor(model => model.PeopleEmergencyRelationshipTypeID, CachedTableTypes.HIFIS_PeopleRelationshipTypes, null, true, null)
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button type="submit" id="editBtn" class="saveButton">@Labels.Save</button>
+            <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+
+    //Get everything to display correctly
+    init_hifis();
+    fixWidth();
+
+    function fixWidth() {
+        var $elements = $('.modal-body label.col-sm-2');
+        $elements.each(function () {
+            $(this).removeClass("col-sm-2").addClass("col-sm-3")
+                .parent().find(".col-sm-10").removeClass("col-sm-10").addClass("col-sm-9");
+        });
+    }
+
+    $("#editBtn").click(function () {
+        if ($("#editContactForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/ClientTombstone/EditEmergencyContact")",
+                type: "POST",
+                data: $('#editContactForm').serialize()
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#contactsTable').DataTable().ajax.reload();
+                }
+            });
+        }
+    });
+</script>

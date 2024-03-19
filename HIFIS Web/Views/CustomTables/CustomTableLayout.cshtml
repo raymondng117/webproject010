@@ -1,0 +1,56 @@
+﻿@model CustomTableViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CustomTableLayout + " - " + Model.DisplayName;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<link rel="Stylesheet" href="@Url.Content("~/Scripts/Hifis/jquery-ui.custom/jquery-ui.min.css")" />
+<link rel="Stylesheet" href="@Url.Content("~/Scripts/Hifis/jquery-ui.custom/jquery-ui.theme.css")" />
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("CustomTableLayout", "CustomTables", FormMethod.Post, new { @class = "form-horizontal", id = "CustomTableLayoutForm", novalidate = "novalidate" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_CustomTableHidden", Model)
+           
+        <ol id="ViewArea" class="mrgn-lft-xs" style="overflow:auto; list-style-position:inside;">
+            @if (Model.Fields != null)
+            {
+                for (int i = 0; i < Model.Fields.Count; ++i)
+                {
+                    <li class="InputDiv mrgn-bttm-sm sortableItem">
+                        @Model.Fields[i].NameE : @Model.Fields[i].NameF
+                        @Html.Partial("_CustomTableHiddenFieldValues", Model.Fields[i], "Fields[" + i + "].")
+                    </li>
+                }
+            }
+        </ol>
+    
+        <div class="form-group mrgn-top-md">
+	        <div class="col-sm-10">
+		        <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "CustomTablesList", "CustomTables", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	        </div>
+        </div>  
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript" src="@Url.Content("~/Scripts/Hifis/jquery-ui.custom/jquery-ui.min.js")"></script>);
+    Html.AddScriptBlock(    
+		@<script type="text/javascript">
+            $(function () {
+                $('#ViewArea').sortable({ items: "li" });
+
+                $('#CustomTableLayoutForm').submit(function (e) {
+                    $('#ViewArea li').each(function (index, element) {
+                        $(element).find('[name$=Position]').val(index+1); 
+                    });
+                });
+            });
+        </script>
+    );
+}

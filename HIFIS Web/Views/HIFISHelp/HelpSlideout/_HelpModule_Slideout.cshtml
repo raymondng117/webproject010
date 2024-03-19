@@ -1,0 +1,39 @@
+﻿@model HelpButtons_ModuleModel
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-xs-12">
+        @Html.Raw(HttpUtility.HtmlDecode(Model.Description))
+    </div>        
+</div>
+<div class="row">
+    <div class="col-xs-12">  
+     <h5 class="mrgn-tp-sm">@Labels.RecommendedTopics</h5>
+    </div>
+</div>
+<div class="row">
+        @foreach (var top in Model.Topics)
+        {
+            <div class="col-sm-3">  
+                @Html.ActionLink(top.Name, "HelpTopic", "HIFISHelp", new { id = top.HelpTopicID }, new { target="_blank", alt=top.Name, aria_label = top.Name })
+            </div>
+        }  
+</div>
+<div class="row">
+    <div class="col-xs-12">  
+        @Html.ActionLink(Labels.HifisHelp_ViewAll, "HelpIndex", "HIFISHelp", new { rID = Model.HelpModuleID, category = HIFISHelp_CategoryTypes.All }, new { @class = "editButton pull-right mrgn-tp-md", target="_blank", alt=Labels.HifisHelp_ViewAll, aria_label = Labels.HifisHelp_ViewAll, @role = "button" })
+    </div>
+</div>
+<hr class="mrgn-tp-sm mrgn-bttm-sm" />
+@foreach (var glos in Model.GlossaryWords)
+{
+    <div class="row">
+        <div class="col-xs-12">
+            <strong>@glos.Word</strong>
+            <br />
+            @Html.Raw(HttpUtility.HtmlDecode(glos.Definition))
+        </div>
+    </div>
+}  

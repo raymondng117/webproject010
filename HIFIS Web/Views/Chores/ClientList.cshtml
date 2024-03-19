@@ -1,0 +1,64 @@
+﻿@model ChoresListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ChoresList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "ordering" : true }'>
+        <thead>
+            <tr>
+                <th>@Labels.ServiceProvider</th>
+                <th>@Labels.ChoreType</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.DateEnd</th>
+                <th>@Labels.TotalElapsedTime</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var chore in Model.Chores)
+            {
+                <tr>
+                    <td class="align-text-center">@chore.StayPeriodInfo.OrgName</td>
+                    <td class="align-text-center">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ChoreTypes, Culture, chore.ChoreTypeID)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => chore.DateStart)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => chore.DateEnd)</td>
+                    <td class="align-text-center">@chore.Hours hrs : @chore.Minutes min</td>
+                    <td class="align-text-center">
+
+                        @if (RightsHelper.HasRight(UserRights.Chores_Display, chore.OrganizationID))
+                        { 
+                            @Html.ActionLink(Labels.Display, "Display", new { id = chore.ClientID, choreID = chore.ChoreID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.Chores_Edit, chore.OrganizationID))
+                        { 
+                            @Html.ActionLink(Labels.Edit, "Edit", new { id = chore.ClientID, choreID = chore.ChoreID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.Chores_Delete, chore.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Delete, "Delete", new { choreID = chore.ChoreID }, new { @class = "noText deleteButton", alt=Labels.Delete, aria_label=Labels.Delete, @role = "button" })
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="mrgn-tp-md">
+
+    @if (RightsHelper.HasRight(UserRights.Chores_Add))
+    { 
+        if (ViewBag.HasStay)
+        {
+            @Html.ActionLink(Labels.NewChore, "New", "Chores", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewChore, aria_label=Labels.NewChore, @role = "button" })
+        }
+    }
+
+</div>

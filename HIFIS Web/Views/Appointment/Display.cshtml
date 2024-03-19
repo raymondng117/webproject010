@@ -1,0 +1,57 @@
+﻿@model HIFIS.WEB.ViewModels.AppointmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_AppointmentDetails;
+}
+
+<div class="displayView">
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AppointmentTypeID, new { @class = "autowidth" })
+        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AppointmentTypes, Culture, Model.AppointmentTypeID)
+    </div>
+    <div class="row">
+        @Html.HifisLabelFor(model => model.StartDateTime, new { @class = "autowidth" })
+        @Html.HifisDisplayFor(model => model.StartDateTime, null, true, "DateAndTime")
+    </div>
+    <div class="row">
+        @Html.HifisLabelFor(model => model.EndDateTime, new { @class = "autowidth" })
+        @Html.HifisDisplayFor(model => model.EndDateTime, null, true, "DateAndTime")
+    </div>
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth" })
+        @Html.DisplayTextFor(model => model.Description)
+    </div>
+        
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PersonID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.PersonName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PlaceID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.PlaceName)
+    </div> 
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FollowedThroughYN, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.FollowedThroughYN)
+    </div>
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth" })
+        @Html.DisplayTextFor(model => model.Comments)
+    </div>
+    
+    <div class="row" style="padding-left:15px;">
+        <div class="btn-group">
+            @Html.ActionLink(Labels.Cancel, "ClientList", "Appointment",
+                new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role="button" })
+
+            @if (RightsHelper.HasRight(UserRights.Appointments_Edit) && (Model.OrganizationID.Equals(ViewBag.OrgID)))
+            {
+                @Html.ActionLink(Labels.Edit, "Edit", "Appointment",
+                    new { id = Model.ReadOnlyVitals.ClientID, appointmentID = Model.AppointmentID }, new { @class = "editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role="button" })
+            }
+        </div>
+    </div>
+</div>

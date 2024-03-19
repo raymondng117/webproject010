@@ -1,0 +1,216 @@
+﻿@model HIFIS.WEB.ViewModels.StayViewModel
+@{
+    ViewBag.Title = Labels.CreateHistoricalStay;
+    ViewBag.ViewTitle = Labels.CreateHistoricalStay;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        @using (Html.BeginForm("Create", "Admissions", FormMethod.Post, new { @class = "form-horizontal", id = "admissionsForm" }))
+        {
+        <div id="stayFormDiv">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.PrimaryClientID)
+            @Html.HiddenFor(model => model.ServiceID)
+            @Html.HiddenFor(model => model.ServiceTypeID)
+            @Html.HiddenFor(model => model.StayID)
+            @Html.HiddenFor(model => model.OrganizationID)
+            @Html.HiddenFor(model => model.IsReservation)
+            @Html.HiddenFor(model => model.IsBookOut)
+            @Html.HiddenFor(model => model.IsFromStays)
+            @Html.HiddenFor(model => model.IsHistoricalStay)
+            @Html.HiddenFor(model => model.ExpectedBookOutDate)
+            <div>
+                @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime")
+            </div>
+            @*  REMOVE BED List. BedID will be attributed automatically in Admission Business Rule
+        <div>
+            @Html.HifisEditorFor(model => model.BedID, Enumerable.Empty<SelectListItem>())
+        </div>
+            *@
+                <section id="warningPanel" class="alert alert-warning" style="display:none;">
+                    <header class="alert-heading">
+                        <h3 class="alert-title">@Labels.Warning</h3>
+                    </header>
+                    <div id="bedsHistoryWarning">
+                        <div class="alert-body"><p>@Labels.BedHistoryConflicts</p></div>
+                        <div id="bedsHistoryTable" class="container">
+                            <div style="display: table-header-group; vertical-align: middle; border-color: inherit;">
+                                <div class="row">
+                                    <div class="col-lg-3 align-text-center">@Labels.DateStart</div>
+                                    <div class="col-lg-3 align-text-center">@Labels.DateEnd</div>
+                                    <div class="col-lg-3 align-text-center">@Labels.RoomName</div>
+                                    <div class="col-lg-3 align-text-center">@Labels.BedName</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 align-text-center"></div>
+                        </div>
+                    </div>
+                </section>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ReasonForServiceID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ReasonForDischargeTypeID, CachedTableTypes.HIFIS_ReasonForDischargeTypes)
+            </div>
+
+            <div>
+                @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.programsLIst as SelectList)
+            </div>
+
+
+            @if (Model.isGeoRegionEnforced)
+            {
+                <div>
+                    @Html.HifisEditorFor(model => model.ReferredFromID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferredGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+                </div>
+            }
+            else
+            {
+                <div>
+                    @Html.HifisEditorFor(model => model.ReferredFromID, ViewBag.fromPlaces as SelectList)
+                </div>
+            }
+
+
+            @if (Model.isGeoRegionEnforced)
+            {
+                <div>
+                    @Html.HifisEditorFor(model => model.ReferredToID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferredGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+                </div>
+            }
+            else
+            {
+                <div>
+                    @Html.HifisEditorFor(model => model.ReferredToID, ViewBag.toPlaces as SelectList)
+                </div>
+            }
+
+            <div>
+                @Html.HifisEditorFor(model => model.ReferredByName)
+            </div>
+            <div>
+                @Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize" })
+            </div>
+
+        </div>
+
+            
+
+            <div class="form-group form-btns">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    @Html.ActionLink(@Labels.Cancel, "ClientAdmissions", "Admissions", new { id = Model.PrimaryClientID }, new { @class = "cancelButton mrgn-rght-xs no-print", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button"  })
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@*<div id="JSGlobalVar">
+    @Html.Partial("_SharedGlobalVar", Model)
+</div>*@
+
+
+@using (@Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+
+            //***************************************************************************
+            //*
+            //*   Global variables
+            //*
+            //****************************************************************************
+            @*
+            /*const CreateGlobalVar = () => {*/
+
+                var URL_Admission_GetAvailableBedsList = '@Url.Action("GetAvailableBedsList", "Admissions", null)';
+
+                /*
+                return {
+
+                    URL_Admission_GetAvailableBedsList,
+                };
+            };*/
+
+            $(document).on("ready", function () {
+
+                HIFIS_Admissions.CreateView.ApplyOnLoad.OnReady();
+            });
+            *@
+
+
+            //insure that the hidden field ExpectedBookOutDate has a date, especially when this field is set as mandatory
+            $(document).ready(function () {
+                $('#datePicker2').on('dp.change', function () {
+                    $('#DateEnd').trigger('change');
+                });
+
+                $('#DateEnd').on('change', function () {
+                    $("#ExpectedBookOutDate").val($(this).val());
+                });
+
+            }); 
+
+
+            $(function () {
+                updateAvailableBedsList();
+            });
+
+            //Gets the list of beds available on this date at the service provider
+            function updateAvailableBedsList()
+            {
+                $.ajax({
+
+                    url: "@Url.Action("GetAvailableBedsList", "Admissions", null)",
+                    type: "POST",
+                }).done(function (data) {
+
+                    $('#BedID').empty();
+                    $('#BedID').append(makeOptions(data.Result));
+                }).always(function () {
+
+                    reinitSelect2($('#BedID'));
+                });
+            };
+
+            //Makes options for a select element from json data.
+            function makeOptions(res)
+            {
+                var str = "";
+                if (res.length > 0)
+                {
+                    //starting the list at 1 so it does not append the first blank element ( so as to not interefere with the default selections)
+                    for (i = 1; i < res.length; i++)
+                    {
+                        str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                    }
+                }
+                else
+                {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+
+                return str;
+            };
+
+            //reinitializes select2 after modifying the options.
+            function reinitSelect2(selector)
+            {
+                selector.select2('destroy');
+                selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+            };
+
+
+</script>
+);
+}

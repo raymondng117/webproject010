@@ -1,0 +1,79 @@
+﻿@model DietListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DietList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+   
+
+<div>
+    <div>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.DietCategory</th>
+                        <th>@Labels.FoodItem</th>
+                        <th>@Labels.Active</th>
+                        <th>@Labels.IsAvoidedYN</th>
+                        <th class="print-none">@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Diets != null && Model.Diets.Count > 0)
+                    {
+                        foreach (DietViewModel item in Model.Diets)
+                        {
+                            <tr>
+                                <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DietCategoryTypes, Culture, item.CategoryTypeID) </td>
+                                
+                                <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DietFoodItemTypes, Culture, item.FoodItemTypeID)</td>
+                                
+                                <td class="text-center">
+                                    @if (item.ActiveYN)
+                                    { <span class="glyphicon glyphicon-ok" title="@Labels.ActiveYN"></span>}
+                                </td>
+
+                                <td class="text-center">
+                                    @if (item.AvoidedDietYN)
+                                    { <span class="glyphicon glyphicon-ok" title="@Labels.IsAvoidedYN"></span> }
+                                </td>
+
+                                <td class="text-center">
+                                    @if (RightsHelper.HasRight(UserRights.Diet_Display))
+                                    {
+                                        @Html.ActionLink(Labels.Display, "Display", "Diet", new { id = Model.ReadOnlyVitals.ClientID, dietID = item.DietID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                    }
+
+                                    @if (RightsHelper.HasRight(UserRights.Diet_Edit))
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "Edit", "Diet", new { id = Model.ReadOnlyVitals.ClientID, dietID = item.DietID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+
+                                    @if (RightsHelper.HasRight(UserRights.Diet_Delete))
+                                    {
+                                        @Html.ActionLink(Labels.Delete, "Delete", "Diet", new { id = Model.ReadOnlyVitals.ClientID, dietID = item.DietID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })  
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Diet_Add))
+        {
+            @Html.ActionLink(Labels.NewItem, "New", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewItem, aria_label = Labels.NewItem, @role = "button" }) 
+        }
+
+    </div>
+</div>
+

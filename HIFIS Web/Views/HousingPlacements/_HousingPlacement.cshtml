@@ -1,0 +1,244 @@
+﻿@model HousingPlacementViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.HousePlacementID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+@if (Model.PrimaryClientID == null)
+{
+    <div class="row">
+        @Html.HifisAutocompleteFor(
+            model => model.PrimaryClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.PrimaryClient.ClientFullName
+            , new AutocompleteViewModelOptions
+            {
+                OnSelect = "updateClientSideBar();"
+                , HiddenValue = true
+            })
+            
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.PrimaryClientID)
+}
+
+<div id="familyInputs">
+    <div class="row">
+        @Html.HifisListBoxFor(model => model.ClientsFamilyClientIDs, ViewBag.clientFamilyList as SelectList)
+    </div>
+
+@*    <div>
+        @Html.HifisTextBoxFor(model => model.NumberOfAdults)
+    </div>
+
+    <div>
+        @Html.HifisTextBoxFor(model => model.NumberOfChildren)
+    </div>*@
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.caseWorkerList as SelectList)
+</div>
+
+<div class="row">
+    @Html.HifisListBoxFor(model => model.HTS, ViewBag.HouseTypes as SelectList)
+</div>
+
+@*<div>
+    @Html.HifisListBoxFor(model => model.HTS, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseTypes, Culture))
+</div>*@
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.DateSearchStarted)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.TargetDate)
+</div>
+
+@*<div>
+    @Html.HifisEditorFor(model => model.OrganizationID, ViewBag.orgList as SelectList)
+</div>*@
+
+<div class="row">
+	@Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.ProgramList as SelectList)
+</div>
+
+<div id="family-attestation-result"></div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+    function updateClientSideBar() {
+        getROVitals($('#PrimaryClientID').val());
+        GetFamilyList($('#PrimaryClientID').val());
+    }
+
+    var numAdsChildsTxtboxes;
+
+    function PopulateFamilyList(data) {
+        var select = document.getElementById('ClientsFamilyClientIDs');
+        var familyBox = $('#ClientsFamilyClientIDs');
+
+        select.options.length = 0; // clear out existing items
+
+        if (data.length == 0) {
+            $('#familyInputs').hide();
+            $('#SelectAllFamilyButton').hide();
+            //numAdsChildsTxtboxes.prop('disabled', true);
+            familyBox.prop('disabled', true);
+            familyBox.trigger('change');
+            return;
+        }
+
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            select.options.add(new Option(d.Text, d.Value))
+        }
+
+        $('#familyInputs').show();
+        $('#SelectAllFamilyButton').show();
+        //numAdsChildsTxtboxes.prop('disabled', false);
+        familyBox.prop('disabled', false);
+        familyBox.trigger('change');
+    }
+
+    function GetFamilyList(id) {
+        @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                   Data = "{clientID: id}",
+                   OnSuccess = "PopulateFamilyList(data);",
+               });
+    }
+
+    //Onload
+    $(function () {
+        //numAdsChildsTxtboxes = $('#NumberOfAdults,#NumberOfChildren');
+
+        @if ((ViewBag.clientFamilyList as SelectList).IsEmptyOrNull() || (ViewBag.clientFamilyList as SelectList).Count() == 0)
+                    {
+                        @:$('#familyInputs').hide();
+                                //@:numAdsChildsTxtboxes.prop('disabled', true);
+                        //@:$('#SelectAllFamilyButton').hide();
+                    }
+    });
+
+    var unselecting = false;
+    var oldArray = [];
+
+    //$('#ClientsFamilyClientIDs').on('select2:unselecting', function (e) {
+    //    if (unselecting === false) {
+    //        unselecting = true;
+    //        oldArray = $('select[id=ClientIDs]').val();
+    //    }
+    //});
+
+    //$('#ClientsFamilyClientIDs').on('select2:unselect', function (e) {
+    //    var newArray = [];
+    //    newArray = $('select[id=ClientsFamilyClientIDs]').val();
+    //    clearOptions("ClientsFamilyClientIDs", oldArray, newArray);
+    //    oldArray = newArray;
+
+    //    if (oldArray === null || oldArray.length === 0) {
+    //        unselecting = false;
+    //    }
+    //});
+
+    //used to remove all select2 options that were deselected
+    function clearOptions(selector, oldArray, newArray) {
+        var diff = $(oldArray).not(newArray).get();
+        $('#' + selector + ' option').each(function () {
+            if ($(this).val() == diff)
+                $(this).remove();
+        });
+    };
+    @if (appSettings.IsAttestationEnabled())
+		     {
+		         <text>
+    $('#ClientsFamilyClientIDs').on("select2:select", function (e) {
+        $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                {
+                    FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                    ID: e.params.data.id,
+                    InputName: 'ClientsFamilyClientIDs',
+                    Callback: ''
+                },
+            function (data) {
+                $("#family-attestation-result").html(data);
+            });
+    });
+
+    $('button[name="ClientsFamilyClientIDs_SelectAllBtn"]').on('click', function () {
+        var select = document.getElementById('ClientsFamilyClientIDs');
+
+        var familyArray = [];
+        for (var key in select.options) {
+            if (select.options.hasOwnProperty(key)) {
+                familyArray.push(select.options[key].value);
+            }
+        }
+
+        var postData = {
+            FamilyMembers: familyArray,
+            InputName: 'ClientsFamilyClientIDs',
+            Callback: ''
+        };
+
+        $.post('@Url.Action("FamilyAttestation", "Master")',
+                $.param(postData, true),
+                function (data) {
+                    $("#family-attestation-result").html(data);
+                });
+    });
+    </text>
+		     }else if(appSettings.EnforceConsent()){
+                 
+		         <text>
+                 $('#ClientsFamilyClientIDs').on("select2:select", function (e) {
+                        $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                                { FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                                    ID: e.params.data.id,
+                                    InputName: 'ClientsFamilyClientIDs',
+                                    Callback: '' },
+                            function (data) {
+                                $("#family-attestation-result").html(data);
+                            });
+                    });
+
+                 $('button[name="ClientsFamilyClientIDs_SelectAllBtn"]').on('click', function () {
+                     var select = document.getElementById('ClientsFamilyClientIDs');
+
+		             var familyArray = [];
+		             for (var key in select.options) {
+		                 if (select.options.hasOwnProperty(key)) {
+		                     familyArray.push(select.options[key].value);
+		                 }
+		             }
+
+		             var postData = {
+		                 FamilyMembers: familyArray,
+		                 InputName: 'ClientsFamilyClientIDs',
+		                 Callback: ''
+		             };
+
+		             $.post('@Url.Action("FamilyConsent", "Master")',
+                             $.param(postData, true),
+                             function (data) {
+                                 $("#family-attestation-result").html(data);
+                             });
+		         });
+		         </text>
+		     
+    }
+
+        </script>);
+}

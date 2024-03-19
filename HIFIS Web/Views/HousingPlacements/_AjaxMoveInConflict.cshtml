@@ -1,0 +1,40 @@
+﻿@model MoveInViewModel
+
+<section id="Modal_MoveInConflict" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.MoveIn</h2>
+	</header>
+	<div class="modal-body">
+        <section class="alert alert-danger">
+	        <h3>@Labels.HousingPlacementConflict</h3>
+	        <p>@Labels.ActiveHousingPlacementMessage 
+                @if (RightsHelper.HasRight(UserRights.HousingPlacements_Display, (string)ViewBag.ActiveHousingPlacementOrgID))
+                {
+                    @Html.ActionLink(Labels.GoToActiveHousingPlacement, "Display", "HousingPlacements", new { id = Model.ClientID, placementID = (string)ViewBag.ActiveHousingPlacementID }, new { id = "closePlacement", target = "_blank", @class = "alert-link", alt=Labels.GoToActiveHousingPlacement, aria_label = Labels.GoToActiveHousingPlacement })
+                }
+                else
+                {
+                    @Labels.ActiveHousingPlacementEditMessage @Html.ActionLink(Labels.viewTitle_PlacementList, "ClientList", "HousingPlacements", new { id = Model.ClientID }, new { id="placementList", target = "_blank", @class = "alert-link", alt=Labels.viewTitle_PlacementList, aria_label = Labels.viewTitle_PlacementList })
+                }            
+            </p>
+        </section>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+		<button id="newMoveInCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(".alert-link").click(function () {
+        $("#newMoveInCloseBtn").click(); //Close the modal window on success
+    });
+    
+</script>
+
+

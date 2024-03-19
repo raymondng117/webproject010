@@ -1,0 +1,76 @@
+﻿@model ExpenseViewModel          
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayExpense;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="ExpenseTypeID" name="ExpenseTypeID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ExpenseTypes, Culture, Model.ExpenseTypeID))"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseAmount, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="ExpenseAmount" name="ExpenseAmount"
+                   value="@Html.DisplayFor(model => model.ExpenseAmount, new { @class = "money" })"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PayFrequencyTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="PayFrequencyTypeID" name="PayFrequencyTypeID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PayFrequencyTypes, Culture, Model.PayFrequencyTypeID))"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="ExpenseDateStart" name="ExpenseDateStart"
+                   value="@Html.DisplayFor(model => model.ExpenseDateStart)"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpenseDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="ExpenseDateEnd" name="ExpenseDateEnd"
+                   value="@Html.DisplayFor(model => model.ExpenseDateEnd)"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IsEssentialYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="IsEssentialYN" name="IsEssentialYN"
+                   value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsEssentialYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="btn-group">
+                @if (RightsHelper.HasRight(UserRights.Financials_Income_Edit))
+                {
+                    @Html.ActionLink(Labels.Edit, "EditExpense", "Financials", new { id = Model.ReadOnlyVitals.ClientID, expenseID = Model.ExpenseID }, new { @class = "editButton mrgn-rght-sm", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                }
+                @Html.ActionLink(Labels.Cancel, "Display", "Financials", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

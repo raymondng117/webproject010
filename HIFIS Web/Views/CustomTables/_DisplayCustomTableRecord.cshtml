@@ -1,0 +1,146 @@
+﻿@using HIFIS.CONTRACTS.WCFContracts.DataContracts
+@using HIFIS.WEB.OrganizationServiceReference
+@model CustomTableRecordViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<section id="Modal_DisplayCustomTableRecord" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Model.CustomTable.DisplayName</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="displayView align-center">
+            @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+            @Html.HiddenFor(model => model.ReturnUrl)
+            @Html.HiddenFor(model => model.CustomTableLinkID)
+            <table style="table-layout:fixed; width:100%;">
+                @{
+                    foreach (var record in Model.RecordData.OrderBy(o => o.Position))
+                    {
+                        switch (record.FieldTypeID)
+                        {
+                            case CustomTableFieldTypes.Attachments:
+                                if (record.AttachmentDisplay != null)
+                                {
+                                    TempData["value"] = Html.ActionLink(record.AttachmentDisplay.DocumentName, "DownloadDocument", "Documents", new { id = record.AttachmentDisplay.DocumentID, ClientID = Model.ReadOnlyVitals.ClientID, target = "_blank" }, new { alt = record.AttachmentDisplay.DocumentName, aria_label = record.AttachmentDisplay.DocumentName});
+                                }
+                                else
+                                {
+                                    TempData["value"] = "No file uploaded";
+                                }
+                                break;
+                            case CustomTableFieldTypes.Date:
+                                TempData["value"] = record.DateValue != null ? ((DateTime)record.DateValue).ToShortDateString() : "";
+                                break;
+                            case CustomTableFieldTypes.Date_Time:
+                                TempData["value"] = record.DateValue != null ? (((DateTime)record.DateValue).ToShortDateString() + " " + record.TimeValue.ToString()) : "";
+                                break;
+                            case CustomTableFieldTypes.Decimal:
+                                TempData["value"] = record.DecimalValue != null ? record.DecimalValue.ToString() : "";
+                                break;
+                            case CustomTableFieldTypes.Currency:
+                                TempData["value"] = record.DecimalValue != null ? ("$" + record.DecimalValue.ToString()) : "";
+                                break;
+                            case CustomTableFieldTypes.DropDownList:
+                                TempData["value"] = record.NumericValue != null ? WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomLookUps, Culture, record.NumericValue.Value) : "";
+                                break;
+                            case CustomTableFieldTypes.MultiSelect:
+                                TempData["value"] = "";
+                                if (!record.MultiSelectValue.IsEmptyOrNull())
+                                {
+                                    if (record.MultiSelectValue.Count > 1)
+                                    {
+                                        foreach (var ms in record.MultiSelectValue)
+                                        {
+                                            TempData["value"] += WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomLookUps, Culture, ms) + ", ";
+                                        }
+
+                                        TempData["value"] = TempData["value"].ToString().Remove(TempData["value"].ToString().Length - 2);
+                                    }
+                                    else
+                                    {
+                                        TempData["value"] = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomLookUps, Culture, record.MultiSelectValue.Single());
+                                    }
+                                }
+                                break;
+                            case CustomTableFieldTypes.Numeric:
+                                TempData["value"] = record.NumericValue != null ? record.NumericValue.ToString() : "";
+                                break;
+                            case CustomTableFieldTypes.Telephone:
+                            case CustomTableFieldTypes.TextAreaBox:
+                            case CustomTableFieldTypes.TextBox:
+                                TempData["value"] = !record.TextValue.IsEmptyOrNull() ? record.TextValue.ToString() : "";
+                                break;
+                            case CustomTableFieldTypes.Time:
+                                TempData["value"] = record.TimeValue != null ? record.TimeValue.ToString() : "";
+                                break;
+                            case CustomTableFieldTypes.YesNo:
+                                if (record.YNValue)
+                                {
+                                    TempData["value"] = Labels.Yes;
+                                }
+                                else
+                                {
+                                    TempData["value"] = Labels.No;
+                                }
+                                break;
+                            case CustomTableFieldTypes.CountriesDropDown:
+                                TempData["value"] = new SingleItemSelectList { List = (SelectList) WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CountryTypes, ViewBag.CurrentCulture) }.List.FirstOrDefault(ct => ct.Value == record.NumericValue.ToString()).Text;
+                                break;
+                            case CustomTableFieldTypes.HIFISRolesDropDown:
+                                TempData["value"] = new SingleItemSelectList { List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, ViewBag.CurrentCulture) }.List.FirstOrDefault(ct => ct.Value == record.NumericValue.ToString()).Text;
+                                break;
+                            case CustomTableFieldTypes.ServiceProvidersDropDown:
+                                TempData["value"] = new SingleItemSelectList { List = Utilities.ConvertToSelectListWithoutEncryption((List<ListItem>)ViewData["OrgList"]) }.List.FirstOrDefault(ct => ct.Value == record.NumericValue.ToString()).Text;
+                                break;
+                            case CustomTableFieldTypes.LookupTablesDropDown:
+                                CachedTableTypes tableType;
+                                var success = Enum.TryParse(record.LookupTableName, out tableType);
+
+                                if (success)
+                                {
+                                    TempData["value"] = new SingleItemSelectList { List = (SelectList)WebHelper.GetSelectListFromCache(tableType, ViewBag.CurrentCulture) }.List.FirstOrDefault(ct => ct.Value == record.NumericValue.ToString()).Text;
+                                }
+                                else
+                                {
+                                    TempData["value"] = Labels.msgGenericError;
+                                }
+
+                                break;
+                            case CustomTableFieldTypes.LocationsDropDown:
+                                TempData["value"] = new SingleItemSelectList { List = Utilities.ConvertToSelectListWithoutEncryption((List<ListItem>)ViewData["PlaceList"]) }.List.FirstOrDefault(ct => ct.Value == record.NumericValue.ToString()).Text;
+                                break;
+                            case CustomTableFieldTypes.PeopleDropDown:
+                            case CustomTableFieldTypes.ClientsDropDown:
+                                TempData["value"] = !record.DisplayName.IsEmptyOrNull() ? record.DisplayName.ToString() : "";
+                                break;
+
+                        }
+                    <text>
+                    <tr>
+                       <td style="padding-bottom:10px; width:25%; word-wrap:break-word;">
+                           <label>@record.FieldName</label>
+                       </td>
+                       <td style="padding-left:25px; padding-bottom:10px; word-wrap:break-word;">
+                           @TempData["value"]
+                       </td>
+                    </tr>
+                    </text>
+                        }
+                    }
+            </table>
+</div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-md">
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

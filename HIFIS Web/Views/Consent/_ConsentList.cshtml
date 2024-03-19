@@ -1,0 +1,76 @@
+﻿@model ConsentsListViewModel
+
+<div class="mrgn-tp-lg">
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "ordering" : true }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.DateStart <br /> @Labels.DateEnd</th>
+                    @*<th>@Labels.Consent</th>*@
+                    <th>@Labels.ConsentType</th>
+                    <th>@Labels.AttachedDocs</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var consent in Model.ClientConsent)
+                {
+                    <tr>
+                        <td class="align-text-center">@Html.DisplayFor(model => consent.OrganizationName)</td>
+                        <td class="align-text-center">@Html.DisplayFor(model => consent.StartDate) <br /> @Html.DisplayFor(model => consent.ExpiryDate)</td>
+                        @*<td class="align-text-center">@if (consent.AcceptYN)
+                            { @Labels.Yes;
+                            }
+                            else
+                            { @Labels.No;
+                            }</td>*@
+
+                        <td class="align-text-center">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConsentTypes, Culture, consent.ConsentTypeID)</td>
+                        <td class="align-text-center">
+
+                        @if (consent.AttachmentsDisplay != null && consent.AttachmentsDisplay.Name != null && RightsHelper.HasRight(UserRights.Consent_Display))
+                        {
+                            @Html.ActionLink(consent.AttachmentsDisplay.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(consent.AttachmentsDisplay.DocumentID), ClientID = Model.ReadOnlyVitals.ClientID }, new { alt=consent.AttachmentsDisplay.Name, aria_label = consent.AttachmentsDisplay.Name, @role = "button"});
+                        }
+                        else if (consent.AttachmentsDisplay != null && consent.AttachmentsDisplay.Name != null)
+                        {
+                            <span>@Labels.NA</span>
+                        }
+                        else
+                        {
+                            <span>@Labels.None</span>
+                        }
+
+                        </td>
+                        <td class="align-text-center">
+
+                        @if (RightsHelper.HasRight(UserRights.Consent_Display))
+                        {
+                            @Html.ActionLink(Labels.Display, "ConsentDisplay", new { id = consent.ClientID, consentID = consent.ConsentID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.Consent_Edit, consent.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Edit, "ConsentEdit", new { id = consent.ClientID, consentID = consent.ConsentID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        @if (RightsHelper.HasRight(UserRights.Consent_Add))
+        {
+            <div class="col-sm-12">
+                <div class="mrgn-tp-md btn-group">
+                    @Html.ActionLink(Labels.NewConsent, "ConsentNew", "Consent", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton addConsent", alt=Labels.NewConsent, aria_label = Labels.NewConsent, @role = "button"  })
+                </div>
+            </div>
+        }
+    </div>
+
+</div>

@@ -1,0 +1,106 @@
+﻿@model ClientSearchViewModel
+@{
+    ViewBag.ViewTitle = Labels.ClientSearch;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("ClientSearchProxy", "ClientTombstone", FormMethod.Get, new { id = "SearchForm", role = "search" }))
+{
+ 
+     @*if (ViewBag.sError != null && ViewBag.sError)
+    {
+        <div class="alert alert-danger alert-dismissable">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>@ViewBag.sErrorMsg</strong>
+        </div>
+    }*@
+    @Html.AntiForgeryToken()
+    <div>
+        @Html.HifisEditorFor(model => model.cSearchString, null, new { id="searchString",placeholder = Labels.ClientSearch })
+    </div>
+    <div class="clearfix"></div>
+    <br />
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="searchButton  " value="@Labels.Search">@Labels.Search</button>
+            @if (((HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings).RestrictClientSearch() == false && RightsHelper.HasRight(UserRights.Client_Vitals_Add))
+            {
+                @Html.ActionLink(Labels.AddNewClient, "NewVitals", "ClientTombstone", new { }, new { @class = "addButton  ", title = @Labels.AddNewClient, alt=Labels.AddNewClient, aria_label = Labels.AddNewClient, @role = "button"  })
+            }
+        </div>
+    </div>
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+    $(document).ready(function() {
+
+                var clientSearch = $('#searchString');
+
+                clientSearch.popover({
+                    content: 'PlaceHolder',
+                    trigger: 'manual',
+                    placement: 'left',
+                    html: true
+                });
+
+                clientSearch.on('input', function () {
+                    clientSearchMinInput();
+                });
+
+                clientSearch.blur(function () {
+                    clientSearch.popover('hide');
+                });
+
+                clientSearch.focus(function () {
+                    clientSearchMinInput();
+                });
+
+                //$('#GlobalSearchForm').on('submit', function () {
+                //    return clientSearchMinInput();
+                //});
+
+                var minLength;
+                if ($('#MinimumCharacterInput').val()) {
+                    minLength = parseInt($('#MinimumCharacterInput').val());
+                }
+                else {
+                    minLength = parseInt(@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultMinCharInput"]);
+                }
+
+                function clientSearchMinInput() {
+
+                    var length = clientSearch.val().replace(/ /g, '').length;
+
+                    if (length >= 1 && length < minLength) {
+
+                        if (clientSearch.attr('aria-describedby') == null) {
+                            clientSearch.popover('show');
+                        }
+
+                        if (clientSearch.attr('aria-describedby') != null) {
+                            var id = clientSearch.attr('aria-describedby').split(" ")[0];
+                            var remaining = (minLength - length);
+                            $('#' + id).children('.popover-content')
+                                .html("<div style=\"font-size: 15px\">"
+                                + "@Labels.ClientSearchMinInputErrorPrefix" + remaining + "@Labels.ClientSearchMinInputErrorSuffix"
+                                + "</div>");
+                        }
+
+                        return false;
+                    } else {
+                        clientSearch.popover('hide');
+                        return true;
+                    }
+                }
+            });
+        </script>
+);
+
+}

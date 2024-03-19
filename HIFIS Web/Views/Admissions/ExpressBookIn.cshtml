@@ -1,0 +1,427 @@
+﻿@model ExpressBookInViewModel
+@{
+    ViewBag.ViewTitle = Labels.ExpressBookin;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div id="serviceRestrictionAlert" class="row hide">
+    <div class="col-sm-12">
+        <div class="alert exception-panel">
+            <div class="mrgn-bttm-sm align-center">
+                <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+            </div>
+            <div>
+                <p>@Labels.StaysRestriction</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div id="ExpressBookIn_Form" class="col-sm-12">
+
+        <div class="form-horizontal">
+
+            @Html.HiddenFor(model => model.ClientID)
+
+            <div class="row">
+                @Html.HifisEditorFor(model => model.FileNumber)
+            </div>
+
+            <div id="fileInfo">
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.ReasonForServiceID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.DateBookIn, "DateAndTime")
+                </div>
+
+                @if (Model.isGeoRegionEnforced)
+                {
+                    <div class="row">
+                        @Html.HifisEditorFor(model => model.ReferredFromID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.GeoFilter.GeoRegionID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @Html.HifisEditorFor(model => model.ReferredFromID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+                    </div>
+                }
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.BedID, Enumerable.Empty<SelectListItem>())
+                </div>
+
+                <div class="row">
+                    @Html.HifisListBoxFor(model => model.ProgramIDs, ViewBag.ProgramList as SelectList, new { id = "programIDs", disabled = "readonly" }, false, false, false)
+                </div>
+
+                <div class="btn-group">
+                    <div class="col-sm-3"></div>
+                    <div class="col-sm-9" style="padding-left:10px;">
+                        @if (RightsHelper.HasRight(UserRights.Stays_BookIn))
+                        {
+                            <button class="bookInButton no-print" id="bookInButton" style="display:none">@Labels.NewBookIn</button>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<div id="FileNumber-attestation-result"></div>
+
+@*<div id="JSGlobalVar">
+    @Html.Partial("_SharedGlobalVar", Model)
+</div>*@
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            @*
+            /*const ExpressBookInGlobalVar = () => {*/
+
+                var IsAttestationEnabled = '@appSettings.IsAttestationEnabled()';
+                var SelectClientFieldTypes_FileNumber = '@SelectClientFieldTypes.FileNumber';
+                var AntiForgeryToken = '@Html.AntiForgeryToken()';
+                var HasRight_Barred_Override = "@RightsHelper.HasRight(UserRights.Barred_Override)";
+
+                var URL_Admission_ExpressBookIn = '@Url.Action("ExpressBookIn", "Admissions", null)';
+                var URL_Admission_GetROVPartialFromFileNumber = '@Url.Action("GetROVPartialFromFileNumber", "Master", null)';
+                var URL_Master_ConfirmAccessToClient = '@Url.Action("ConfirmAccessToClient", "Master", null)';
+                var URL_Admission_GetPreviousStayInfo = '@Url.Action("GetPreviousStayInfo", "Admissions", null)';
+                var URL_Admission_GetAvailableBedsList = '@Url.Action("GetAvailableBedsList", "Admissions", null)';
+
+                var label_Warning = '@Labels.Warning';
+                var label_TwoClientsOneNumber = '@Labels.TwoClientsOneNumber';
+                var label_ClickForFullResults = '@Labels.ClickForFullResults';
+                var label_msgRecordNotFound = '@Labels.msgRecordNotFound';
+                var label_CouldNotShowClientProfile = '@Labels.CouldNotShowClientProfile';
+                var label_NoClientSpecified = '@Labels.NoClientSpecified';
+                var label_NoneToDisplay = '@Labels.NoneToDisplay';
+
+                /*
+                return {
+
+                    IsAttestationEnabled,
+                    SelectClientFieldTypes_FileNumber,
+                    AntiForgeryToken,
+                    HasRight_Barred_Override,
+
+                    URL_Admission_ExpressBookIn,
+                    URL_Admission_GetROVPartialFromFileNumber,
+                    URL_Master_ConfirmAccessToClient,
+                    URL_Admission_GetPreviousStayInfo,
+                    URL_Admission_GetAvailableBedsList,
+
+                    label_Warning,
+                    label_TwoClientsOneNumber,
+                    label_ClickForFullResults,
+                    label_msgRecordNotFound,
+                    label_CouldNotShowClientProfile,
+                    label_NoClientSpecified,
+                    label_NoneToDisplay
+
+                };
+            };*/
+
+            $(document).on("ready", function () {
+
+                HIFIS_Admissions.ExpressBookInView.ApplyOnLoad.OnReady();
+            });
+            *@
+
+
+            //focus view on filenumber input for scanners.
+            $(function () {
+                noClient();
+            });
+
+            function gettoken() {
+                var token = '@Html.AntiForgeryToken()';
+                token = $(token).val();
+                return token;
+            };
+
+            var pgmID = [];
+            $('#programIDs option:selected').each(function () {
+                pgmID = $('#programIDs').val();
+            });
+
+            //Calling the bookin action to save the stay.
+            $('#bookInButton').on('click', function () {
+                $.ajax({
+                    url: "@Url.Action("ExpressBookIn", "Admissions", null)",
+                    type: "POST",
+                    data: {
+                        "ClientID": $('#HiddenClientID').val(),
+                        "BedID": $('#BedID').val(),
+                        "ReferredFromID": $('#ReferredFromID').val(),
+                        "ReasonForServiceID": $('#ReasonForServiceID').val(),
+                        "ProgramIDs": pgmID, //only selected options of program field are passed
+                        "__RequestVerificationToken": gettoken()
+                    },
+                }).done(function (data) {
+                    if (data.Success == true) {
+                        displayNotification('success', '', "<p>" + $('#ClientFullName').val() + " " + "@Labels.BookedIn</p>");
+                        hideValidation();
+                        noClient();
+                        resetROV();
+                    }
+                    else {
+                        showValidation(data.ValidationSummary);
+                        updateAvailableBedsList();
+                    }
+                }).always(function () {
+                });
+            });
+
+            //If enter has been presssed on the file number textbox
+            $('input[type=text]').on('keydown', function (e) {
+                if (e.which == 13) {
+                    @if (appSettings.IsAttestationEnabled())
+                    {
+                        <text>
+                    $.post('@Url.Action("ConfirmAccessToClient", "Master", null)',
+                        { FieldType: '@SelectClientFieldTypes.FileNumber', ID: $('#FileNumber').val(), InputName: 'FileNumber', Callback: 'getClientFromFileNumber();' },
+                        function (data) {
+                            $("#FileNumber-attestation-result").html(data);
+                        });
+                    </text>
+                    }
+                    else {
+                    @Html.Raw("getClientFromFileNumber();")
+                    }
+                }
+            });
+
+            function getClientFromFileNumber() {
+                hideBookInButton();
+                hideValidation();
+                $.ajax({
+                    url: "@Url.Action("GetROVPartialFromFileNumber", "Master", null)",
+                    type: "POST",
+                    data: { "fileNumber": $('#FileNumber').val() },
+                }).done(function (data) {
+                    populateROVitals(data.Result);
+
+                    if (data.Success == true) {
+                        if (data.Restricted == true) {
+                            $("#serviceRestrictionAlert").removeClass("hide");
+                        } else {
+                            $("#serviceRestrictionAlert").addClass("hide");
+                        }
+
+                        if ((data.Restricted == true && "@RightsHelper.HasRight(UserRights.Barred_Override)" !== "False") || data.Restricted != true) {
+                            isClientBookedIn();
+                        }
+
+                        if (data.Multiple == true) {
+                            showValidation("<div class=\"validation-summary-errors mrgn-lft-md mrgn-rght-0 mrgn-tp-0 mrgn-bttm-0\" data-valmsg-summary=\"true\">" +
+                                "<span>" +
+                                "@Labels.Warning" +
+                                "</span>" +
+                                "<ul>" +
+                                "<li>" +
+                                "@Labels.TwoClientsOneNumber" +
+                                "</li>" +
+                                "<li>" +
+                                "<a id=\"fileNumberSearch\" title=\"" + "@Labels.ClickForFullResults" + "\" target=\"_blank\" href=\"../ClientTombstone/ClientSearchProxy?q=" + $('#FileNumber').val() + "\">" + "@Labels.ClickForFullResults" + "</a>" +
+                                "</li>" +
+                                "</ul>" +
+                                "<div>");
+                        }
+
+                    }
+
+                    else {
+                        $("#servicerestrictionAlert").hide();
+                        noClient();
+                        displayNotification('info', '', "<p>@Labels.msgRecordNotFound</p>");
+                    }
+                }).always(function () {
+                    $('#FileNumber').val("");
+                });
+            };
+
+            function openClientSearch() {
+                $.post("ClientTombstone/ClientSearchProxy", { q: $('#FileNumber').val() }, function (data) {
+                });
+            };
+
+            //for Ajax validation display
+            function showValidation(data) {
+                $('#validationSummary').removeClass("hide").addClass("show");
+                $('#validationSummaryText').removeClass("hide").empty().append(data);
+            };
+            function hideValidation() {
+                $('#validationSummary').removeClass("show").addClass("hide");
+                $('#validationSummaryText').addClass("hide").empty();
+            };
+
+            @*//Handling managing the validation summary on a page with no postback.
+            $('#validationCloser').on('click', function () {
+                resetValidation();
+            })
+
+            function resetValidation() {
+                $('#validationWrapper').append("<section id=\"validationSummary\" class=\"alert alert-danger fade in hide\" role=\"alert\">" +
+                                                            "<button id=\"validationClose\" class=\"close\" data-dismiss=\"alert\" type=\"button\">" +
+                                                                "<span aria-hidden=\"true\">×</span>" +
+                                                                "<span class=\"sr-only\">" + "@Labels.Close" + "</span>" +
+                                                            "</button>" +
+                                                            "<div id=\"validationSummaryText\">" +
+                                                                "<div data-valmsg-summary=\"true\" class=\"validation-summary-valid mrgn-lft-md mrgn-rght-0 mrgn-tp-0 mrgn-bttm-0\">" +
+                                                                    "<span>" + "@Labels.HifisHelp_Error" + "</span>" +
+                                                                    "<ul>" +
+                                                                        "<li style=\"display:none\"></li>" +
+                                                                    "</ul>" +
+                                                                "</div>" +
+                                                            "</div>" +
+                                                        "</section>");
+            }*@
+
+            //reset the ROV partial to what is displayed when no client is selected.
+            function resetROV() {
+
+                $('#hifis-client-profile').empty().append("<div class=\"row\">" +
+                                                             "<section class=\"col-md-12\">" +
+                                                                "<div class=\"well well-sm mrgn-tp-sm\">" +
+                                                                    "<h5 class=\"mrgn-tp-0\">" +
+                                                                        "@Labels.CouldNotShowClientProfile" +
+                                                                    "</h5>" +
+                                                                    "@Labels.NoClientSpecified" +
+                                                                "</div>" +
+                                                             "</section>" +
+                                                          "</div>");
+            };
+
+            //display the save button after everything has loaded / been modified.
+            function displayBookInButton() {
+                $('#bookInButton').show();
+            };
+            function hideBookInButton() {
+                $('#bookInButton').hide();
+            };
+
+            //if there was a client found based on the file number enable the following fields.
+            function clientExists() {
+                $('#ReasonForServiceID').prop('disabled', false);
+                $('#BedID').prop('disabled', false);
+                $('#ddFrom').prop('disabled', false);
+
+
+            };
+
+            //if no client is currently selected OR if selected client is already booked in disable all the controls.
+            function noClient() {
+                $("#FileNumber").focus();
+
+                $('#ReasonForServiceID').val("").change();
+                $('#ReasonForServiceID').prop('disabled', true);
+
+                $('#DateBookIn_Date').prop('disabled', true);
+                $('#DateBookIn_TimeOfDay').prop('disabled', true);
+
+                $('#BedID').val("").change();
+                $('#BedID').prop('disabled', true);
+
+                $('#ddFrom').prop('disabled', true);
+
+            };
+
+            //check if client is already booked in to a bed today.
+            function isClientBookedIn() {
+                $.ajax({
+                    url: "@Url.Action("IsClientBookedIn", "Admissions", null)",
+                    type: "POST",
+                    data: { "id": $('#HiddenClientID').val(), "date": '@DateTime.Now' },
+                }).done(function (data) {
+                    if (data) {
+                        noClient();
+                        displayNotification('alert', '', "<a target=\"_blank\" href=\"ClientAdmissions/" + $('#HiddenClientID').val() + "\">" + $('#ClientFullName').val() + " " + "@Labels.AlreadyBookedIn</a>");
+                    }
+                    else {
+                        clientExists();
+
+                        updateAvailableBedsList();
+                        updateWithPreviousInfo();
+
+                        $(document).ajaxStop(function () {
+                            $(this).unbind("ajaxStop");
+                            displayBookInButton();
+                        });
+                    }
+                }).always(function () {
+                });
+            };
+
+            //Get the values of client's previous stay and select them in the drop downs if they exist.
+            function updateWithPreviousInfo() {
+                $.ajax({
+                    url: "@Url.Action("GetPreviousStayInfo", "Admissions", null)",
+                    type: "POST",
+                    data: { "clientID": $('#HiddenClientID').val() },
+                }).done(function (data) {
+                    if (data.Success == true) {
+                        $('#ReasonForServiceID').val(data.Result.Reason).change();
+                        $('#BedID').val(data.Result.Bed).change();
+                    }
+                }).always(function () {
+                    reinitSelect2($('#BedID'));
+                });
+
+            };
+
+            //Gets the list of beds available on this date at the service provider
+            function updateAvailableBedsList() {
+                $.ajax({
+                    url: "@Url.Action("GetAvailableBedsList", "Admissions", null)",
+                    type: "POST",
+                }).done(function (data) {
+                    $('#BedID').empty();
+                    $('#BedID').append(makeOptions(data.Result));
+                }).always(function () {
+                    reinitSelect2($('#BedID'));
+                });
+            };
+
+            //Makes options for a select element from json data.
+            function makeOptions(res) {
+                var str = "";
+                if (res.length > 0) {
+                    //starting the list at 1 so it does not append the first blank element ( so as to not interefere with the default selections)
+                    for (i = 1; i < res.length; i++) {
+                        str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                    }
+                }
+                else {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+                return str;
+            };
+
+            //reinitializes select2 after modifying the options.
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+            };
+
+
+</script>
+    );
+}

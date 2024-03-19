@@ -1,0 +1,140 @@
+﻿@model ClientVitalsViewModel
+
+@{
+	var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@*@Html.HiddenFor(model => model.ClientID, Model.ClientID)
+@Html.HiddenFor(model => model.PersonID)
+@Html.HiddenFor(model => model.IsCreatingFamilyMember)
+@Html.HiddenFor(model => model.EnforceConsent)*@
+
+<div>
+	@Html.HifisEditorFor(m => m.LastName, null, new { @class = "attachSearchEvent" })
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.FirstName, null, new { @class = "attachSearchEvent" })
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.Aka1, null, new { @class = "attachSearchEvent" })
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.DOBDateFirmYNbool, "YesNo")
+</div>
+
+<div>
+	<span id="DOBFlag">
+		@Html.HifisEditorFor(m => m.DOB)
+	</span>
+	<span id="AgeFlag">
+		@Html.HifisEditorFor(m => m.AproximativeAge)
+	</span>
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.GenderID, CachedTableTypes.HIFIS_GenderTypes)
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.DisabilityYN, "YesNo")
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.VeteranStateID, CachedTableTypes.HIFIS_VeteranStatesTypes, new { id = "veteransEdit" })
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.CitizenshipTypeID, CachedTableTypes.HIFIS_CitizenshipTypes)
+</div>
+
+<div>
+	@Html.HifisEditorFor(m => m.AboriginalIndicatorID, CachedTableTypes.HIFIS_AboriginalIndicatorTypes)
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+			
+			var veteransEdit = $("#veteransEdit");
+			veteransEdit.on("blur", function() {
+				var veteransSite = $("#veteransSite");
+				if (veteransEdit.val() == 1)
+					veteransSite.removeClass("hide");
+				else
+					veteransSite.addClass("hide");
+			});
+
+			function setDateFromAge() {
+				var approxAge = parseInt($('#AproximativeAge').val());
+				var currentYear = new Date().getFullYear();
+				var date = new Date();
+				date.setMonth(0);
+				date.setDate(1);
+				date.setFullYear((currentYear - approxAge));
+
+				$('#DOB').val(date.toISOString().slice(0,10));
+			}
+
+			function setAgeFromDate() {
+                var date = new Date($('#DOB').val());
+
+                if (isNaN(date) == false) {
+
+                    var currAge = Math.floor((new Date() - new Date($('#DOB').val()).getTime()) / 3.15576e+10);
+
+                    $('#AproximativeAge').val(currAge);
+                }
+                else {
+                    $('#AproximativeAge').val("");
+                }
+			}
+
+			$('input[name=DOBDateFirmYNbool]').on('switchChange.bootstrapSwitch', function (event, state) {
+
+				if (state) {
+					$('#DOBFlag').show();
+					$('#AgeFlag').hide()
+				}
+				else {
+					$('#DOBFlag').hide();
+					$('#AgeFlag').show();
+				}
+			});
+
+			$(function () {
+				if (veteransEdit.val() == 1)
+					$("#veteransSite").removeClass("hide");
+
+				@{
+					if (Model.DOBDateFirmYNbool)
+					{
+						@:$('#DOBFlag').show();
+														@:$('#AgeFlag').hide();
+													}
+					else
+					{
+						@:$('#DOBFlag').hide();
+														@:$('#AgeFlag').show();
+													}
+					if (Model.ClientID == null)
+					{
+						@:$('#Deceased').hide();
+													}
+				}
+
+				$('#AproximativeAge').change(setDateFromAge);
+				$('#DOB').change(setAgeFromDate);
+			});
+
+			var requiredIf = function () {
+				var value = $("#DOBDateFirmYNbool").bootstrapSwitch("state");
+				return value === false;
+			}
+		</script>
+	);
+}

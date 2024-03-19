@@ -1,0 +1,217 @@
+﻿@model MedicationViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.MedicationID)
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MedicationName, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.MedicationName, null, new { @list = "medications" }, true, null)
+            <input type="hidden" id="SelectedMedication" value="" />
+            <datalist id="medications"></datalist>
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.HealthIssueID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.HealthIssueID, ViewBag.healthIssuesList as SelectList, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PharmacyID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.PharmacyID, ViewBag.placeList as SelectList, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PrescriberID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisAutocompleteFor(
+                m => m.PrescriberID
+                , Url.Content("~/PeopleTombstone/AjaxGetPList")
+                , Model.PrescriberName
+                , new AutocompleteViewModelOptions()
+                {
+                    Placeholder = Labels.SearchForAPerson,
+                    HiddenValue = true,
+                    SelectClientFieldType = SelectClientFieldTypes.Other,
+                    ExcludeLabel = true
+                })
+        </div>
+    </div>
+
+    <div class="row mrgn-bttm-md">
+        <div class="col-xs-4"></div>
+        <div class="col-xs-8">
+            <div class="form-group">
+                <a href="@Url.Action("Search", "PeopleTombstone", new { peopleRoleType = (int)PeopleRoleTypes.Doctor })" aria-label="@Labels.NotLookingFor?" target="_blank">@Labels.NotLookingFor? <span class='glyphicon glyphicon-new-window' style="font-size: .9em;"></span></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Recurrence, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisListBoxFor(model => model.Recurrence, CachedTableTypes.HIFIS_RecurrenceTypes, null, true, true, true)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Dosage, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.Dosage, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MaxNoOfPillsPerDay, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.MaxNoOfPillsPerDay, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.DateStart, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.DateEnd, null, null, true, null)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing() && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.EditableYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+
+    @if (Model.InitialPillCount == 0)
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.InitialPillCount, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(model => model.InitialPillCount, null, null, true, null)
+            </div>
+        </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.InitialPillCount)
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FulfillmentDate, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.FulfillmentDate, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.RefillDate, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.RefillDate, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MedicationDisposalTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.MedicationDisposalTypeID, CachedTableTypes.HIFIS_MedicationDisposalTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Comments, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize", style = "width: 100%;" }, true)
+        </div>
+    </div>
+
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+		    function OnTheFlyCallBackNewPerson(objectID, formData) {
+
+		        var Name = formData["LastName"] + ", " + formData["FirstName"];
+		        $("#AddPerson").val(Name);
+		        $("#PrescriberID").val(objectID);
+		    }
+        </script>
+    );
+    
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+		    //Following code used to append items to datalist.
+		    //Will also manage amount of ajax calls being done if
+            //typing quicker than the calls are being completed.
+		    var count = 0;
+
+		    $(document).ready(function () {
+		        $("#MedicationName").on("input", function () {		            
+
+		                count++;
+
+		                var options = {};
+		                options.url = "/Health/GetMedicationList";
+		                options.type = "GET";
+		                options.data = {
+		                    "searchString": $("#MedicationName").val(),
+		                    "resultsToReturn": 10
+		                };
+		                options.dataType = "json";
+		                options.success = function (data) {
+		                    $("#medications").empty();
+		                    if (count == 1) {
+		                        for (var i = 0; i < data.length; i++) {
+		                            $("#medications").append("<option value='" +
+                                    data[i] + "'></option>");
+		                        }
+		                    }
+		                    count--;
+		                };
+		                $.ajax(options);		            
+		        });
+		    });		    
+
+		    function OnTheFlyCallBackNewPlace(objectID, formData) {
+		        $("#PharmacyID").append($("<option />").val(objectID["id"]).text(formData["PlaceName"]));
+		        $("#PharmacyID").val(objectID["id"]).trigger('change');
+            }
+
+        </script>
+    );
+}

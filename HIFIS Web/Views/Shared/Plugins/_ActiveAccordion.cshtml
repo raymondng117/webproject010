@@ -1,0 +1,21 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     $(function () {
+		         $(".panel").on("click", function () {
+		             var oldlink = $('.panel-info').children().find("a:first").attr('href');
+		             var idwithhash = $(this).find("a:first").attr('href')
+
+		             if (oldlink != idwithhash) {
+		                 $(oldlink).parent().removeClass('panel-info');
+		                 $(oldlink).parent().addClass('panel-default');
+		             }
+
+		             $(idwithhash).parent().removeClass('panel-default');
+		             $(idwithhash).parent().addClass('panel-info');
+		         });
+		     }); 
+        </script>
+    );
+}

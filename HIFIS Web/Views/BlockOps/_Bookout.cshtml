@@ -1,0 +1,90 @@
+﻿@model BlockOpsViewModel
+
+@using (Html.BeginForm("BlockBookout", "BlockOps", FormMethod.Post, new { id = "BlockBookoutForm", @class = "form-horizontal" }))
+{
+    <div class="mrgn-bttm-md">
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">@Labels.ServiceProvider</label>
+                <div id="shelterDiv">
+                    @Html.DropDownList("shelterDropdown_Bookout", Model.shelters, new { id = "shelterDropdown_Bookout", disabled = true})
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">@Labels.ReasonForBookout</label>
+                @Html.HifisEditorFor(m => m.reasonForDischargeSelected, Model.reasonForDischargeList, null, null, true, null)
+            </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+    <div id="BlockBookoutTreeWrapper"></div>
+
+    <div class="mrgn-tp-md">
+        <button id="BlockBookoutSubmitButton" type="submit" class="minusButton">@Labels.BookoutSelectedClients</button>
+    </div>
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+			 $(document).ready(function () {
+
+			     $("#shelterDropdown_Bookout").change(function () {
+
+					if($(this).val() != '')
+					{
+						@Html.Partial("_Ajax", new AjaxViewModel()
+						{
+							Url = "'" + Url.Content("~/BlockOps/GetBookoutTree") + "'",
+							Data = "{ orgID: $(this).val() }",
+                            OnSuccess = "$('#BlockBookoutTreeWrapper').html(data).hide(); initJSTree('#bookoutTree'); $('#BlockBookoutTreeWrapper').show('slow'); $('#expandCollapseBookoutTreeButton').show('slow');"
+						});
+					}
+			     });
+
+			     $("#shelterDropdown_Bookout").change();
+
+			     function wetTreeCheckEvent(event, data, isRightAllowed) {
+			         var node = data.node;
+                 }
+
+                 $(document).on("click", "#BlockBookoutSubmitButton", function (event) {
+                     event.preventDefault();
+                     var clientsToCheckOut = [];
+
+                     if ($("#bookoutTree").attr("data-collapsed") === "true") {
+                         $("#expandCollapseButtonbookoutTree").click();
+                     }
+
+                     $(".leafNode.jstree-clicked").each(function (index, element) {
+
+                         var node = $(element);
+                         var clientID = node.parent().attr("data-branch-id");
+
+                         clientsToCheckOut[index] = clientID;
+                     });
+
+                     var blockBookoutForm = $("#BlockBookoutForm")
+                     var validator = blockBookoutForm.validate();
+                     //validator.element("#reasonForDischarge");
+
+                     if (clientsToCheckOut.length > 0 && blockBookoutForm.valid()) {
+                         var reasonForDischarge = $('#reasonForDischargeSelected').select2('data')[0].id;
+
+                        @Html.Partial("_Ajax", new AjaxViewModel()
+                           {
+                               Url = "'" + @Url.Action("BlockBookout", "BlockOps", null) + "'",
+                               Data = "{ clientList: clientsToCheckOut, reasonForDischarge: reasonForDischarge}",
+                               OnSuccess = "$('#shelterDropdown_Bookout').change();",
+                               OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.FailedToSave + "</p>\");"
+                           });
+                     }
+			     });
+			 });
+</script>);
+}

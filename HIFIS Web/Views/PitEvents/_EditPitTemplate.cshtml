@@ -1,0 +1,20 @@
+﻿@model PitTemplateViewModel
+
+@Html.HiddenFor(model => model.PitTemplateID)
+@Html.HiddenFor(model => model.PitTemplateName)
+
+<div>
+    @Html.HifisEditorFor(m => m.Name, false)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.NameF, false)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.FromPitTemplateID, ViewBag.PitTemplateList as SelectList, "DropDownList", new { data_loader = true })
+</div>

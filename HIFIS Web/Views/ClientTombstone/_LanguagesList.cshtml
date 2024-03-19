@@ -1,0 +1,82 @@
+﻿@model ClientVitalsViewModel
+
+@Html.HiddenFor(model => model.ClientID)
+
+<div>
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Client_Language_List))
+        {
+
+            <table id="languagesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                                    { "width": "35%", "data": "Language"},
+                                                                                                    { "width": "35%", "data": "Service"},
+                                                                                                    { "width": "30%", "data": "Action"}
+                                                                                                ],
+                                                                                                "order": [ [0, "desc"] ],
+                                                                                                "ajax": "@Url.Content("~/ClientTombstone/LanguageListJson?id=" + Model.ReadOnlyVitals.ClientID)"
+                                                                                                }'>
+                 <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.ClientLanguageTypes</th>
+                        <th class="align-text-center">@Labels.IsLanguageOfSevice</th>
+                        <th class="align-text-center">@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody class="align-text-center"></tbody>
+            </table>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="alert exception-panel">
+                        <div class="mrgn-bttm-sm align-center">
+                            <h3 class="panel-title">@Labels.UserRightsException</h3>
+                        </div>
+                        <div>
+                            <p>@Labels.RightsCommentsWarning</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock
+        (@<script type="text/javascript">
+            
+            function defaultSaved() {
+
+                displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                var table = $('#languagesTable');
+                table.DataTable().ajax.reload();
+            }
+
+            function defaultFailed() {
+                displayNotification("error", "", "<p>@Labels.FailedToSave</p>");
+                var table = $('#languagesTable');
+                table.DataTable().ajax.reload();
+            }
+
+            $(document).on('switchChange.bootstrapSwitch', "input[id=ServiceYN]", function () {
+
+                var targetUrl = $(this).attr("href");
+                var btn = $(this);
+                btn.attr("disabled", true); //Disable the button so multiple request don't go through
+                clID = btn.val();
+                cID = $("input[id=ClientID]").val();
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/ClientTombstone/ToggleServiceLanguage") + "'",
+                    Data = "{pPersonID: cID, pPeopleLanguageID: clID}",
+                    OnSuccess = "defaultSaved()",
+                    OnFailure = "defaultFailed()",
+                    OnComplete = "",
+                    Type = "POST"
+                });
+            });
+    </script>);
+}

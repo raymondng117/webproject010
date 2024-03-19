@@ -1,0 +1,99 @@
+﻿@using System
+@model StayViewModel
+
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.ServiceTypeID)
+@Html.HiddenFor(model => model.StayID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.RoomID)
+@Html.HiddenFor(model => model.BedID)
+@Html.HiddenFor(model => model.IsReservation)
+
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.OrganizationName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.OrganizationName, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.PrimaryClientName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.PrimaryClientName, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.HifisDisplayFor(model => model.DateStart, new { @class = "col-sm-7" }, true, "DateAndTime")
+</div>
+
+@if (Model.DateEnd != null)
+{
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+        @Html.HifisDisplayFor(model => model.DateEnd, new { @class = "col-sm-7" }, true, "DateAndTime")
+    </div>
+}
+
+@if (Model.ReasonForDischargeTypeName != null)
+{
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReasonForDischargeTypeName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+        @Html.DisplayFor(model => model.ReasonForDischargeTypeName, new { @class = "col-sm-7" })
+    </div>
+}
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.RoomName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.RoomName, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.BedName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.BedName, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ExpectedBookOutDate, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.ExpectedBookOutDate, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ReasonForServiceName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.ReasonForServiceName, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    <div class="col-sm-6 nopadding" style="display: block;">
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                                new MultipleItemSelectList
+                                                {
+                                                    IDs = Model.AssociatedProgramIDs,
+                                                    List = ViewBag.programsList as SelectList
+                                                })
+    </div>
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.IsAssistanceRequired, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.IsAssistanceRequired, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ReferredByName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.ReferredByName, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.WakeUpTime, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.WakeUpTime, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.IsIntoxicated, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.IsIntoxicated, new { @class = "col-sm-7" })
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md display: inline-block; col-sm-5" })
+    @Html.DisplayFor(model => model.Comments, new { @class = "col-sm-7" })
+</div>

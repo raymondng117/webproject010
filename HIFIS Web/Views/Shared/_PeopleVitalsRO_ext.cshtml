@@ -1,0 +1,16 @@
+﻿@model PeopleVitalsReadOnlyWrapperViewModel
+
+@*This is used to populate needed data that is required from the RO Vitals on the page, to the form*@ 
+
+@Html.HiddenFor(model => model.ReadOnlyVitals.PersonID)
+@Html.HiddenFor(model => model.ReadOnlyVitals.FirstName)
+@Html.HiddenFor(model => model.ReadOnlyVitals.LastName)
+@Html.HiddenFor(model => model.ReadOnlyVitals.MiddleName)
+@Html.HiddenFor(model => model.ReadOnlyVitals.Aka1)
+@Html.HiddenFor(model => model.ReadOnlyVitals.Aka2)
+@Html.HiddenFor(model => model.ReadOnlyVitals.GenderID)
+@Html.HiddenFor(model => model.ReadOnlyVitals.Gender)
+@Html.HiddenFor(model => model.ReadOnlyVitals.DOB)
+@Html.HiddenFor(model => model.ReadOnlyVitals.AproximativeAge)
+@Html.HiddenFor(model => model.ReadOnlyVitals.DOBDateFirmYNbool)
+@Html.HiddenFor(model => model.ReadOnlyVitals.HasPicture)

@@ -1,0 +1,100 @@
+﻿@model PitQuestionDropdownViewModel
+
+<section id="Modal_NewDropDownValue" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.AddDropdownValue</h2>
+    </header>
+    <div class="modal-body">
+        <form id="newDropDownValueForm" class="form-horizontal">
+            @*@Html.Partial("_EditPitDropdown", Model)*@
+            <div>
+                @Html.HiddenFor(m => m.SaveQuestion)
+                @Html.HiddenFor(m => m.QuestionID)
+                @Html.HiddenFor(m => m.QuestionPickListID)
+                @Html.HiddenFor(m => m.LegacyID)
+                @Html.HiddenFor(m => m.LegacyRequired)
+                @Html.HiddenFor(m => m.RollupRequired)
+                @Html.HiddenFor(m => m.Sequence)
+                @Html.HiddenFor(m => m.IsLiveSurveyYN)
+                @Html.HiddenFor(m => m.RollupID)
+                @Html.HiddenFor(m => m.Name)
+                @Html.HiddenFor(m=> m.IsAddOtherSpecify)
+            </div>
+
+            <div>
+                @ViewBag.RollupToLabel ( <input id="DisplayName" type="text" class="form-control" style="display:unset" /> )
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newDropDownValueSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newDropDownValueCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    var form = $("#newDropDownValueForm");
+
+    function requiredif1() {
+    	return ($('#LegacyRequired').val() == 'True');
+    }
+
+    function isRollUpRequired() {
+        return ($('#RollupRequired').val() == 'True');
+    }
+
+    $(function () { form.hifisValidation(); });
+
+    $("#newDropDownValueSaveBtn").click(function () {
+
+        $('#Name').val('@ViewBag.RollupToLabel (' + $('#DisplayName').val() + ')');
+
+        if (form.valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/PitEvents/AjaxCreateDropDownValue")",
+                type: "POST",
+                data: form.serialize()
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+                if (data.Result == true) {
+                	//defaultNotify(data.Success);
+                    var qElementForInsert = $("#SurveyQuestion_@Model.QuestionID option[value='@Model.RollupID']");
+                    // add the new dropdown to the select list
+                	qElementForInsert.after(
+                       $('<option></option>')
+                           .val(data.VM.QuestionPickListID)
+                           .html(data.VM.Name)
+                           .prop('selected', 'selected')  // Selects the new DropDown
+                           );
+
+                    // Make sure the core Other value is unselected - it is only used to trigger the popup...
+                    qElementForInsert.prop("selected", false);
+
+                    var qElement = $("#SurveyQuestion_@Model.QuestionID");
+                    qElement.change(); //refreshes the select list
+
+                    // add the new dropdown to the dropdownlist attributre of the question
+                	var dropdownlist = $.parseJSON(qElement.attr("dropdownlist"));
+                	dropdownlist.push(new function () {
+                		this.ID = data.VM.QuestionPickListID;
+                		this.ActionType = data.VM.DropDownActionTypeID;
+                		this.AffectedQuestionList = data.VM.AffectedQuestionsIDs;
+                        this.AnsweredBehaviourYN = data.VM.AnsweredBehaviourYN;
+                	});
+                	qElement.attr("dropdownlist", JSON.stringify(dropdownlist));
+                };
+                $("#newDropDownValueCloseBtn").click(); //Close the modal window
+            })
+        };
+    });
+
+</script>

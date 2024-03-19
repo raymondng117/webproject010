@@ -1,0 +1,92 @@
+﻿@model ELearning_IndexModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;
+    string name = (lang == english ? Model.SelectedPlaylists.NameE != null ? Model.SelectedPlaylists.NameE : null : Model.SelectedPlaylists.NameF != null ? Model.SelectedPlaylists.NameF : null);
+      
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISTrainingCenter + (name != null ? " - " + name : "");  
+}
+@Html.Hidden("RedirectModuleID", (int?)ViewBag.BrowseRedirect)
+@Html.Partial("Plugins/_ActiveAccordion")
+@Html.Partial("Common/_TopArea")  
+<div class="row">
+    <div class="col-sm-3">
+        @Html.ActionLink(Labels.HIFISHelp_TOC, "TrainingTOC", "HIFISHelp", new { }, new { @class="btn btn-default wdth-100", alt=Labels.HIFISHelp_TOC, aria_label = Labels.HIFISHelp_TOC })                 
+        <table class="wb-tables table help-table" data-wb-tables='{ "ordering" : false, "info": false, "filter": false, "paging": false}'>
+            <thead>                
+                <tr class="">
+                    <th>@Labels.HifisHelp_SelectPlaylist</th>
+                </tr>             
+            </thead>
+            <tbody> 
+                @foreach (var item in Model.TrainingPlaylists)
+                {
+                    var holder = Html.SidebarCurrentTopic(item.PlaylistID.ToString());
+                    var active = holder == item.PlaylistID ? "help-active" : "";                 
+                    <tr>
+                        <td class="@active">
+                            @Html.ActionLink(item.Name, "TrainingIndex", "HIFISHelp", new { id = item.PlaylistID }, new { alt = item.Name, aria_label = item.Name })
+                        </td>
+                    </tr>                                               
+                } 
+            </tbody>
+        </table>
+        <div class="clearfix"></div>   
+    </div>
+    <div class="col-sm-9">
+        @if (Model.SelectedPlaylists.PlaylistModules.IsEmptyOrNull())
+        { 
+            <p><b>
+                @Labels.LandingPage1
+            </b></p>            
+            <p>
+                @Labels.LandingPage2
+            </p>            
+            <p>
+                @Labels.LandingPage3
+            </p>
+            <p>
+                @Labels.LandingPage4
+            </p>
+            <p>
+                @Labels.LandingPage5
+            </p>
+            <p>
+                @Labels.LandingPage6
+            </p>
+            <p>
+                @Labels.LandingPage7
+            </p>
+        }
+        else 
+        { 
+            @Html.Raw((lang == english ? Model.SelectedPlaylists.DescriptionE : Model.SelectedPlaylists.DescriptionF))
+            
+            <div class="row">
+                <div class="col-md-12">
+                      @Html.ActionLink(Labels.StartCourse, "TrainingModule", "HIFISHelp", new { id = Model.SelectedPlaylists.PlaylistModules.First().ModuleID , playlistId =  Model.SelectedPlaylists.PlaylistID }, new { @class = "pull-right btn btn-default", alt=Labels.StartCourse, aria_label = Labels.StartCourse, @role = "button" })          
+                </div>
+            </div>
+            
+            
+        }   
+    </div>
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     $(function () {
+		         var id = $('#RedirectModuleID').val();
+
+		         if (id != null && id != "") {
+		             $('#' + id).addClass('in');
+		             $('#' + id).parent().removeClass('panel-default');
+		             $('#' + id).parent().addClass('panel-info');
+		             $(document).scrollTop($('#' + id).offset().top);
+		         }
+		     });
+        </script>
+    );
+}     

@@ -1,0 +1,110 @@
+﻿@model ClientBarViewModel
+@{
+    if (Model.ClientID == null)
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_ServiceRestrictionsNew;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_NewClientServiceRestriction;
+    }
+   
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@*<div class="row">    
+    <div class="col-sm-offset-2 mrgn-bttm-md">
+	    @if (Model.ReadOnlyVitals == null)
+        {
+            if (RightsHelper.HasRight(UserRights.Client_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Client_Add))
+            {
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.NewClient,
+                        Title = Labels.NewClient,
+                        ActionName = "NewVitals",
+                        ControllerName = "ClientTombstone",
+                        PartialName = "~/Views/ClientTombstone/_ClientVitalsEdit.cshtml",
+                        CallBackFunction = "OnTheFlyCallBack",
+                        ViewModel = new ClientVitalsViewModel() { IsStealth = false }
+                    }
+                )
+            }
+        }
+    </div>
+</div>*@
+
+<div class="clearfix"></div>
+
+<div>
+    @using (Html.BeginForm("New", "ServiceRestrictions", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        if (Model.ReadOnlyVitals == null)
+        {
+            <div class="row">
+                @Html.HifisAutocompleteFor(
+                    model => model.ClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.ClientName
+                    , new AutocompleteViewModelOptions
+                    {
+                        OnSelect = "callGetROVitals();"
+                        , Placeholder = Labels.SearchClient
+                        , HiddenValue = true
+                    })                 
+            </div>
+        }
+        else
+        {
+            @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        }   
+   
+        @Html.Partial("_ServiceRestrictions", Model)  
+        
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				<button type="submit" id="Save" name="radio" class="saveButton  ">@Labels.Save</button>
+                @if (Model.ReadOnlyVitals != null)
+                {
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "ServiceRestrictions", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+                else
+                {
+                    @Html.ActionLink(Labels.Cancel, "List", "ServiceRestrictions", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })    
+                }
+			</div>
+		</div>
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            function callGetROVitals() {
+                getROVitals($('#ClientID').val());
+            }
+
+            function OnTheFlyCallBack(objectID, formData) {
+
+                if ($("#ClientID").val() == "" || $("#ClientID").val() == " ") {
+                    getROVitals($("#ClientID").val());
+                }
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#ClientID").val(objectID);
+
+                getROVitals(objectID);           
+            }
+         </script>   
+    );
+}
+

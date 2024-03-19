@@ -1,0 +1,27 @@
+﻿@model List<ReportParameter>
+
+@for (int i = 0; i < Model.Count; i++)
+{
+    @Html.HiddenFor(m => m[i].Name)
+    @Html.HiddenFor(m => m[i].Label)
+
+    @Html.Label(Model[i].Label)        
+    
+    switch (Model[i].ParameterData.Type)
+    {
+        case "DateTimeParameter":                                
+            @Html.TextBoxFor(m => m[i].ParameterData.Data, null, new { type = "Date" })
+        break;
+        case "NumberParameter":
+        if (Model[i].Name == "Service Providers")
+        {            
+            @Html.ListBoxFor(m => m[i].ParameterData.Data, ViewBag.AllOrganizations as SelectList)
+        }
+        break;
+
+        default:
+        break;
+    }
+            
+    <br /> 
+}

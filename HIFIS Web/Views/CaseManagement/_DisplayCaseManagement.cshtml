@@ -1,0 +1,173 @@
+﻿@model CaseViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseManagementDisplay;
+}
+
+<div class="displayView">
+    <div>
+        <label class="control-label wdth-strct-200">@Labels.Goal</label>
+        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, Model.DesiredOutcomeTypeID)
+    </div>
+    <div>
+        @Html.HifisLabelFor(model => model.ClientsFamilyIDs, new { @class = "control-label wdth-strct-200" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.ClientsFamilyIDs,
+                            List = ViewBag.clientFamilyList as SelectList
+                        })
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.CaseWorkerID, new { @class = "control-label wdth-strct-200" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.CaseWorkerID,
+                            List = ViewBag.CaseWorker as SelectList
+                        })
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "control-label wdth-strct-200" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.OrganizationID,
+                            List = ViewBag.Orgs as SelectList
+                        })
+    </div>
+
+    <div>
+
+        @Html.HifisLabelFor(model => model.CaseStateTypeID, new { @class = "control-label wdth-strct-200" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.CaseStateTypeID,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CaseStateTypes, ViewBag.CurrentCulture, Model.CaseStateTypeID)
+                        })
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.ClientFactors, new { @class = "control-label wdth-strct-200" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.ClientFactors,
+                            List = ViewBag.Factors as SelectList
+                        })
+    </div>
+</div>
+<div class="displayView">
+    <div>
+        <label class="control-label wdth-strct-200" >@Labels.StartDate</label>
+        @Html.DisplayFor(model => model.DateStart)
+    </div>
+    <div>
+        <label class="control-label wdth-strct-200" >@Labels.TargetDate</label>
+        @Html.DisplayFor(model => model.TargetDate)
+            
+    </div>        
+    <div>
+        <label class="control-label wdth-strct-200" >@Labels.EndDate</label>
+        @Html.DisplayFor(model => model.DateEnd)
+    </div>
+    <div>
+        <strong>
+            <label class="control-label wdth-strct-200">@Labels.ExpendedTime</label>
+            <span class="align-bottom">@Model.Hours @Labels.Hrs</span>
+            <span class="align-bottom">@Model.Minutes @Labels.Mins</span>
+        </strong>
+    </div>
+    <div>
+        <strong>
+            <label class="control-label wdth-strct-200">Elapsed Time</label>
+            <span class="align-bottom">@Model.TotalElapsedTime @Labels.Days</span>
+        </strong>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
+<div>
+    @if (RightsHelper.HasRight(UserRights.CaseManagement_Edit, Model.OrganizationID))
+    { 
+        @Html.ActionLink(Labels.Edit, "Edit", "CaseManagement", new { id = Model.PrimaryClientID, caseID = Model.CaseID }, new { @class = "editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role="button" })                                                      
+    }
+
+    @Html.ActionLink(Labels.Cancel, "ClientList", "CaseManagement", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button" })            
+</div>
+
+
+<div class="mrgn-tp-md">
+    
+    <ul class="nav nav-tabs" role="tablist">
+		    <li class="active">
+			    <a class="tabButton" href="#Sessions" role="tab" data-toggle="tab">@Labels.Sessions</a>
+		    </li>
+		    <li>
+			    <a class="tabButton" href="#Documents" role="tab" data-toggle="tab">@Labels.Documents</a>
+		    </li>
+		    <li>
+			    <a class="tabButton" href="#CaseComments" role="tab" data-toggle="tab">@Labels.CaseComments</a>
+		    </li>
+	    </ul>
+
+	    <!-- Tab panes -->
+	    <div class="panel panel-default border-top-fix-tabs">
+		    <div class="panel-body">
+			    <div class="tab-content">
+				    <div class="tab-pane active" id="Sessions">
+					    <div class="table-responsive">
+                            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+						        <thead>
+							        <tr>
+								        <th>@Labels.Activity</th>
+								        <th>@Labels.Date</th>
+								        <th>@Labels.CaseWorker</th>
+								        <th>@Labels.Action</th>
+							        </tr>
+						        </thead>
+					        </table>
+					    </div>
+                        <div>
+                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Add, Model.OrganizationID))
+					        { 
+						        @Html.ActionLink(Labels.NewSession, "NewMeeting", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID, goalID = Model.DesiredOutcomeTypeID }, new { @class = "addButton", alt=Labels.NewSession, aria_label=Labels.NewSession, @role="button" })
+					        }
+                        </div>
+				    </div>
+				   
+                    <div class="tab-pane" id="Documents">
+                        <div class="table-responsive">
+                            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.ExistingAttachments</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+				    <div class="tab-pane" id="CaseComments">
+					    <div class="table-responsive">
+                            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.Date</th>
+                                        <th>@Labels.User</th>
+                                        <th>@Labels.Subject</th>
+                                        <th>@Labels.Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+					    </div>
+				    </div>
+			    </div>
+		    </div>
+	    </div>
+</div>    

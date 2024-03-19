@@ -1,0 +1,251 @@
+﻿@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="attestationDialog" class="modal mrgn-tp-10">
+    <div class="modal-dialog whiteBackground">
+        <div id="AttestationModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <h2 class="modal-title">@Labels.AttestationDialogTitle</h2>
+            </div>
+            <div class="modal-body client-profile">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <section class="col-sm-12 profile-image-frame-modal">
+                            <img id="pictureLoader" class="img-rounded img-responsive placeholder" alt=""
+                                 src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" title="Client's picture" />
+                            <img id="clientsPicture" class="img-rounded img-responsive icon" src="" title="Client's picture" />
+                        </section>
+                        <section class="col-sm-12">
+                            <div class="row">
+                                <div class="pstn-bttm-sm col-sm-12">
+                                    <p class="text-center opct-80 well brdr-rds-0 well-sm mrgn-bttm-0"><strong id="fullname"></strong></p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-sm-6">
+                        <section class="col-sm-12">
+                            <div class="well well-sm mrgn-bttm-sm">
+                                <div class="profile-outer-box">
+                                    <div class="row profile-info">
+                                        <div class="col-xs-6 text-left profile-info-content">
+                                            <span class="color-accent">@Labels.Gender</span>
+                                        </div>
+                                        <div class="col-xs-6 text-right profile-info-content">
+                                            <span id="gender"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row profile-info">
+                                        <div class="col-xs-6 text-left profile-info-content">
+                                            <span class="color-accent">@Labels.DOB</span>
+                                        </div>
+                                        <div class="col-xs-6 text-right profile-info-content">
+                                            <span id="dateOfBirth"></span>&nbsp;(<strong id="aproxAge"></strong>)
+                                        </div>
+                                    </div>
+                                    <div class="row profile-info">
+                                        <div class="col-xs-6 text-left profile-info-content">
+                                            <span class="color-accent">@Labels.FamilyStatus</span>
+                                        </div>
+                                        <div class="col-xs-6 text-right profile-info-content">
+                                            <span id="isInFamily"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row profile-info">
+                                        <div class="col-xs-6 text-left profile-info-content">
+                                            <span class="color-accent">@Labels.Aka1</span>
+                                        </div>
+                                        <div class="col-xs-6 text-right profile-info-content">
+                                            <span id="aka1"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row profile-info">
+                                        <div class="col-xs-6 text-left profile-info-content">
+                                            <span class="color-accent">@Labels.Aka2</span>
+                                        </div>
+                                        <div class="col-xs-6 text-right profile-info-content">
+                                            <span id="aka2"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <p>
+                            @((ViewBag.CurrentCulture == Constants.Eng ?
+                        Html.Raw(appSettings.GetAttestationTextEng()) :
+                        Html.Raw(ViewBag.CurrentCulture == Constants.Fr ? appSettings.GetAttestationTextFr() : string.Empty)
+                        ))
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="noButton" class="btn btn-default" data-dismiss="modal">@Labels.No</button>
+                <button type="button" id="yesButton" class="btn btn-primary">@Labels.Yes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            var selectedClientUrl = '';
+            var selectedClientID = '';
+            var $pictureLoader = $("#pictureLoader");
+            var $clientsPicture = $("#clientsPicture");
+
+            function dateDiffInYears(dateold, datenew) {
+                var ynew = datenew.getFullYear();
+                var mnew = datenew.getMonth();
+                var dnew = datenew.getDate();
+                var yold = dateold.getFullYear();
+                var mold = dateold.getMonth();
+                var dold = dateold.getDate();
+                var diff = ynew - yold;
+                if (mold > mnew) diff--;
+                else {
+                    if (mold == mnew) {
+                        if (dold > dnew) diff--;
+                    }
+                }
+                return diff;
+            }
+
+            function setLoaderOn() {
+                $pictureLoader.removeClass("off");
+                if (!$pictureLoader.hasClass("on")) {
+                    $("#pictureLoader").addClass("on");
+                }
+                $clientsPicture.removeClass("on");
+                if (!$clientsPicture.hasClass("off")) {
+                    $clientsPicture.addClass("off");
+                }
+            }
+
+            function setLoaderOff() {
+                $pictureLoader.removeClass("on");
+                if (!$pictureLoader.hasClass("off")) {
+                    $pictureLoader.addClass("off");
+                }
+                $clientsPicture.removeClass("off");
+                if (!$clientsPicture.hasClass("on")) {
+                    $clientsPicture.addClass("on");
+                }
+            }
+
+            function showDefaultPicture(genderID) {
+                setLoaderOn();
+                var pictureSrc = "";
+                if (genderID == "@((short)GenderTypes.Female)") {
+                    pictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+                } else {
+                    pictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+                }
+
+                $("#clientsPicture").on("load", function () {
+                    setLoaderOff();
+                }).attr("src", pictureSrc);
+            }
+
+            function showClientPicture(genderID, clientID) {
+                setLoaderOn();
+                var pictureSrc = "@Url.Action("GetClientPhotoThumbnail", "Documents")?id=" + clientID;
+                $("#clientsPicture").one("error", function () {
+                    if (genderID == "@((short)GenderTypes.Female)") {
+                        pictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+                    } else {
+                        pictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+                    }
+                    $("#clientsPicture").attr("src", pictureSrc);
+                });
+                $("#clientsPicture").on("load", function () {
+                    $("#clientsPicture").off("error");
+                    setLoaderOff();
+                }).attr("src", pictureSrc);
+            }
+
+            function setModalContent(clientROVitals, clientID) {
+                if (clientROVitals.HasPicture) {
+                    showClientPicture(clientROVitals.GenderID, clientID);
+                } else {
+                    showDefaultPicture(clientROVitals.GenderID);
+                }
+
+                $("#fullname").html(clientROVitals.FirstName + " " + clientROVitals.LastName);
+                $("#gender").html(clientROVitals.Gender);
+                $("#aka1").html(clientROVitals.Aka1);
+                $("#aka2").html(clientROVitals.Aka2);
+
+                var dob = new Date(parseInt(clientROVitals.DOB.replace(/\/Date\((-?\d+)\)\//gi, "$1")));
+                $("#dateOfBirth").html(dob.toJSON().slice(0, 10));
+                if (clientROVitals.AproximativeAge != "0") {
+                    $("#aproxAge").html(clientROVitals.AproximativeAge);
+                } else {
+                    $("#aproxAge").html(dateDiffInYears(dob, new Date()));
+                }
+
+                if (clientROVitals.IsInFamily) {
+                    $("#isInFamily").html('@Labels.Yes');
+                } else {
+                    $("#isInFamily").html('@Labels.No');
+                }
+            }
+
+            $(function () {
+
+                $(document).on('click', "a.clientLink", function (event) {
+                    event.preventDefault();
+
+                    selectedClientUrl = $(this).attr('href');
+                    selectedClientID = $(this).attr('data-attest-client-id');
+
+                    //check if the client has an attestation
+                    $.ajax({
+                        url: "@Url.Action("GetAttestationROVitals", "Master")",
+                        type: "POST",
+                        data: { ClientID: selectedClientID }
+                    }).done(function (data) {
+                        if (data.Success) {
+                            if (!data.Result.CurrentOrgAttestation) {
+                                setModalContent(data.Result, selectedClientID);
+                                $('#attestationDialog').modal('toggle');
+                            } else {
+                                window.location.href = selectedClientUrl;
+                            }
+                        }
+                    });
+
+                    return false;
+                });
+
+                $('#attestationDialog').modal({
+                    backdrop: 'static',
+                    keyboard: false,
+                    show: false
+                });
+
+                $('#yesButton').on('click', function () {
+                    $("#attestationDialog").modal('toggle');
+
+                    //go ahead and save the attestation
+                    $.ajax({
+                        url: "@Url.Action("SaveClientAttestation", "Master")",
+                        type: "GET",
+                        data: { "ClientID": selectedClientID },
+                    }).done(function (data) {
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                        //then continue with normal flow
+                        window.location.href = selectedClientUrl;
+                    });
+                });
+            });
+</script>
+);
+}

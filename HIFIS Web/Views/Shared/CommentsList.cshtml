@@ -1,0 +1,29 @@
+﻿@model List<DevCommentViewModel>
+           
+<ol class="mrgn-lft-md mrgn-rght-md wet-boew-zebra">
+    @foreach (DevCommentViewModel comment in Model.OrderBy(c => c.DateTime))
+    {
+        <li>
+            <span><b>@comment.Firstname @comment.Lastname</b></span>
+            <span class="align-right align-right"><b>@comment.DateTime.ToString("f", System.Threading.Thread.CurrentThread.CurrentCulture)</b></span>
+            <div class="clearfix"></div>
+            <span class="mrgn-tp-md">
+                @comment.Comment
+            </span>
+
+            <details class="margin-left-none">
+                <summary>Reply</summary>
+                <ol class="margin-left-none margin-right-none wet-boew-zebra">
+                    <li>
+                        @Html.Partial("_CreateComment", new DevCommentViewModel((string)HttpContext.Current.Request.RequestContext.RouteData.Values["controller"] + "/" + (string)HttpContext.Current.Request.RequestContext.RouteData.Values["action"], comment.CommentID))
+                    </li>
+                </ol>
+            </details>
+
+            @if (comment.Responses.Count > 0)
+            {
+                @Html.Partial("CommentsList", comment.Responses)
+            }
+        </li>
+    }
+</ol>

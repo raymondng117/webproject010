@@ -1,0 +1,49 @@
+﻿
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            var hasFormDataChanged = false;
+
+            window.onbeforeunload = function (e) {
+                if (hasFormDataChanged) {
+                    //e.preventDefault();
+
+                    // As long as preventDefault() is called the browser will automatically prompt the user
+                    // BUT, I've only seen this work in Firefox. It doesn't in OUR version of IE, but maybe the newest
+                    // TODO: Make sure this works in all browsers
+                    //            $("#confirm-redirect").dialog({
+                    //                buttons: {
+                    //                    "Confirm": function () {             
+                    //                    },
+                    //                    "Cancel": function () {
+                    //                        $(this).dialog("close");
+                    //                    }
+                    //                }
+                    //            });
+
+                    //            $("#confirm-redirect").dialog("open");
+                    return false;
+                }
+            };
+
+            $(function () {
+                //        $("#confirm-redirect").dialog({
+                //                autoOpen: false,
+                //                modal: true,
+                //                resizable: false,
+                //                height: 170,
+                //                width: 400
+                //        });
+
+                $('form:not(#GlobalSearchForm) input, form:not(#GlobalSearchForm) select, form:not(#GlobalSearchForm) textarea').change(function (e) {
+                    hasFormDataChanged = true;
+                });
+                $('form:not(#GlobalSearchForm)').submit(function () { hasFormDataChanged = false; });
+            });
+        </script>);
+}
+
+@*<div id="confirm-redirect" title="Confirm redirect">
+    <p>You have unsaved form data. Are you sure you'd like to leave this page?</p>
+</div>*@

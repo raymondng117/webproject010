@@ -1,0 +1,83 @@
+﻿@model ClientContributingBehaviouralFactorsViewModel
+
+<section id="Modal_DisplayBFactor" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_DisplayClientContributingFactor</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="col-sm-12">
+            <div class="displayView align-center">
+                @Html.HiddenFor(model => model.ClientID)
+                @Html.HiddenFor(model => model.ClientFactorID)
+                @Html.HiddenFor(model => model.isContributingFactor)
+
+                <div class="row">
+                    @Html.HifisLabelFor(null, @Labels.ContributingFactor, new { @class = "autowidth col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.FactorTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ContributingFactorTypes, Culture, Model.FactorTypeID)
+                            })
+                </div>
+
+
+                <div class="row">
+                    @Html.HifisDisplayFor(model => model.DateStart, null, false, "DateOnly")
+                </div>
+
+                <div class="row">
+                    @Html.HifisDisplayFor(model => model.DateEnd, null, false, "DateOnly")
+                </div>
+
+                @*<div>
+
+                    @Html.HifisLabelFor(model => model.ProbabilityTypeID, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.ProbabilityTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ProbabilityTypes, Culture, Model.ProbabilityTypeID)
+                            })
+                </div>*@
+
+                <div class="row" style="word-wrap:break-word;">
+                    @Html.HifisDisplayFor(model => model.Comments, new { @class = "commentBoxSize", @readonly = "readonly" })
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row modal-footer" style="background-color: white;">
+            <div class="col-sm-12">
+                <div class="mrgn-tp-md">
+                    <button id="newPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script>
+
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_DisplayCFactor');
+
+    $(function () { $("#excelParamForm").hifisValidation(); });
+
+    $("#excelGetBtn").click(function () {
+
+        if ($("#excelParamForm").valid()) {
+            $("#excelParamForm").submit();
+        }
+    });
+
+
+
+</script>
+
+

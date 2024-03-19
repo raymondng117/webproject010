@@ -1,0 +1,66 @@
+﻿@model DietViewModel         
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayDiet;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="displayView col-xs-12 mrgn-tp-md">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CategoryTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="CategoryTypeID" name="CategoryTypeID"
+                   value=" @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                            new SingleItemSelectList 
+                            {
+                                ID = Model.CategoryTypeID,
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_DietCategoryTypes, ViewBag.CurrentCulture, Model.CategoryTypeID) 
+                            })" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FoodItemTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="FoodItemTypeID" name="FoodItemTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.FoodItemTypeID,
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_DietFoodItemTypes, ViewBag.CurrentCulture, Model.FoodItemTypeID)
+                            })" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AvoidedDietYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="AvoidedDietYN" name="AvoidedDietYN"
+                   value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.AvoidedDietYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ActiveYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="ActiveYN" name="ActiveYN"
+                   value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ActiveYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row mrgn-tp-md">
+        <div class="col-xs-12">
+            @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+        </div>
+    </div>
+
+
+    <div class="mrgn-tp-lg">@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+</div>
+

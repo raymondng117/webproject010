@@ -1,0 +1,139 @@
+﻿@model IncidentViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+@Html.Hidden("clientID", ViewBag.ClientID as string)
+@Html.HiddenFor(model => model.IncidentID)
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+<div>
+    @Html.HifisMultiAutocompleteFor(m => m.PeopleInvolvedPersonIDs, "~/PeopleTombstone/AjaxGetPList", Model.PeopleInvolved.Select(pi => pi.PeopleInvolvedFullName), 
+        new AutocompleteViewModelOptions() { Placeholder = Labels.PeopleInvolved, KeepInputAfterSelect = true, AllowClear = true, SelectClientFieldType = SelectClientFieldTypes.Other }, null, null)
+</div>
+
+<div>
+    @Html.HifisMultiAutocompleteFor(m => m.PeopleWitnessPersonIDs, "~/PeopleTombstone/AjaxGetPList", Model.PeopleWitnesses.Select(pw => pw.PeopleWitnessFullName),
+        new AutocompleteViewModelOptions() { Placeholder = Labels.PeopleWitness, KeepInputAfterSelect = true, AllowClear = true, SelectClientFieldType = SelectClientFieldTypes.Other }, null, null)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.EmergencyServiceTypes, CachedTableTypes.HIFIS_EmergencyServiceTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.IncidentType, CachedTableTypes.HIFIS_IncidentTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.IncidentDateAndTime, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Location)
+</div>
+
+<div id="ChargesLaidID">
+        <hr />
+    @Html.HifisEditorFor(model => model.ChargesLaidYN, "YesNo")
+</div>
+
+<div id="PoliceBadgeID">
+    @Html.HifisEditorFor(model => model.PoliceBadge)
+</div>
+
+<div id="PoliceReportNoID">
+    @Html.HifisEditorFor(model => model.PoliceReportNo)
+    <hr />
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DispositionType, CachedTableTypes.HIFIS_DispositionTypes)
+</div>
+
+<div class="mrgn-bttm-md">
+    @Html.HifisEditorFor(model => model.Attachments, "File")
+</div>
+
+@if (!Model.AttachmentsDisplay.IsEmptyOrNull())
+{
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ExistingAttachments</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (IncidentAttachmentDisplayViewModel document in Model.AttachmentsDisplay)
+                {
+                    <tr>
+                        <td>@Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(document.DocumentID), ClientID = Model.ClientID }, new { alt = document.Name, aria_label = document.Name })</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+</div> 
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             var attachmentsDiv;
+             var emptyAttachment;
+
+             function AddAttachment() {
+                 var att = emptyAttachment
+                             .clone(true)
+                             .attr('id', '')
+                             .css('display', 'block');
+
+                 att.find('input').prop('disabled', false);
+
+                 attachmentsDiv.append(att);
+             }
+            
+             $(function () {
+                 attachmentsDiv = $('#attachmentsDiv');
+                 emptyAttachment = $('#emptyAttachment');
+
+                 emptyAttachment.hide();
+
+                 $('#addAttachment').click(AddAttachment);
+
+                 $('.removeAttachment').click(function (e) {
+                     $(e.target).parents('.attachment').remove();
+                 });
+
+                 $('#EmergencyServiceTypes').change(function (e) {
+                     if ($.inArray('@((short)EmergencyServiceTypes.Police)', $("#EmergencyServiceTypes").val()) < 0) {
+                         $('#PoliceBadge').val('');
+                         $('#PoliceReportNo').val('');
+                         $('#ChargesLaidYN-No').prop('checked', true); // YesNo appends -Yes or -No to the radio button field name
+
+                         $('#PoliceBadgeID').hide();
+                         $('#PoliceReportNoID').hide();
+                         $('#ChargesLaidID').hide();                         
+                     }
+                     else {
+                         $('#PoliceBadgeID').show();
+                         $('#PoliceReportNoID').show();
+                         $('#ChargesLaidID').show();  
+                     }
+                 }).change();
+             });
+
+             function OnTheFlyCallBack(objectID, formData) {
+
+             }
+        </script>
+    );
+}

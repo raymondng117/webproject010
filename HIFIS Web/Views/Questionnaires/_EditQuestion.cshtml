@@ -1,0 +1,34 @@
+﻿@model HIFIS.WEB.ViewModels.QuestionnaireQuestionViewModel
+
+<div>
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.QuestionnaireID)
+    @Html.HiddenFor(m => m.QuestionNo)
+    @Html.HiddenFor(m => m.QuestionID)
+    @Html.HiddenFor(m => m.SaveQuestion)
+
+    <div>
+        @Html.HifisDisplayFor(model => model.QuestionaireName)
+    </div>
+
+    <div>
+        @Html.HifisDisplayFor(model => model.QuestionNo)
+    </div>
+    <br />
+
+    <div>
+        @Html.HifisTextAreaFor(m => m.Question, new { @class="wdth-strct-400" })
+    </div>
+
+    <div>
+        @Html.HifisTextAreaFor(m => m.QuestionF, new { @class = "wdth-strct-400" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.QuestionTypeID, CachedTableTypes.HIFIS_QuestionTypes)
+    </div>
+</div>

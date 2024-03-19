@@ -1,0 +1,13 @@
+﻿@model StayViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_BookIn;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div id="stayFormDiv">
+    @Html.Partial("_DisplayStay", Model)
+</div>
+
+<div>
+    @Html.ActionLink(Labels.Back, "Index", "Admissions", null, new { @class = "prevButton mrgn-tp-sm no-print", alt = Labels.Back, aria_label=Labels.Back, @role="button" })
+</div>

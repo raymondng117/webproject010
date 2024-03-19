@@ -1,0 +1,224 @@
+﻿@model IncomeViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.IncomeID)
+    @Html.HiddenFor(model => model.ReadOnlyVitals.AboriginalIndicatorID, new { id = "aboriginalIndicatorID" })
+    @Html.HiddenFor(model => model.ReadOnlyVitals.AproximativeAge, new { id = "approximativeAge" })
+
+    <div class="row">
+        @Html.HifisLabelFor("ddlIncomeType", Labels.IncomeType, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisRollupEditorFor(model => model.IncomeTypeID, CachedTableTypes.HIFIS_IncomeTypes, new { @class="max_width_70", id = "ddlIncomeType" }, null, true, null)
+        </div>
+    </div>
+
+    <div id="EmploymentPanel">
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmploymentTypeID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.EmploymentTypeID, CachedTableTypes.HIFIS_EmploymentTypes, new { style = "width: 100%;" }, true, null)
+            </div>
+        </div>
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmployerTypeID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.EmployerTypeID, CachedTableTypes.HIFIS_EmployerTypes, new { style = "width: 100%;" }, true, null)
+            </div>
+        </div>
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmployerName, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisTextBoxFor(model => model.EmployerName, null, true, null)
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor("ddlFrequencyType", Labels.PayFrequency, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.FrequencyTypeID, CachedTableTypes.HIFIS_PayFrequencyTypes, new { id = "ddlFrequencyType" }, true, null)
+        </div>
+    </div>
+
+    <div id="Frequency" class="row">
+        @Html.HifisLabelFor("Frequency_Input", Labels.Hourspermonth, new { id = "HourMonth", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("Frequency_Input", Labels.Dayspermonth, new { id = "DayMonth", @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisTextBoxFor(model => model.HoursDays, new { type = "number", id = "Frequency_Input", @class = "form-control", step = "any" }, true, null)
+        </div>
+    </div>
+
+    <div id="Wage" class="row">
+        @Html.HifisLabelFor("Wage_Input", Labels.Hourlywage, new { id = "HourlyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("Wage_Input", Labels.Dailywage, new { id = "DailyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("Wage_Input", Labels.Weeklywage, new { id = "WeeklyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("Wage_Input", Labels.BiWeeklywage, new { id = "BiWeeklyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("Wage_Input", Labels.MonthlyAmount, new { id = "MonthlyWage", @class = "col-xs-4 control-label" })
+        @Html.HifisLabelFor("Wage_Input", Labels.Yearlywage, new { id = "YearlyWage", @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.PayAmount, "Money", new { @class = "money", id = "Wage_Input" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IncomeDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.IncomeDateStart, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IncomeDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.IncomeDateEnd, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IsPrimaryYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.IsPrimaryYN, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing() && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(model => model.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(model => model.EditableYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        ShowHideFrequencyTypeDIV();
+        ShowHideEmploymentDIV();
+
+        //Because of the way the input element and label are created for wage, the form group wrapper that gets created with all input elements needs to be removed.
+        $('#PayAmount').closest('.form-group').removeClass('form-group');
+
+        $('#error').hide();
+
+        //required if hourly or daily
+        $('#HoursDays').addClass("align-left");
+        $('#HoursDays').after('<span id="hoursdaysStar" class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger "></span>');
+        toggleHoursDaysMandatory();
+    });
+
+    $('#ddlFrequencyType').ready(ShowHideFrequencyTypeDIV);
+    $('#ddlFrequencyType').change(ShowHideFrequencyTypeDIV);
+    $('#ddlIncomeType').ready(ShowHideEmploymentDIV);
+    $('#ddlIncomeType').change(ShowHideEmploymentDIV);
+
+    function ShowHideFrequencyTypeDIV()
+    {
+        var FrequencyTypeID = parseInt($('#ddlFrequencyType').val());
+        $("#HourMonth").hide();
+        $("#DayMonth").hide();
+        $("#Frequency").hide();
+        $("#HourlyWage").hide();
+        $("#DailyWage").hide();
+        $("#WeeklyWage").hide();
+        $("#BiWeeklyWage").hide();
+        $("#MonthlyWage").hide();
+        $("#YearlyWage").hide();
+
+        if (@((byte)PayFrequencyTypes.Hourly) == FrequencyTypeID) {
+            $("#Wage").show();
+            $("#HourMonth").show();
+            $("#Frequency").show();
+            $("#HourlyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Daily) == FrequencyTypeID) {
+            $("#Wage").show();
+            $("#DayMonth").show();
+            $("#Frequency").show();
+            $("#DailyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Weekly) == FrequencyTypeID) {
+            $("#Wage").show();
+            $("#WeeklyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Bi_Weekly) == FrequencyTypeID) {
+            $("#Wage").show();
+            $("#BiWeeklyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Monthly) == FrequencyTypeID) {
+            $("#Wage").show();
+            $("#MonthlyWage").show();
+        }
+        else if (@((byte)PayFrequencyTypes.Yearly) == FrequencyTypeID) {
+            $("#Wage").show();
+            $("#YearlyWage").show();
+        }
+        else
+        {
+            $("#Wage").hide();
+        }
+
+        toggleHoursDaysMandatory();
+    }
+
+    function ShowHideEmploymentDIV() {
+        //TODO: MPT Make sure once in the UAT environment that the EmploymentPanel does open when the values are selected
+        var IncomeTypeID = getLookupOrRollup('#ddlIncomeType'); //$("#ddlIncomeType").val();
+
+        $("#EmploymentPanel").hide();
+
+        if (@((byte)IncomeTypes.EmploymentCasual) == IncomeTypeID) {
+            $("#EmploymentPanel").show();
+        }
+        if (@((byte)IncomeTypes.EmploymentFull) == IncomeTypeID) {
+            $("#EmploymentPanel").show();
+        }
+        if (@((byte)IncomeTypes.EmploymentPart) == IncomeTypeID) {
+            $("#EmploymentPanel").show();
+        }
+    }
+
+    function valueRequired() {
+        if ($('#ddlFrequencyType').val() == "1" || $('#ddlFrequencyType').val() == "2") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function toggleHoursDaysMandatory(){
+        var frequencyType = $('#ddlFrequencyType').val();
+
+        switch(frequencyType){
+            case "@((short)PayFrequencyTypes.Hourly)":
+                case "@((short)PayFrequencyTypes.Daily)":
+                    $('#HoursDays').siblings(".glyphicon-star").addClass("show");
+                    $('#HoursDays').siblings(".glyphicon-star").removeClass("hide");
+                    break;
+            default:
+                $('#HoursDays').siblings(".glyphicon-star").addClass("hide");
+                $('#HoursDays').siblings(".glyphicon-star").removeClass("show");
+                //console.log('other frequency type: ' + frequencyType);
+                break;
+        }
+    }
+
+</script>

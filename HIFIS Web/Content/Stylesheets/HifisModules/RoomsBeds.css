@@ -1,0 +1,186 @@
+﻿.ui-draggable-dragging
+{
+    z-index: 10000; /* put it in front of the rooms/beds colorbox */
+}
+
+.shelter
+{
+    border: 1px dotted #ccc;
+
+    margin: 0 0 16px 0;
+}
+
+.room
+{
+    display: inline-block;
+
+    box-shadow: 1px 1px 3px #aaa;
+    border: 1px solid #ccc;
+
+    margin: 8px 8px 8px 0;
+    vertical-align: top;
+}
+
+.shelter, .room
+{
+    box-shadow: 1px 1px 3px #aaa;
+    border-radius: 5px;
+
+    padding: 4px;
+}
+
+.bed-box,
+.bed-new-box,
+.beds .ui-state-highlight
+{
+    margin: 0 35px 4px 0;
+    display: block;
+}
+
+.bed-box
+{
+    border: 1px solid black;
+    background: #befcce;
+}
+
+.bed-occupied
+{
+    background: #fcbece;
+}
+
+.bed-occupied .bed-icon
+{
+    margin-top: 4px;
+}
+
+.bed-occupied .bed-name
+{
+    display: none;
+}
+.bed-occupied .bed-clients
+{
+    min-width: 18px;
+    min-height: 18px;
+    position: relative;
+    width: auto;
+    height: auto;
+    top: 0px;
+}
+
+.bed-occupied > .ui-button-text
+{
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.bed-new-box
+{
+    background: White;
+    border: 1px dotted gray;
+}
+
+.beds .ui-state-highlight
+{
+    border-radius: 5px;
+}
+
+/* move action buttons to the right of their actionable items */
+.bed-add,
+.bed-delete,
+.room-delete
+{
+    float: right;
+}
+
+/* when a room has no beds, provide a place to drop beds from other rooms */
+.beds
+{
+    min-height: 33px;
+    min-width: 140px;
+}
+
+.bed-icon
+{
+    /* select background image */
+
+    background-repeat: no-repeat;
+    display: inline-block;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: text-top;
+    width: 16px;
+
+    /* select specific icon */
+    background-position: -18px -270px;
+
+    /* position icon */
+    position: absolute;
+    left: 3px;
+}
+
+.bed-name
+{
+    margin-right: 17px; /* give room for client container */
+    margin-left: 6px; /* give room for icon */
+}
+
+.bed-clients
+{
+    position: absolute;
+    right: 4px;
+    top: 3px;
+
+    display: inline-block;
+    min-width: 18px;
+    min-height: 18px;
+    border: 1px dashed;
+    margin-left: 12px;
+}
+
+.client.booking-in
+{
+    background: repeat-x scroll 50% 50% #4CA20B;
+    border: 1px solid #45930B;
+    border-radius: 4px;
+}
+.client
+{
+    background: repeat-x scroll 50% 50% #4CA20B;
+    border: 1px solid #45930B;
+    border-radius: 4px;
+}
+
+.client.booking-in .ui-button-text
+{
+    color: #fff;
+}
+.client .ui-button-text
+{
+    color: #4C3000;
+}
+
+.client.booking-in .ui-icon-person
+{
+}
+.client .ui-icon-person
+{
+}
+
+#stays-dock
+{
+    min-height: 28px;
+    background-color: #eee;
+    margin: 10px;
+}
+
+#RoomView .open
+{
+	border-bottom: thin solid lightgrey;
+	border-left: thin solid lightgrey;
+	padding-right:2px;
+}
+
+#RoomView .open .open
+{
+	border:none;
+}

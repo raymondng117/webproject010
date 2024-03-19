@@ -1,0 +1,104 @@
+﻿@model ClientCountryViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CountryOfOrigin;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("EditCountry", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))    
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ClientID)
+    
+        <div>
+            @Html.HifisEditorFor(model => model.CountryOfBirth, CachedTableTypes.HIFIS_CountryTypes, new { @class = "Country", id = "ddlCountryOfBirth" })
+        </div>
+
+        <div id="divClientBirthCanada">
+            @Html.Partial("_ClientBirthCanada", Model) 
+        </div>
+        <div id="divClientBirthUnitedStates">
+            @Html.Partial("_ClientBirthUnitedStates", Model) 
+        </div>
+        <div id="divClientBirthInternational">
+            @Html.Partial("_ClientBirthInternational", Model) 
+        </div>
+      
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		        <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "DisplayCountry", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	        </div>
+        </div> 
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(document).ready(function()
+            {
+                $(".Country").change(function()
+                {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "'" + Url.Content("~/ClientTombstone/AjaxGetProvinceList") + "'",
+                       Data = "{CountryID: $(this).val()}",
+                       OnSuccess = @"var select = document.getElementById('ProvinceOfBirth');
+                                        select.options.length = 0; // clear out existing items
+                                        for(var i=0; i < data.length; i++) {
+                                            var d = data[i];
+                                            select.options.add(new Option(d.Text, d.Value))
+                                        }
+                                        $('#ProvinceOfBirth').trigger('change');
+                                        "
+                   })
+                });
+            });
+        </script>
+    );
+        
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $('#ddlCountryOfBirth').ready(ShowHideCountryDIV);
+            $('#ddlCountryOfBirth').change(ShowHideCountryDIV);
+
+            function ShowHideCountryDIV() {
+                var countryID = parseInt($('#ddlCountryOfBirth').val());
+
+                if (countryID == 1) { // Canada
+                    $('#divClientBirthCanada').show();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').hide();
+                }
+                else if (countryID == 2) { // United States
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').show();
+                    $('#divClientBirthInternational').hide();
+                }
+                else if (countryID >= 3) { // International
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').show();
+                }
+                else if (countryID != undefined || countryID != NaN || countryID != '') { // No Selection
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').hide();
+                }
+                else { // Default
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').hide();
+                }
+            }
+        </script>
+    );
+}

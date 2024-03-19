@@ -1,0 +1,25 @@
+﻿
+<div class="VATControlPanel NoMobileProgress pddng-xs">
+    <button type="button" class="close mrgn-bttm-none closePanel"><span aria-hidden="true">&times;</span><span class="sr-only">@Labels.Close</span></button>
+    <h5 class="mrgn-tp-none mrgn-bttm-none">@Labels.ProgressPanel</h5>
+    <hr />
+
+    <div class="container" style="width:98%; margin-bottom: -30px; margin-top: -10px;">
+        <div class="row">
+            <div class="col-md-3 col-sm-3 col-xs-1" style="width:400px;"><b>@Labels.TotalProgress</b></div>
+            <div class="col-md-3 col-sm-3 col-xs-1" style="padding-left: 100px;"><b>@Labels.Total</b></div>
+        </div>
+        <div class="row">
+            <div class="col-xs-9">
+                <div class="progress" style="margin-top:10px;">
+                    <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 0%;" id="grandTotalProgress">
+                        0%
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-push-1 col-xs-2" style="padding-left: 55px;">
+                <h1 style="margin-top:1px;  float:right;" id="grandTotalAnswered">0</h1>
+            </div>
+        </div>
+    </div>
+</div>

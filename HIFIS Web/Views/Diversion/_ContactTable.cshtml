@@ -1,0 +1,75 @@
+﻿@model DiversionViewModel
+@{
+
+    string ajaxUrl = "";
+
+    if (Model.PrimaryClientID != null)
+    {
+        ajaxUrl = Url.Content(String.Format("~/Diversion/ContactListJson?clientID={0}",
+           new object[] { Model.PrimaryClientID }));
+    }
+    else
+    {
+        ajaxUrl = "";
+    }
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+            <table id="contactsTable" class="wb-tables table table-striped table-hover" 
+                   data-wb-tables='{ "columns": [
+                                       { "width": "20%", "data": "name" },
+                                       { "width": "15%", "data": "relationship" },
+                                       { "width": "15%", "data": "phone" },
+                                       { "width": "20%", "data": "email" },
+                                       { "width": "15%", "data": "actions" }
+		                                ],
+                                    "info": false,
+                                    "processing": true,
+                                    "bDestroy": true,
+                                    "ajax": "@ajaxUrl" }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.EmergencyContactName</th>
+                        <th>@Labels.Relationship</th>
+                        <th>@Labels.Phones</th>
+                        <th>@Labels.Email</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="row mrgn-tp-md">
+            @if (RightsHelper.HasRight(UserRights.Client_Contacts_Add))
+            {
+                <div class="col-sm-12">
+                    <div class="btn-group">
+                        @Html.ActionLink(Labels.AddContact, "NewContact", "Diversion", new { returnTo = "List", clientID = Model.PrimaryClientID }, new { @class = "wb-lbx lbx-modal addButton", id = "addDivContact", @role = "button" })
+                        
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     $(document).on('draw.dt', '.dataTable', function (event) {
+         init_hifis();
+         //This re-init any lightboxes that are dynamically added via the datables reload call
+         $(".wb-lbx").removeClass("wb-init").removeClass("wb-lbx-inited");
+         $(".wb-lbx").trigger("wb-init.wb-lbx");
+         $("div[id^='tooltip']").remove();
+     });
+
+</script>);
+}

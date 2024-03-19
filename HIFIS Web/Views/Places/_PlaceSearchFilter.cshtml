@@ -1,0 +1,105 @@
+﻿@model PlaceSearchFilterViewModel
+
+<form id="placeSearchFilterForm" class="form-horizontal">
+    @Html.HiddenFor(model => model.PID)
+    <div>
+        <div>
+            @Html.HifisEditorFor(Model => Model.Add)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.PTS, Enumerable.Empty<SelectListItem>(), null, new { @class = "fixedContainer", style = "width:250px;" })
+            @*@Html.HifisListBoxFor(model => model.PTS, Enumerable.Empty<SelectListItem>(), new { @class = "fixedContainer", style = "width:250px;" })*@
+        </div>
+
+        @*<div>
+            @Html.HifisEditorFor(Model => Model.Dist, ViewBag.DistanceFrom as SelectList)
+        </div>*@
+
+        <div>
+            @Html.HifisListBoxFor(model => model.SOs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServicesOfferedTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Act, "YesNo")
+        </div>
+
+        @if (ViewBag.IsGeoRegionEnabled)
+        {
+            <div>
+                @Html.HifisEditorFor(Model => Model.GeoID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture))
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(Model => Model.City, Enumerable.Empty<SelectListItem>())
+            </div>
+        }
+        
+        <div class="form-group">
+            <div class="col-md-8"></div>
+            <button type="button" id="filterListButton" class="filterButton">@Labels.ApplyFilters</button>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+                $("#GeoID").trigger("select2:select");
+            });
+
+		     $("#filterListButton").click(function () {
+		         if ($("#placeSearchFilterForm").valid()) {
+		             var btn = $(this);
+
+		             $('#placeListTable').DataTable().ajax.url('@Url.Content("~/Places/PlaceSearchResultsJson/?")' + $("#placeSearchFilterForm").serialize() + '').load(null, false);
+
+		             btn.attr("disabled", true);
+
+		             if ($('#MapContainer').is(':visible')) {
+		                 updateMap();
+		             }
+
+		             $('#placeListTable').on('xhr.dt', function () {
+		                 btn.attr("disabled", false);
+		                 $('#filter-panel').trigger('close.wb-overlay');
+		             });
+                 }
+		     });
+
+                $("#GeoID").on("select2:select", function () {
+                    $.ajax({
+                        url: '@Url.Action("AjaxGetGeoCityList", "Master")',
+                        type: 'POST',
+                        data: { "GeoID": $("#GeoID").val() }
+                    }).done(function (data) {
+                        $('#City').find('option').remove();
+                        $('#City').append(makeOptions(data.Result));
+                        $('#City').trigger('change');
+                        $('#City').closest('.form-group').show();
+                    });
+                });
+
+
+                $("#GeoID").on("select2:unselect", function () {
+                    $('#City').find('option').remove();
+                    $('#City').trigger('change');
+                    $('#City').closest('.form-group').hide();
+                });
+
+                function makeOptions(res) {
+                    var str = "";
+                    if (res.length > 0) {
+                        for (i = 0; i < res.length; i++) {
+                            str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                        }
+                    }
+                    else {
+                        str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                    }
+                    return str;
+                };
+        </script>);
+}

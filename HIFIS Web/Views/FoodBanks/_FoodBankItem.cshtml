@@ -1,0 +1,25 @@
+﻿@model ClientFoodBankItemViewModel
+
+<div>
+    @Html.HifisEditorFor(model => Model.FoodBankItemIDValue, ViewBag.FoodBankItemList as SelectList)
+</div>  
+ 
+<div>
+    @Html.HifisEditorFor(model => model.Quantity)
+</div>                 
+
+<div>
+    @Html.HifisEditorFor(model => model.UnitCost, "Money", new { @class = "money" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+
+        @<script type="text/javascript">
+            @{ if(@TempData["errorMessage"] != null){
+                 <text>displayNotification('error', null, '@Labels.FailedToSave');</text>
+            } }
+</script>
+);
+}

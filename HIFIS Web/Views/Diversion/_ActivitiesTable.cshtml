@@ -1,0 +1,61 @@
+﻿@model DiversionViewModel
+@{
+
+
+    string ajaxUrl = "";
+
+    if (Model.vmGoodService.GoodsActivitiesID != null)
+    {
+        ajaxUrl = Url.Content(String.Format("~/GoodsAndServices/ServicesListJson?clientID={0}&serviceID={1}&goodActivityID={2}&orgID={3}&isServiceRestricted={4}",
+           new object[] { Model.PrimaryClientID,
+            Model.vmGoodService.ServiceID,
+            Model.vmGoodService.GoodsActivitiesID,
+            Model.vmGoodService.OrganizationID,
+            Model.vmGoodService.IsServicesServiceRestricted}));
+    }
+    else
+    {
+        ajaxUrl = "";
+    }
+}
+
+<div class="table-responsive">
+    <table id="servicesTable" class="wb-tables table table-striped table-hover" 
+           data-wb-tables='{ "columns": [
+                                       { "width": "25%", "data": "serviceTypeName" },
+                                       { "width": "20%", "data": "dateStart" },
+                                       { "width": "20%", "data": "serviceCost" },
+                                       { "width": "20%", "data": "servicePrice" },
+                                       { "width": "15%", "data": "actions" }
+		                        ], 
+                            "order": [ [0, "asc" ] ], 
+                            "processing": true,
+                            "bDestroy": true,
+                            "ajax": "@ajaxUrl"}'>
+        <thead>
+            <tr>
+                <th>@Labels.Service</th>
+                <th>@Labels.Date</th>
+                <th>@Labels.UnitCost</th>
+                <th>@Labels.UnitPrice</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<p>
+    @if (!ViewBag.IsServicesServiceRestricted || RightsHelper.HasRight(UserRights.Barred_Override))
+    {
+        if (RightsHelper.HasRight(UserRights.Activity_Add, Model.OrganizationID))
+        {
+
+            @Html.ActionLink(Labels.AddNewService, "NewDiversionActivities", "Diversion", new { returnTo = "List", clientID = Model.ReadOnlyVitals.ClientID
+                                                    , serviceID = Model.vmGoodService.ServiceID, diversionID = Model.DiversionID}
+                                                    , new { @class = "wb-lbx lbx-modal addButton", id = "addActivityBtn", @role = "button" })
+
+
+        }
+     }
+</p>

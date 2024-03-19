@@ -1,0 +1,73 @@
+﻿@model ClientStorageListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientStorage;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>             
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Item</th>
+                    <th>@Labels.Location</th>
+                    <th>@Labels.DateStart</th>
+                    <th>@Labels.DateEnd</th>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.StorageOutcome</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.ClientStorage != null && Model.ClientStorage.Count > 0)
+                {  
+                    for (int i = 0; i < Model.ClientStorage.Count; i++)
+                    {
+                        <tr>
+                            <td class="col-xs-2">@Html.DisplayFor(m => m.ClientStorage[i].ItemDescription, "Storage")</td>
+                            <td class="col-xs-2">@Html.DisplayFor(m => m.ClientStorage[i].ItemLocation)</td>
+                            <td class="col-xs-2">@Html.DisplayFor(m => m.ClientStorage[i].DateStart, "DateOnly")</td>
+                            <td class="col-xs-2">@Html.DisplayFor(m => m.ClientStorage[i].DateEnd, "DateOnly")</td>
+                            <td class="col-xs-2">@Html.DisplayFor(m => m.ClientStorage[i].OrganizationName)</td>
+                            <td class="col-xs-2">@Html.DisplayFor(m => m.ClientStorage[i].StorageOutcomeStatus)</td>
+                            <td class="col-xs-2">
+                                @if (RightsHelper.HasRight(UserRights.Storage_Display, Model.ClientStorage[i].OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.Display, "Display", new { id = Model.ClientID, itemID = Model.ClientStorage[i].StoredItemID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.Storage_Edit, Model.ClientStorage[i].OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ClientID, itemID = Model.ClientStorage[i].StoredItemID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                } 
+                                @if (RightsHelper.HasRight(UserRights.Storage_Delete))
+                                {
+                                    @Html.ActionLink(Labels.Delete, "Delete", "Storage", new { id = Model.ClientStorage[i].ClientID, storageID = Model.ClientStorage[i].StoredItemID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>     
+       
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Storage_Add))
+        {
+            @Html.ActionLink(Labels.NewStorageItem, "New", "Storage", new { id = Model.ClientID }, new { @class = "addButton", alt=Labels.NewStorageItem, aria_label = Labels.NewStorageItem, @role = "button" }) 
+        }        
+    </div>
+</div>
+
+
+
+
+
+

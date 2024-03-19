@@ -1,0 +1,96 @@
+﻿@model HousingUnitViewModel
+
+<section id="Modal_HousingUnit" class="modal-dialog modal-content overlay-def" style="max-width:500px;">
+	<header class="modal-header">
+		<h2 class="modal-title">@(((Model.Address.Unit == null) ? "" : Model.Address.Unit + " - ") + (Model.Address.AddressLn1 + " " + Model.Address.AddressLn2))
+              @(" - " + WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_OccupancyStatusTypes, ViewBag.CurrentCulture, Model.OccupanyStatus))</h2>
+	</header>
+	<div class="modal-body displayView">
+        @*<div  class="align-text-center">
+            <h3>
+              @Html.ActionLink(((Model.Address.Unit == null) ? "" : Model.Address.Unit + " - ") + (Model.Address.AddressLn1 + " " + Model.Address.AddressLn2), "Display", "HousingUnit", new { id = Model.HouseID}, null)
+              @(" - " + WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_OccupancyStatusTypes, ViewBag.CurrentCulture, Model.OccupanyStatus))
+            </h3>
+        </div>
+        <br />*@
+
+        <table class="table table-borderless">
+            <tbody>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.HouseTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseTypes, ViewBag.CurrentCulture, Model.HouseTypeID)</td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.LandlordPersonID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left"> 
+                        @if(Model.Landlord != null)
+                        {
+                            @Html.ActionLink(Model.Landlord.FullName, "DisplayVitals", "PeopleTombstone", new { id = Model.LandlordPersonID}, new { alt = Model.Landlord.FullName, aria_label = Model.Landlord.FullName })
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.StatusTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseStatusTypes, ViewBag.CurrentCulture, Model.StatusTypeID)</td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.Attributes, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">
+                        @if(Model.Attributes.Count() > 0)
+                        {
+                            <div class="panel-default">
+                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#atts" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                        @Model.Attributes.Count() @Labels.Features 
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </div>
+                                <div id="atts" class="panel-collapse collapse">
+                                    <ul class="pddng-lft-md">
+                                        @foreach (var st in Model.Attributes)
+                                        {
+                                            <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseAttributeTypes, Culture, st)</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.NoOfBedrooms, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@Html.DisplayFor(model => model.NoOfBedrooms)</td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.Rent, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@Html.DisplayFor(model => model.Rent) /@Labels.Month</td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.IsShareable, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsShareable)</td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.Address.AddressLn1, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@((Model.Address.Unit == null) ? "" : Model.Address.Unit + " - ")@(Model.Address.AddressLn1 + " " + Model.Address.AddressLn2)</td>
+                </tr>
+                <tr>
+                    <td class="align-text-right">@Html.HifisLabelFor(model => model.Address.City, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })</td>
+                    <td class="align-text-left">@Html.DisplayFor(model => model.Address.City)</td>
+                </tr>
+            </tbody>
+        </table>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <a class="viewButton btn btn-default btn-sm" role ="button" target="_blank" href="@Url.Action("Display", "HousingUnit", new { id = Model.HouseID})"><span class="glyphicon glyphicon-picture"></span> @Labels.FullDetails</a>
+		<button id="" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+</script>
+
+

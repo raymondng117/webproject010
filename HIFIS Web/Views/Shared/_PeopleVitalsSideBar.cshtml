@@ -1,0 +1,124 @@
+﻿@model PeopleVitalsReadOnlyWrapperViewModel
+
+@{
+    var pic = Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg");
+    if (Model.ReadOnlyVitals.HasPicture && RightsHelper.HasRight(UserRights.People_ProfilePicture_Display))
+    {
+        pic = Url.Action("GetPeoplePhotoThumbnail", "Documents", new { id = Model.ReadOnlyVitals.PersonID });
+    }
+    else
+    {
+        switch ((GenderTypes)Model.ReadOnlyVitals.GenderID)
+        {
+            case GenderTypes.Female: pic = Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg"); break;
+            case GenderTypes.Male: pic = Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg"); break;
+        }
+    }
+        
+    <div class="row">
+        <section class="col-md-12 visible-md visible-lg">
+            @if (!Model.ReadOnlyVitals.HasPicture && RightsHelper.HasRight(UserRights.People_ProfilePicture_Add))
+            {
+                <a href="@Url.Content("~/Documents/PeopleProfilePicture?id=" + Model.ReadOnlyVitals.PersonID)" aria-controls="Modal_AddProfilePic" class="noText btn btn-default btn-sm addButton opct-80 wb-lbx lbx-modal label label-default" role="button"><div class='glyphicon glyphicon-plus'></div>@Labels.AddProfilePicture</a>
+            }
+            else if (Model.ReadOnlyVitals.HasPicture && RightsHelper.HasRight(UserRights.People_ProfilePicture_Add))
+            {
+                <a href="@Url.Content("~/Documents/PeopleProfilePicture?id=" + Model.ReadOnlyVitals.PersonID)" aria-controls="Modal_AddProfilePic" class="noText btn btn-default btn-sm addButton opct-80 wb-lbx lbx-modal label label-default" role="button"><div class='glyphicon glyphicon-pencil'></div>@Labels.EditProfilePicture</a>
+            }
+        </section>
+
+        <section class="col-md-12 visible-md visible-lg profile-frame">
+            <a id="vitalsSidebarLink" href="@Url.Action("DisplayVitals", "PeopleTombstone", new { id = Model.ReadOnlyVitals.PersonID })">
+                <img alt="@Model.ReadOnlyVitals.FirstName @Model.ReadOnlyVitals.LastName" class="img-rounded profile-image" src="@pic" title="@Model.ReadOnlyVitals.FirstName @Model.ReadOnlyVitals.LastName" style="@(Model.ReadOnlyVitals.HasPicture ? "" : "width:250px; height:250px;")" />
+            </a>
+	        <div class="row">
+		        <div class="pstn-bttm-md col-md-12">
+			        <p class="text-right opct-80 well brdr-rds-0 well-sm mrgn-bttm-0"><strong> @Model.ReadOnlyVitals.FirstName @Model.ReadOnlyVitals.LastName</strong></p>
+		        </div>
+                @if (RightsHelper.HasRight(UserRights.Person_Activity_Log))
+				    {
+                        <div class="pstn-bttm-md col-md-12 pad_bottom_margin_5 pad_left_margin_5">
+			                @Html.ActionLink(Labels.viewTitle_PersonActivityLog, "PersonActivityLogList", "PeopleTombstone", new { id = Model.ReadOnlyVitals.PersonID }, new { @class = "noText listButton", alt=Labels.viewTitle_PersonActivityLog, aria_label = Labels.viewTitle_PersonActivityLog, @role = "button" })
+		                </div>
+                    }
+	        </div>
+
+        </section>
+    </div>
+
+            <div class="row">
+                <section class="col-md-12 visible-md visible-lg">
+
+                    <div class="well well-sm mrgn-tp-sm">
+                        <div class="table-responsive"><table class="wb-tables table" data-wb-tables='{ "ordering" : false,  "paging" : false,  "searching" : false, "info": false }'>     
+                            <thead class="hide">
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>  
+                            <tbody>                         
+                                @*<tr>
+                                    <td>
+                                        <span class="color-accent">@Labels.Name</span>
+                                    </td>
+                                    <td><strong>@Model.ReadOnlyVitals.LastName, @Model.ReadOnlyVitals.FirstName</strong>
+                                    </td>
+                                </tr>*@
+                                <tr>
+                                    <td><span class="color-accent">@Labels.Gender</span></td>
+                                    <td id="genderTD">@Model.ReadOnlyVitals.Gender</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="color-accent">@Labels.DOB</span></td>
+                                    <td>                     
+                                        @if (Model.ReadOnlyVitals.DOB != null)
+                                        {
+                                            Model.ReadOnlyVitals.DOB.Value.Date.ToString("yyyy-MM-dd"); 
+                                            string personAge = (DateTime.Now.Year - Model.ReadOnlyVitals.DOB.Value.Year).ToString();
+                                            <text>(<strong>@personAge</strong>)</text> 
+                                        }
+                                        else
+                                        {
+                                            @Labels.NA
+                                        }                              
+                                    </td>
+                                </tr>
+
+                                @if (Model.ReadOnlyVitals.LastLogin != null)
+                                {
+                                    @*<tr>
+                                        <td><span class="color-accent">@Labels.AccountType</span>
+                                        </td>
+                                        <td>@Model.ReadOnlyVitals.AccountTypeName
+                                        </td>
+                                    </tr>*@
+                                    <tr>
+                                        <td><span class="color-accent">@Labels.LastLogin</span>
+                                        </td>
+                                        <td>@Model.ReadOnlyVitals.LastLogin
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {                                    
+                                    <tr>
+                                        <td><span class="color-accent">@Labels.Aka1</span>
+                                        </td>
+                                        <td>@Model.ReadOnlyVitals.Aka1
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="color-accent">@Labels.Aka2</span>
+                                        </td>
+                                        <td>@Model.ReadOnlyVitals.Aka2
+                                        </td>
+                                    </tr>
+                                } 
+                            </tbody>           
+                        </table></div>
+                    </div>
+
+                </section>
+            </div>
+    }

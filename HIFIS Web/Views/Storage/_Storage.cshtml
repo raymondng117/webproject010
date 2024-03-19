@@ -1,0 +1,32 @@
+﻿@model ClientStorageViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.HiddenFor(m => m.ServiceID)
+@Html.HiddenFor(m => m.StoredItemID)
+@Html.HiddenFor(m => m.ClientID)
+@Html.HiddenFor(m => m.OrganizationID)
+
+
+@Html.HifisEditorFor(model => model.ItemDescription)
+
+@Html.HifisEditorFor(model => model.ItemLocation)
+
+@Html.HifisEditorFor(model => model.DateStart)
+
+@Html.HifisEditorFor(model => model.DateEnd)
+<div>
+    @Html.HifisEditorFor(model => model.StorageOutcomeTypeID, CachedTableTypes.HIFIS_StorageOutcomeTypes)
+</div>
+@*<div>
+    @Html.HifisLabelFor(model => model.StorageOutcomeTypeID, new { @class = "autowidth" })
+    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                    new SingleItemSelectList
+                    {
+                        ID = Model.StorageOutcomeTypeID,
+                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_StorageOutcomeTypes, ViewBag.CurrentCulture, Model.StorageOutcomeTypeID)
+                    })
+</div>*@
+
+@Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize" })
+

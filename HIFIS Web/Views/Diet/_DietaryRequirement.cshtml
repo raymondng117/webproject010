@@ -1,0 +1,39 @@
+﻿@model DietViewModel
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.DietID)
+
+
+    <div class="row mrgn-bttm-md">
+        @Html.HifisLabelFor(model => model.CategoryTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.CategoryTypeID, CachedTableTypes.HIFIS_DietCategoryTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FoodItemTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.FoodItemTypeID, CachedTableTypes.HIFIS_DietFoodItemTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AvoidedDietYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.AvoidedDietYN, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ActiveYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ActiveYN, "YesNo", null, true, null)
+        </div>
+    </div>
+</div>

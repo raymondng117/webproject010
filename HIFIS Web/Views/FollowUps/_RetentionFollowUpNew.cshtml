@@ -1,0 +1,351 @@
+﻿@model FollowUpPlacementViewModel
+
+<section id="Modal_FollowUpNew" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_NewFollowUp</h2>
+    </header>
+    <div class="modal-body">
+        <form id="newPlacementFollowUpForm" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.FollowUpHeader.ServiceID)
+            @Html.HiddenFor(model => model.HousePlacementID)
+            @Html.HiddenFor(model => model.PrimaryClientID)
+            @Html.HiddenFor(model => model.DateMovedIn)
+            @Html.TextBoxFor(model => model.DateMovedIn, "{0:MM/dd/yyyy}", htmlAttributes: new { @id = "formattedDateMovedIn", @type = "hidden" })
+
+            <div>
+                @Html.HifisEditorFor(model => model.FollowUpHeader.DateOfCheck)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.FollowUpHeader.MonthsElapsed, null, new { @type = "number", @onkeydown = "return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || (event.keyCode == 8)" })
+            </div>
+            <div class="activeHousingOnly">
+                <div>
+                    <span id="FinalFollowUpWarning" class="text-danger"><strong> @Labels.FinalFollowUpRetention </strong></span>
+                    @Html.HifisEditorFor(model => model.IsFinalFollowUp, "YesNo")
+                </div>
+
+                <div id="followUpDiv">
+                    <div>
+                        @Html.HifisEditorFor(model => model.UseExactFollowUpDate, "YesNo")
+                    </div>
+                    <div id="exactDateDiv">
+                        @Html.HifisEditorFor(model => model.ExactFollowUpDate)
+                    </div>
+
+                    <div id="numMonthsDiv">
+                        @Html.HifisEditorFor(model => model.MonthsTillNextFollowUp)
+                    </div>
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(model => model.ClientStillInHousingTypeID, CachedTableTypes.HIFIS_StillInHousingTypes)
+                </div>
+
+            </div>
+            <div id="ClientsLeftHouseInputDiv">
+                <div class="housingEnded">
+                    <div>
+                        <div>
+                            <span id="AllClientsHaveLeftWarning" class="text-danger"><strong>@Labels.HousingEndedWarning</strong></span>
+                        </div>
+                    </div>
+                </div>                
+                <div class="activeHousingOnly">
+
+                    <div>
+                        @Html.HiddenFor(model => model.AllClientsHaveLeft)
+                        @Html.HifisListBoxFor(model => model.ClientsThatHaveLeftIDs, ViewBag.clientList as SelectList)
+                        <div id="DateLeftHousingInput">
+                            @Html.HifisEditorFor(model => model.DateLeftHousing)
+                        </div>
+                        <div>
+                            <span id="AllClientsHaveLeftWarning" class="text-danger">@Labels.AllClientsInThisRetentionHaveLeftHousing</span>
+                        </div>
+                    </div>
+
+                    @if (ViewBag.clientCount > 1)
+                    {
+                        <div id="PrimaryClientHasLeftDiv">
+                            <span class="color-attention">@Labels.HeadOfHouseHoldHasLeft. @Labels.SelectNewHeadOfHouseHold</span><br />
+                            @Html.HifisEditorFor(model => model.NewPrimaryClientID, ViewBag.clientList as SelectList)
+                            @Html.HiddenFor(model => model.PrimaryClientHasLeft)
+                        </div>
+                    }
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(model => model.ReasonLeftHousing, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonLeftHouseTypes, Culture))
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.IsHousedElsewhere, "YesNo")
+                </div>
+                @*<div id="UnitStatusDiv">
+                        @Html.HifisEditorFor(model => model.HouseNowAvailable, "YesNo")
+                    </div>*@
+            </div>
+
+            <div>
+                @Html.HifisTextAreaFor(model => model.FollowUpHeader.Comments, new { @class = "wdth-strct-250 hght-strct-150" })
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="newPlacementFollowUpSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    //Used by "RequiredIf" annotation for required fields when Clients left housing
+    var requiredIf = function ()
+    {
+        if ($('#ClientStillInHousingTypeID').val() == @((short)StillInHousingTypes.No))
+            return true;
+        else
+            return false;
+    }
+
+    //Used by "RequiredIf" annotation for required fields when Primary Client leaves housing
+    var requiredIf2 = function ()
+    {
+        //var isHousingActive = '@ViewBag.IsHousingActive'.toLowerCase();
+        if ($('#PrimaryClientHasLeft').val() == "true" && $('#AllClientsHaveLeft').val() == "false" /*&& isHousingActive == "true"*/ )
+            return true;
+        else
+            return false;
+    }
+
+    $(function () {
+        $("#newPlacementFollowUpForm").hifisValidation();
+        $('#FinalFollowUpWarning').hide();
+    });
+
+    $("#newPlacementFollowUpSaveBtn").click(function () {
+
+        if ($("#newPlacementFollowUpForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/FollowUps/NewPlacementFollowUp")",
+                type: "POST",
+                data: $('#newPlacementFollowUpForm').serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    if ($('#IsFinalFollowUp').bootstrapSwitch('state') == true) {
+                        $('#backToClientList')[0].click();
+                        @*var url = '@Url.Action("ClientList", "HousingPlacements", new { id = "__id__"})';
+                        url = url.replace("__id__", '@Model.PrimaryClientID');
+                        window.location.href = url;*@
+                    }
+                        //Update the next follow up date on housing placement header
+                    else if($('#UseExactFollowUpDate').bootstrapSwitch('state') && $('#ExactFollowUpDate').val() !== ""){
+                        var selectedDate = $('#ExactFollowUpDate').val();
+                        var formattedValue = selectedDate.replace(/-/g, "/");
+                        var d = new Date(formattedValue);
+
+                        $('#FollowUpDate').text(moment(d).format('DD/MM/YYYY'));
+                    }
+                    else if(!$('#UseExactFollowUpDate').bootstrapSwitch('state') && $('#MonthsTillNextFollowUp').val() !== ""){
+                        //If they input a number of months until the next follow up
+                        var nextFollowUp = new Date();
+                        //Create a new date object and set it based on the months until next follow up value
+                        nextFollowUp.setMonth(nextFollowUp.getMonth() + parseInt($('#MonthsTillNextFollowUp').val()));
+                        //edit the text to the value of the new date in the specified format.
+                        $('#FollowUpDate').text(moment(nextFollowUp).format("DD/MM/YYYY"));
+                    }
+                    else{
+                        $('#FollowUpDate').text("@Labels.NA");
+                    }
+                    $("#newPlacementFollowUpCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $('#followUpsTable').DataTable().ajax.reload();
+                }
+            });
+        }
+    });
+
+    var OtherMonthsRadioButton;
+    var CurrentPrimaryClient;
+    var ClientsThatHaveLeftInput;
+
+    //Check if all clients have left
+    function CheckAllClientsHaveLeft() {
+        //Check if all clients left
+        if ($('#ClientsThatHaveLeftIDs option:not(:selected)').length < 1) {
+            $('#PrimaryClientHasLeftDiv').hide();
+            $('#AllClientsHaveLeftWarning').show();
+            $('#AllClientsHaveLeft').val(true);
+            $('#UnitStatusDiv').show();
+
+            if(!$('#IsFinalFollowUp').bootstrapSwitch('state'))
+                $('#IsFinalFollowUp').bootstrapSwitch('toggleState');
+        }
+        else {
+            $('#NewPrimaryClientID').trigger('change');
+            $('#AllClientsHaveLeftWarning').hide();
+            $('#AllClientsHaveLeft').val(false);
+            $('#UnitStatusDiv').hide();
+
+            if($('#IsFinalFollowUp').bootstrapSwitch('state'))
+                $('#IsFinalFollowUp').bootstrapSwitch('toggleState');
+        }
+    }
+
+    //Removes options from new primary client drop down if they are leaving
+    function UpdateNewPrimaryClientList() {
+        var newPrimaryClientID = $('#NewPrimaryClientID');
+
+        if (newPrimaryClientID.is(':visible')) {
+            newPrimaryClientID.children('option').each(function (index, element) {
+                if (ClientsThatHaveLeftInput.val().indexOf(element.value) != -1)
+                    element.disabled = true;
+                else
+                    element.disabled = false;
+            });
+        }
+        CheckAllClientsHaveLeft();
+    }
+
+
+    //Toggles visibility of clients have left div
+    function ToggleCLHInputDiv() {
+        if ($('#ClientStillInHousingTypeID').val() == @((short)StillInHousingTypes.No)) {
+            $('#ClientsLeftHouseInputDiv')
+                .show()
+                .find('input, select')
+                .prop('disabled', false);
+            if($('#IsFinalFollowUp').bootstrapSwitch('state')) // Check if it is a final follow and then displays the HousingEndDate Input
+                $('#DateLeftHousingInput').show();
+        }
+        else {
+            $('#ClientsLeftHouseInputDiv')
+                .hide()
+                .find('input, select')
+                .prop('disabled', true);
+            $('#DateLeftHousingInput').hide();
+        }
+    };
+
+    function ChangeMonthsElapsed(){
+        var movedInDate = new Date($("#formattedDateMovedIn").val().replace(/-/g,"/"));
+        var followUpDate = new Date($("#FollowUpHeader_DateOfCheck").val());
+
+        var monthsElapsed = followUpDate.getUTCMonth() - movedInDate.getUTCMonth() + (12 * (followUpDate.getUTCFullYear() - movedInDate.getUTCFullYear()));
+        $('input[name="FollowUpHeader.MonthsElapsed"]').val(monthsElapsed);
+    }
+
+    //Toggles visibility of new primary client div
+    function UpdateNPCDiv() {
+        var selectedClients = ClientsThatHaveLeftInput.val();
+
+        if (selectedClients != null) {
+            $('#PrimaryClientHasLeftDiv').toggle(selectedClients.indexOf(CurrentPrimaryClient) != -1);
+
+            if ($('#PrimaryClientHasLeftDiv').is(':visible')) {
+                $('#PrimaryClientHasLeft').val(true);
+                $('#NewPrimaryClientID').prop('disabled', false);
+            }
+            else {
+                $('#PrimaryClientHasLeft').val(false);
+                $('#NewPrimaryClientID').prop('disabled', true);
+            }
+        }
+        else {
+            $('#PrimaryClientHasLeft').val(false);
+            $('#PrimaryClientHasLeftDiv').hide();
+            $('#AllClientsHaveLeftWarning').hide();
+        }
+        UpdateNewPrimaryClientList();
+    };
+
+    //Onload
+    $(function () {
+        hideActiveHousingOnlyFields();
+
+        OtherMonthsRadioButton = $('#OtherMonthsElapsedRadioButton');
+        CurrentPrimaryClient = $('#PrimaryClientID').val();
+        ClientsThatHaveLeftInput = $('#ClientsThatHaveLeftIDs');
+
+        ToggleCLHInputDiv();
+        ChangeMonthsElapsed();
+        UpdateNPCDiv();
+
+        $('#ClientStillInHousingTypeID').change(ToggleCLHInputDiv);
+        $('#datePicker1').on('dp.change', ChangeMonthsElapsed);
+        ClientsThatHaveLeftInput.change(UpdateNPCDiv);
+
+        $('[name=UseExactFollowUpDate]').change(function (e) {
+            if (this.value == 'True') {
+                $('#exactDateDiv').show();
+                $('#numMonthsDiv').hide();
+            }
+            else {
+                $('#exactDateDiv').hide();
+                $('#numMonthsDiv').show();
+            }
+        }).change();
+
+        //to ensure the form starts with final follow up disabled.
+        var isFinalFollowUp = $('#IsFinalFollowUp').val().toLowerCase();
+        if($('#IsFinalFollowUp').bootstrapSwitch('state') && isFinalFollowUp != 'true')
+            $('#IsFinalFollowUp').bootstrapSwitch('toggleState');
+    });
+
+    $('input[name=UseExactFollowUpDate]').on('switchChange.bootstrapSwitch', function(event, state) {
+        if (state) {
+            $('#exactDateDiv').show();
+            $('#numMonthsDiv').hide();
+        }
+        else {
+            $('#exactDateDiv').hide();
+            $('#numMonthsDiv').show();
+        }
+    });
+
+    $('input[name=IsFinalFollowUp]').on('switchChange.bootstrapSwitch', function(event, state) {
+        if (state) {
+            $('#FinalFollowUpWarning').show();
+            $('#MonthsTillNextFollowUp').prop('disabled', true);
+            $('#NewPrimaryClientID').prop('disabled', true);
+            $('#NewPrimaryClientID').trigger('change');
+            $('#followUpDiv').hide();
+            if ($('#ClientStillInHousingTypeID').val() == @((short)StillInHousingTypes.No))
+                $('#DateLeftHousingInput').show();
+        }
+        else {
+            $('#FinalFollowUpWarning').hide();
+            $('#MonthsTillNextFollowUp').prop('disabled', false);
+            $('#followUpDiv').show();
+            $('#DateLeftHousingInput').hide();
+        }
+    });
+
+    //If housing record has ended, hide everything inside an "activeHousingOnly" div
+    function hideActiveHousingOnlyFields(){
+        var isHousingActive = '@ViewBag.IsHousingActive'.toLowerCase();
+        console.log(isHousingActive);
+        if(isHousingActive == 'false'){
+            $('.activeHousingOnly').hide();
+            $('.housingEnded').show();
+        } else{
+            $('.housingEnded').hide();
+        }
+    }
+</script>
+
+

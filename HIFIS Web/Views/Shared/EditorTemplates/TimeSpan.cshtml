@@ -1,0 +1,17 @@
+﻿@* Not used / potentially not working - Validation was not being applied on similar editor templates.
+
+    2016/12/1 - Ryan *@
+
+@model System.TimeSpan?
+@{    
+    string timeString = "";
+    if (System.Globalization.CultureInfo.CurrentUICulture.Name == "fr-CA")
+    {
+        timeString += Model.HasValue ? new DateTime(Model.Value.Ticks).ToString("HH:mm") : string.Empty;
+    }
+    else
+    {
+        timeString += Model.HasValue ? new DateTime(Model.Value.Ticks).ToString("h:mm tt") : string.Empty;
+    }
+}
+@Html.TextBox("", timeString, new { type = "text", realtype = "time" })

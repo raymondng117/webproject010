@@ -1,0 +1,323 @@
+﻿@model StayViewModel
+
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.ServiceTypeID)
+@Html.HiddenFor(model => model.StayID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.RoomID)
+@Html.HiddenFor(model => model.BedID)
+@Html.HiddenFor(model => model.IsReservation)
+@Html.HiddenFor(model => model.IsBookOut)
+@Html.HiddenFor(model => model.IsFromStays)
+@Html.AntiForgeryToken()
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+<div class="row">
+    @if (Model.IsReservation == true)
+    {
+        @Html.HifisEditorFor(model => model.ReservationDateStart, "DateAndTime", new { @class = "col-sm-8" }, false, null)
+    }
+    else
+    {
+        @Html.HifisEditorFor(model => model.DateStart, "DateAndTime", new { @class = "col-sm-8" }, false, null)
+    }
+</div>
+
+@if (Model.ReasonForDischargeTypeID != null || Model.IsBookOut)
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime")
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.DateEnd)
+}
+
+<section id="warningPanel" class="alert alert-warning" style="display:none;">
+    <header class="alert-heading">
+        <h3 class="alert-title">@Labels.Warning</h3>
+    </header>
+    <div id="bedsHistoryWarning">
+        <div class="alert-body"><p>@Labels.BedHistoryConflicts</p></div>
+        <div id="bedsHistoryTable" class="container table">
+            <div style="display: table-header-group; vertical-align: middle; border-color: inherit;">
+                <div class="row">
+                    <div class="col-lg-3 align-text-center">@Labels.DateStart</div>
+                    <div class="col-lg-3 align-text-center">@Labels.DateEnd</div>
+                    <div class="col-lg-3 align-text-center">@Labels.RoomName</div>
+                    <div class="col-lg-3 align-text-center">@Labels.BedName</div>
+                </div>
+            </div>
+            <div class="col-lg-12 align-text-center"></div>
+        </div>
+    </div>
+</section>
+
+<div class="row">
+
+    @if (Model.IsReservation == true)
+    {
+        @Html.HiddenFor(model => model.IsExpectedBookoutDateMandatoryForStay)
+
+        @Html.HifisEditorFor(model => model.ReservationExpectedBookOutDate)
+    }
+    else
+    {
+        @Html.HifisEditorFor(model => model.ExpectedBookOutDate)
+    }
+</div>
+
+@*@if (Model.IsReservation)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.ReservationStatusTypeID, CachedTableTypes.HIFIS_ReservationStatusTypes)
+    </div>
+}*@
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ReasonForServiceID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+</div>
+
+@*@if ((Model.ReasonForDischargeTypeID != null || Model.IsBookOut)
+    && (Model.ReasonForDischargeTypeID != (short?)ReasonForDischargeTypes.BlockBookOut
+    && Model.ReasonForDischargeTypeID != (short?)ReasonForDischargeTypes.CloseReservation))*@
+@if ((Model.ReasonForDischargeTypeID != null || Model.IsBookOut)
+    && ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ReasonForDischargeTypes, Model.ReasonForDischargeTypeID) != (short?)ReasonForDischargeTypes.BlockBookOut)
+    && (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ReasonForDischargeTypes, Model.ReasonForDischargeTypeID) != (short?)ReasonForDischargeTypes.CloseReservation)))
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ReasonForDischargeTypeID, CachedTableTypes.HIFIS_ReasonForDischargeTypes)
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.ReasonForDischargeTypeID)
+}
+
+@if (Model.StayID == null || (ViewBag.bookInReservation != null && ViewBag.bookInReservation == true))
+{
+    <div class="row">
+        @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.programsLIst as SelectList)
+    </div>
+}
+else if (Model.StayID != null && ViewBag.bookInReservation == null && !Model.IsReservation)
+{
+    <div>
+        <div class="row">
+            @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "control-label col-sm-3" })
+            <div class="col-sm-9">
+                @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                    new MultipleItemSelectList
+                    {
+                        IDs = Model.AssociatedProgramIDs,
+                        List = ViewBag.programsList as SelectList
+                    })
+            </div>
+        </div>
+    </div>
+}
+
+<div id="assistance" class="row">
+    @Html.HifisEditorFor(model => model.IsAssistanceRequired, "YesNo")
+</div>
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ReferredFromID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferredGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+    </div>
+}
+else
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ReferredFromID, ViewBag.fromPlaces as SelectList)
+    </div>
+}
+
+
+@*@if ((Model.ReasonForDischargeTypeID != null || Model.IsBookOut)
+    && (Model.ReasonForDischargeTypeID != (short?)ReasonForDischargeTypes.BlockBookOut
+    && Model.ReasonForDischargeTypeID != (short?)ReasonForDischargeTypes.CloseReservation))*@
+@if ((Model.ReasonForDischargeTypeID != null || Model.IsBookOut)
+                && ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ReasonForDischargeTypes, Model.ReasonForDischargeTypeID) != (short?)ReasonForDischargeTypes.BlockBookOut)
+                && (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ReasonForDischargeTypes, Model.ReasonForDischargeTypeID) != (short?)ReasonForDischargeTypes.CloseReservation)))
+{
+    if (Model.isGeoRegionEnforced)
+    {
+        <div class="row">
+            @Html.HifisEditorFor(model => model.ReferredToID, ViewBag.toPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferredGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @Html.HifisEditorFor(model => model.ReferredToID, ViewBag.toPlaces as SelectList)
+        </div>
+    }
+}
+else
+{
+    @Html.HiddenFor(model => model.ReferredToID)
+}
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ReferredByName)
+</div>
+
+<div id="latePass" class="row">
+    @Html.HifisEditorFor(model => model.LatePassTime)
+</div>
+
+<div id="wake" class="row">
+    @Html.HifisEditorFor(model => model.WakeUpTime)
+</div>
+
+<div id="intox" class="row">
+    @Html.HifisEditorFor(model => model.IsIntoxicated, "YesNo")
+</div>
+
+<div class="row">
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize" })
+</div>
+
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            //***************************************************************************
+            //*
+            //*   Global variables
+            //*
+            //****************************************************************************
+
+            var editDetails = '@(ViewBag.EditDetails != null ? (bool)ViewBag.EditDetails : false)';
+            var stayID = '@(!string.IsNullOrWhiteSpace(Model.StayID) ? Model.StayID : "0")';
+
+            var URL_Admission_showBedsHistoryTableURL = '@(Url.Action("GetStayBedHistoryConflicts", "Admission", null))"?stayID=@Model.StayID'
+
+
+            $(document).on('SharedGlobalVar_OnReady', function () {
+
+                if (session_currentOrg == '' || session_currentOrg == undefined) {
+                    session_currentOrg = '@Session["currentOrg"]';
+                }
+
+                if (session_BedDisplayExpanded == '' || session_BedDisplayExpanded == undefined) {
+                    session_BedDisplayExpanded = "@Session["BedDisplayExpanded"]";
+                }
+
+                HIFIS_Admissions._AdmissionsFormView.ApplyOnLoad.OnReady();
+            });
+
+            $(document).on("ready", function () {
+
+                //HIFIS_Admissions._AdmissionsFormView.ApplyOnLoad.OnReady();
+            });
+
+
+            @*
+
+             var requiredIf = function () {
+
+                 var value = document.querySelector("#IsBookOut").getAttribute("value");
+                 return value === "True";
+             }
+
+             $(function () {
+
+                 //$("#DateStart_Date").on("change", );
+
+
+                 var attr = $("#IsReservation").attr("value");
+                 if (attr === "True") {
+                     $("#wake").hide();
+                     $("#intox").hide();
+                     $("#assistance").hide();
+                     $("#latePass").hide();
+                 }
+             });
+
+             $(document).ready(function () {
+
+                 $('#datePicker1').on('dp.change', function () {
+                     if ($("#ClientIDs").val() != null || $("#PrimaryClientID").val() != null) {
+                         if ('@ViewBag.EditDetails' != null) { showBedsHistoryTable(); }
+
+                         for (i = 0; i < $("#ClientIDs").length; i++) {
+                             isClientBookedIn($("#ClientIDs option:eq(" + i + ")").val(), $("#ClientIDs option:eq(" + i + ")").text().trim());
+                         }
+                     }
+                 });
+
+                 $('#datePicker2').on('dp.change', function () {
+                     if ($("#ClientIDs").val() != null || $("#PrimaryClientID").val() != null) {
+                         if ('@ViewBag.EditDetails' != null) { showBedsHistoryTable(); }
+                     }
+                 });
+
+                 $('#timePicker1').on('dp.change', function () {
+                     if ($("#ClientIDs").val() != null || $("#PrimaryClientID").val() != null) {
+                         if ('@ViewBag.EditDetails' != null) { showBedsHistoryTable(); }
+                         for (i = 0; i < $("#ClientIDs").length; i++) {
+                             isClientBookedIn($("#ClientIDs option:eq(" + i + ")").val(), $("#ClientIDs option:eq(" + i + ")").text().trim());
+                         }
+                     }
+                 });
+
+                 $('#timePicker2').on('dp.change', function () {
+                     if ($("#ClientIDs").val() != null || $("#PrimaryClientID").val() != null) {
+                         if ('@ViewBag.EditDetails' != null) { showBedsHistoryTable(); }
+                     }
+                 });
+
+             });
+
+             function showBedsHistoryTable() {
+
+                 var stayID = '@Model.StayID';
+                 var dateStart = $('#DateStart').val();
+                 var dateEnd = $('#DateEnd').val();
+
+                 if (dateEnd && dateStart) {
+
+                     dateStart += " " + $('#DateStart_TimeOfDay').val();
+                     dateEnd += " " + $('#DateEnd_TimeOfDay').val();
+
+                 $.ajax({
+                     type: "GET",
+                     dataType: "json",
+                         data: { stayID: stayID, dateStart: dateStart, dateEnd: dateEnd },
+                     url: "@Url.Content("~/Admissions/GetStayBedHistoryConflicts?stayID=" + Model.StayID)",
+                     success: function (result) {
+                         if (result.data.length == 0) {
+                             $('#warningPanel').hide('slow');
+                         }
+                         else {
+                             loadBedsHistoryTable(result.data);
+                             $('#warningPanel').show('slow');
+                         }
+                     }
+                 });
+             }
+             }
+
+             function loadBedsHistoryTable(data) {
+
+                 $('#bedsHistoryTable tbody tr').remove();
+                 var trHTML = "";
+
+                 $.each(data, function (index, element) {
+                     trHTML += '<tr><td>' + element.dateStart + '</td><td>' + element.dateEnd + '</td><td>' + element.roomName + '</td><td>' + element.bedName + '</td></tr>';
+                 });
+
+                 $('#bedsHistoryTable').append(trHTML);
+             }
+        *@
+</script>
+);
+}

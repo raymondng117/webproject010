@@ -1,0 +1,194 @@
+﻿@model HIFIS.WEB.ViewModels.ProgramViewModel
+
+<div class="wb-tabs">
+	<div class="tabpanels">
+        <details id="details-panel1">
+            <summary>@Labels.Details</summary>
+            <div id="displayForm" style="padding: 20px;">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6">
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.Name, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.Name)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ServiceTypeIDs, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                            new MultipleItemSelectList
+                                            {
+                                                IDs = Model.ServiceTypeIDs.Select(s => s.ToString()).ToList(),
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServiceTypes, ViewBag.CurrentCulture, Model.ServiceTypeIDs.Select(s => s.ToString()).ToList())
+                                            })
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.DateStart)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.DateEnd)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ProgramTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.ProgramTypeID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ProgramTypes, ViewBag.CurrentCulture, Model.ProgramTypeID)
+                                            })
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.IsActive, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsActive)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.OwnerOrganizationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.OwnerOrgName)
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-6">
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.TimeUnitTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.TimeUnitTypeID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_TimeUnitTypes, ViewBag.CurrentCulture, Model.TimeUnitTypeID)
+                                            })
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.Rate, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.Rate)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.MaxBedsPerPeriod, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.MaxBedsPerPeriod)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.MaxFundingPerPeriod, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.MaxFundingPerPeriod)
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                            @Html.DisplayFor(model => model.Comments)
+                        </div>
+                    </div>
+                </div>
+                <br />
+                
+                <div class="no-print">
+                    @if (RightsHelper.HasRight(UserRights.Programs_Edit))
+                    {
+                        //Only give the option to edit if the user is logged in as the owner organization
+                        //for the program, or the program has no designated owner so any user with the rights
+                        //can edit.
+                        if (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID)
+                        {
+                            @Html.ActionLink(Labels.Edit, "Edit", "Programs", new { programID = Model.ProgramID }, new { @class = "editButton ", title = Labels.Edit, id = "edit-btn", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+                    }
+                    @Html.ActionLink(Labels.Cancel, "All", "Programs", new { }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        </details>
+
+        <details id="details-panel2">
+            <summary>@Labels.ServiceProviders</summary>
+            @Html.Partial("_ServiceProviderList", Model.ServiceProviders)
+        </details>
+
+        <details id="details-panel3">
+            <summary>@Labels.FixedCosts</summary>
+            @Html.Partial("_FixedCostList", Model.FixedCosts)
+        </details>
+
+        <details id="details-panel4">
+            <summary>@Labels.History</summary>
+            @Html.Partial("_HistoryList")
+        </details>
+    </div>
+</div>
+
+<!-- Edit form for program details -->
+<div id="editForm" style="padding: 20px;">
+        @using (Html.BeginForm("Edit", "Programs", FormMethod.Post, new { @class = "form-horizontal" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.Partial("_BaseHiddenFor", Model)
+
+            <div id="prog-partial">
+                @Html.Partial("_Program", Model);
+            </div>
+                                        
+            <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10 no-print">
+				    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Back, "All", "Programs", new { }, new { @class = "cancelButton  ", title = Labels.Back, id = "cancel-edit", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+			    </div>
+		    </div> 
+        }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $(function () {
+                 $("#editForm").hide();
+             });
+
+             $(".wb-tabs").on("click", "#edit-btn", function (event) {
+                 $.ajax({
+                     url: "@Url.Action("GetProgramForm", "Programs")",
+                     type: "GET",
+                     data: { programID: $("#ProgramID").val() },
+                 }).done(function (data) {
+                     $("#prog-partial").html(data.Result);
+                     init_hifis();
+                     if ($("#IsStayIncluded").val() == "False") {
+                         $(".stay-required").siblings(".glyphicon-star").addClass("hide");
+                         $("#MaxBedsPerPeriod").parents(".form-group").hide();
+                     }
+                     $("#editForm").fadeIn(800);
+                     /***************************************************************************
+                     *
+                     * - select event on the service type multi-select/auto-complete control.
+                     *
+                     ****************************************************************************/
+                     $("#ServiceTypeIDs").on("select2:select", function (event) {
+                         console.log(event.params.data.id);
+                         var id = event.params.data.id;
+                         if (id == 1) {
+                             $(".stay-required").siblings(".glyphicon-star").removeClass("hide");
+                             $("#IsStayIncluded").attr("value", "True");
+                             $("#MaxBedsPerPeriod").parents(".form-group").show();
+                         }
+                     });
+                     /***************************************************************************
+                     *
+                     * - unselect event on the service type multi-select/auto-complete control.
+                     *
+                     ****************************************************************************/
+                     $("#ServiceTypeIDs").on("select2:unselect", function (event) {
+                         console.log(event.params.data.id);
+                         var id = event.params.data.id;
+                         if (id == 1) {
+                             $(".stay-required").siblings(".glyphicon-star").addClass("hide");
+                             $("#IsStayIncluded").attr("value", "False");
+                             $("#MaxBedsPerPeriod").parents(".form-group").hide();
+                         }
+                     });
+                 });
+
+                 $(".wb-tabs").fadeOut(800);
+                 event.preventDefault();
+             });
+
+             $("#cancel-edit").on("click", function (event) {
+                 $("#editForm").hide();
+                 $(".wb-tabs").fadeIn(800);
+                 event.preventDefault();
+             });
+        </script>
+    );
+}

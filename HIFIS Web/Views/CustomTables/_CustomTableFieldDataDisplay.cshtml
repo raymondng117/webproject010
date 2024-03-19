@@ -1,0 +1,149 @@
+﻿@using Microsoft.Ajax.Utilities
+@model CustomTableFieldDataViewModel
+
+@switch (Model.FieldTypeID)
+{
+    case CustomTableFieldTypes.Attachments:
+        if (Model.AttachmentDisplay != null)
+        {
+            if (Model.AttachmentDisplay.IsImage)
+            {
+                <div class="wet-boew-lightbox">
+                    <a href="@Url.Action("DownloadDocument", "Documents", new { id = Model.AttachmentDisplay.DocumentID })?.jpg" class="lb-item" >
+                        @*<img alt="Model.AttachmentDisplay.DocumentName" class="thumb" src="@Url.Action("DownloadDocument", "Documents", new { id = Model.AttachmentDisplay.DocumentID })"/><br />
+                        <span class="glyphicon glyphicon-zoom-in"></span><span class="font-xsmall color-accent">@Labels.Enlarge</span>*@
+                        @Model.AttachmentDisplay.DocumentName
+                    </a>
+                </div>
+            }
+            else
+            {
+                @Html.ActionLink(Model.AttachmentDisplay.DocumentName, "DownloadDocument", "Documents", new { id = Model.AttachmentDisplay.DocumentID }, new { alt=Model.AttachmentDisplay.DocumentName, aria_label = Model.AttachmentDisplay.DocumentName})
+            }
+        }
+        else
+        {
+             @:-
+        }
+    break;
+
+    case CustomTableFieldTypes.Date:
+        @(Model.DateValue.HasValue ? Html.DisplayFor(model => model.DateValue.Value).ToString() : "-")
+    break;
+
+    case CustomTableFieldTypes.Date_Time:
+        @(Model.DateValue.HasValue ? Model.DateValue.Value.ToShortDateString() : "? ")
+        @:at
+        @(Model.TimeValue.HasValue ? Model.TimeValue.Value.Hours + ":" + Model.TimeValue.Value.Minutes.ToString().PadRight(2, '0') : "?")
+    break;
+
+    case CustomTableFieldTypes.Decimal:
+        @(Model.DecimalValue.HasValue ? Model.DecimalValue.Value.ToString() : "-")
+    break;
+
+    case CustomTableFieldTypes.Currency:
+        @(Model.DecimalValue.HasValue ? Html.DisplayFor(model => model.DecimalValue) : null)
+    break;
+
+    case CustomTableFieldTypes.DropDownList:
+        if (Model.NumericValue.HasValue && Model.NumericValue.Value == -2)
+          {
+              @(Model.TextValue ?? "-");
+          }
+        else
+        {
+            @(Model.NumericValue.HasValue? WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomLookUps, Culture, Model.NumericValue.Value) : (Model.TextValue != null ? Model.TextValue : "-"))
+            
+        }
+    break;
+
+    case CustomTableFieldTypes.MultiSelect:
+    if (!Model.MultiSelectValue.IsEmptyOrNull())
+    {
+        if (Model.MultiSelectValue.Count > 1)
+        {
+            <ul class="mrgn-lft-md">
+                @foreach (var ms in Model.MultiSelectValue)
+                {
+                    <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomLookUps, Culture, ms)</li>
+                }
+            </ul>
+        }
+        else
+        {
+            @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomLookUps, Culture, Model.MultiSelectValue.Single())
+        }
+    }
+    else
+    {
+        @:-
+    }
+    break;
+
+    case CustomTableFieldTypes.Numeric:
+        @(Model.NumericValue.HasValue ? Model.NumericValue.Value.ToString() : "-")
+    break;
+
+    case CustomTableFieldTypes.TextBox:
+    case CustomTableFieldTypes.TextAreaBox:
+    case CustomTableFieldTypes.Telephone:
+        @(Model.TextValue != null ? Model.TextValue : "-")
+    break;
+
+    case CustomTableFieldTypes.Time:
+        @(Model.TimeValue.HasValue ? Model.TimeValue.Value.Hours + ":" + Model.TimeValue.Value.Minutes.ToString().PadRight(2, '0') : "-")
+    break;
+
+    case CustomTableFieldTypes.YesNo:
+        @(Model.YNValue ? Labels.Yes : Labels.No)
+        break;
+    case CustomTableFieldTypes.CountriesDropDown:
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.NumericValue,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CountryTypes, ViewBag.CurrentCulture)
+                        })
+        break;
+    case CustomTableFieldTypes.HIFISRolesDropDown:
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.NumericValue,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, ViewBag.CurrentCulture)
+                        })
+        break;
+    case CustomTableFieldTypes.LookupTablesDropDown:
+        CachedTableTypes tableType;
+        var success = Enum.TryParse(Model.LookupTableName, out tableType);
+
+        if (success)
+        {
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                new SingleItemSelectList
+                {
+                    ID = Model.NumericValue,
+                    List = (SelectList) WebHelper.GetSelectListFromCache(tableType, ViewBag.CurrentCulture)
+                })
+        }
+        else
+        {
+            <div>@Labels.msgGenericError</div>
+        }
+        break;
+    case CustomTableFieldTypes.LocationsDropDown:
+        @(Model.DisplayName != null ? Model.DisplayName : "-")
+        break;
+
+    case CustomTableFieldTypes.PeopleDropDown:
+        @(Model.DisplayName != null ? Model.DisplayName : "-")
+        break;
+
+    case CustomTableFieldTypes.ClientsDropDown:
+        @(Model.DisplayName != null ? Model.DisplayName : "-")
+        break;
+
+    case CustomTableFieldTypes.ServiceProvidersDropDown:
+        @(Model.DisplayName != null ? Model.DisplayName : "-")
+        break;
+}

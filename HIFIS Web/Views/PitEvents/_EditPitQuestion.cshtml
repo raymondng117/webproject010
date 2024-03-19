@@ -1,0 +1,75 @@
+﻿@model PitQuestionViewModel
+@{
+    var ParentList = ViewBag.ParentQuestionsList;
+}
+
+<div>
+    @Html.HiddenFor(m => m.PitTemplateID)    
+    @Html.HiddenFor(m => m.PitQuestionnaireID)
+    @Html.HiddenFor(m => m.QuestionID)
+    @Html.HiddenFor(m => m.SaveQuestion)
+    @Html.HiddenFor(m => m.PitQuestionName)   
+    @Html.HiddenFor(m => m.LockedYN)
+    @Html.HiddenFor(m => m.QuestionGUID)
+
+
+    <div>
+        @Html.HifisTextBoxFor(m => m.QuestionNo, new { @class = "wdth-strct-400" })
+    </div>
+
+    <div>
+        @Html.HifisTextBoxFor(m => m.SequenceNo, new { @class = "wdth-strct-400" })
+    </div>
+
+    <div>
+        @Html.HifisTextBoxFor(m => m.SequenceLabel, new { @class = "wdth-strct-400" })
+    </div>
+    
+     <div>
+        @Html.HifisTextAreaFor(m => m.Question, new { @class= "max_width_90" })
+    </div>
+
+    <div>
+        @Html.HifisTextAreaFor(m => m.QuestionF, new { @class = "max_width_90" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.InitiallyEnabledYN, "YesNo")
+    </div>
+
+    @*<div>
+        @Html.HifisEditorFor(m => m.LockedYN, "YesNo")
+    </div>*@
+
+    <div>
+        @Html.HifisEditorFor(m => m.QuestionTypeID, CachedTableTypes.HIFIS_PiTQuestionTypes)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(m => m.QuestionCategoryTypeID, CachedTableTypes.HIFIS_PiTQuestionCategoryTypes )
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.ParentOfQuestionID, ViewBag.ParentQuestionsList as SelectList, "DropDownList", new { data_loader = true })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.QuestionActionTypeID, CachedTableTypes.HIFIS_PiTQuestionActionTypes)
+    </div>
+
+    <div>
+        @Html.HifisListBoxFor(model => model.AffectedQuestionsIDs, ViewBag.AffectedQuestionsList as SelectList)
+    </div>
+
+	<div>
+		@Html.HifisEditorFor(model => model.EventSelectable, "YesNo")
+	</div>
+
+	<div>
+		@Html.HifisEditorFor(model => model.HiddenHomelessness, "YesNo")
+	</div>
+</div>

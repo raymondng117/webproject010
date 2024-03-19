@@ -1,0 +1,20 @@
+﻿@model ReportViewModel
+@{
+    ViewBag.Title = "Reports Viewer";
+    ViewBag.LayoutView = LayoutPage.ContentOnly;    
+}
+
+<h2>Reports</h2>
+
+@using (Html.BeginForm("ReportManager", "Reports", FormMethod.Post, new { @class = "form-horizontal" }))
+{ 
+    @Html.HifisEditorFor(m => m.ReportName, ViewBag.FileList as SelectList)
+    <br />
+    
+    <div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="saveButton  ">@Labels.SelectReport</button>	
+		</div>
+	</div>      
+}
+

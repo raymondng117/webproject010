@@ -1,0 +1,75 @@
+﻿@model ExpenseViewModel
+
+<section id="Modal_AddExpense" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_AddExpense</h2>
+    </header>
+
+    <div class="modal-body" style="overflow: hidden;">
+        <div id="AddNewExpenseForm" class="row">
+            @using (Html.BeginForm("NewExpense", "Financials", FormMethod.Post, new { @class = "form-horizontal", id = "expenseForm" }))
+            {
+                @Html.Partial("_Expense", Model)
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-sm">
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="expenseSaveBtn" class="saveButton">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_AddExpense');
+
+    $(function () {
+        $("#expenseForm").hifisValidation();
+
+    });
+
+
+    $("#expenseSaveBtn").click(function () {
+
+        if ($("#expenseForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/Financials/NewExpense")",
+                type: "POST",
+                data: $('#expenseForm').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success);
+                    updateTotals();
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#expenseTable').DataTable().ajax.reload();
+
+                } else {
+                    defaultNotify(data.Success);
+                }
+            });
+        }
+    });
+
+</script>
+
+
+
+
+

@@ -1,0 +1,32 @@
+﻿@model HIFIS.WEB.ViewModels.RegistrationViewModel
+
+@{
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+	ViewBag.ViewTitle = "New Registration";
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+	@using (Html.BeginForm("New", "Registration", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+		<div>
+			@Html.HifisEditorFor(model => model.ServiceProviderName)
+		</div>
+
+		@*<div>
+			@Html.HifisListBoxFor(model => model.ClusterIDs,ViewBag.ClustersList as SelectList)
+		</div>*@
+
+		@Html.Partial("_BaseHiddenFor")
+
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+				@Html.ActionLink(Labels.Cancel, "List", "Registration", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>
+	}
+</div>
+

@@ -1,0 +1,100 @@
+﻿@model CustomTableFieldsListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CustomTableFieldList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md">            
+
+                @{ string classlink1 = (!Model.IncludeInactive ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.Active, "CustomTableFieldsList", "CustomTables", new { id = Model.CustomTableID }, new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+                @{ string classlink2 = (Model.IncludeInactive ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.All, "CustomTableFieldsList", "CustomTables", new { id = Model.CustomTableID, IncludeInactive = true }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+            <div class="clearfix"></div>
+    </div>
+    @if (!Model.CustomTableFieldList.IsEmptyOrNull())
+    {
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order" : [[7, "asc"]] }'>
+            <thead>
+                <tr>
+                    <th>@Labels.NameE</th>
+                    <th>@Labels.NameF</th>
+                    <th>@Labels.Active</th>
+                    <th>@Labels.Mandatory</th>
+                    <th>@Labels.Type</th>
+                    <th>@Labels.Min_Max</th>
+                    @*TODO: put in
+                    <th>@Labels.Mask</th>*@
+                    <th>Position</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customTableField in Model.CustomTableFieldList)
+                {
+                    <tr>
+                        <td class="align-text-center">@Html.Raw(customTableField.NameE)</td>
+                        <td class="align-text-center">@Html.Raw(customTableField.NameF)</td>
+                        <td class="align-text-center">@if (customTableField.IsActive)
+                                                    {<span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Mandatory">&nbsp; </span>}</td>
+                        <td class="align-text-center">@if (customTableField.IsMandatory)
+                                                    {<span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Mandatory">&nbsp; </span>}</td>
+                        <td class="align-text-center">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CustomFieldTypes, Culture, customTableField.FieldTypeID)</td>
+                        <td class="align-text-center">
+                            @if (customTableField.Maximum.HasValue || customTableField.Minimum.HasValue)
+                            {
+                                @(customTableField.Minimum.HasValue ? customTableField.Minimum.Value.ToString() : Labels.Any)
+                                @:-
+                                @(customTableField.Maximum.HasValue ? customTableField.Maximum.Value.ToString() : Labels.Any)
+                            }
+                        </td>
+                        @*TODO: Add later
+                        <td class="align-text-center">@customTableField.Mask</td>*@
+                        <td class="align-text-center">@customTableField.Position</td>
+                        <td class="align-text-center">
+
+                            @if (RightsHelper.HasRight(UserRights.CustomTables_Fields_Edit))
+                            {
+                                @Html.ActionLink(Labels.Field, "EditCustomTableField", new {id = customTableField.CustomFieldID}, new {@class = "editButton", alt=Labels.Field, aria_label = Labels.Field, @role = "button"})
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.CustomTables_Fields_Dropdowns_Edit))
+                            {
+                                if (customTableField.FieldTypeID == (short) CustomTableFieldTypes.DropDownList || customTableField.FieldTypeID == (short) CustomTableFieldTypes.MultiSelect)
+                                {
+                                    @Html.ActionLink(Labels.DropDowns, "CustomTableFieldDropdownsList", new {id = customTableField.CustomFieldID, customTableID = customTableField.CustomTableID}, new {@class = "editButton", alt=Labels.DropDowns, aria_label = Labels.DropDowns, @role = "button"})
+                                }
+                            }
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        </div>
+    }
+    else
+    {
+        <p>@Labels.NoCustomFields</p>
+    }
+
+    <div class="clearfix"></div>
+    <div class="mrgn-tp-md">
+        
+        @if (RightsHelper.HasRight(UserRights.CustomTables_Fields_Add))
+        {
+            @Html.ActionLink(Labels.NewCustomTableField, "NewCustomTableField", new { id = Model.CustomTableID }, new { @class = "addButton", alt=Labels.NewCustomTableField, aria_label = Labels.NewCustomTableField, @role = "button" })
+        }
+
+        @Html.ActionLink(Labels.Cancel, "CustomTablesList", null, new { @class = "saveButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>

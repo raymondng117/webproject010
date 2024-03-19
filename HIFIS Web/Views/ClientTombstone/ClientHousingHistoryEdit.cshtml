@@ -1,0 +1,149 @@
+﻿@model ClientHousingViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditClientHousingHistory;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+	</li>
+    @if (RightsHelper.HasRight(UserRights.Followup_List))
+    {
+        <li>
+            <a class="tabButton" href="#followUpsTab" role="tab" data-toggle="tab">@Labels.FollowUps</a>
+        </li>
+    }
+	<li>
+		<a class="tabButton" href="#subsidiesTab" role="tab" data-toggle="tab">@Labels.Subsidies</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="Details">
+				@using (Html.BeginForm("ClientHousingHistoryEdit", "ClientTombstone", new { id = Model.ClientID, clientHouseID = Model.ClientHouseID }, FormMethod.Post, new { @class = "form-horizontal", id = "HousingForm" }))
+				{
+					@Html.Partial("_ClientHousingHistory", Model)
+							
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-9">
+							<button type="submit" class="saveButton" title = "@Labels.Save">@Labels.Save</button>
+						</div>
+					</div>
+                }
+                <div>
+                    @Html.ActionLink(Labels.Cancel, "ClientHousingHistory", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+                </div>
+			</div>
+            @if (RightsHelper.HasRight(UserRights.Followup_List))
+            {
+                <div class="tab-pane" id="followUpsTab">
+                    @Html.Partial("~/Views/FollowUps/_FollowUpListDisplay.cshtml", Model)
+                </div>
+            }
+			<div class="tab-pane" id="subsidiesTab">
+                <div class="row">
+                    <div class="col-sm-2 ">
+                        @Html.HifisLabelFor(model => model.ClientIncome)
+                    </div>
+                    <div class="col-sm-10">
+                        @Html.DisplayFor(model => model.ClientIncome)
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-2">
+                        @Html.HifisLabelFor(model => model.Rent)	        
+                    </div>
+                    <div class="col-sm-10">
+                        @Html.DisplayFor(model => model.Rent)
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="subsidiesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{  "columns": [
+                                                                                                                                { "width": "25%" , "data": "program" },
+                                                                                                                                { "width": "21%" , "data": "serviceProvider" },
+                                                                                                                                { "width": "10%" , "data": "amount"},
+                                                                                                                                { "width": "13%" , "data": "startDate"},
+                                                                                                                                { "width": "13%" , "data": "endDate"},
+                                                                                                                                { "width": "18%" , "data": "action", "visible" : false }
+                                                                                                                                ],
+                                                                                                                                "order": [ [0, "desc" ] ],
+                                                                                                                                "ajax": "@Url.Content("~/HousingPlacements/GetSubsidiesJson?clientHouseID=" + Model.ClientHouseID)"
+                                                                                                                                }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.ProgramName</th>
+                                <th class="align-text-center">@Labels.ServiceProvider</th>
+                                <th class="align-text-center">@Labels.Amount</th>
+                                <th class="align-text-center">@Labels.DateStart</th>
+                                <th class="align-text-center">@Labels.DateEnd</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+			</div>
+
+			<div class="tab-pane" id="FollowUps">
+                <div class="row">
+                    <div class="col-sm-2 ">
+                        @Html.HifisLabelFor(model => model.ClientIncome)
+                    </div>
+                    <div class="col-sm-10">
+                        @Html.DisplayFor(model => model.ClientIncome)
+                    </div>
+                </div>				    
+			</div>      
+	</div>	
+</div>
+    </div>
+<div class="mrgn-tp-sm">@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+       
+            function submitContactForm(e) 
+            {
+                e.preventDefault();
+
+                if($(this).valid()){
+                    var formData = $(this).serialize();
+
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Url = "this.action",
+                   Data = "formData",
+                   OnSuccess = "$('#SubsidiesForm').find('input:visible, select').val('').trigger('change');appendRow(data);",
+                   ShowDataSuccessfully = true
+               });
+                    
+                }
+            }
+
+            $(function () {
+                $('#newSubsidyForm').submit(submitContactForm);
+            });
+
+            $(function () {
+                $('#editSubsidyForm').submit(submitContactForm);
+            });
+
+            //on unit list redraw reinit hifis scripts and reinit lightboxes
+            $('#subsidiesTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+
+        </script>
+    );    
+}

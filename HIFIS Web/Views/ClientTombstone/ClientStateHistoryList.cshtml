@@ -1,0 +1,55 @@
+﻿@model ClientHistoryChangeListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientStateHistoryChange;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "ordering" : false }'>
+        <thead>
+            <tr>
+                <th>@Labels.Field</th>
+                <th>@Labels.Value</th>
+                <th>@Labels.DateChange</th>
+                <th>@Labels.ChangedBy</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var historyChange in Model.ClientHistoryChangeList)
+            {
+                <tr>    
+                    <td class="align-text-center">@Html.DisplayFor(model => historyChange.FieldTypeName)</td>
+                    <td class="align-text-center">
+                        @* TODO: This should not be done here.... -JdV *@
+
+                        
+                        @if (historyChange.FieldTypeID == (short)ClientHistoryFieldTypes.ClientState) { @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ClientStateTypes, Culture, historyChange.Value) }
+                        
+                    </td>
+                    <td class="align-text-center">@Html.DisplayFor(model => historyChange.DateOfChange)</td>
+                    <td class="align-text-center">@Html.DisplayFor(model => historyChange.CreatedByName)</td>
+               </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="row mrgn-tp-md">
+    <div class="col-sm-12">
+        <div class="btn-group">
+            @if (RightsHelper.HasRight(UserRights.Client_Vitals))
+            {
+                @Html.ActionLink(Labels.Back, "DisplayVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "prevButton mrgn-rght-sm", alt=Labels.Back, aria_label = Labels.Back, @role = "button"  })
+            }
+            @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+            {
+                @Html.ActionLink(Labels.DisplayVitalsHistory, "ClientVitalsHistoryList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "displayButton mrgn-rght-sm", alt=Labels.DisplayVitalsHistory, aria_label = Labels.DisplayVitalsHistory, @role = "button"  })
+            }
+            @if (RightsHelper.HasRight(UserRights.Client_Activity_Log))
+            {
+                @Html.ActionLink(Labels.viewTitle_ClientActivityLog, "ClientActivityLogList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "listButton", alt=Labels.viewTitle_ClientActivityLog, aria_label = Labels.viewTitle_ClientActivityLog, @role = "button"  })
+            }
+        </div>
+    </div>
+</div>

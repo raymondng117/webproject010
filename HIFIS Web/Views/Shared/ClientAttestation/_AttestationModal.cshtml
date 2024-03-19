@@ -1,0 +1,100 @@
+﻿@model AttestationViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="mfp-bg"></div>
+<div class="attestation-container">
+    <div id="attestationDialog" class="modal mrgn-tp-10 attestation-modal">
+        <div class="modal-dialog whiteBackground">
+            <div id="AttestationModalContent" class="modal-content">
+                <div class="modal-header alert alert-danger">
+                    <h2 class="modal-title">@Labels.AttestationDialogTitle</h2>
+                </div>
+                <div class="modal-body client-profile">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <section class="col-sm-12 profile-image-frame-modal">
+                                <img id="pictureLoader" class="img-rounded img-responsive placeholder" alt=""
+                                     src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" title="Client's picture" />
+                                <img id="clientsPicture" class="img-rounded img-responsive icon" src="" title="Client's picture" />
+                            </section>
+                            <section class="col-sm-12">
+                                <div class="row">
+                                    <div class="pstn-bttm-sm col-sm-12">
+                                        <p class="text-center opct-80 well brdr-rds-0 well-sm mrgn-bttm-0"><strong id="fullname">@Model.ClientROVitals.FirstName @Model.ClientROVitals.LastName</strong></p>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-sm-6">
+                            <section class="col-sm-12">
+                                <div class="well well-sm mrgn-bttm-sm">
+                                    <div class="profile-outer-box">
+                                        <div class="row profile-info">
+                                            <div class="col-xs-6 text-left profile-info-content">
+                                                <span class="color-accent">@Labels.Gender</span>
+                                            </div>
+                                            <div class="col-xs-6 text-right profile-info-content">
+                                                <span id="gender">@Model.ClientROVitals.Gender</span>
+                                            </div>
+                                        </div>
+                                        <div class="row profile-info">
+                                            <div class="col-xs-6 text-left profile-info-content">
+                                                <span class="color-accent">@Labels.DOB</span>
+                                            </div>
+                                            <div class="col-xs-6 text-right profile-info-content">
+                                                @{string aproxAge = (Model.ClientROVitals.AproximativeAge != 0 ? @Model.ClientROVitals.AproximativeAge.ToString() : (DateTime.Now.Year - Model.ClientROVitals.DOB.Value.Year).ToString()); }
+                                                <span id="dateOfBirth">@Model.ClientROVitals.DOB.Value.Date.ToString("yyyy-MM-dd")</span>&nbsp;(<strong id="aproxAge">@aproxAge</strong>)
+                                            </div>
+                                        </div>
+                                        <div class="row profile-info">
+                                            <div class="col-xs-6 text-left profile-info-content">
+                                                <span class="color-accent">@Labels.FamilyStatus</span>
+                                            </div>
+                                            <div class="col-xs-6 text-right profile-info-content">
+                                                <span id="isInFamily">@(Model.ClientROVitals.IsInFamily ? Labels.Yes : Labels.No)</span>
+                                            </div>
+                                        </div>
+                                        <div class="row profile-info">
+                                            <div class="col-xs-6 text-left profile-info-content">
+                                                <span class="color-accent">@Labels.Aka1</span>
+                                            </div>
+                                            <div class="col-xs-6 text-right profile-info-content">
+                                                <span id="aka1">@Model.ClientROVitals.Aka1</span>
+                                            </div>
+                                        </div>
+                                        <div class="row profile-info">
+                                            <div class="col-xs-6 text-left profile-info-content">
+                                                <span class="color-accent">@Labels.Aka2</span>
+                                            </div>
+                                            <div class="col-xs-6 text-right profile-info-content">
+                                                <span id="aka2">@Model.ClientROVitals.Aka2</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            @((ViewBag.CurrentCulture == Constants.Eng ?
+                        Html.Raw(appSettings.GetAttestationTextEng()) :
+                        Html.Raw(ViewBag.CurrentCulture == Constants.Fr ? appSettings.GetAttestationTextFr() : string.Empty)
+                        ))
+                        </div>
+                        <form id="attestationForm" class="form-horizontal" enctype="multipart/form-data">
+                            @Html.Partial("ClientAttestation/_AttestationForm", Model.Attestation)
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="no-button" class="btn btn-default">@Labels.No</button>
+                    <button type="button" id="yes-button" class="btn btn-primary">@Labels.Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,58 @@
+﻿@model ClientCarViewModel
+@{ 
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayClientCar;
+    
+}
+
+<div class=" displayView">
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Make, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Make)
+    </div>
+      
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Model, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Model)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Year, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Year)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Colour, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Colour)
+    </div>
+      
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LicencePlate, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.LicencePlate)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateStart)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateEnd)
+    </div>
+           
+    <div class="btn-group">
+        <div class="row">
+            <div class="col-sm-12">
+                @if (RightsHelper.HasRight(UserRights.Client_Cars_Edit))
+                { 
+	                @Html.ActionLink(Labels.Edit, "EditVehicle", "ClientTombstone", new { id = Model.ClientID, vehicleID = Model.ClientCarID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit , @role = "button"  })
+                }
+
+                @Html.ActionLink(Labels.Cancel, "VehicleList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  }) 
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

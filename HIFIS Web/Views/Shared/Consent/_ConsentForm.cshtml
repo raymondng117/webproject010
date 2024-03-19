@@ -1,0 +1,42 @@
+﻿@model ConsentViewModel
+
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.ReadOnlyVitals.PersonID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+@Html.AntiForgeryToken()
+    <div>
+        @*@Html.HifisEditorFor(model => model.ConsentTypeID, ViewBag.TypeList as SelectList)*@
+        @Html.HifisEditorFor(model => model.ConsentTypeID, Model.ClientConsentTypeList as SelectList)
+    </div>
+<div>
+    @Html.HifisEditorFor(model => model.StartDate, null, new { disabled = "disabled" })
+</div>
+<div id="explicitConsentFields">
+    <div>
+        @Html.HifisEditorFor(model => model.ExpiryDate)
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.UploadedFile, "File")
+    </div>
+</div>
+<div id="inheritedConsentFields">
+    <div id="familyFields">
+        <div>
+            @Html.HifisAutocompleteFor(
+                model => model.FamilyHeadClientID
+                , Url.Content("~/ClientTombstone/AjaxGetFamilyHeadsWithActiveConsentList")
+                , Model.FamilyHeadClientName
+                , new AutocompleteViewModelOptions()
+                {
+                    OnSelect = ""
+                    , HiddenValue = true
+                }
+                , new { style = "width: 100%;" })
+        </div>
+    </div>
+</div>
+
+@*<div>
+        @Html.HifisEditorFor(model => model.AcceptYN, "YesNo")
+    </div>*@

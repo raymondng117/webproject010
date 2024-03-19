@@ -1,0 +1,69 @@
+﻿@* Just include this plugin partial when using tinyMCE for editing and add "mceEditor_Messaging" class to the textarea element*@
+<script src="~/Scripts/Hifis/tinymce/tinymce.min.js" type="text/javascript"></script>
+
+@{
+    string lang = ViewBag.CurrentCulture;
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            
+            initMCE();
+            function initMCE() {
+                tinymce.EditorManager.editors = [];
+                tinyMCE.init({
+                    mode: "specific_textareas",
+                    editor_selector: "mceEditor_Messaging",
+                    entity_encoding: "raw",
+                    theme: "modern",
+                    plugins: "advlist,pagebreak,textcolor,layer,table,hr,link,insertdatetime,searchreplace,print,contextmenu,paste,visualchars,nonbreaking,wordcount",
+                    menubar: "edit insert format view table",
+                    toolbar: "undo redo print | fontsizeselect forecolor backcolor | bold italic underline strikethrough | outdent alignleft aligncenter alignright alignjustify indent | bullist numlist hr |",
+                    contextmenu: "undo redo | cut copy paste |",
+                    forced_root_block: '',
+                    language: "@lang",
+                    height: 200,
+                    setup: function (ed) {
+                        ed.on('Init', function (event) {
+                            $('.mce-tinymce').addClass('mce-float');
+                        });
+                    }
+                });
+
+                tinyMCE.init({
+                    mode: "specific_textareas",
+                    editor_selector: "mceEditor_ReadOnly",
+                    entity_encoding: "raw",
+                    plugins: "print,wordcount,noneditable,autoresize",
+                    menubar: false,
+                    toolbar: 'print',
+                    resize: "both",
+                    contextmenu: false,
+                    statusbar: false,
+                    language: '@lang',
+                    setup: function (ed) {
+                        ed.on('Init', function (event) {
+                            $('.editor-field').find('div').each(function () {
+                                $(this).css('padding-bottom', '0px');
+                            });
+                        });
+                        ed.on('PreInit', function (event) {
+                            var ed = event.target, dom = ed.dom;
+                            dom.setAttrib(ed.getBody(), 'contenteditable', 'false');
+                        });
+                    }
+                });
+
+                //TinyMCE doesn't use the editor that is checked for validation,
+                //on form submit we have to save the tinyMCE input to the textarea to pass validation the first time
+                $(document).on('click', '.saveButton', function () {
+                    tinyMCE.triggerSave();
+                });
+
+            }
+
+        </script>
+);
+}

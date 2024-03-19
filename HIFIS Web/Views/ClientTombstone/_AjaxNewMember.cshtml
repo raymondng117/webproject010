@@ -1,0 +1,194 @@
+﻿@model ClientFamilyMemberDetailViewModel
+
+<section id="Modal_NewMember" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.AddFamilyMember</h2>
+    </header>
+    <div class="modal-body" style="overflow: hidden;">
+        <form id="newFamilyMemberForm" class="form-horizontal">
+            <div class="mrgn-tp-md">
+
+                <div class="row">
+                    @Html.HiddenFor(m => m.GroupID)
+                    @Html.HiddenFor(m => m.CurrentClientID)
+                </div>
+
+                <div class="row">
+                    @Html.HifisAutocompleteFor(
+                        m => m.ClientID
+                        , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                        , null
+                        , new AutocompleteViewModelOptions
+                        {
+                            OnSelect = "checkFamilyEligibility();",
+                            SelectClientFieldType = SelectClientFieldTypes.Other
+                        }
+                        , new { @class = "autocomplete" })
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.GroupRoleTypeID, CachedTableTypes.HIFIS_GroupRoleTypes)
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.ClientRelationshipTypeID, CachedTableTypes.HIFIS_PeopleRelationshipTypes)
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.DateStart)
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.DateEnd)
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button type="submit" id="newFamilyMemberSaveBtn" class="saveButton">@Labels.Save</button>
+            <button id="newFamilyMemberCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<div id="ClientID-attestation-result" class="pull-left"></div>
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+
+<script>
+
+    if ($('#MinimumCharacterInput').val()) {
+        initAutocomplete(parseInt($('#MinimumCharacterInput').val()));
+    }
+    else {
+        initAutocomplete(parseInt(@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultMinCharInput"]));
+    }
+
+    function initAutocomplete(minInputLength) {
+        $('#ClientID').select2({
+            minimumInputLength: minInputLength,
+            ajax: {
+                type: "POST",
+                url: "@Url.Content("~/ClientTombstone/AjaxGetClientList")",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        @("searchString" + ": params.term,")
+                        @("resultsToReturn: " + 10 + " ,")
+                };
+            },
+            processResults: function (data, page) {
+                // parse the results into the format expected by Select2.
+                // since we are using custom formatting functions we do not need to
+                // alter the remote JSON data
+                var result = [];
+                $.each(data.Result, function (index, item) {
+                    result.push({ "id": item.value, "text": item.label });
+                });
+                return {
+                    results: result
+                };
+            },
+            cache: true
+        },
+        });
+    }
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_NewMember');
+
+    $(function () {
+        $("#newFamilyMemberForm").hifisValidation();
+    });
+
+    //on select of client check if they are eligible to be in a family, if not do not allow submission of form.
+    function checkFamilyEligibility() {
+        $('#newFamilyMemberSaveBtn').hide();
+
+        $.ajax({
+            url: "@Url.Content("~/ClientTombstone/CheckFamilyEligibility")",
+            type: "POST",
+            data: { cID: $('#ClientID').val(), groupID: "@Model.GroupID" }
+        }).done(function (data) {
+            if (data.result === false) {
+                $("#ClientID option[value=" + data.id + "]").prop("selected", false).parent().trigger("change");
+                $("#ClientID option[value=" + data.id + "]").remove();
+                displayNotification('error', '', "<p>@Labels.FamilyIneligible</p>");
+        }
+    }).always(function () {
+        $('#newFamilyMemberSaveBtn').show();
+    });
+    }
+
+    $('#ClientID').on('select2:select', function (e) {
+        @if (appSettings.IsAttestationEnabled())
+        {
+        <text>
+        $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+            { FieldType: '@SelectClientFieldTypes.FamilyMemberClientID', ID: e.params.data.id, InputName: 'ClientID', Callback: 'checkFamilyEligibility();' },
+            function (data) {
+                $("#ClientID-attestation-result").html(data);
+            });
+        </text>
+        }
+        else {
+        @Html.Raw("checkFamilyEligibility();")
+        }
+    });
+
+    @*$('#ClientID').on('select2:select', function () {
+        $('#newFamilyMemberSaveBtn').hide();
+
+        $.ajax({
+            url: "@Url.Content("~/ClientTombstone/CheckFamilyEligibility")",
+            type: "POST",
+            data: { cID: $('#ClientID').val() }
+        }).done(function (data) {
+            if(data.result === false)
+            {
+                $("#ClientID option[value=" + data.id + "]").prop("selected", false).parent().trigger("change");
+                $("#ClientID option[value=" + data.id + "]").remove();
+                displayNotification('error', '', "<p>@Labels.FamilyIneligible</p>");
+        }
+    }).always(function () {
+        $('#newFamilyMemberSaveBtn').show();
+    });
+    });*@
+
+    $("#newFamilyMemberSaveBtn").click(function () {
+
+        if ($("#newFamilyMemberForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/ClientTombstone/AddNewMember")",
+                type: "POST",
+                data: $('#newFamilyMemberForm').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success); //display the default error or success message
+                    $("#newFamilyMemberCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $(document).trigger("familyTable:change");
+                }
+                else
+                {
+                    displayNotification('error', '', data.Result.message);
+                }
+            });
+        }
+    });
+
+</script>
+
+

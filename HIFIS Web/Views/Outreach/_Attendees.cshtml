@@ -1,0 +1,314 @@
+﻿@model EncampmentViewModel
+@{ 
+    bool EditView = !ViewBag.Display;
+}
+
+
+<div>
+    @if (EditView)
+    {
+        <table>
+            <tr>
+                <td>@Html.HifisMultiAutocompleteFor(model => model.ClientIDs
+                            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                            , new AutocompleteViewModelOptions() { OnSelect = "checkSelection();" }
+                            , null, String.Format("<a id=\"clientButton\" class=\"\" title=\"{0}\" aria-controls='Add_Clients' role='button'><span class='glyphicon glyphicon-plus-sign'></span></a>", Labels.Add))</td>
+                <td>
+                    @Html.HiddenFor(model => model.AnonymousAttendees, new { id = "hdnAnons"})
+                    @Html.HifisEditorFor(model => model.AnonymousAttendees, null, new { autocomplete = "off" }, false, String.Format("<a id=\"anonymousButton\" class=\"\" title=\"{0}\" aria-controls='Add_Anonymous' role='button'><span class='glyphicon glyphicon-floppy-disk'></span></a>", Labels.Add))
+                </td>
+             </tr>
+        </table>
+    }
+    else
+    {
+        @Html.HifisDisplayFor(model => model.AnonymousAttendees)
+    }
+</div>
+
+<table id="clientsTable" class="wb-tables table table-striped table-hover" 
+    data-wb-tables='{ "columns": [
+                        { "width": "10%", "data": "name", "orderable": true , "name": "HIFIS_Clients.HIFIS_People.LastName"},
+                        { "width": "30%", "data": "gender", "orderable": true , "name": "GenderType"},
+                        { "width": "10%", "data": "age", "orderable": true , "name": "HIFIS_Clients.HIFIS_People.CurrentAge"},
+                        { "width": "15%", "data": "attend", "orderable": false, "name": "ClientPresent"},
+                        { "width": "10%", "data": "remove", "orderable": false}
+                    ],
+                    "order": [ [0, "desc"] ],
+                    "serverSide": true,
+                    "processing": true,
+                    "ajax": "@Url.Content("~/Outreach/EncClientListJson?encampmentID=" + Model.EncampmentID + "&EditView=" + EditView.ToString() )"                         
+                }'>
+    <thead>
+        <tr>
+            <th class="align-text-center">@Labels.FullName</th>
+            <th class="align-text-center">@Labels.Gender</th>
+            <th class="align-text-center">@Labels.Age</th>
+            <th class="align-text-center">@Labels.ClientPresent</th>
+            <th class="align-text-center">@Labels.Remove</th>
+        </tr>
+    </thead>
+    <tbody class="align-text-center">
+    </tbody>
+</table>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            var table = $('#clientsTable');
+
+            //toggles the client's attendence status with the yes/no slider
+            $(function () {
+                $(document).on('switchChange.bootstrapSwitch', "input[id=clientStillPresentYN]", function () {
+
+                    var actID = $('input[id=EncampmentID]').val();
+                    var attID = $(this).val();
+
+                    toggleAttendence(attID, actID);
+                });
+            });
+
+             function toggleAttendence(cid, aid) {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/Outreach/ToggleIsClientStillPresent") + "'",
+                    Data = "{clientID: cid, encampmentID: aid}",
+                    OnSuccess = "defaultAttendeesSaved()",
+                    OnFailure = "defaultAttendeesFailed()",
+                    OnComplete = "",
+                    Type = "POST"
+                });
+             };
+
+             //prevents non numeric input.
+             $('#AnonymousAttendees').on('keypress', function (e) {
+                 return e.metaKey || // cmd/ctrl
+                   e.which <= 0 || // arrow keys
+                   e.which == 8 || // delete key
+                   /[0-9]/.test(String.fromCharCode(e.which)); // numbers
+             }).on('change', function (e) {
+                 if (parseInt($(this).val()) > '@short.MaxValue')
+                     $(this).val(@short.MaxValue)
+             }).attr({ min: 0, max: '@short.MaxValue' });
+
+             //sets the status of the checkbox after the initial load of the table
+             //
+             table.on('draw.dt', function () {
+                 $('input[type=checkbox]').each(function () {
+                     if ($(this).attr('data-val') == 'False') {
+                         $(this).removeAttr('checked');
+                     }
+                 });
+             });
+
+             $(document).on('clientsTable:row:removed', function () {
+                 populateClientDemograhpics($('input[id=EncampmentID]').val());
+             });
+
+             //On Success function that displays results to the user, reloads the datatable, and initializes the buttons in the table.
+             function defaultAttendeesSaved() {
+
+                 if (window.location.href.indexOf("/Messages/List") != -1) {
+                     CheckForNewMessages();
+                 }
+
+                 displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                 table.DataTable().ajax.reload(function () {
+                     $('select[id=ClientIDs]').select2("val", "");
+                     $('select[id=ClientIDs]').empty();
+                     $('input[type=checkbox]').each(function () {
+                         if ($(this).attr('data-val') == 'False') {
+                             $(this).removeAttr('checked');
+                         }
+                     });
+                 });
+
+                 populateClientDemograhpics($('input[id=EncampmentID]').val());
+             }
+
+             //On Success function that displays results to the user, and reloads the demographics table
+             function defaultAnonymousSaved() {
+
+                 if (window.location.href.indexOf("/Messages/List") != -1) {
+            isClientRestricted
+                     CheckForNewMessages();
+                 }
+
+                 displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                 populateAnonymousDemograhpics($('input[id=EncampmentID]').val());
+             }
+
+             // On failure notification
+             function defaultAttendeesFailed() {
+                 displayNotification("error", "", "<p>@Labels.FailedToSave</p>");
+             }
+
+             //updates the count of anonymous attendees
+             $(function () {
+                 $("#anonymousButton").on("click", function (e) {
+                     var aDiff = parseInt($('#hdnAnons').val()) - parseInt($('#AnonymousAttendees').val());
+
+                     if (aDiff <= 0 || parseInt($('#savedAgeUnknown').val()) >= aDiff && parseInt($('#savedSexUnknown').val()) >= aDiff && parseInt($('#savedAbrUnknown').val()) >= aDiff && parseInt($('#savedDisUnknown').val()) >= aDiff) {
+
+                        $('#hdnAnons').val(parseInt($('#AnonymousAttendees').val()));
+
+                        var anons;
+                        var eID;
+
+                        anons = $('#AnonymousAttendees').val();
+                         eID = $('input[id=EncampmentID]').val();
+
+                        @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/Outreach/UpdateEncAnonAttendees") + "'",
+                            Data = "{count: anons, encampmentID: eID}",
+                            OnSuccess = "defaultAnonymousSaved()",
+                            OnFailure = "defaultAttendeesFailed()",
+                            OnComplete = "",
+                            Type = "POST"
+                        });
+                     }
+                     else {
+                         $('.nav-tabs a[href="#Demographics"]').tab('show')
+                         displayNotification("error", "", "<p>@Labels.msgErrorAnonAttendeeCount</p>");
+                     }
+                });
+             });
+
+             //Inserts the selected clients from the client multiselect into the group activity
+             $(function () {
+                 $("#clientButton").on("click", function (e) {
+
+                    var cIDs = [];
+                    var eID;
+
+                     eID = $('input[id=EncampmentID]').val();
+                    cIDs = $('select[id=ClientIDs]').val();
+
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/Outreach/AddEncClients") + "'",
+                        Data = "{clientIDs: cIDs, EncampmentID: eID}",
+                        OnSuccess = "defaultAttendeesSaved()",
+                        OnFailure = "defaultAttendeesFailed()",
+                        OnComplete = "",
+                        Type = "POST"
+                    });
+                 });
+             });
+
+             $(function () {
+                 $("#clientsTable tbody").on("click", "td.align-text-center", function (e) {
+                     var nextTR = $(this).parent("tr").next();
+
+                     if (nextTR.children("td").children(".parent").length < 1) {
+                         var nextRow = nextTR.nextUntil().find(".parent").first().parent("td").parent("tr");
+                         var rowList = nextTR.nextUntil(nextRow).add(nextTR);
+
+                         if (rowList.length > 1)
+                             rowList.stop(true, true).slideToggle("swing");
+                     }
+
+                     console.log(nextTR, nextRow, nextRow.prev());
+                     e.preventDefault();
+                 });
+             });
+
+             //checks if the client is already in the group activity when added to the multiselect.
+             //if already added they are automatically removed.
+             //$("#ClientIDs").on("select2:select", function (e) {
+             //    var cID;
+             //    var badName = "";
+             //    var aID;
+             //    cID = $('select[id=ClientIDs]').children('option').last().val();
+             //    aID = $('input[id=GroupActivityID]').val();
+             //    badName = $('select[id=ClientIDs]').children('option').last().text();
+             //    isClientInGroup(cID.toString(), aID.toString(), badName);
+            //});
+             function checkSelection() {
+                 var cID;
+                 var badName = "";
+                 var eID;
+                 cID = $('select[id=ClientIDs]').children('option').last().val();
+                 eID = $('input[id=EncampmentID]').val();
+                 badName = $('select[id=ClientIDs]').children('option').last().text();
+                 isClientInGroup(cID.toString(), eID.toString(), badName);
+             }
+
+             function isClientInGroup(cid, eid, text) {
+                 $.ajax({
+                     url: "@Url.Action("GetEncClientStatus", "Outreach")",
+                     type: "POST",
+                     data: { "clientID": cid, "EncampmentID": eid }
+                 }).done(function (data) {
+                     if (data){
+                         displayNotification('error', '', "<p>@Labels.AlreadyInEncampment</p>");
+                         $("#ClientIDs option[value=" + cid + "]").prop("selected", false).parent().trigger("change");
+                         $("#ClientIDs option[value=" + cid + "]").remove();
+                         $(".clientButton[data-clientid='" + cid + "']").remove();
+                     }
+                 });
+             };
+
+
+             var cunselecting = false;
+             var coldArray = [];
+
+             $('#ClientIDs').on('select2:unselecting', function (e) {
+                 if (cunselecting === false) {
+                     cunselecting = true;
+                     coldArray = $('select[id=ClientIDs]').val();
+                 }
+             });
+
+             $('#ClientIDs').on('select2:unselect', function (e) {
+                 var newArray = [];
+                 newArray = $('select[id=ClientIDs]').val();
+                 clearOptions("ClientIDs", coldArray, newArray);
+                 coldArray = newArray;
+
+                 if (coldArray === null || coldArray.length === 0) {
+                     cunselecting = false;
+                 }
+             });
+
+             //used to remove all select2 options that were deselected
+             function clearOptions(selector, oldArray, newArray) {
+                 var diff = $(oldArray).not(newArray).get();
+                 $("#" + selector + " option[value=" + diff + "]").remove();
+             };
+
+             //removes the corresponding client from the group activity
+            @*$(function () {
+                $(document).on("click", "button[id=removeAttendee]", function () {
+                    var remID;
+                    var actID;
+
+                    actID = $('input[id=GroupActivityID]').val();
+                    remID = $(this).val();
+
+                    removeClient(remID, actID);
+                });
+            });
+
+             function removeClient(cid, aid) {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                 {
+                    Url = "'" + Url.Content("~/GroupActivities/RemoveClient") + "'",
+                    Data = "{clientID: cid, activityID: aid}",
+                    OnSuccess = "defaultAttendeesSaved()",
+                    OnFailure = "defaultAttendeesFailed()",
+                    OnComplete = "",
+                    Type = "POST"
+             });
+             };*@
+
+</script>
+    );
+}

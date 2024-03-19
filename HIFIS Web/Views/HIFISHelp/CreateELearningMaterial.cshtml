@@ -1,0 +1,753 @@
+﻿@model ELearning_CreateMaterialModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_eLearningsMaterialDev;
+    int i = 0;
+}
+
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Partial("Plugins/_TinyMCEScript")
+@Html.Partial("Plugins/_TinyMCE-HelpAjaxFix")
+
+<ol class="breadcrumb mrgn-tp-sm">
+    <li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+    <li>@Labels.HifisHelp_eLearningsMaterialDev</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+<!-- Tab Headers -->
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#HifisHelp_HowToTab" role="tab" data-toggle="tab">@Labels.HifisHelp_HowToTab</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#HifisHelp_ImageTab" role="tab" data-toggle="tab">@Labels.HifisHelp_ImageTab</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#HifisHelp_HintTab" role="tab" data-toggle="tab">@Labels.HifisHelp_HintTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_ChalTab" role="tab" data-toggle="tab">@Labels.HifisHelp_ChalTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_KeyTab" role="tab" data-toggle="tab">@Labels.HifisHelp_KeyTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_StepTab" role="tab" data-toggle="tab">@Labels.HifisHelp_StepTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_DemoTab" role="tab" data-toggle="tab">@Labels.HifisHelp_DemoTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_SimTab" role="tab" data-toggle="tab">@Labels.HifisHelp_SimTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_QuizTab" role="tab" data-toggle="tab">@Labels.HifisHelp_QuizTab</a>
+	</li>
+    <li>
+		<a class="tabButton" href="#HifisHelp_AddNew" role="tab" data-toggle="tab">@Labels.HifisHelp_NewEditTab</a>
+	</li>    
+</ul>
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="HifisHelp_HowToTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>     
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                               
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListHowTo)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.HowToRichText)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colone@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colone@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" }) 
+                                            }
+                                        </td>
+                                    </tr>                                
+                                }
+                            }                        
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+			<div class="tab-pane" id="HifisHelp_ImageTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Image</th> 
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>      
+                                <th class="text-center">@Labels.HifisHelp_Action</th>     
+                            </tr>                           
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListImage)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.Image)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">
+                                           @{
+                                                string image = "";
+                                                image = Url.Action("GetMateralImage", "HIFISHelp", new { id = (lang == english ? item.ImageEnglish.HelpImageID : item.ImageFrench.HelpImageID) }); 
+			                                }
+			                                <img class="mrgn-bttm-md img-responsive col-xs-12" alt="@(lang == english ? item.ImageEnglish.DescriptionE : item.ImageEnglish.DescriptionF)"  src="@image" title="@(lang == english ? item.ImageEnglish.NameE : item.ImageEnglish.NameF)" />			                                            
+                                        </td>
+                                        <td class="vertical-align-top col-sm-2">  
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#coltwo@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="coltwo@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                  
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+			<div class="tab-pane" id="HifisHelp_HintTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListHint)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.HelpfulHint)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colthree@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colthree@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+            <div class="tab-pane" id="HifisHelp_ChalTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListChal)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.ChallengeYourself)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colfour@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colfour@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+            <div class="tab-pane" id="HifisHelp_KeyTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListKey)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.KeyPoint)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colfive@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colfive@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+            <div class="tab-pane" id="HifisHelp_StepTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListStep)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.StepByStep)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colsix@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colsix@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+            <div class="tab-pane" id="HifisHelp_DemoTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListDemo)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.Demonstration)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colseven@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colseven@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+            <div class="tab-pane" id="HifisHelp_SimTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Content</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListSim)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.Simulation)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(@item.ContentF)))</td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#coleight@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="coleight@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+            <div class="tab-pane" id="HifisHelp_QuizTab">
+				<div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th class="text-center">@Labels.HifisHelp_Name</th>
+                                <th class="text-center">@Labels.HifisHelp_Question</th>
+                                <th class="text-center">@Labels.HifisHelp_TopicsUsedIn</th>        
+                                <th class="text-center">@Labels.HifisHelp_Action</th>
+                            </tr>                                   
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ListQuiz)
+                            {
+                                i++;
+                                if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.QuizQuestionTF || item.ContentTypeID ==  (short)HIFISHelp_HelpContentTypes.QuizQuestionMulti)
+                                { 
+                                    <tr>
+                                        <td class="col-sm-2 vertical-align-top fnt-bld">@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameE)) : Html.Raw(HttpUtility.HtmlDecode(@item.MaterialNameF)))</td>
+                                        <td class="col-sm-7">
+                                            @Html.Label(Labels.HifisHelp_Question + ":") @(lang == english ? item.QuizQuestion.QuestionE : item.QuizQuestion.QuestionF)
+                                            <br />
+                                            @if (item.ContentTypeID == (short)HIFISHelp_HelpContentTypes.QuizQuestionTF)
+                                            {
+                                                @Html.Label(Labels.HifisHelp_Answer + ":"); @: @item.QuizQuestion.QuestionAnswer                                                                        
+                                            }
+                                            else
+                                            {
+                                                @Html.Label(Labels.HifisHelp_Answer + ":"); @: @Html.DisplayFor(m => item.QuizQuestion.QuestionChoiceAnswer)                                                   
+                                                <br />
+                                                @Html.Label(Labels.HifisHelp_Choices);                                           
+                                                <br />
+                                                @:1: @(lang == english ? item.QuizQuestion.QuestionChoiceE1 : item.QuizQuestion.QuestionChoiceF1)
+                                                <br />
+                                                @:2: @(lang == english ? item.QuizQuestion.QuestionChoiceE2 : item.QuizQuestion.QuestionChoiceF2)
+                                                <br />
+                                                @:3: @(lang == english ? item.QuizQuestion.QuestionChoiceE3 : item.QuizQuestion.QuestionChoiceF3)
+                                                <br />
+                                                @:4: @(lang == english ? item.QuizQuestion.QuestionChoiceE4 : item.QuizQuestion.QuestionChoiceF4)
+                                            }                                            
+                                        </td>
+                                        <td class="vertical-align-top col-sm-2"> 
+                                            @if (!item.TopicLink.IsEmptyOrNull())
+                                            {
+                                                <div class="panel-default">
+                                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                        <a data-toggle="collapse" data-parent="#accordion" href="#colnine@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                            @item.TopicLink.Count @Labels.HifisHelp_NoOfTopics 
+                                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div id="colnine@(i)" class="panel-collapse collapse">
+                                                        <ul class="pddng-lft-md">
+                                                            @*@foreach (var link in item.TopicLink)
+                                                            {                            
+                                                                @Html.ActionLink(link.TopicName, "CreateHelpTopic", "HIFISHelp", new { id = link.HelpTopicID }, null) 
+                                                            }*@
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }                                               
+                                        </td>
+                                        <td class="col-sm-1 text-center vertical-align-top">
+                                            @Html.ActionLink(Labels.HifisHelp_MaterialEdit, "EditELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText editButton editMatButton", data_Id = item.ELearningMaterialID, data_Content = item.ContentTypeID, alt=Labels.HifisHelp_MaterialEdit, aria_label = Labels.HifisHelp_MaterialEdit, @role = "button" }) 
+                                            @if (!item.MaterialReferenced)
+                                            {
+                                                @Html.ActionLink(Labels.HifisHelp_MaterialDelete, "DeleteELearningMaterial", "HIFISHelp", new { id = item.ELearningMaterialID }, new { @class = "noText deleteButton", alt=Labels.HifisHelp_MaterialDelete, aria_label = Labels.HifisHelp_MaterialDelete, @role = "button" })
+                                            }
+                                        </td>
+                                    </tr>                                 
+                                }
+                            }                      
+                        </tbody>
+                    </table>
+				</div>
+			</div>            
+            <div class="tab-pane" id="HifisHelp_AddNew">
+                <h5 id="newContent" class="mrgn-tp-0">@Labels.HifisHelp_NewMaterial</h5>
+                <h5 id="editContent" class="mrgn-tp-0">@Labels.HifisHelp_MaterialEdit</h5>
+                <hr />		    
+                <div id="newContentDropdown">
+	                @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "form-horizontal" }))
+                    { 
+		                @Html.DropDownListFor(model => model.ContentTypeID, ViewBag.HelpContentTypes as SelectList)
+                    }
+                </div>
+                <div id="ajaxContentArea">      
+                    @using (Html.BeginForm("InsertOrUpdateELearningMaterial", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        <div id="replaceHere" class="mrgn-bttm-md">
+   
+                        </div>             
+                    
+                        <div>
+				            <button type="submit" class="saveButton">@Labels.Save</button>
+	                        @Html.ActionLink(Labels.Cancel, "CreateELearningMaterial", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		                </div>    
+                    }
+                </div>
+                <div id="ajaxContentAreaImage">      
+                    @using (Html.BeginForm("InsertOrUpdateELearningMaterialImage", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+                    {
+                        <div id="replaceHereImage" class="mrgn-bttm-md">
+   
+                        </div>               
+                        <div>
+	                        <button type="submit" class="saveButton">@Labels.Save</button>
+	                        @Html.ActionLink(Labels.Cancel, "CreateELearningMaterial", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                        </div>
+                    }
+                </div>	
+                <div id="ajaxContentAreaQuiz">      
+                    @using (Html.BeginForm("InsertOrUpdateELearningMaterialQuiz", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        <div id="replaceHereQuiz" class="mrgn-bttm-md">
+   
+                        </div>               
+                        <div>
+	                        <button type="submit" class="saveButton">@Labels.Save</button>
+	                        @Html.ActionLink(Labels.Cancel, "CreateELearningMaterial", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                        </div>
+                    }
+                </div>	
+			</div>
+		</div>	
+	</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     function resetTinyMCE() {
+		         var i, t = tinyMCE.editors;
+		         for (i in t) {
+		             if (t.hasOwnProperty(i)) {
+		                 t[i].remove();
+		             }
+		         }
+		     }
+
+		     function fixCheckbox() {
+		         $(document).ready(function () {
+		             $(".YesAndNo").parent().removeClass("form-control");
+		             $(".YesAndNo").bootstrapSwitch();
+		         });
+		     }
+
+             function setActive() {
+		        $("#HifisHelp_HowToTab").removeClass("active");
+                $("#HifisHelp_ImageTab").removeClass("active");
+                $("#HifisHelp_HintTab").removeClass("active");
+                $("#HifisHelp_ChalTab").removeClass("active");
+                $("#HifisHelp_KeyTab").removeClass("active");
+                $("#HifisHelp_StepTab").removeClass("active");
+                $("#HifisHelp_DemoTab").removeClass("active");
+                $("#HifisHelp_SimTab").removeClass("active");
+                $("#HifisHelp_QuizTab").removeClass("active");
+                $("#HifisHelp_AddNew").addClass("active");
+		     }
+
+		     $('#ajaxContentArea').hide();
+		     $('#ajaxContentAreaImage').hide();
+		     $('#ajaxContentAreaQuiz').hide();
+		     $('#editContent').hide();
+
+		     $('#ContentTypeID').change(function () {
+		         var contentType = $(this).val();	        
+		         resetTinyMCE();
+
+		         $.ajax({
+		             url: '@Url.Content("~/HifisHelp/NewELearningMaterial")',
+		             type: "GET",
+		             data: { contentTypeID: contentType, uniq_param: (new Date()).getTime() }
+		         })
+				.done(function (partialViewResult) {
+				    $('#newContentDropdown').hide();
+				    if (contentType ==  @((short)HIFISHelp_HelpContentTypes.Image)) {
+				        $('#ajaxContentAreaImage').show();
+				    $("#replaceHereImage").html(partialViewResult);
+				    $(function () {
+				        initTinyMCE();
+				    }); 
+				}
+		         else if (contentType ==  @((short)HIFISHelp_HelpContentTypes.QuizQuestionTF) || contentType ==  @((short)HIFISHelp_HelpContentTypes.QuizQuestionMulti)) {
+                     $('#ajaxContentAreaQuiz').show();
+		             $("#replaceHereQuiz").html(partialViewResult);
+		             $(function () {
+		                 fixCheckbox();
+		                 initTinyMCE();
+		             }); 
+		         }
+		         else {
+                        $('#ajaxContentArea').show();
+		                 $("#replaceHere").html(partialViewResult);
+		                 $(function () {
+		                     initTinyMCE();
+		                 });
+				    }				    
+				});
+		     });
+
+            $('.editMatButton').click(function (e) {
+                e.preventDefault();
+
+                $('#newContent').hide();
+                $('#newContentDropdown').hide();
+                resetTinyMCE();
+
+                var editDataID = $(this).attr('data-id')
+                var contentType = $(this).attr('data-content')
+
+                $.ajax({
+                    url: '@Url.Content("~/HifisHelp/EditELearningMaterial")',
+                    type: "GET",
+                    data: { id: editDataID, uniq_param : (new Date()).getTime() }
+                })
+				.done(function (partialViewResult) {
+				    if (contentType ==  @((short)HIFISHelp_HelpContentTypes.Image)) {
+                        $('#ajaxContentAreaImage').show();
+				        $('#editContent').show();
+				        $("#replaceHereImage").html(partialViewResult);
+				        $(function () {
+				            initTinyMCE();
+				            setActive();
+				    });                          
+				}
+                    else if (contentType ==  @((short)HIFISHelp_HelpContentTypes.QuizQuestionTF) || contentType ==  @((short)HIFISHelp_HelpContentTypes.QuizQuestionMulti)) {
+                         $('#ajaxContentAreaQuiz').show();
+                        $('#editContent').show();
+                        $("#replaceHereQuiz").html(partialViewResult);
+                        $(function () {
+                            fixCheckbox();
+                            initTinyMCE();
+                            setActive();
+                        }); 
+                    }
+                    else {
+                        $('#ajaxContentArea').show();
+		                 $('#editContent').show();				        
+		                 $("#replaceHere").html(partialViewResult);
+		                 $(function () {
+		                     initTinyMCE();
+		                     setActive();                            
+		                 });                       
+				    }
+				});
+            });
+		</script>
+);
+} 

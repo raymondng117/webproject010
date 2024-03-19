@@ -1,0 +1,36 @@
+﻿@model GoodsAndServicesViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_GoodsAndServicesEdit;
+
+    ViewBag.HIFISTombstone = Model.ClientService;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="clearfix"></div>
+
+<div>
+    @using (Html.BeginForm("Edit", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.ServiceID)
+        @Html.HiddenFor(model => model.GoodsActivitiesID)
+        @Html.Partial("_GoodsAndServiceEdit", Model.ClientService as GoodsAndServices_ServiceViewModel)
+        @Html.Partial("~/Views/Outreach/_OutreachAddress.cshtml", Model.OutReachAddress, "OutReachAddress.")
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    }
+</div>
+
+
+@Html.Partial("_gsJS")
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model.ClientService)</div>
+

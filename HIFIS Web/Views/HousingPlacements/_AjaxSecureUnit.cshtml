@@ -1,0 +1,81 @@
+﻿@model SecureHousingUnitViewModel
+
+@if (Model.AlreadySecured == true)
+{
+    @Html.Partial("_ConfirmSecureOverwrite")
+}
+else
+{
+    <script>
+        $('#secureUnitSaveBtn').on('click', function (e) {
+            saveSecure();
+        });
+    </script>
+}
+<section id="Modal_SecureUnit" class="modal-dialog modal-content overlay-def" style="width:400px;">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.SecureUnit</h2>
+	</header>
+	<div class="modal-body">
+        <form id="secureUnitForm" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.HouseID)
+            @Html.HiddenFor(model => model.ClientID)
+            @Html.HiddenFor(model => model.PlacementID)
+            <div>
+                @Html.HifisEditorFor(model => model.DateHousingSecured)
+            </div>
+            <div>
+                 @Html.HifisEditorFor(model => model.DateExpectedMoveIn)
+            </div>
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        @* Add Label for notifying about temp unavailable *@
+        <button type="submit" id="secureUnitSaveBtn" class="saveButton">@Labels.SecureUnit</button>
+		<button id="secureUnitCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(function () {
+        $("#secureUnitForm").hifisValidation();
+    });
+    
+    function saveSecure() {
+        if ($("#secureUnitForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/HousingPlacements/SecureHousingUnit")",
+                type: "POST",
+                data: $("#secureUnitForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#secureUnitCloseBtn").click(); //Close the modal window on success
+                    var url = '@Url.Action("Display", "HousingPlacements", new { id = "__id__", placementID = "__placementID__"})';
+                    url = url.replace("__id__", '@Model.ClientID.ToString()');
+                    url = url.replace("__placementID__", '@Model.PlacementID.ToString()');
+                    window.location.href = url;
+                }
+            });
+        }
+    };    
+</script>
+
+

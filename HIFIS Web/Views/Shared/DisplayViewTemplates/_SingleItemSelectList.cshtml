@@ -1,0 +1,10 @@
+﻿@model SingleItemSelectList
+
+@if (Model.ID != null && Model.ID.ToString() != string.Empty)
+{ 
+    @Html.DisplayFor(model => Model.List.Where(ct => ct.Value == model.ID.ToString()).FirstOrDefault().Text)
+}
+else
+{ 
+    @Labels.NA
+}

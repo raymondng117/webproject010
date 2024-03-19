@@ -1,0 +1,31 @@
+﻿@model PeopleSearchViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_SearchPersonProfile;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("Search", "PeopleTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    <div>
+        @Html.HifisEditorFor(m => m.SearchString, null, new { placeholder = Labels.PersonName })
+    </div>
+      
+    <div>
+        @Html.HifisEditorFor(m => m.PeopleRoleTypeID, CachedTableTypes.HIFIS_PeopleRoleTypes)
+    </div>
+
+    <div class="form-group">
+		<div class="col-sm-offset-5 col-sm-7">
+			<button type="submit" class="searchButton  " value="@Labels.Search">@Labels.Search</button>
+
+            @if (RightsHelper.HasRight(UserRights.People_Vitals_Add))
+            { 
+                @Html.ActionLink(Labels.NewPerson, "NewVitals", "PeopleTombstone", null, new { @class = "addButton  ", alt=Labels.NewPerson, aria_label = Labels.NewPerson, @role = "button" }) 
+            }
+		</div>
+	</div>   
+}

@@ -1,0 +1,834 @@
+﻿@model AdminDashboardViewModel
+@{
+	ViewBag.LayoutView = LayoutPage.People;
+
+	ViewBag.ViewTitle = Labels.viewTitle_AdminUserDashboard;
+	
+	ViewBag.isAdminView = true;
+
+    string activityLogURL = Url.Content("~/Users/GetActivityLogJson/?UserID=" + Model.UserProfile.UserID);
+}
+
+@Html.Partial("Plugins/_jstree")
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@* Script block start *@
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(document).ready(function () {
+
+                $('#AdminDashboardUserForm').submit(submitAdminDashboardUserForm);
+                $('#addNewUserRightsForm').submit(submitAddNewUserRightsForm);
+
+                if ($("#newUserSearchID").val() != '') {
+                    $("#newUserSearchID").val('');
+                }
+
+                $("#SHbutton").click(function () {
+                    var passField = $("#tempPass");
+                    var button = document.getElementById("SHbutton").firstChild;
+
+                    if (passField.hasClass("blurrytext")) {
+                        passField.removeClass("blurrytext");
+                        button.data = "@Labels.Hide"
+                    } else {
+                        passField.addClass("blurrytext");
+                        button.data = "@Labels.Show"
+                    }
+                });
+            });
+
+            function LoadJSTreePlugin() {
+
+                initJSTree("#ajaxTree");
+            }
+
+            function submitAddNewUserRightsForm(e) {
+                e.preventDefault();
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+				{
+					Url = "'" + Url.Content("~/Users/AddNewRightsToUser") + "'",
+					Data = "{ userID: $('#UserID').val(), templateID: $('#NewUserRightsTemplateID').val(),  serviceProviderID: $('#OrganizationRights').val() }",
+					OnSuccess = "updateDropDowns($('#OrganizationRights').val(), data);",
+				});
+            }
+
+            function updateDropDowns(spID, data) {
+                $("#AdminDashboardUserForm #HifisRowVersion").val(data.Result);
+
+                if ("@(Model.UserProfile.isAdmin.ToString().ToLower())" === "false") {
+                    var multiSelectList = document.getElementById('OrganizationIDs');
+                    var options = multiSelectList.getElementsByTagName('option');
+                    for (var i = 0; i < options.length; i++) {
+                        if (options[i].value == spID) {
+                            options[i].selected = true;
+                            break;
+                        }
+                    }
+                    $("#OrganizationIDs").trigger('change');
+                }
+
+                $("#OrganizationRights").append($("<option />").val(spID).text(data.ObjectID));
+                $("#OrganizationRights").trigger('change');
+
+                $("#OrganizationRights option:selected").remove();
+                $("#OrganizationRights").prop('selected', false).trigger('change');
+            }
+
+            function updateDashboard(data) {
+                $("#AdminDashboardUserForm #HifisRowVersion").val(data.Result);
+                if ("@(Model.UserProfile.isAdmin.ToString().ToLower())" === "false") {
+                    document.getElementById("OrganizationRights").options.length = 0;
+                }
+                $('#OrganizationIDs option:selected').clone().removeAttr("selected data-select2-id").appendTo('#OrganizationRights');
+                $("#OrganizationRights").prepend("<option value=''></option>").val('');
+                $("#OrganizationRights").trigger("update");
+
+
+                //Gender
+                $("#genderTD").html($("#GenderTypeID option:selected").text());
+
+                if ($("#GenderTypeID option:selected").text() == "Male") {
+                    $("#vitalsSidebarLink img").hide("fast").attr("src", "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")").show("slow");
+                }
+                else if ($("#GenderTypeID option:selected").text() == "Female") {
+                    $("#vitalsSidebarLink img").hide("fast").attr("src", "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")").show("slow");
+                }
+                else {
+                    $("#vitalsSidebarLink img").hide("fast").attr("src", "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")").show("slow");
+                }
+            }
+
+            function submitAdminDashboardUserForm(e) {
+                e.preventDefault();
+
+                var formData = $(this).serialize();
+
+                if ($("#AdminDashboardUserForm").valid()) {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+				    {
+					    Url = "'" + Url.Content("~/Users/Edit") + "'",
+					    Data = "formData",
+					    OnSuccess = "updateDashboard(data);",
+				    });
+                }
+            }
+
+            @*-- removed with recent Penetration testing revealed potential vulnerability: Open redirection (DOM-based) https://cwe.mitre.org/data/definitions/601.html --
+              -- JS function commented out for future review --
+			$("#FindNewUser").click(function(){
+
+				if($("#newUserSearchID").val() != '')
+				{
+					var pathNameArray = window.location.pathname.split("/");
+					var newURL = window.location.protocol + "//" + window.location.host + "/" + pathNameArray[1] + "/" + pathNameArray[2] + "?id=" + $("#newUserSearchID").val();
+
+					window.location.replace(newURL);
+				}
+			});
+            *@
+
+            function wetTreeCheckEvent(event, data, isRightAllowed) {
+                var node = data.node;
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+				{
+					Url = "'" + Url.Content("~/Users/UpdateUserRight") + "'",
+					OnFailure = "if(isRightAllowed){$('#' + node.id).removeClass('jstree-clicked');}else{$('#' + node.id).addClass('jstree-clicked');} displayNotification(\"error\", \"\", \"<p>" + Labels.DeleteFailure + "</p>\");",
+					Data = "{ orgID: $('#OrganizationRights :selected').val(), rightID: node.data.rightId, userID: $('#CurrentUserID').val(), isAllowed: isRightAllowed }",
+                    Type = "POST",
+                    OnSuccess = " displayNotification(\"success\", \"\", \"<p>" + Labels.DefaultDataSavedMessage + "</p>\");",
+				});
+            }
+
+            var isCollapsed = true;
+            $("#ExpandCollapseTree").click(function () {
+                if (isCollapsed) {
+                    isCollapsed = false;
+                    $(".hifis-tree").jstree("open_all");
+                }
+                else {
+                    isCollapsed = true;
+                    $(".hifis-tree").jstree("close_all");
+                }
+            });
+
+            var isGlobalCollapsed = true;
+            $("#ExpandCollapseTreeGlobal").click(function () {
+                if (isGlobalCollapsed) {
+                    isGlobalCollapsed = false;
+                    $("#GlobalTree .hifis-tree").jstree("open_all");
+                }
+                else {
+                    isGlobalCollapsed = true;
+                    $("#GlobalTree .hifis-tree").jstree("close_all");
+                }
+            });
+
+            var toGlobal = false;
+            $('#wetBoewSearchBoxGlobal').keyup(function () {
+                if (toGlobal) {
+                    clearTimeout(toGlobal);
+                }
+                toGlobal = setTimeout(function () {
+                    var vGlobal = $('#wetBoewSearchBoxGlobal').val();
+
+                    $('div#GlobalTree div.hifis-tree').jstree(true).search(vGlobal);
+                }, 500);
+            });
+
+            function successfulAjaxCall(data) {
+                var controlID = $("#ControlID").val();
+                if (controlID == "ActivateAccountButton") {
+                    $("#currentlyNotActive").addClass("hide").removeClass("show");
+                    $("#currentlyActive").removeClass("hide").addClass("show").show("slow");
+
+                    $("#ActiveYN-Yes").addClass("checked");
+                    $("#ActiveYN-Yes").prop('checked', true);
+
+                    $("#ActiveYN-No").removeClass("checked");
+                    $("#ActiveYN-No").prop('checked', false);
+                }
+                else if (controlID == "DeactivateAccountButton") {
+                    $("#currentlyActive").addClass("hide").removeClass("show");
+                    $("#currentlyNotActive").removeClass("hide").addClass("show").show("slow");
+
+                    $("#ActiveYN-Yes").removeClass("checked");
+                    $("#ActiveYN-Yes").prop('checked', false);
+
+                    $("#ActiveYN-No").addClass("checked");
+                    $("#ActiveYN-No").prop('checked', true);
+                }
+                else if (controlID == "ResetCredentialsButton") {
+                    $("#tempPass").text(data.Result)
+                    $("#tempPass").addClass("blurrytext");
+                    document.getElementById("SHbutton").firstChild.data = "@Labels.Show"
+                    $("#resetCredentialsMsg").show("slow");
+
+                    $("#currentlyOnline").hide();
+                    $("#currentlyOffline").show("slow");
+
+                }
+                else if (controlID == "UnlockAccountButton") {
+                    $("#currentlyLocked").addClass("hide").removeClass("show");
+                    $("#UnlockAccountButton").addClass("hide").removeClass("show");
+                    $("#currentlyUnlocked").addClass("show").removeClass("hide");
+                }
+                else if (controlID == "logOffUserButton") {
+                    $("#currentlyOnline").addClass("hide").removeClass("show");
+                    $("#currentlyOffline").addClass("show").removeClass("hide");
+                }
+            }
+
+            $(".ajaxQuickButtons").click(function (e) {
+                e.preventDefault();
+                $("#ControlID").val($(this).attr("id"));
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+				{
+					Url = "$(this).attr('href')",
+					Data = "{ userName: $('#CurrentUserName').val() }",
+					OnSuccess = "successfulAjaxCall(data);",
+				});
+            });
+
+		</script>
+	);
+}
+
+@* Script block end *@
+
+@Html.Hidden("CurrentUserName", Model.UserProfile.UserName)
+@Html.Hidden("CurrentUserID", Model.UserProfile.UserID)
+@Html.Hidden("ControlID")	
+
+<ul class="nav nav-tabs" role="tablist">
+    @if(RightsHelper.HasRight(UserRights.Users_Profile_Edit))
+    { 
+	    <li class="active">
+		    <a class="tabButton active" href="#tabs-1" role="tab" data-toggle="tab">@Labels.UserProfile</a>
+	    </li>
+    }
+    @if(RightsHelper.HasRight(UserRights.Users_Contacts))
+    {
+	    <li>
+		    <a class="tabButton" href="#tabs-2" role="tab" data-toggle="tab">@Labels.ContactInfo</a>
+	    </li>
+    }
+    @if (!Model.UserProfile.isAdmin && RightsHelper.HasRight(UserRights.Users_Rights_Edit))
+    {
+        <li>
+		    <a class="tabButton" href="#spRights" role="tab" data-toggle="tab">@Labels.Rights</a>
+	    </li>
+    }
+	@*<li class="dropdown">				
+		<a class="tabButton dropdown-toggle" href="#dropdown" role="tab" data-toggle="dropdown">@Labels.Rights <span class="caret"></span></a>
+		<ul class="dropdown-menu" role="menu">
+			<li><a class="tabButton" data-toggle="tab" href="#globalRights">@Labels.GlobalRights</a></li>
+			<li><a class="tabButton" data-toggle="tab" href="#spRights">@Labels.CurrentUserRights</a></li>
+			<li><a class="tabButton" data-toggle="tab" href="#newRights">@Labels.NewUserRights</a></li>
+		</ul>
+				
+	</li>*@
+    @if(RightsHelper.HasRight(UserRights.Users_Activity_Log))
+    {
+        <li>
+            <a class="tabButton" href="#tabs-ActivityLog" role="tab" data-toggle="tab">@Labels.ActivityLog</a>
+        </li>
+    }
+    @* Missing user rights for Users Quick Access Buttons *@
+	<li class="dropdown">
+		<a class="tabButton dropdown-toggle" href="#dropdown" role="tab" data-toggle="dropdown">@Labels.QuickAccessButtons <span class="caret"></span></a>
+		<ul class="dropdown-menu" role="menu">
+            @if(RightsHelper.HasRight(UserRights.Users_Admin_Reset_Account))
+            { 
+			    <li><a class="tabButton" data-toggle="tab" href="#ResetUserCredentials">@Labels.ResetUserCredentials</a></li>
+            }
+            @if(RightsHelper.HasRight(UserRights.Users_Admin_Deactivate_Account))
+            { 
+			    <li><a class="tabButton" data-toggle="tab" href="#ActivateDeactivateAccount">@Labels.ActivateDeactivateAccount</a></li>
+            }
+            @if(RightsHelper.HasRight(UserRights.Users_Admin_LogOff_Account))
+            { 
+			    <li><a class="tabButton" data-toggle="tab" href="#LogOffUser">@Labels.LogOffUser</a></li>
+            }
+            @if(RightsHelper.HasRight(UserRights.Users_Admin_Unlock_Account))
+            { 
+			    <li><a class="tabButton" data-toggle="tab" href="#UnlockAccount">@Labels.UnlockAccount</a></li>
+            }
+            @* Missing rights for the "Find User" thing, not sure what that is?
+                Is it just a quick way to switch users you are interacting with?*@
+            @*-- removed with recent Penetration testing revealed potential vulnerability: Open redirection (DOM-based) https://cwe.mitre.org/data/definitions/601.html --
+              -- commented out for future review --
+                    <li><a class="tabButton" data-toggle="tab" href="#FindNewUser">@Labels.FindNewUser</a></li>
+            *@
+                </ul>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="panel panel-default border-top-fix-tabs">
+            <div class="panel-body">
+                <div class="tab-content">
+                    @if(RightsHelper.HasRight(UserRights.Users_Profile_Edit))
+                    {
+                        <div class="tab-pane active" id="tabs-1">
+                            @using (Html.BeginForm("Edit", "Users", new { id = Model.UserProfile.UserID }, FormMethod.Post, new { @class = "form-horizontal", id = "AdminDashboardUserForm" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Partial("_UserAdmin", Model.UserProfile)
+
+                            <div>
+                                @Html.Button("save", Labels.Save, HtmlButtonType.Submit, null, new { @class = "saveButton", alt=Labels.Save, aria_label = Labels.Save, @role = "button" })
+
+                                @if (ViewBag.OrgID != null)
+                                {
+                                    @Html.ActionLink(Labels.Cancel, "OrganizationUserList", "Organization", new { id = ViewBag.OrgID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                                }
+                                else
+                                {
+                                    @Html.ActionLink(Labels.Cancel, "List", "Users", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                                }
+                            </div>
+                            }
+                        </div>
+                    }
+
+                    @if(RightsHelper.HasRight(UserRights.Users_Contacts))
+                    {
+                        <div class="tab-pane" id="tabs-2">
+                            <h4>@Labels.NewContactInfo</h4>
+
+                            @using (Html.BeginForm("AdditionalContactInfo", "Users", FormMethod.Post, new { @class = "form-horizontal", id = "contactForm" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div>
+                                    @Html.Partial("_DigitalContact", new DigitalContactViewModel { PersonID = Model.ReadOnlyVitals.PersonID, UserID = Model.UserProfile.UserID })
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button class="saveButton" type="submit">@Labels.Save</button>
+                                    </div>
+                                </div>
+
+                            }
+                            <div class="clearfix"></div>
+
+                            <h4>@Labels.ExistingContactInfo</h4>
+                            <div>
+                                @Html.Partial("_DigitalContactTable", Model.DigitalContactDetails)
+                            </div>
+                        </div>
+                    }
+
+                    <!--
+
+                        USER RIGHTS
+
+
+                         -->
+                    @if (!Model.UserProfile.isAdmin && RightsHelper.HasRight(UserRights.Users_Rights_Edit))
+                    {
+                        <div class="tab-pane" id="spRights">
+
+                            <div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="clearfix"></div>
+
+                                        <div class="form-group">
+                                            @Html.Label(Labels.RightsForServiceProvider, new { @class = "col-sm-5 control-label" })
+                                            <div class="col-sm-7">
+                                                @Html.DropDownList("OrganizationRights", ViewBag.UserOrgList as SelectList, new { @class="form-control form-control-static", style="width:300px;" })
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-bottom:15px;">
+
+                                            <div id="seperator" class="hide">
+                                                <br />
+                                                <hr />
+                                            </div>
+
+                                            <div class="form-group hide" id="templateList" style="margin-bottom: 80px;">
+
+                                                @* Return to rights tree button *@
+                                                <div class="mrgn-lft-sm">
+                                                    @Html.Button("pick", Labels.PickRightsTree, HtmlButtonType.Button, null, new { id = "PickButton", @class = "chainButton hide", style = "margin-bottom:15px; margin-top:15px;" })
+                                                </div>
+                                                @Html.Label(Labels.ChooseTemplate, new {@class = "col-sm-5 control-label"})
+                                                <div class="col-sm-7">
+                                                    @Html.DropDownList("TempateDropdown", ViewBag.templateList as SelectList, new {@class = "form-control form-control-static", style = "width:300px;"})
+                                                </div>
+                                            </div>
+
+                                            @Html.Button("name", Labels.ViewTemplate, HtmlButtonType.Button, null, new { id = "ViewTemplateButton", @class = "newWindow hide" })
+                                            @Html.Button("name", Labels.Save, HtmlButtonType.Button, null, new { id = "LinkTheTemplateButton", @class = "saveButton hide" })
+                                        </div>
+
+                                        @using (Html.BeginScriptContext())
+                                        {
+                                            Html.AddScriptBlock(
+                                                @<script type="text/javascript">
+
+                                                     $("#TempateDropdown").val("");
+                                                     $("#OrganizationRights").val("");
+
+                                             //on click select a template
+		                                     $("#spRights").on("click", "#LinkButton", function (event) {
+                                                 //show template dropdown
+		                                         $("#templateList").fadeIn().removeClass("hide");
+
+                                                 //show separator
+		                                         $("#seperator").fadeIn().removeClass("hide");
+
+                                                 //hide rights tree
+		                                         $("#RightsTreeInnerWrapper").fadeOut();
+
+		                                         //hide select template button
+		                                         $("#LinkButton").fadeOut();
+
+                                                 //show rights tree button
+		                                         $("#PickButton").fadeIn().removeClass("hide");
+		                                     });
+
+                                             //on click select rights tree
+		                                     $("#spRights").on("click", "#PickButton", function (event) {
+                                                 //hide template dropdown
+		                                         $("#templateList").fadeOut().addClass("hide");
+
+		                                         //hide separator
+		                                         $("#seperator").fadeOut().addClass("hide");
+
+		                                         //hide view template Button
+		                                         $("#ViewTemplateButton").fadeOut().addClass("hide");
+
+		                                         //hide link template to org button
+		                                         $("#LinkTheTemplateButton").fadeOut().addClass("hide");
+
+		                                         //Remove view template Button
+		                                         $("#ViewTemplateButton").fadeOut().addClass("hide");
+
+		                                         //Remove link template to org button
+		                                         $("#LinkTheTemplateButton").fadeOut().addClass("hide");
+
+                                                 //show rights tree
+		                                         $("#RightsTreeInnerWrapper").fadeIn();
+
+                                                 //show select template button
+		                                         $("#LinkButton").fadeIn();
+
+                                                 //hide return to rights tree button
+		                                         $("#PickButton").fadeOut().addClass("hide");
+		                                     });
+
+                                                     $("#ViewTemplateButton").on("click", function (event) {
+                                                         var win = window.open("@Url.Content("~/Users/EditUserTemplate/")" + $('#TempateDropdown :selected').val(), '_blank');
+                                                         win.focus();
+                                                     });
+
+                                                     $("#LinkTheTemplateButton").on("click", function (event) {
+                                                        @Html.Partial("_Ajax", new AjaxViewModel()
+                                                        {
+                                                            Url = "'" + Url.Content("~/Users/LinkTemplateToUser") + "'",
+                                                            Data = "{ userName: $('#CurrentUserName').val(), templateID: $('#TempateDropdown :selected').val(), orgID: $('#OrganizationRights :selected').val() }",
+                                                            OnSuccess = "successfulAjaxCall_LinkTemplate()",
+                                                        });
+                                                     });
+
+                                                     $("#spRights").on("click", "#UnLinkButton", function (event) {
+                                                         @Html.Partial("_Ajax", new AjaxViewModel()
+                                                        {
+                                                            Url = "'" + Url.Content("~/Users/LinkTemplateToUser") + "'",
+                                                            Data = "{ userName: $('#CurrentUserName').val(), orgID: $('#OrganizationRights :selected').val() }",
+                                                            OnSuccess = "successfulAjaxCall_LinkTemplate()",
+                                                        });
+                                                     });
+                                                     function successfulAjaxCall_LinkTemplate() {
+                                                         GetRightsSection();
+                                                         $("#seperator").fadeOut().addClass("hide");
+                                                         $("#ViewTemplateButton").fadeOut().addClass("hide");
+                                                         $("#LinkTheTemplateButton").fadeOut().addClass("hide");
+                                                         $("#templateList").fadeOut().addClass("hide");
+                                                     }
+
+                                                     $("#spRights").on("click", "#UnLinkAndCopyButton", function (event) {
+                                                         @Html.Partial("_Ajax", new AjaxViewModel()
+                                                        {
+                                                            Url = "'" + Url.Content("~/Users/UnLinkTemplateCopyRights") + "'",
+                                                            Data = "{ userName: $('#CurrentUserName').val(), orgID: $('#OrganizationRights :selected').val() }",
+                                                            OnSuccess = "successfulAjaxCall_UnLinkTemplate()",
+                                                        });
+                                                     });
+                                                     function successfulAjaxCall_UnLinkTemplate() {
+                                                         GetRightsSection();
+                                                     }
+
+
+                                                     $('select#TempateDropdown').on('select2:select', function (e) {
+
+                                                         if ($("#TempateDropdown :selected").val() != "") {
+
+                                                             $("#ViewTemplateButton").fadeIn().removeClass("hide");
+                                                             $("#LinkTheTemplateButton").fadeIn().removeClass("hide");
+                                                         }
+                                                     });
+
+                                                     $('select#OrganizationRights').on('select2:unselect', function (e) {
+
+                                                         TempateDropdownUnSelect();
+                                                         OrganizationRightsDropdownUnSelect();
+                                                     });
+
+                                                     $('select#TempateDropdown').on('select2:unselect', function (e) {
+
+                                                         TempateDropdownUnSelect();
+                                                     });
+
+                                                     function OrganizationRightsDropdownUnSelect() {
+                                                         $("#LinkButton").fadeOut().addClass("hide");
+
+                                                         //Show rights again
+                                                         $("#RightsTreeInnerWrapper").fadeOut();
+                                                     }
+
+		                                     function TempateDropdownUnSelect() {
+
+                                                         //Remove view template Button
+                                                         $("#ViewTemplateButton").fadeOut().addClass("hide");
+
+                                                         //Remove link template to org button
+                                                         $("#LinkTheTemplateButton").fadeOut().addClass("hide");
+
+		                                         setTimeout(function () { $("#TempateDropdown").select2("close"); }, 10);
+		                                     }
+
+                                                     $("#OrganizationRights").change(function () {
+                                                         //alert("OrganizationRights change");
+                                                         if ($(this).val() != '') {
+                                                             GetRightsSection();
+                                                         }
+                                                     });
+                                                     function GetRightsSection() {
+                                                         @Html.Partial("_Ajax", new AjaxViewModel()
+                                                            {
+                                                                Url = "'" + Url.Content("~/Users/GetUserRights") + "'",
+                                                                Data = "{ id: $('#CurrentUserID').val(), orgID: $('#OrganizationRights').val(), rightsGroupID: 0 }",//0 is service provider rights
+                                                                OnSuccess = "$('#RightsTreeWrapper').html(data).hide(); LoadJSTreePlugin(); $('#RightsTreeWrapper').show('slow'); $('.expandCollapseTreeButton').show('slow'); $('select#TempateDropdown').val(null).trigger('change');",
+                                                                OnFailure = "$('#RightsTreeWrapper').html('').hide(); displayNotification('alert', null, data.Result);  $('select#TempateDropdown').val(null).trigger('change');"
+                                                            });
+                                                     }
+                                                    </script>
+                                                );
+                                        }
+
+                                    <div class="mrgn-tp-lg mrgn-bttm-lg expandCollapseTreeButton hide">
+                                        @Html.Button("ExpandCollapseTree", Labels.ExpandCollapseTree, HtmlButtonType.Button, null, new { id = "ExpandCollapseTree", @class = "addButton" })
+						                <br />
+					                </div>
+                                </div>
+                            </div>
+                        </div>
+
+                                <div id="RightsTreeWrapper" class=" mrgn-lft-sm"></div>
+                        </div>
+                    }
+
+                    @if(RightsHelper.HasRight(UserRights.Users_Activity_Log))
+                    {
+                        <div class="tab-pane" id="tabs-ActivityLog">
+
+                            <p><a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+                            <div class="clearfix"></div>
+
+                            <table id="userAuditList" class="wb-tables table table-striped table-hover"
+                                   data-wb-tables='{
+                                   "serverSide": true,
+                                   "processing": true,
+                                   "bFilter": false,
+                                   "ajax": "@activityLogURL",
+                                   "order": [[ 4, "desc" ]],
+                                        "columns":[
+                                            { "width": "15%" ,"data": "clientname", "orderable": true , "name": "HIFIS_Clients.HIFIS_People.LastName"},
+                                            { "width": "14%" ,"data": "orgname", "orderable": true, "name": "HIFIS_Organizations.Name" },
+                                            { "width": "21%" ,"data": "module", "orderable": true , "name": "HIFIS_ModuleTypes.NameE"},
+                                            { "width": "31%" ,"data": "description", "orderable": true , "name": "HIFIS_AuditMessages.MessageE" },
+                                            { "width": "19%" ,"data": "date", "orderable": true  , "name": "Timestamp"}
+                                        ]
+
+                                   }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.Client_txt</th>
+                                        <th>@Labels.ServiceProvider</th>
+                                        <th>@Labels.ModuleType</th>
+                                        <th>@Labels.Description</th>
+                                        <th>@Labels.Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <!-- Overlay Panel -->
+                            <section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+                                <header class="modal-header">
+                                    <h2 class="modal-title">@Labels.FilterOptions</h2>
+                                </header>
+                                <div class="modal-body">
+                                    @Html.Partial("_AuditSearchFilters", new AuditSearchFilterViewModel() { UserID = Model.UserProfile.UserID })
+                                </div>
+                            </section>
+                        </div>
+
+                        using (Html.BeginScriptContext())
+                        {
+                            Html.AddScriptBlock(
+                                @<script type="text/javascript">
+
+                                    //open the filter panel
+                                    $('#openFilters').on('click', function () {
+                                        if ($("#filter-panel").hasClass('open'))
+                                            $('#filter-panel').trigger('close.wb-overlay');
+
+                                        $('#filter-panel').trigger('open.wb-overlay');
+                                    });
+
+                                    //when the filter panel opens reinit select2s
+                                    $(document).on('open.wb-overlay', function (event) {
+                                        doSelect2Init();
+                                    });
+
+                                    //close filter panel
+                                    $('#closeFilters').on('click', function () {
+                                        $("#filter-panel").trigger("close.wb-overlay");
+                                    });
+
+                                    </script>
+                            );
+                        }
+
+                    }
+
+                    @if(RightsHelper.HasRight(UserRights.Users_Admin_Reset_Account))
+                    {
+                        <div class="tab-pane" id="ResetUserCredentials">
+                            <h3>@Labels.ResetUserCredentials</h3>
+                            <div class="mrgn-bttm-sm">
+                                <p>@Labels.ResetUserCredentials_Summary</p>
+                                <hr />
+                            </div>
+
+                            <div class="clearfix"></div>
+                            <style>
+                                <!--
+                                .blurrytext {
+                                    color: transparent;
+                                    text-shadow: 0 0 7px rgb(0, 0, 0);
+                                }
+                                -->
+                            </style>
+                            <div id="resetCredentialsMsg" style="display:none">
+                                <div class="row">
+                                    <label class="control-label col-md-3 " style="padding-top:7px; text-align: right;">@Labels.UserName</label>
+                                    <span class="form-control" style="margin-left: 10px;display: inline-block; width: 160px;">@Model.UserProfile.UserName</span>
+                                </div>
+
+                                <div class="row">
+                                    <label class="control-label col-md-3" style="padding-top:7px; text-align: right;">@Labels.TempPassword </label>
+                                    <span id="tempPass" class="form-control blurrytext" style="margin-left: 10px;display: inline-block; width: 160px; ">password</span>
+
+                                    <button id="SHbutton" class="btn btn-primary btn-xs">@Labels.Show</button>
+                                </div>
+
+                                    <br>
+
+                                    <p class="goodText">@Labels.CredentialsReset</p>
+                            </div>
+                            <div id="emailPasswordResetMsg" style="display:none"> <p class="goodText">@Labels.PasswordResetEmailSent</p></div>
+
+                            @Html.ActionLink(Labels.ResetUserCredentials, "ResetUserCredentials", "Users", null, new { @class = "replyButton ajaxQuickButtons", id = "ResetCredentialsButton", alt=Labels.ResetUserCredentials, aria_label = Labels.ResetUserCredentials })
+                            @Html.ActionLink(Labels.SendPasswordResetEmail, "ForgetPassword", "Account", null, new { @class = "sendButton ajaxEmailButton", alt=Labels.SendPasswordResetEmail, aria_label = Labels.SendPasswordResetEmail })
+                        </div>
+                        using (Html.BeginScriptContext())
+                        {
+                            Html.AddScriptBlock(
+                                @<script type="text/javascript">
+                                    $(".ajaxEmailButton").click(function (e) {
+                                        e.preventDefault();
+                                        $.ajax({
+                                            url: $(this).attr('href'),
+                                            type: "POST",
+                                            data: { __RequestVerificationToken: gettoken(), UserNameOrEmail: $('#CurrentUserName').val() },
+                                            success: function (result) {
+                                                if (result.Success == true) {
+                                                    $('#emailPasswordResetMsg').show();
+                                                } else {
+                                                    displayNotification('error', null, result.Result.message);
+                                                }
+                                            }
+                                        });
+                                    });
+                                    
+                                    function gettoken() {
+                                        var token = '@Html.AntiForgeryToken()';
+                                        token = $(token).val();
+                                        return token;
+                                    }
+
+                                </script>
+                            );
+                        }
+                    }
+                    @if(RightsHelper.HasRight(UserRights.Users_Admin_Deactivate_Account))
+                    {
+                        <div class="tab-pane" id="ActivateDeactivateAccount">
+                            <h3>@Labels.ActivateDeactivateAccount</h3>
+
+                            <div class="mrgn-bttm-sm">
+                                <p>@Labels.ActivateDeactivateAccount_Summary</p>
+                                <hr />
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <div id="currentlyNotActive" @(!Model.UserProfile.ActiveYN ? "" : "class=hide")>
+                                <p class="errorText">@Labels.UserNotActive</p>
+
+                                @Html.ActionLink(Labels.ActivateAccount, "DeactivateAccount", "Users", null, new { @class = "addButton ajaxQuickButtons", id = "ActivateAccountButton", alt=Labels.ActivateAccount, aria_label = Labels.ActivateAccount, @role = "button" })
+                            </div>
+
+                            <div id="currentlyActive" @(Model.UserProfile.ActiveYN ? "" : "class=hide")>
+                                <p class="goodText">@Labels.Active</p>
+
+                                @Html.ActionLink(Labels.DeactivateAccount, "DeactivateAccount", "Users", null, new { @class = "cancelButton ajaxQuickButtons", id = "DeactivateAccountButton", alt=Labels.DeactivateAccount, aria_label = Labels.DeactivateAccount, @role = "button" })
+                            </div>
+                        </div>
+                    }
+                    @if(RightsHelper.HasRight(UserRights.Users_Admin_LogOff_Account))
+                    {
+                        <div class="tab-pane" id="LogOffUser">
+                            <h3>@Labels.LogOffUser</h3>
+                            <div class="mrgn-bttm-sm">
+                                <p>@Labels.LogOffUser_Summary</p>
+                                <hr />
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            @if (Model.UserProfile.HasAuthenticationToken)
+                            {
+                                <text><div id="currentlyOnline"><p class="goodText">@Labels.UserOnline</p></div></text>
+                                <text><div id="currentlyOffline" class="hide"><p class="errorText">@Labels.UserOffline</p></div></text>
+                            }
+                            else
+                            {
+                                <text><div id="currentlyOnline" class="hide"><p class="goodText">@Labels.UserOnline</p></div></text>
+                                <text><div id="currentlyOffline"><p class="errorText">@Labels.UserOffline</p></div></text>
+                            }
+
+                            @Html.ActionLink(Labels.LogOffUser, "LogOffUser", "Users", null, new { @class = "clientButton ajaxQuickButtons", id = "logOffUserButton", alt=Labels.LogOffUser, aria_label = Labels.LogOffUser })
+
+                        </div>
+                    }
+                    @if(RightsHelper.HasRight(UserRights.Users_Admin_Unlock_Account))
+                    {
+                        <div class="tab-pane" id="UnlockAccount">
+                            <h3>@Labels.UnlockAccount</h3>
+                            <div class="mrgn-bttm-sm">
+                                <p>@Labels.LockAccount_Summary</p>
+                                <hr />
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            @if (Model.UserProfile.IsLockedOut)
+                            {
+                                <text><div id="currentlyLocked"><p class="errorText"><span class="glyphicon glyphicon-lock" class="align-inline-block"></span> @Labels.UserLocked</p></div></text>
+                                <text><div id="currentlyUnlocked" class="hide"><p class="goodText"><span class="glyphicon glyphicon-lock align-inline-block"></span> @Labels.UserUnlocked</p></div></text>
+                                @Html.ActionLink(Labels.Unlock, "UnlockUser", "Users", null, new { @class = "lockButton ajaxQuickButtons", id = "UnlockAccountButton", alt=Labels.Unlock, aria_label = Labels.Unlock, @role = "button" })
+                            }
+                            else
+                            {
+                                <text><div id="currentlyLocked" class="hide"><p class="errorText"><span class="glyphicon glyphicon-lock align-inline-block"></span> @Labels.UserLocked</p></div></text>
+                                <text><div id="currentlyUnlocked" class="hght-strct-100"><p class="goodText"><span class="glyphicon glyphicon-lock align-inline-block"></span> @Labels.UserUnlocked</p></div></text>
+                                @Html.ActionLink(Labels.Unlock, "UnlockUser", "Users", null, new { @class = "lockButton ajaxQuickButtons hide", id = "UnlockAccountButton", alt=Labels.Unlock, aria_label = Labels.Unlock, @role = "button" })
+                            }
+                        </div>
+                    }
+                    @*-- removed with recent Penetration testing revealed potential vulnerability: Open redirection (DOM-based) https://cwe.mitre.org/data/definitions/601.html --
+                      -- commented out for future review --
+                                    <div class="tab-pane" id="FindNewUser">
+                                        <h3>@Labels.FindNewUser</h3>
+                                        <div class="mrgn-bttm-sm">
+                                            <p>@Labels.FindNewUser_Summary</p>
+                                            <hr />
+                                        </div>
+
+
+                                        <div class="row">
+                                            <div class="mrgn-bttm-sm col-sm-3">
+                                                @Html.HifisAutocompleteFor(m => m.newUserSearchID, "~/Users/AjaxGetUserList", null, new AutocompleteViewModelOptions() { Placeholder = Labels.SearchFor + " " + Labels.User, ExcludeLabel = true, HiddenValue = true, HiddenID = "newUserSearchID", SelectClientFieldType = SelectClientFieldTypes.Other })
+
+                                            </div>
+                                            <div class="clearfix"></div>
+                                            <div class="col-sm-8">
+                                                @Html.Button(Labels.FindNewUser, "Select User", HtmlButtonType.Button, null, new { @class = "clientButton", id = "FindNewUser" })
+
+                                                @Html.ActionLink(Labels.GoToUserList, "List", "Users", null, new { @class = "replyButton" })
+                                            </div>
+                                        </div>
+                                    </div>
+                      *@
+                                </div>
+                            </div>
+                        </div>
+
+

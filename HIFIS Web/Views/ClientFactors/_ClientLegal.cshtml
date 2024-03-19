@@ -1,0 +1,47 @@
+﻿@model ClientLifeEventsViewModel 
+@{
+    //TODO: Why is this being done in the view -JdV
+    if (Model.LegalFactor == null){ Model.LegalFactor = new ClientLegalViewModel(); }
+}
+
+@Html.HiddenFor(model => model.LegalFactor.LegalEventID)
+@Html.HiddenFor(model => model.LifeEventTypeID)
+
+<fieldset class="color-white">
+    <legend>@Labels.NewLegal</legend>       
+    
+    <div>
+        @Html.HifisEditorFor(model => model.LegalFactor.Charge)
+   </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.LegalFactor.ChargeNumber)
+   </div>
+
+   <div>
+        @Html.HifisEditorFor(model => model.LegalFactor.ChargeType)
+   </div>
+
+   <div>
+       @Html.HifisEditorFor(model => model.LegalFactor.DateOffence, "DateOnly")
+   </div>
+
+   <div>
+        @Html.HifisEditorFor(model => model.LegalFactor.DateCharge, "DateOnly")
+   </div>
+
+   <div>
+        @Html.HifisEditorFor(model => model.LegalFactor.PardonedYN, "YesNo")
+   </div>
+
+   <div>
+        @Html.HifisEditorFor(model => model.LegalFactor.ConvictedYN, "YesNo")
+   </div>
+
+    <div>
+        @Html.HifisTextAreaFor(model => model.LegalFactor.Comments, new { @class = "commentBoxSize max_width_90" })
+        @Html.ValidationImageFor(model => model.LegalFactor.Comments)
+    </div>
+     
+</fieldset>
+ 

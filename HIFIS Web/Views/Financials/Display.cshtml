@@ -1,0 +1,451 @@
+﻿@model FinancialsViewModel
+@{
+	ViewBag.ViewTitle = Labels.viewTitle_ClientFinancialProfile;	
+	ViewBag.LayoutView = LayoutPage.Client;
+    TempData["culture"] = Culture;
+}
+
+<div class="row">
+    <div class="col-xs-12">
+
+        @Html.Partial("_ValidationSummaryOuter")
+
+        @Html.HiddenFor(model => model.ClientID)
+
+        @{
+            //TODO: Why is all of this being done here? - JdV
+            //Done here to update values directly to the form [data] with Javascript in updateTotals() function
+            var today = DateTime.Today;
+
+            var TotalIncome = Model.Incomes.Where(ti => ti.IncomeDateEnd == null || ti.IncomeDateEnd > today).Sum(ti => ti.MonthlyAmount);
+            var TotalExpense = Model.Expenses.Where(te => te.ExpenseDateEnd == null || te.ExpenseDateEnd > today).Sum(te => te.ExpenseAmount);
+            var TotalAssets = Model.Assets.Where(ta => ta.AssetDateEnd == null || ta.AssetDateEnd > today).Sum(ta => ta.AssetAmount);
+            var TotalLiabilities = Model.Liabilities.Where(tl => tl.LiabilityDateEnd == null || tl.LiabilityDateEnd > today).Sum(tl => tl.LiabilityAmount);
+        }
+
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active"><a class="tabButton" href="#Incomes" role="tab" data-toggle="tab">@Labels.Incomes</a></li>
+            <li><a class="tabButton" href="#Expenses" role="tab" data-toggle="tab">@Labels.Expenses</a></li>
+            <li><a class="tabButton" href="#Assets" role="tab" data-toggle="tab">@Labels.Assets</a></li>
+            <li><a class="tabButton" href="#Liabilities" role="tab" data-toggle="tab">@Labels.Liabilities</a></li>
+            @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+            {
+                <li>
+                    <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                        @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+                    </a>
+                </li>
+            }
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="panel panel-default border-top-fix-tabs">
+            <div class="panel-body">
+                <div class="tab-content">
+
+            <!-- Income Pane -->
+			<div class="tab-pane active" id="Incomes">
+				<div class="table-responsive">
+                    <table id="incomeTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                            { "width": "32%", "data": "income"},
+                                                                            { "width": "17%", "data": "monthly"},
+                                                                            { "width": "12%", "data": "start"},
+                                                                            { "width": "12%", "data": "end"},                                                                            
+                                                                            { "width": "12%", "data": "primary"},
+                                                                            { "width": "15%", "data": "action"}
+                                                                        ],
+                                                                        "order": [ [0, "desc"] ],
+                                                                        "ajax": "@Url.Content("~/Financials/IncomeListJson?clientID=" + ViewBag.ClientID)"                         
+                                                                    }'>
+					    <thead>
+						    <tr>
+							    <th>@Labels.Income</th>
+							    <th>@Labels.MonthlyAmount</th>
+							    <th>@Labels.DateStart</th>
+                                <th>@Labels.DateEnd</th>
+                                <th>@Labels.IsPrimaryYN</th>
+                                <th>@Labels.Action</th>
+						    </tr>
+					    </thead>
+					    <tbody>
+					    </tbody>
+				    </table>
+                    <div>
+                        <div style="font-size:x-small;">
+                            <span>&sup1 - @Labels.FinSupScript1</span>
+                            <br />
+                            <span>&sup2 - @Labels.FinSupScript2</span>
+                            <br />
+                            <span>&sup3 - @Labels.FinSupScript3</span>
+                        </div>
+                    </div>
+                    <p class="mrgn-tp-sm"><strong>@Labels.TotalIncome <span id="totalIncome">@(String.Format("{0:C}", TotalIncome))</span></strong></p>
+			    </div>
+			 
+					
+                @if (RightsHelper.HasRight(UserRights.Financials_Income_Add))
+                {
+                    @Html.ActionLink(Labels.AddNewIncome, "NewIncome", "Financials", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddIncome", alt=Labels.AddNewIncome, aria_label = Labels.AddNewIncome, @role = "button" })
+                }	
+		    </div>
+
+                    <!-- Expenses Pane -->
+                    <div class="tab-pane" id="Expenses">
+                        <div class="table-responsive">
+                            <table id="expenseTable" class="wb-tables table table-striped table-hover" 
+                                    data-wb-tables='{ "columns": [
+                                                            { "width": "32%", "data": "expense"},
+                                                            { "width": "17%", "data": "monthly"},
+                                                            { "width": "12%", "data": "start"},
+                                                            { "width": "12%", "data": "end"},
+                                                            { "width": "12%", "data": "essential"},
+                                                            { "width": "15%", "data": "action"}
+                                                        ],
+                                                        "order": [ [0, "desc"] ],
+                                                        "ajax": "@Url.Content("~/Financials/ExpenseListJson?clientID=" + ViewBag.ClientID)"
+                                                    }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.Expense</th>
+                                        <th>@Labels.MonthlyExpense</th>
+                                        <th>@Labels.DateStart</th>
+                                        <th>@Labels.DateEnd</th>
+                                        <th>@Labels.IsEssentialYN</th>
+                                        <th>@Labels.Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mrgn-tp-sm"><strong>@Labels.TotalExpenses  <span id="totalExpenses">@(String.Format("{0:C}", TotalExpense))</span></strong></p>
+
+                @if (RightsHelper.HasRight(UserRights.Financials_Expense_Add))
+                {
+                    @Html.ActionLink(Labels.AddNewExpense, "NewExpense", "Financials", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddExpense", alt=Labels.AddNewExpense, aria_label=Labels.AddNewExpense, @role = "button" })
+                }	
+			</div>
+
+                    <!-- Assets Pane -->
+                    <div class="tab-pane" id="Assets">
+                        <div class="table-responsive">
+                            <table id="assetTable" class="wb-tables table table-striped table-hover" 
+                                    data-wb-tables='{ "columns": [
+                                                            { "width": "28%", "data": "asset"},
+                                                            { "width": "21%", "data": "amount"},
+                                                            { "width": "9%", "data": "start"},
+                                                            { "width": "9%", "data": "end"},
+                                                            { "width": "13%", "data": "action"}
+                                                        ],
+                                                        "order": [ [0, "desc"] ],
+                                                        "ajax": "@Url.Content("~/Financials/AssetListJson?clientID=" + ViewBag.ClientID)"
+                                                    }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.Assets</th>
+                                        <th>@Labels.Amount</th>
+                                        <th>@Labels.DateStart</th>
+                                        <th>@Labels.DateEnd</th>
+                                        <th>@Labels.Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mrgn-tp-sm" id="test"><strong>@Labels.TotalAssets <span id="totalAssets">@(String.Format("{0:C}", TotalAssets))</span></strong></p>
+
+                @if (RightsHelper.HasRight(UserRights.Financials_Assets_Liabilities_Add))
+                {
+                    @Html.ActionLink(Labels.AddNewAsset, "NewAsset", "Financials", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddAsset", alt=Labels.AddNewAsset, aria_label=Labels.AddNewAsset, @role = "button" })
+                }		
+			</div>
+
+                    <!-- Liabilities Pane -->
+                    <div class="tab-pane" id="Liabilities">
+                        <div class="table-responsive">
+                            <table id="liabilityTable" class="wb-tables table table-striped table-hover" 
+                                    data-wb-tables='{ "columns": [
+                                                            { "width": "28%", "data": "debt"},
+                                                            { "width": "21%", "data": "amount"},
+                                                            { "width": "9%", "data": "start"},
+                                                            { "width": "9%", "data": "end"},
+                                                            { "width": "13%", "data": "action"}
+                                                        ],
+                                                        "order": [ [0, "desc"] ],
+                                                        "ajax": "@Url.Content("~/Financials/LiabilityListJson?clientID=" + ViewBag.ClientID)"
+                                                    }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.Liabilities</th>
+                                        <th>@Labels.Amount</th>
+                                        <th>@Labels.DateStart</th>
+                                        <th>@Labels.DateEnd</th>
+                                        <th>@Labels.Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            @*<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                                <thead>
+                                    <tr>
+                                        <th>@Labels.Liabilities
+                                        </th>
+                                        <th>@Labels.Amount
+                                        </th>
+                                        <th>@Labels.DateStart
+                                        </th>
+                                        <th>@Labels.DateEnd
+                                        </th>
+                                        <th>@Labels.Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Liabilities != null && Model.Liabilities.Count > 0)
+                                    {
+                                        foreach (LiabilityViewModel item in Model.Liabilities)
+                                        {
+                                            <tr>
+                                                <td class="col-xs-4">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_LiabilityTypes, Culture, item.LiabilityTypeID)</td>
+                                                <td class="col-xs-2">@Html.DisplayFor(ModelItem => item.LiabilityAmount)</td>
+                                                <td class="col-xs-2">@Html.DisplayFor(ModelItem => item.LiabilityDateStart)</td>
+                                                <td class="col-xs-2">
+                                                    @if (item.LiabilityDateEnd.HasValue)
+                                                    {
+                                                        @Html.DisplayFor(ModelItem => item.LiabilityDateEnd)
+                                                    }
+                                                </td>
+                                                <td class="col-xs-2">
+                                                    @if (RightsHelper.HasRight(UserRights.Financials_Display))
+                                                    {
+                                                        @Html.ActionLink(Labels.Display, "DisplayLiability", "Financials", new { id = Model.ReadOnlyVitals.ClientID, liabilityID = item.LiabilityOrAssetID }, new { @class = "displayButton noText" })
+                                                    }
+
+                                                    @if (RightsHelper.HasRight(UserRights.Financials_Assets_Liabilities_Edit))
+                                                    {
+                                                        @Html.ActionLink(Labels.Edit, "EditLiability", "Financials", new { id = Model.ReadOnlyVitals.ClientID, liabilityID = item.LiabilityOrAssetID }, new { @class = "editButton noText" })
+                                                    }
+
+                                                    @if (RightsHelper.HasRight(UserRights.Financials_Assets_Liabilities_Delete))
+                                                    {
+                                                        @Html.ActionLink(Labels.Delete, "DeleteLiabilityOrAsset", "Financials", new { id = Model.ReadOnlyVitals.ClientID, liabilityOrAssetID = item.LiabilityOrAssetID }, new { @class = "deleteButton noText" })
+                                                    }
+
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>*@
+                        </div>
+                        <div class="row mrgn-tp-sm">
+                            <div class="col-sm-4">
+                                <p><strong>@Labels.TotalLiabilities <span id="totalLiabilities">@(String.Format("{0:C}", TotalLiabilities))</span></strong></p>
+                            </div>
+
+                            <div class="col-sm-4">
+                                @if (TotalIncome < TotalExpense)
+                                {
+                                    <p class="color-attention"><strong>@Labels.NetIncome <span id="inc-exp">@(String.Format("{0:C}", (TotalIncome - TotalExpense)))</span></strong></p>
+                                }
+                                else
+                                {
+                                    <p><strong>@Labels.NetIncome <span id="inc-exp">@(String.Format("{0:C}", (TotalIncome - TotalExpense)))</span></strong></p>
+                                }
+                            </div>
+
+                            <div class="col-sm-4">
+                                @if (TotalAssets < TotalLiabilities)
+                                {
+                                    <p class="color-attention"><strong>@Labels.NetWorth <span id="asset-debt">@(String.Format("{0:C}", (TotalAssets - TotalLiabilities)))</span></strong></p>
+                                }
+                                else
+                                {
+                                    <p><strong>@Labels.NetWorth <span id="asset-debt">@(String.Format("{0:C}", (TotalAssets - TotalLiabilities)))</span></strong></p>
+                                }
+                            </div>
+                        </div>
+
+                @if (RightsHelper.HasRight(UserRights.Financials_Assets_Liabilities_Add))
+                {
+                    @Html.ActionLink(Labels.AddNewLiability, "NewLiability", "Financials", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton wb-lbx lbx-modal", aria_controls = "Modal_AddLiability", alt=Labels.AddNewLiability, aria_label=Labels.AddNewLiability, @role = "button" })
+                }
+                
+				@*@if (RightsHelper.HasRight(UserRights.Financials_Assets_Liabilities_Delete))
+                {
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="pnlHeadLiabilities">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" class="accordionStyle" href="#pnlBodyLiabilities" aria-expanded="false">
+                                    @Labels.AddNewLiability
+                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="pnlBodyLiabilities" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pnlHeadLiabilities">
+                            <div class="panel-body">
+						        @using (Html.BeginForm("NewLiability", "Financials", FormMethod.Post, new { @class = "form-horizontal", id = "LiabilityForm" }))
+                                {
+							        @Html.Partial("_Liability", new LiabilityViewModel { ClientID = Model.ClientID })
+
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="saveButton">@Labels.Save</button>
+                                                    @Html.ActionLink(Labels.Cancel, "Display", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", data_buttonId = "newLiabilityButton", @role = "button" })
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                        }*@
+                    </div>
+                    <!-- Custom Tables -->
+                    @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+                    {
+                        <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                            @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="col-xs-12">
+            <div class="row charts">
+                <!-- Income / Expense Chart -->
+                <div class="col-xs-6">
+                    <h3>@Labels.IncomeExpense</h3>
+                    <table class="wb-charts wb-charts-bar table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th class="wb-charts-color-darkgreen">@Labels.Income</th>
+                                <td>@TotalIncome</td>
+                            </tr>
+                            <tr>
+                                <th class="wb-charts-color-darkred">@Labels.Expenses</th>
+                                <td>@TotalExpense</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Assets / Liabilities Chart -->
+                <div class="col-xs-6">
+                    <h3>@Labels.AssetsLiabilities</h3>
+                    <table class="wb-charts wb-charts-bar table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th class="wb-charts-color-darkblue">@Labels.Assets</th>
+                                <td>@TotalAssets</td>
+                            </tr>
+                            <tr>
+                                <th class="wb-charts-color-goldenrod">@Labels.Liabilities</th>
+                                <td>@TotalLiabilities</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div> <!-- Charts END -->
+
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script>
+            //resizes the data table columns when you switch tabs, hidden tables break tab width.
+            $(document).ready(function () {
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    if (jQuery().DataTable) {
+                        $('.dataTable').DataTable().columns.adjust();
+                    }
+                });
+            });
+
+            $('#incomeTable').on('draw.dt', function () {
+                init_hifis();
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            })
+            $('#expenseTable').on('draw.dt', function () {
+                init_hifis();
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            })
+            $('#assetTable').on('draw.dt', function () {
+                init_hifis();
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            })
+            $('#liabilityTable').on('draw.dt', function () {
+                init_hifis();
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            })
+
+            $("#modalSaveButton").click(function () {
+                updateTotals();
+            });
+
+    //updating totals on record deletion
+            $(document).on('incomeTable:row:removed', function () {
+                updateTotals();
+            });
+            $(document).on('expenseTable:row:removed', function () {
+                updateTotals();
+            });
+            $(document).on('assetTable:row:removed', function () {
+                updateTotals();
+            });
+            $(document).on('liabilityTable:row:removed', function () {
+                updateTotals();
+            });
+
+        </script>
+);
+}
+
+<script>
+    //getting new totals after an update/insert
+    function updateTotals() {
+        $.when(
+        $.ajax({
+            url: "@Url.Content("~/Financials/GetTotals")",
+            type: "GET",
+            data: "id=" + "@Model.ClientID"
+        }).done(function (data) {
+            $("#totalIncome").html(data["TotalIncome"])
+            $("#totalExpenses").html(data["TotalExpense"]);
+            $("#totalAssets").html(data["TotalAssets"]);
+            $("#totalLiabilities").html(data["TotalLiabilities"]);
+            $("#inc-exp").html(data["Income-Expenses"]);
+            $("#asset-debt").html(data["Assets-Liabilities"]);
+
+        })
+        ).then(function () {
+            $.ajax({
+                url: '@Url.Content("~/Financials/GetCharts")',
+                type: 'GET'
+            }).done(function (data) {
+                $('.charts').html(data);
+                $('.wb-charts').trigger("wb-init.wb-charts");
+            });
+        });
+
+    };
+</script>

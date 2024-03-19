@@ -1,0 +1,98 @@
+﻿@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="dialog-close-confirm" class="modal mrgn-tp-20">
+    <div class="modal-dialog whiteBackground">
+        <div id="ConfirmCloseModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <button type="button" id="modalXButton_ConfirmClose" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h2 class="modal-title">@Labels.ttlCloseConfirmation</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.CloseConfirmation</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeConfirmModalCancelButton" class="btn btn-default" data-dismiss="modal">@Labels.Cancel</button>
+                <button type="button" id="closeConfirmModalSaveButton" class="btn btn-primary">@Labels.CloseRecord</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+                $("#dialog-close-confirm").appendTo("body");
+            });
+
+            var targetUrl;
+            var currentRow;
+            var rootTableID;
+
+            //Had to do this so that click event works on dynamically created buttons
+            //Had to add the consent checks here to prevent the close modal showing before the consent modal...
+            $(document).on('click', '.closeButton', function (e) {
+                e.preventDefault();
+
+                if ($("#hifis-client-profile").length) {
+                    var isConsentEnforced = '@appSettings.EnforceConsent()'.toLowerCase() === "true";
+                    var clientHasConsent = $("#HasActiveConsent").val().toLowerCase() === "true";
+                    if (isConsentEnforced && !clientHasConsent) {
+                        var clientPersonID = $("#PersonID").val();
+                        var clientFullName = $("#ClientFullName").val();
+                        var clientID = $("#HiddenClientID").val();
+                        var aproxAge = $("#AproximativeAge").val();
+                        var returnPath = window.location.href;
+                        window.location.href = '@Url.Action("ConsentRedirect", "Master")' + "?id=" + clientID
+                            + "&age=" + aproxAge
+                            + "&callback=" + returnPath
+                            + "&returnPath=" + returnPath
+                            + "&personID=" + clientPersonID
+                            + "&fullName=" + clientFullName;
+                    } else {
+                        showCloseConfirmationModal($(this));
+                    }
+                } else {
+                    showCloseConfirmationModal($(this));
+                }
+            });
+
+            function showCloseConfirmationModal($row) {
+                targetUrl = $row.attr("href");
+                currentRow = $row.closest("tr");
+                rootTableID = $row.closest("table").attr('id');
+
+                $("#dialog-close-confirm").modal('toggle');
+            }
+
+            $(document).on('click', "#closeConfirmModalSaveButton", function () {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "targetUrl",
+                    OnSuccess = "updateTable(); $(this).remove()",
+                    OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.FailedToSave + "</p>\");",
+                    OnComplete = "$('#dialog-close-confirm').modal('toggle');",
+                    Type="POST"
+                });
+            });
+
+            function updateTable() {
+                var rootTable = currentRow.parents('table').DataTable();
+
+                if ($('#' + rootTableID).dataTable().fnSettings().ajax != null) {
+                    rootTable.ajax.reload();
+                }
+
+                if (window.location.href.indexOf("/Messages/List") != -1) {
+                    CheckForNewMessages();
+                }
+
+                displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+            }
+        </script>
+);
+}

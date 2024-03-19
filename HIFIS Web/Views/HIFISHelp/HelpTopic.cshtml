@@ -1,0 +1,21 @@
+﻿@model HelpTopicModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = (lang == english ? Model.HelpModuleName + " - " + Model.NameE : Model.HelpModuleName + " - " + Model.NameF); 
+}
+<ol class="breadcrumb mrgn-tp-sm">
+    <li><a class="ui-link" href='@Url.Action("HelpIndex", "HIFISHelp", new { rID = Model.HelpModuleID, category = HIFISHelp_CategoryTypes.All })'>@Labels.HifisHelp_BrowseHelpModules</a></li>
+    <li>@(lang == english ? Model.NameE : Model.NameF)</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+@if (!Model.TopicMaterals.IsEmptyOrNull())
+{
+    <div>
+        @foreach (var mat in Model.TopicMaterals)
+        {  
+            @Html.Partial("HelpPartials/_DisplayHelpMaterial", mat.HelpMaterial) 
+        }
+    </div>	  
+}

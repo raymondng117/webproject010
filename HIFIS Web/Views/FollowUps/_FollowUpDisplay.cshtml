@@ -1,0 +1,22 @@
+﻿@model FollowUpViewModel
+
+<section id="Modal_FollowUpDisplay" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@((Model.ServiceTypeID == null ? Labels.HousingHistory : WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, ViewBag.CurrentCulture, Model.ServiceTypeID)) + " " + Labels.FollowUp) </h2>
+    </header>
+    <div class="modal-body displayView">
+        @Html.Partial("~/Views/FollowUps/_FollowUpHeaderDisplay.cshtml", Model)
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    //init_hifis();
+    autoWidth('.modal-body');
+</script>
+
+

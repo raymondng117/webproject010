@@ -1,0 +1,194 @@
+﻿@model ClientVitalsViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.CommentReview;
+}
+
+@Html.Partial("~/Views/Comments/_ConfirmDeleteMessage.cshtml")
+
+<div id="commentThread" class="panel panel-default well commentPanel">
+	<div class="panel-body mrgn-bttm-md">
+        <div>
+            <p class="align-left"><strong>@Model.CommentDiscussion.AuthorFName @Model.CommentDiscussion.AuthorLName (@Model.CommentDiscussion.OrganizationName) - </strong>
+            @Html.HifisLabelFor(model => model.CommentDiscussion.ShareYN, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.CommentDiscussion.ShareYN)
+            </p>
+            <p class="align-right">@Model.CommentDiscussion.CreatedDate.Value.ToString("yyyy-MM-dd h:mm:ss tt")</p> 
+        </div>
+        
+
+        <div style="clear: both;"></div>   
+
+        <p>@Labels.Subject: @Model.CommentDiscussion.Subject</p>
+        <blockquote style="white-space: pre-wrap;">
+            @Model.CommentDiscussion.CommentBody
+        </blockquote>
+
+        @Html.ActionLink(Labels.Back, "DisplayVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "prevButton align-right mrgn-lft-xs", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+        @if (Model.CommentDiscussion.CreatedBy.Equals(ViewBag.userID) && RightsHelper.HasRight(UserRights.Client_Comments_Edit))
+        {
+            @Html.ActionLink(Labels.Edit, "EditClientVitalsComment", "ClientTombstone", new { commentID = Model.CommentDiscussion.CommentsID }, new { @class = "editButton align-right mrgn-lft-xs wb-lbx lbx-modal", aria_controls = "Modal_EditComment", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }        
+        @if (RightsHelper.HasRight(UserRights.Client_Comments_Add, Model.CommentDiscussion.OrganizationID))
+        {
+            @Html.ActionLink(Labels.reply, "AddClientVitalsComment", "ClientTombstone", new { commentID = Model.CommentDiscussion.CommentsID }, new { @class = "replyButton align-right mrgn-lft-xs wb-lbx lbx-modal", aria_controls = "Modal_AddComment", alt=Labels.reply, aria_label = Labels.reply, @role = "button" })
+        }
+        @if ((Model.CommentDiscussion.CreatedBy.Equals(ViewBag.userID) && RightsHelper.HasRight(UserRights.Client_Comments_Delete)) || (ViewBag.userID == WebHelper.EncryptID(1)))
+        {
+            @Html.ActionLink(Labels.Delete, "DeleteClientVitalsComment", "ClientTombstone", new { commentID = Model.CommentDiscussion.CommentsID }, new { @id = "deleteCommentParentReviewButton", @class = "deleteCommentReviewButton align-right mrgn-lft-xs", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+        }
+
+        @*@if (RightsHelper.HasRight(UserRights.Client_Comments_Edit, Model.CommentDiscussion.OrganizationID))
+        { 
+            <div class="align-right align-inline">
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.Edit,
+                        ButtonStyle = "editButton mrgn-lft-xs", 
+                        Title = Labels.Edit,
+                        ActionName = "AjaxEditClientVitalsComment",
+                        ControllerName = "ClientTombstone",
+                        PartialName = "~/Views/Comments/_Comments.cshtml",
+                        CallBackFunction = "OnTheFlyCallBack",
+                        ViewModel = new CommentViewModel() {
+                            AuthorFName = Model.CommentDiscussion.AuthorFName,
+                            AuthorLName = Model.CommentDiscussion.AuthorLName, 
+                            CommentTypeID = (int)ClientCommentTypes.Vitals,
+                            CommentsID = Model.CommentDiscussion.CommentsID,
+                            ClientID = Model.ClientID,
+                            ParentCommentID = Model.CommentDiscussion.CommentsID,
+                            Subject = Model.CommentDiscussion.Subject,
+                            CommentBody = Model.CommentDiscussion.CommentBody,
+                            ShareYN = Model.CommentDiscussion.ShareYN,
+                            OrganizationID = Model.CommentDiscussion.OrganizationID                
+                        }
+                    }
+                )           
+            </div>
+        }*@
+        @*@if (RightsHelper.HasRight(UserRights.Client_Comments_Add))
+        {
+            <div class="align-right align-inline">
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.reply,
+                        ButtonStyle = "replyButton", 
+                        Title = Labels.reply,
+                        ActionName = "AjaxAddClientVitalsComment",
+                        ControllerName = "ClientTombstone",
+                        PartialName = "~/Views/Comments/_Comments.cshtml",
+                        CallBackFunction = "OnTheFlyCallBack",
+                        ViewModel = new CommentViewModel() { 
+                            CommentTypeID = (int)ClientCommentTypes.Vitals,
+                            ClientID = Model.ClientID,
+                            ParentCommentID = Model.CommentDiscussion.CommentsID,
+                            Subject = "RE: " + Model.CommentDiscussion.Subject                
+                        }
+                    }
+                )           
+            </div>       
+        }*@
+    </div>
+    @foreach (CommentViewModel comment in Model.CommentDiscussion.ChildComments)
+    {
+        if (comment.ShareYN || comment.OrganizationID == ViewBag.currentOrgID)
+        {
+            <div class="panel panel-default col-sm-offset-1 commentReply commentPanel">
+	            <div class="panel-body">
+                    <div>
+                        <p class="align-left"><strong>@comment.AuthorFName @comment.AuthorLName (@comment.OrganizationName)</strong></p>
+                        <p class="align-right">@comment.CreatedDate</p> 
+                    </div>
+
+                    <div style="clear: both;"></div>   
+                
+                    <p>@Labels.Subject: @comment.Subject</p>
+                    <blockquote style="white-space: pre-wrap;">
+                        @comment.CommentBody
+                    </blockquote>
+                    @if (comment.CreatedBy.Equals(ViewBag.userID) || (ViewBag.userID == WebHelper.EncryptID(1)))
+                    {
+                        if (RightsHelper.HasRight(UserRights.Client_Comments_Delete))
+                        {
+                            @Html.ActionLink(Labels.Delete, "DeleteClientVitalsComment", "ClientTombstone", new { commentID = comment.CommentsID }, new { @id = "deleteCommentReviewButton", @class = "deleteCommentReviewButton noText align-right mrgn-lft-xs", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                        }
+                    }
+
+                    @if (comment.CreatedBy.Equals(ViewBag.userID))
+                    {
+                        if (RightsHelper.HasRight(UserRights.Client_Comments_Edit))
+                        {
+                            @Html.ActionLink(Labels.Edit, "EditClientVitalsComment", "ClientTombstone", new { commentID = comment.CommentsID }, new { @class = "editButton noText align-right mrgn-lft-xs wb-lbx lbx-modal", aria_controls = "Modal_EditComment", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+                    }
+                    @*@if (RightsHelper.HasRight(UserRights.Client_Comments_Edit, comment.OrganizationID))
+                    {
+                        <div class="align-right align-inline">
+                            @Html.Partial("_OnTheFlyButton",
+                                new OnTheFlyButtonViewModel()
+                                {
+                                    ButtonName = Labels.Edit,
+                                    ButtonStyle = "editButton mrgn-lft-xs noText",
+                                    Title = Labels.Edit,
+                                    ActionName = "AjaxEditClientVitalsComment",
+                                    ControllerName = "ClientTombstone",
+                                    PartialName = "~/Views/Comments/_Comments.cshtml",
+                                    CallBackFunction = "OnTheFlyCallBack",
+                                    ViewModel = new CommentViewModel()
+                                    {
+                                        AuthorFName = comment.AuthorFName,
+                                        AuthorLName = comment.AuthorLName,
+                                        CommentTypeID = (int)ClientCommentTypes.Vitals,
+                                        CommentsID = comment.CommentsID,
+                                        ClientID = Model.ClientID,
+                                        ParentCommentID = Model.CommentDiscussion.CommentsID,
+                                        Subject = comment.Subject,
+                                        CommentBody = comment.CommentBody
+                                    }
+                                }
+                            )           
+                        </div>
+                    }*@
+                
+                </div>
+            
+            </div>
+        }
+    }
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            //if the comment was a reply, displays a success message on reload and jumps to the bottom of the page
+            @if (TempData["postAdd"] != null)
+            {
+                <text>
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                    window.scrollTo(0, document.body.scrollHeight);
+                </text>
+            }
+            
+            //displays a delete message if the page is reloaded after a delete
+            @if (TempData["postDelete"] != null)
+            {
+                <text>
+                    displayNotification('success', '', "<p>@Labels.DeleteSuccess</p>");
+                </text>
+            }
+            
+            @if (TempData["postEdit"] != null)
+            {
+                <text>
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                </text>
+            }
+
+        </script>
+    );
+}

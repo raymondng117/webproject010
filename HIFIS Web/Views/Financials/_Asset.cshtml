@@ -1,0 +1,106 @@
+﻿@model AssetViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.LiabilityOrAssetID)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.AssetTypeID, CachedTableTypes.HIFIS_AssetTypes, new { @class = "max_width_90" }, true, null)
+        </div>
+    </div>
+
+    <div class="form-input-prepend form-input-append row">
+        @Html.HifisLabelFor(model => model.AssetAmount, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.AssetAmount, "Money", new { @class = "money" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor("ddlAssetCountryType", Labels.ContactCountry, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.CountryID, CachedTableTypes.HIFIS_CountryTypes, new { id = "ddlAssetCountryType" }, true, null)
+        </div>
+    </div>
+
+    <div class="AssetProvince row">
+        @Html.HifisLabelFor(model => model.ProvinceID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ProvinceID, CachedTableTypes.HIFIS_ProvinceTypes, new { style = "width: 100%;" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.AssetDateStart, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.AssetDateEnd, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetDescription, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisTextAreaFor(model => model.AssetDescription, null, true)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing() && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.EditableYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+         ShowHideAssetProvince();
+    });
+
+    $('#ddlAssetCountryType').change(ShowHideAssetProvince);
+
+
+    function ShowHideAssetProvince() {
+
+        var AssetCountryTypeID = parseInt($('#ddlAssetCountryType').val());
+       
+        $(".AssetProvince").hide();
+    
+        if (@((byte)CountryTypes.Canada) == AssetCountryTypeID) {
+            $(".AssetProvince").show();
+        }
+        else {
+            $('.AssetProvince option:eq(0)').attr('selected', 'selected');
+        }
+    }
+
+</script> 
+

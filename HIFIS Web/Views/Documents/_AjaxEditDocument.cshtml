@@ -1,0 +1,84 @@
+﻿@model DocumentViewModel
+
+
+@*@Html.Partial("_ValidationSummaryOuter")*@
+<section id="Modal_editDocument" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditDocument</h2>
+
+    </header>
+    <div class="modal-body">
+
+        <form id="editDocumentForm" class="form-horizontal">
+
+            @Html.Partial("_Document", Model)
+
+
+            @*@Html.AntiForgeryToken()*@
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        
+        <button type="submit" id="editDocumentSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editDocumentCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#editDocumentForm").hifisValidation();
+        $('input[id=ClientID]').val($('#HiddenClientID').val());
+    });
+    
+
+    $("#editDocumentSaveBtn").click(function () {
+
+        if ($("#editDocumentForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            /*alert($("#editDocumentForm").serialize());*/
+            $.ajax({
+
+                url: "@Url.Content("~/Documents/EditDocument")",
+                type: "POST",
+                data: $("#editDocumentForm").serialize()
+
+            }).done(function (data) {
+
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+
+
+                    $('#documentsTable').DataTable().ajax.reload();
+
+                    $("#editDocumentCloseBtn").click(); //Close the modal window on success
+
+                    $(document).on('draw.dt', '.dataTable', function (event) {
+                        init_hifis();
+                        //This re-init any lightboxes that are dynamically added via the datables reload call
+                        $(".wb-lbx").removeClass("wb-init").removeClass("wb-lbx-inited");
+                        $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        $("div[id^='tooltip']").remove();
+                    });
+
+                }
+            });
+        }
+    });
+
+</script>
+
+
+

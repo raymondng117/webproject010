@@ -1,0 +1,43 @@
+﻿.color-greyish
+{
+	color: #9aa5a8;
+}
+
+.bulletins-color
+{
+	color: #c6c6c6;
+}
+.errorText
+{
+	color:#bd362f;
+	font-size:larger;
+	font-weight:bold;
+}
+.whiteBackground
+{
+    background-color:White;
+}
+.goodText
+{
+	color:#51a351;
+	font-size:larger;
+	font-weight:bold;
+}
+.blackText
+{
+    color:Black;
+}
+.forced-opacity
+{
+	opacity:0.5;
+    filter:alpha(opacity=50);
+}
+
+.bulletinPriority
+{
+    color: #1D5987;
+}
+.greyTransparentBackground
+{
+    background: rgba(0, 0, 0, 0.3);
+}

@@ -1,0 +1,67 @@
+﻿@model VeteransViewModel
+           
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.ArmyServicePeriodID)
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.DateStart, new {@class = "col-sm-4"})
+    @Html.HifisEditorFor(model => model.DateStart, "DateOnly", new { @class = "col-sm-8" }, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.DateEnd, new { @class = "col-sm-4"})
+    @Html.HifisEditorFor(model => model.DateEnd, "DateOnly", new { @class = "col-sm-8" }, true, null)
+</div>
+
+<div class="row">
+    @Html.HiddenFor(model => model.ArmedForceOfTypeID)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ElementTypeID, new { @class="col-sm-4" })
+    @Html.HifisEditorFor(model => model.ElementTypeID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ArmedForcesElementTypes, Culture), null, new { @class = "col-sm-8" }, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ArmyRankID, new { @class="col-sm-4"})
+    @Html.HifisEditorFor(model => model.ArmyRankID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ArmyRankTypes, Culture), null, new { @class = "col-sm-8"}, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ReasonForDischargeTypeID, new { @class="col-sm-4"})
+    @Html.HifisEditorFor(model => model.ReasonForDischargeTypeID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForDischargeVeteransTypes, Culture), null, new { @class = "col-sm-8" }, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ArmedConflictID, new { @class = "col-sm-4"})
+    @Html.HifisEditorFor(model => model.ArmedConflictID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ArmedConflictsTypes, Culture), null, new {@class="col-sm-8"}, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.ArmyRoleTypeID, new { @class = "col-sm-4"})
+    @Html.HifisEditorFor(model => model.ArmyRoleTypeID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ArmyRoleTypes, Culture), null, new { @class = "col-sm-8" }, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.Attributes, new { @class = "col-sm-4"})
+    @Html.HifisListBoxFor(model => model.Attributes, CachedTableTypes.HIFIS_VeteransAttributeTypes, new { @class="wdth-strct-300, col-sm-8" }, true, true, true)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.VACCaseWorker, new { @class = "col-sm-4"})
+    @Html.HifisEditorFor(model => model.VACCaseWorker, null, new { @class = "col-sm-8" }, true, null)
+ </div>
+
+<div class="row">
+    @Html.HiddenFor(model => model.IDNumberForConflict, new { @class = "col-sm-4" })
+    @Html.HifisLabelFor(model => model.IDNumberForConflict, new { @class = "col-sm-4"})
+    @Html.HifisTextBoxFor(model => model.IDNumberForConflict, new { @class = "col-sm-8", id = "dummyIDNumberForConflict", name = "dummyIDNumberForConflict", disabled = true }, true, null)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.Comments, new { @class = "col-sm-4"})
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class="commentBoxSize" },true)
+</div> 
+

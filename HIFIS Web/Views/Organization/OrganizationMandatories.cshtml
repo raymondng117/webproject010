@@ -1,0 +1,247 @@
+﻿@model OrganizationViewModel
+@{
+    if(Model.OrganizationID != null){
+        ViewBag.ViewTitle = Labels.ServiceProviderMandatories + ": " + Model.Name;
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.ServiceProviderMandatories;
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+}
+
+@*@section SideNavFooter {
+    <button onclick="refreshCache()" class="refreshButton">@Labels.UpdateMandatories</button>
+}*@
+
+@Html.Hidden("OrganizationID", Model.OrganizationID)
+
+<style>
+    .jstree-checkbox {
+        display: none !important;
+    }
+    .jstree-leaf > a > .jstree-checkbox {
+        display: inline-block !important;
+    }
+    .jstree-leaf:not(.jstree-loading) > .jstree-anchor:not(.jstree-disabled) {
+        color: #a94442 !important;
+    }
+</style>
+
+<div id="jstree_mandatories" style="margin-top:1em; min-height:200px;"></div>
+
+<div style="margin-bottom:15px;">
+
+    <div id="seperator">
+        <br />
+        <hr />
+    </div>
+
+    @Html.Button("name", Labels.CopyMandatories, HtmlButtonType.Button, null, new { id = "showCopyMandatoriesButton", @class = "chainButton", style = "margin-bottom:15px; margin-top:15px;" })
+    <div class="alert alert-info alert-dismissable hide" id="noServiceProviders">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>@Labels.NoSPsForMandatories</strong>
+    </div>
+    <div class="form-group hide" id="serviceProvidersList" style="margin-bottom:80px;">
+
+        @Html.Label(Labels.ServiceProviders, new { @class = "col-sm-5 control-label" })
+        <div class="col-sm-7">
+            @Html.DropDownList("serviceProvidersDropdown", ViewBag.OrganizationList as SelectList, new { @class = "form-control form-control-static", style = "width:300px;" })
+        </div>
+    </div>
+    @Html.Button("name", Labels.CopyMandatories, HtmlButtonType.Button, null, new { id = "copyMandatoriesButton", @class = "saveButton hide" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+   Html.AddScriptBlock(
+    @<script type="text/javascript">
+
+    $(document).ready( function () {
+        if ($('#serviceProvidersDropdown').children('option').length > 1) {
+
+            $("#showCopyMandatoriesButton").on("click", function (event) {
+                $("#serviceProvidersList").fadeIn().removeClass("hide");
+                $('#copyMandatoriesButton').fadeIn().removeClass("hide");
+                $("#showCopyMandatoriesButton").fadeOut();
+            });
+
+            $("#copyMandatoriesButton").on("click", function (event) {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                                Url = "'" + Url.Content("~/Organization/CopyMandatoriesFromServiceProvider") + "'",
+                                Data = "{ copyFromOrgID: $('#serviceProvidersDropdown :selected').val(),  copyToOrgID: $('#OrganizationID').val()}",
+                                OnSuccess = "successfulCopyMandatories()",
+                                OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.msgGenericError + "</p>\");",
+                    });
+                });
+
+            } else {
+                $("#showCopyMandatoriesButton").attr('disabled', 'disabled').addClass("hide");
+                $("#noServiceProviders").fadeIn().removeClass("hide");
+            }
+        });
+
+
+
+
+    function successfulCopyMandatories() {
+        $("#copyMandatoriesButton").fadeOut().addClass("hide");
+        $("#serviceProvidersList").fadeOut().addClass("hide");
+        $("#showCopyMandatoriesButton").fadeIn();
+
+        displayNotification("success", "@Labels.DefaultDataSavedMessage");
+    }
+    </script>
+  );
+}
+
+
+@*@using (Html.BeginScriptContext())
+{
+   Html.AddScriptBlock(
+        @<script type="text/javascript">
+                     function refreshCache() {
+
+                         @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/Organization/RefreshMandatoriesCache") + "'",
+                    OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.msgGenericError + "</p>\");",
+                    Type = "POST" ,
+                    OnSuccess = "displayNotification(\"success\", \"\", \"<p>" + Labels.UpdateMandatoriesSuccessMessage + "</p>\");",
+                });
+                     }
+    </script>
+    );
+}*@
+
+
+@using (Html.BeginScriptContext())
+{
+   Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             //Removes jstree cached state from localStorage
+             //Otherwise it could get many branches on page reload
+             localStorage.removeItem('jstree');
+
+             var blockNextCall = false;
+
+             var currentOrgName = " (@ViewBag.CurrentOrgName)";
+
+             $('#jstree_mandatories')
+                 .on("changed.jstree", function (event, data) {
+
+                     //Only care if leaf is selected
+                     if (!blockNextCall && data.node != null && $("#" + data.node.id).hasClass("jstree-leaf")) {
+
+                         @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/Organization/UpdateMandatory") + "'",
+                            OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.SaveError + "</p>\");",
+                            Data = "{id: data.node.id,  isChecked: data.node.state.selected }",
+                            Type = "POST"                            
+                        });
+
+                         //If item selected deselect its oposite
+                         if (data.node.state.selected) {
+
+                             var type;
+                             var typeID;
+                             var id = data.node.id;
+
+                             //This is use to build up a selector for the opposite mandatory, and will add text to show who (you) made something a forced mandatory
+                             if (id.indexOf("mandatory_") != -1) {
+                                 type = "disable_";
+                             }
+                             else if (id.indexOf("disable_") != -1) {
+                                 type = "mandatory_";
+                             }
+                             else if (id.indexOf("forceMandatory_") != -1) {
+                                 var newText = data.node.text + currentOrgName;
+                                 type = "forceDisable_";
+
+                                 $("#jstree_mandatories").jstree('rename_node', ("#" + data.node.id), newText);
+                             }
+                             else if (id.indexOf("forceDisable_") != -1) {
+                                 var newText = data.node.text + currentOrgName;
+                                 type = "forceMandatory_";
+
+                                 $("#jstree_mandatories").jstree('rename_node', ("#" + data.node.id), newText);
+                             }
+
+                             //This parses out the org mandatory id from the node id 
+                             typeID = id.match(/\d+/);
+
+                             //if the opposite item is checked, un check it 
+                             if ($('#jstree_mandatories').jstree("is_checked", $("#" + type + typeID))) {
+                                 blockNextCall = true;
+                                 $('#jstree_mandatories').jstree("uncheck_node", $("#" + type + typeID));
+                             }                             
+                         }
+                         else {
+                             $("#jstree_mandatories").jstree('rename_node', ("#" + data.node.id), data.node.text.replace(currentOrgName, ""));
+                         }
+                     }
+                     
+                     //remove any service provider details if a selection is being uncheck automatically because the opposite selection was made
+                     if (blockNextCall) {
+                         $("#jstree_mandatories").jstree('rename_node', ("#" + data.node.id), data.node.text.replace(currentOrgName, ""));
+                         blockNextCall = false;
+                     }
+                 })
+                .jstree({
+                 "core": {
+                     "animation": 0,
+                     "check_callback": true,
+                     "themes": {
+                         "icons": true,
+                         "stripes": true,
+                         "variant": "large",
+                         "responsive": true
+                     },
+                     'data': {
+                         'url': function (node) {
+                             return node.id === '#' ?
+                               '@Url.Action("GetRootNodes", "Organization")?id=' + node.id : '@Url.Action("GetChildNodes", "Organization")';
+                         },
+                         'data': function (node) {
+                             return { 'id': node.id, 'orgID': $("#OrganizationID").val() };
+                         }
+                     }
+                 },
+                 "types": {
+                     "root": {
+                         "icon": "glyphicon glyphicon-th-list",
+                         "valid_children": ["default"]
+                     },
+                     "default": {
+                         "icon": "glyphicon glyphicon-th-list",
+                         "valid_children": ["default", "disable", "mandatory"]
+                     },
+                     "field": {
+                         "icon": "glyphicon  glyphicon-pencil",
+                         "valid_children": ["default","disable", "mandatory"]
+                     },
+                     "disable": {
+                         "icon": "glyphicon glyphicon-ban-circle",
+                         "valid_children": []
+                     },
+                     "mandatory": {
+                         "icon": "glyphicon glyphicon-star",
+                         "valid_children": []
+                     }
+                 },
+                 "plugins": [
+                   "dnd", "search", "sort", "checkbox",
+                   "html_data", "ui", "themes", "state", "types", "wholerow"
+                 ],
+                 "checkbox": { "three_state": false, "keep_selected_style": false },
+             });                 
+                          
+        </script>
+    );
+}
+
+

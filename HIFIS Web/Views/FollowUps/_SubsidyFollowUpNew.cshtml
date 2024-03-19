@@ -1,0 +1,74 @@
+﻿@model FollowUpViewModel
+
+<section id="Modal_FollowUpNew" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_NewFollowUp</h2>
+    </header>
+    <div class="modal-body">
+        <form id="newSubsidyFollowUpForm" class="form-horizontal">
+            <div>
+                @Html.HiddenFor(model => model.ServiceID)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateOfCheck)
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">@Labels.Subsidy:</label>
+                <span class="control-text col-sm-9">@ViewBag.subsidy</span>
+            </div>
+            <div>
+                @Html.HifisTextAreaFor(model => model.Comments, new { @class = "wdth-strct-250 hght-strct-150" })
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="newSubsidyFollowUpSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newSubsidyFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#newSubsidyFollowUpForm").hifisValidation();
+    });
+
+
+    var clientID = "@ViewBag.ClientID";
+    var clientHouseID = "@ViewBag.ClientHouseID";
+
+    $("#newSubsidyFollowUpSaveBtn").click(function () {
+
+        if ($("#newSubsidyFollowUpForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/FollowUps/NewSubsidyFollowUp")",
+                type: "POST",
+                data: $('#newSubsidyFollowUpForm').serialize() + "&clientID=" + clientID + "&ClientHouseID=" + clientHouseID
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#newSubsidyFollowUpCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $('#subsidyFollowUpsTable').DataTable().ajax.reload();
+                    $('.nav-tabs a[href="#followUpsTab"]').tab('show');
+                    $('.nav-tabs a[href="#subsidyFollowUpsTab"]').tab('show');
+                }
+            });
+        }
+    });
+</script>

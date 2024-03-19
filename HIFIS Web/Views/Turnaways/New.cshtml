@@ -1,0 +1,185 @@
+﻿@model TurnawayViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewClientTurnAway;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@if (Model.PrimaryClientID == null)
+{
+    @*<div class="row">
+        <div class="col-sm-offset-2 mrgn-bttm-md">
+            @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Client_Add))
+            {
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.NewClient,
+                        Title = Labels.NewClient,
+                        ActionName = "NewVitals",
+                        ControllerName = "ClientTombstone",
+                        PartialName = "~/Views/ClientTombstone/_ClientVitalsEdit.cshtml",
+                        CallBackFunction = "OnTheFlyCallBack",
+                        ViewModel = new ClientVitalsViewModel() { IsStealth = false }
+                    }
+                )
+            }
+        </div>
+    </div>*@
+    <div class="clearfix"></div>
+}
+
+<div>
+    @using (Html.BeginForm("New", "Turnaways", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.IsAnonymous)
+
+        if (Model.PrimaryClientID == null)
+        {
+            <div>
+                @Html.HifisAutocompleteFor(
+                    model => model.PrimaryClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.ReadOnlyVitals.ClientFullName
+                    , new AutocompleteViewModelOptions
+                    {
+                            OnSelect = "autoCompleteCallBack();"
+                            , Placeholder = Labels.SearchClient
+                            , HiddenValue = true
+                    })
+
+                <input type="hidden" id="SelectedClient" value="" />
+            </div>
+        }
+        else
+        {
+            @Html.HiddenFor(model => model.PrimaryClientID)
+        }
+        @Html.Partial("_Turnaway")
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="saveButton" name="submitBtn" value="default">@Labels.Save</button>
+                @if (Model.PrimaryClientID == null)
+                {
+                    <button type="submit" class="saveButton" name="submitBtn" value="NewTurnaway">@Labels.SaveAndGoToNewTurnaway</button>
+                    @Html.ActionLink(Labels.Cancel, "List", "Turnaways", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+                else
+                {
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "Turnaways", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<div id="family-attestation-result"></div>
+<div id="ClientsFamilyIDs-attestation-result"></div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            function OnTheFlyCallBack(objectID, formData) {
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#PrimaryClientID").val(objectID);
+
+                getROVitals(objectID);
+            }
+
+            function autoCompleteCallBack() {
+                getROVitals($('#PrimaryClientID').val());
+                GetFamilyList($('#PrimaryClientID').val());
+            }
+
+            @if (appSettings.IsAttestationEnabled())
+            {
+                <text>
+            $('#ClientsFamilyIDs').on("select2:select", function (e) {
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                        {
+                            FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                            ID: e.params.data.id,
+                            InputName: 'ClientsFamilyIDs',
+                            Callback: ''
+                        },
+                    function (data) {
+                        $("#family-attestation-result").html(data);
+                    });
+            });
+
+            $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function () {
+                var select = document.getElementById('ClientsFamilyIDs');
+
+                var familyArray = [];
+                for (var key in select.options) {
+                    if (select.options.hasOwnProperty(key)) {
+                        familyArray.push(select.options[key].value);
+                    }
+                }
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: ''
+                }
+
+                $.post('@Url.Action("FamilyAttestation", "Master")',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                        });
+            });
+            </text>
+            }
+            else if (appSettings.EnforceConsent())
+            {
+                <text>
+            $('#ClientsFamilyIDs').on("select2:select", function (e) {
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                        {
+                            FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                            ID: e.params.data.id,
+                            InputName: 'ClientsFamilyIDs',
+                            Callback: ''
+                        },
+                    function (data) {
+                        $("#family-attestation-result").html(data);
+                    });
+            });
+
+            $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function () {
+                var select = document.getElementById('ClientsFamilyIDs');
+
+                var familyArray = [];
+                for (var key in select.options) {
+                    if (select.options.hasOwnProperty(key)) {
+                        familyArray.push(select.options[key].value);
+                    }
+                }
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: ''
+                };
+
+                $.post('@Url.Action("FamilyConsent", "Master")',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                        });
+            });
+            </text>
+            }
+        </script>
+);
+}

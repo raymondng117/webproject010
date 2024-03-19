@@ -1,0 +1,21 @@
+﻿@model ClientHousingViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewClientHousingHistory;//housing history
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("ClientHousingHistoryNew", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal", id = "ClientForm" }))
+    {
+        @Html.Partial("_ClientHousingHistory", Model)
+        
+        <div class="form-group">
+	        <div class="col-sm-offset-3 col-sm-9">
+		        <button type="submit" class="saveButton" title = "@Labels.Save">@Labels.Save</button> 
+                @Html.ActionLink(Labels.Cancel, "ClientHousingHistory", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+	        </div>
+        </div>         
+    }
+</div>

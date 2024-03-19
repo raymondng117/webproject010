@@ -1,0 +1,170 @@
+﻿@model ClientIncidentListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_IncidentClientList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    int j = 1;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>    
+    <div>
+        @Html.HiddenFor(model => model.ClientID)
+        @Html.HiddenFor(model => model.Incidents)
+
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.IncidentType</th>
+                        <th>@Labels.ServiceProvider</th>
+                        <th>@Labels.Location</th>
+                        <th>@Labels.Date</th>
+                        <th>@Labels.PeopleWitness</th>
+                        <th>@Labels.PeopleInvolved</th>
+                        @if (RightsHelper.HasRight(UserRights.Incidents_Display))
+                        {
+                            <th>@Labels.Attachments</th>
+                        }
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                @if (Model.Incidents != null && Model.Incidents.Count > 0)
+                {
+                    foreach (IncidentViewModel item in Model.Incidents)
+                    {
+                        <tr>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_IncidentTypes, Culture, item.IncidentType)</td>
+                            <td>@item.OrganizationName</td>
+                            <td>@item.Location</td>
+                            <td class="align-text-center">@Html.DisplayFor(ModelItem => item.IncidentDateAndTime)</td>
+                            <td>
+                                @if (!item.PeopleWitnesses.IsEmptyOrNull())
+                                {
+                                    if (item.PeopleWitnesses.Count() > 1)
+                                    {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                                    @item.PeopleWitnesses.Count() @Labels.Witnesses 
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var client in item.PeopleWitnesses)
+                                                    {                            
+                                                        <li>@client.PeopleWitnessFullName</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        j++;   
+                                    }
+                                    else
+                                    {
+                                        @item.PeopleWitnesses.First().PeopleWitnessFullName
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (!item.PeopleInvolved.IsEmptyOrNull())
+                                {
+                                    if (item.PeopleInvolved.Count() > 1)
+                                    {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+                                                    @item.PeopleInvolved.Count() @Labels.PeopleInvolved
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var client in item.PeopleInvolved)
+                                                    {                            
+                                                        <li>@client.PeopleInvolvedFullName</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        j++;
+                                    }
+                                    else
+                                    {
+                                        @item.PeopleInvolved.First().PeopleInvolvedFullName
+                                    }
+                                }
+                            </td>
+                            @if (RightsHelper.HasRight(UserRights.Incidents_Display, item.OrganizationID))
+                            {
+                                <td>                       
+                                    @if (item.AttachmentsDisplay != null)
+                                    {
+                                        if (item.AttachmentsDisplay.Count() > 1)
+                                        {
+                                            <div class="panel-default">
+                                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                    <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                                        @item.AttachmentsDisplay.Count() @Labels.Attachments 
+                                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                                    </a>
+                                                </div>
+                                                <div id="@j" class="panel-collapse collapse">
+                                                    <ul class="pddng-lft-md">
+                                                        @foreach (var attachment in item.AttachmentsDisplay)
+                                                        {                            
+                                                            <li>@Html.ActionLink(attachment.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(attachment.DocumentID), ClientID = Model.ReadOnlyVitals.ClientID }, new { alt = attachment.Name, aria_label = attachment.Name })</li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            j++;
+                                        }
+                                        else
+                                        {
+                                            foreach (var attachment in item.AttachmentsDisplay)
+                                            {                            
+                                                @Html.ActionLink(attachment.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(attachment.DocumentID), ClientID = Model.ReadOnlyVitals.ClientID }, new { alt = attachment.Name, aria_label = attachment.Name })
+                                            }
+                                        }
+                                    }
+                                </td>
+                            }
+                                <td class="align-text-center">   
+                                    @if (RightsHelper.HasRight(UserRights.Incidents_Display, item.OrganizationID))
+                                    {                     
+                                        @Html.ActionLink(Labels.Display, "Display", "Incident", new { incidentID = item.IncidentID, id = Model.ReadOnlyVitals.ClientID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                    }
+                            
+                                    @if (RightsHelper.HasRight(UserRights.Incidents_Edit, item.OrganizationID))
+                                    {  
+                                        @Html.ActionLink(Labels.Edit, "Edit", "Incident", new { incidentID = item.IncidentID, id = Model.ReadOnlyVitals.ClientID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+                            
+                                    @if (RightsHelper.HasRight(UserRights.Incidents_Delete, item.OrganizationID))
+                                    { 
+                                        @Html.ActionLink(Labels.Delete, "Delete", "Incident", new { id = Model.ReadOnlyVitals.ClientID, incidentID = item.IncidentID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>   
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Incidents_Add))
+        {
+            @Html.ActionLink(Labels.NewIncidentAsInvolved, "New", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton mrgn-rght-xs", alt=Labels.NewIncidentAsInvolved, aria_label = Labels.NewIncidentAsInvolved, @role = "button" })
+            @Html.ActionLink(Labels.NewIncidentAsWitness, "New", new { id = Model.ReadOnlyVitals.ClientID, asWitness = true }, new { @class = "addButton", alt = Labels.NewIncidentAsWitness, aria_label = Labels.NewIncidentAsWitness, @role = "button" })
+        }         
+    </div>
+</div>

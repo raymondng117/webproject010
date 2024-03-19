@@ -1,0 +1,71 @@
+﻿@model SessionViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseSessionNew;
+    
+}
+   
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewMeeting", "CaseManagement", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_BaseHiddenFor", Model)
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.CaseID)
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.DesiredOutcomeTypeID)
+        @Html.HiddenFor(model => model.OrganizationID)
+    
+        <div class="form-group">
+            <label class="col-sm-3 control-label">@Labels.Goal</label>
+            <div class="col-sm-9">
+                <p class="form-control-static"><strong>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, Model.DesiredOutcomeTypeID)</strong></p>
+            </div>
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.SessionActivityID, ViewBag.Activities as SelectList)
+        </div>
+        <div>
+            @Html.HifisTextAreaFor(model => model.SessionDescription, new { @class = "commentBoxSize" })
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.SessionDate, "DateAndTime")
+        </div>
+        <div class="col-sm-offset-3">
+            <strong>@Labels.ExpendedTime</strong>
+        </div>
+        <div>
+             @Html.HifisEditorFor(model => model.Hours)
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.Minutes)      
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorker as SelectList)
+        </div>  
+        <div>
+            @Html.HifisEditorFor(model => model.ResponsibilityTypeID, CachedTableTypes.HIFIS_ResponsibilityTypes)
+        </div> 
+
+        <div>
+            @Html.HifisEditorFor(model => model.ReferralTypeID, CachedTableTypes.HIFIS_ReferrerCategTypes)
+        </div>
+
+         <div>
+            @Html.HifisEditorFor(m => m.ClientPresent, "YesNo")
+        </div>
+        <div>
+            @Html.HifisEditorFor(m => m.FamilyPresent, "YesNo")
+        </div>
+    
+        <div class="form-group">
+	        <div class="col-sm-offset-3 col-sm-9">
+		        <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "Edit", "CaseManagement", new { caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+	        </div>
+        </div> 
+    }
+</div>

@@ -1,0 +1,54 @@
+﻿@model MandatoryTreeViewModel
+
+@Html.TextBox("wetBoewSearchBox", "", new { placeholder="Search Tree" })
+@Html.Partial("Plugins/_jstree")
+
+<div class="hifis-tree">
+    <ul id="TreeView">
+        <li data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-th-list"}'>@Html.HifisLabelFor(m => Model.ClientInformationSections)
+        @if (Model.ClientInformationSections != null)
+        {
+            <ul>
+                @foreach (MandatorySectionViewModel section in Model.ClientInformationSections)
+                {
+                    @Html.Partial("_SectionTreeItem", section)
+                }
+            </ul>
+        }
+        </li>
+    </ul>
+    <ul id="TreeView2">
+        <li data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-th-list"}'>@Html.HifisLabelFor(m => Model.ClientManagementSections)
+        @if (Model.ClientManagementSections != null)
+        {
+            <ul>
+                @foreach (MandatorySectionViewModel section2 in Model.ClientManagementSections)
+                {
+                    @Html.Partial("_SectionTreeItem", section2)
+                }
+            </ul>
+        }
+        </li>
+    </ul>
+</div> 
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            var to = false;
+
+            $('#wetBoewSearchBox').keyup(function () {
+                if (to) {
+                    clearTimeout(to);
+                }
+                to = setTimeout(function () {
+                    var v = $('#wetBoewSearchBox').val();
+                    $('.hifis-tree').jstree(true).search(v);
+                }, 500);
+            });
+
+        </script>
+    );
+}

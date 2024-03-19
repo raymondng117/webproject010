@@ -1,0 +1,61 @@
+﻿@*@model HousingPlacementVitalsViewModel
+           
+<div class=" mrgn-bttm-md">
+    <div>
+        <span class="color-accent align-vertical-top"><strong>@Labels.FamilyMembers</strong></span>
+        <br />
+        @if (!Model.ClientsFamily.IsEmptyOrNull())
+        {
+            <ul class="list-bullet-none align-inline-block mrgn-xs">
+                @foreach (var fam in Model.ClientsFamily)
+                {
+                    <li>
+                        @if (RightsHelper.HasRight(UserRights.HousingPlacements_Display, Model.OrganizationID))
+                        {
+                            <a href="@Url.Content("~/ClientTombstone/DisplayVitals/")@fam.ClientID">@fam.LastName, @fam.FirstName</a> 
+                        }
+                        else
+                        {
+                            <text>@fam.LastName, </text> @fam.FirstName
+                        }
+                        
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            @Labels.NA
+        }
+    </div>
+    <hr />
+    <div>
+        <span class="color-accent"><strong>@Labels.Programs</strong></span>
+        <br />
+            <ul class="list-bullet-none align-inline-block mrgn-md">
+                @foreach (var ap in Model.AssociatedProgramNames)
+                {
+                    <li>@ap</li>
+                }
+            </ul>
+    </div>
+    <hr />
+    <div>
+        <span class="color-accent"><strong>@Labels.HousingTypesSought</strong></span>
+        <br />
+            <ul class="list-bullet-none align-inline-block mrgn-md">
+                @foreach (var type in Model.HousingTypesSought)
+                {
+                    <li>@type</li>
+                }
+            </ul>
+    </div>
+    @if (Model.RelevantDate.HasValue)
+    {
+        <hr />
+        <div>
+            <span class="color-accent"><strong>@Model.RelevantDateLabel</strong></span>
+            <span>@Html.DisplayFor(model => model.RelevantDate)</span>
+        </div>
+    }
+</div>*@

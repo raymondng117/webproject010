@@ -1,0 +1,42 @@
+﻿@model CopySettingsViewModel
+@{
+    ViewBag.ViewTitle = Labels.CopySettings + ": " + Model.Name;
+    ViewBag.LayoutView = LayoutPage.SecNav;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("CopySettings", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.HiddenFor(model => model.Name)
+    @*@Html.HiddenFor(model => model.ClusterID)*@
+
+    <div>
+        @Html.HifisEditorFor(model => model.CopyFromOrganizationID, ViewBag.OrganizationList as SelectList)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.CopyLookUpValues, "YesNo")
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.CopyRightsTemplates, "YesNo")
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.CopyPrograms, "YesNo")
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.CopyCustomTables, "YesNo")
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.CopyQuestionnaires, "YesNo")
+    </div>
+    
+    <div class="row">
+        <div class="mrgn-bttm-md col-sm-offset-2 col-sm-4">
+            <button type="submit" class="saveButton">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "Index", "Organization", new { }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+}

@@ -1,0 +1,116 @@
+﻿@model FamilyViewModel 
+@{
+    ViewBag.ViewTitle = Labels.DisplayFamily;
+    ViewBag.LayoutView = LayoutPage.Client;    
+ }
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="col-sm-12">
+
+    @*Family head IDs and group ID*@
+    @Html.HiddenFor(m => m.ClientID)
+    @Html.HiddenFor(m => m.PersonID)
+    @Html.HiddenFor(m => m.GroupID)
+
+    <div class="row">
+        <div id="radio" class="btn-group mrgn-bttm-md">
+            <button class="btn btn-primary btn-sm" id="filterActive">@Labels.Active</button>
+            <button class="btn btn-default btn-sm" id="filterAll">@Labels.All</button>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="table-responsive">
+            <table id="familyMembersTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                            { "width": "20%", "data": "isactive", "type": "string"},
+                                                            { "width": "25%", "data": "name", "type": "string"},
+                                                            { "width": "15%", "data": "dob", "type": "string"},
+                                                            { "width": "15%", "data": "role", "type": "string"},
+                                                            { "width": "10%", "data": "relationship", "type": "string"},
+                                                            { "width": "15%", "data": "actions", "type": "string"}
+                                                        ],
+                                                        "order": [ [0, "asc"] ],
+                                                        "ajax": "@Url.Content("~/ClientTombstone/GetClientFamily/" + Model.GroupID + "?getFullHistory=" + false + "&clientID=" + Model.ReadOnlyVitals.ClientID)"}'>
+                <thead>
+                    <tr>
+                        <th>@Labels.Status</th>
+                        <th>@Labels.FullName</th>
+                        <th>@Labels.DOB</th>
+                        <th>@Labels.Role</th>
+                        <th>@Labels.Relationship</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                @if (Model.ActiveMembers > 0 && RightsHelper.HasRight(UserRights.Client_Family_Add))
+                {
+                    @Html.ActionLink(Labels.AddFamilyMember, "GetNewMemberForm", "ClientTombstone", new { groupID = Model.GroupID, clientID = Model.ReadOnlyVitals.ClientID }, new { @class = "wb-lbx lbx-modal addButton mrgn-rght-sm", alt=Labels.AddFamilyMember, aria_label = Labels.AddFamilyMember, @role = "button"  })
+                }
+
+                @if (RightsHelper.HasRight(UserRights.Client_Family_Display))
+                {
+                    @Html.ActionLink(Labels.Back, "ClientFamilyList", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button"  })
+                }
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $('#familyMembersTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+
+            $(document).on("familyTable:change", function () {
+                $('#familyMembersTable').DataTable().ajax.reload();
+            })
+            function updateHeader()
+            {
+                $.ajax({
+                    url: "@Url.Content("~/ClientTombstone/UpdateFamilyHeader")",
+                    type: "POST",
+                    data: { groupID: $('#GroupID').val()}
+                }).done(function (data) {
+                    $('#page-title').html(data.header);
+                });
+            }
+
+            $('#filterActive').on('click', function () {
+                $('#familyMembersTable').DataTable().ajax.url('@Url.Content("~/ClientTombstone/GetClientFamily/" + Model.GroupID + "?getFullHistory=" + false + "&clientID=" + Model.ReadOnlyVitals.ClientID)').load(null, false);
+
+                if ($(this).hasClass('btn-default')) {
+                    $(this).removeClass('btn-default');
+                    $(this).addClass('btn-primary')
+
+                    $('#filterAll').removeClass('btn-primary');
+                    $('#filterAll').addClass('btn-default');
+                }
+            });
+
+            $('#filterAll').on('click', function () {
+                $('#familyMembersTable').DataTable().ajax.url('@Url.Content("~/ClientTombstone/GetClientFamily/" + Model.GroupID + "?getFullHistory=" + true + "&clientID=" + Model.ReadOnlyVitals.ClientID)').load(null, false);
+
+                if ($(this).hasClass('btn-default')) {
+                    $(this).removeClass('btn-default');
+                    $(this).addClass('btn-primary')
+
+                    $('#filterActive').removeClass('btn-primary');
+                    $('#filterActive').addClass('btn-default');
+                }
+            });
+        </script>
+    );
+}

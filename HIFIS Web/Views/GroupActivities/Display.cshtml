@@ -1,0 +1,142 @@
+﻿@model GroupActivityViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayGroupActivity;
+}
+
+<div class="mainDisplay">
+    <div id="displayForm" style="padding: 20px; padding-bottom:0px;">
+        
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.GroupActivityTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.GroupActivityTypeID,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GroupActivitiesTypes, ViewBag.CurrentCulture, Model.GroupActivityTypeID)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.OwnerOrganizationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-2" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.OwnerOrganizationID,
+                                        List = Utilities.ConvertToSelectList(Model.OrgList)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.OrganizationID,
+                                        List = Utilities.ConvertToSelectList(Model.OrgList)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ProgramIDs, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-2" })
+                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                    new MultipleItemSelectList
+                                    {
+                                        IDs = Model.ProgramIDs.Select(s => s.ToString()).ToList(),
+                                        List = ViewBag.ProgramList as SelectList
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.LocationID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-2" })
+                    @Html.DisplayFor(model => model.LocationName)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.HifisDisplayFor(model => model.DateStart, null, true, "DateAndTime")
+                    @Html.HiddenFor(model => model.DateStart.TimeOfDay)
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Hours, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.Hours)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Minutes, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.Minutes)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ReasonForServiceTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.ReasonForServiceTypeID,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, ViewBag.CurrentCulture, Model.ReasonForServiceTypeID)
+                                    })
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.FromReferrerPlaceID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.DisplayFor(model => model.FromReferrerPlaceName)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ToReferrerPlaceID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md" })
+                    @Html.DisplayFor(model => model.ToReferrerPlaceName)
+                </div>
+            </div>
+        </div>
+    </div>    
+        
+    @if(RightsHelper.HasRight(UserRights.GroupActivities_ClientList))
+    {
+	    <div class="row">
+            <h4>@Labels.Attendees</h4>
+            @Html.Partial("_Attendees", Model)
+        </div>   
+    }
+
+    <div class="row">
+        @Html.Partial("_Organizers", Model)
+    </div>             
+
+    <div class="row">
+        <h4>@Labels.Demographics</h4>
+        @Html.Partial("_Demographics", Model)
+	</div>
+            
+    <div class="row">
+        @Html.Partial("_Comments", Model)
+	</div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            @Html.HiddenFor(model => model.GroupActivityID)
+            @Html.HiddenFor(model => model.OrganizationID)
+            @Html.HiddenFor(model => model.DateStart)
+            @Html.HiddenFor(model => model.ReasonForServiceTypeID)
+            @Html.HiddenFor(model => model.GroupActivityTypeID)
+        </div>
+        <div class="col-sm-6">
+            <br />
+            @Html.Partial("_BaseFooter", Model)
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+</div>
+
+
+<div class="no-print">
+    @Html.ActionLink(Labels.Cancel, "List", "GroupActivities", new { }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+</div>

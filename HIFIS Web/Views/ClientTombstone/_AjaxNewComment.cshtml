@@ -1,0 +1,60 @@
+﻿@model CommentViewModel
+
+<section id="Modal_NewComment" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.NewComment</h2>
+    </header>
+    <div class="modal-body" style="overflow: hidden;">
+        <form id="newCommentForm" class="form-horizontal">
+            <div class="row">
+                @Html.Partial("_Comments", Model)
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button type="submit" id="newCommentSaveBtn" class="saveButton">@Labels.Save</button>
+            <button id="newCommentCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $('input[id=ClientID]').val($('#HiddenClientID').val());
+
+    $("#newCommentSaveBtn").click(function () {
+
+        if ($("#newCommentForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/ClientTombstone/AjaxAddClientVitalsComment")",
+                type: "POST",
+                data: $("#newCommentForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#commentsTable').DataTable().ajax.reload();
+                    $("#newCommentCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>
+
+

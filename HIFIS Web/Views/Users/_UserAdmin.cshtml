@@ -1,0 +1,85 @@
+﻿@model UserProfileViewModel
+
+@Html.Partial("_BaseHiddenFor", Model)
+
+@Html.HiddenFor(model => model.UserID)
+@Html.HiddenFor(model => model.PersonID)
+@Html.HiddenFor(model => model.ActiveYN)
+@Html.HiddenFor(model => model.ClonedUserId)
+@Html.HiddenFor(model => model.IsCloning)
+
+@if (Model.UserID != null && !Model.ActiveYN)
+{
+    <div class="alert alert-warning">
+        <p>@Labels.InactiveUser</p>
+    </div>
+}
+
+<div>
+    @if (Model.UserID == null)
+    {
+        @Html.HifisEditorFor(model => model.UserName)
+    }
+    else
+    {
+        @Html.HifisEditorFor(model => model.UserName, null, new { @readonly = "readonly" })
+    }
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.UserFirstName)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.UserLastName)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.Email)
+</div>
+
+@if (Model.UserID == null)
+{
+    <div id="emailInfo" class="row">
+        <div class="col-sm-3"></div>
+        <section class="alert alert-info col-sm-6">@Labels.EmailNotProvidedMsg</section>
+    </div>
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.GenderTypeID, CachedTableTypes.HIFIS_GenderTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.CultureTypeID, CachedTableTypes.HIFIS_UserCultureTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ConcurrentYN, "YesNo")
+</div>
+
+@if (!Model.isAdmin)
+{
+    <div>
+        @Html.HifisListBoxFor(model => model.OrganizationIDs, ViewBag.SPList as SelectList)
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.OrganizationIDs)
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.DefaultOrganizationId, ViewBag.AccessList as SelectList)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.ReportCategories, CachedTableTypes.HIFIS_ReportCategoriesTypes)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.SelectedRoles, CachedTableTypes.HIFIS_PeopleRoleTypes)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.Comments)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.SecurityKey)
+</div>

@@ -1,0 +1,49 @@
+﻿@model GenericTableLookUpViewModel
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.lookupID)
+@Html.HiddenFor(model => model.Sequence)
+@Html.HiddenFor(model => model.LookupTableID)
+
+<div>
+    @Html.HifisEditorFor(model => model.NameE)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.NameF)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.RollUpID, ViewBag.rollupList as SelectList)
+</div>
+
+@if (@ViewBag.ShowPlaceableOption)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.PlaceableYN, "YesNo")
+    </div>
+}
+else if (@ViewBag.ShowDesiredOutcomeOption)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.DesiredOutcomeTypeID, ViewBag.desiredOutcomeList as SelectList)
+    </div>
+}
+
+else if (@ViewBag.ShowGroupTypeOption)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.GroupTypeID, ViewBag.groupTypesList as SelectList)
+    </div>
+}
+
+@if (Model.lookupID == null)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.IsSubscribed, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisListBoxFor(model => model.SelectedOrganizationIDs, ViewBag.OrganizationList as SelectList)
+    </div>
+}

@@ -1,0 +1,112 @@
+﻿@model DateFilterListViewModel
+     
+@*<div>
+    @Html.HifisEditorFor(m => m.DateFilterID, Model.DateList, null, null, true)
+</div>*@
+
+@* To implement the datefilter on a page Add the following to the relevant View, and controller respectively.
+    //to view
+    @Html.Partial("_DateFilterList", Model.DateFilter)
+    <div class="clearfix"></div>
+    <br />
+
+    //to controller
+    public void ListAsync(int filterTime = (int)DateFilters.Week)
+    {
+        //Following code used in date filter.
+        //**************************************************
+        int dateFilter;
+        if (Request.Url.OriginalString.IndexOf("filterTime") != -1)
+        {
+            dateFilter = filterTime;
+            HttpCookie cookie = Request.Cookies["DateFilter"];
+            cookie.Values.Set("**Module**", filterTime.ToString());
+            cookie.Expires = DateTime.Now.AddDays(30);
+            Response.Cookies.Add(cookie);
+        }
+        else
+        {
+            dateFilter = int.Parse(Request.Cookies["DateFilter"]["**Module**"]);
+        }
+        AsyncManager.Parameters["filterTime"] = dateFilter;
+        //**************************************************
+
+
+
+    // To use DateFilter
+    viewModel.DateFilter.DateFilterID = filterTime;
+    viewModel.DateFilter.DateList = Utilities.ConvertToSelectListWithoutEncryption(GetDateFilters());
+    viewModel.DateFilter.Url = "/CallsVisitsLog/List";
+
+    return View(viewModel);
+
+    //Dont forget to initially set the cookie in Session_Start.
+ *@
+
+<!-- JavaScript -->
+@*@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $(function () {
+                 $('#DateFilterID').select2('destroy');
+                 $('#DateFilterID').select2();
+             });
+
+             $('#DateFilterID').on("select2:select", function (e) {
+                 var url = '@Model.Url';
+
+                 if (url.indexOf("?") == -1) {
+                     url += "?filterTime=" + $(this).val();
+                 }
+                 else {
+                     url += "&filterTime=" + $(this).val();
+                 }
+                 window.location = url;
+             });
+         </script>
+);
+}*@
+
+
+
+@{
+    string appliedFilter = Model.DateList.SingleOrDefault(i => i.Value == Model.DateFilterID.ToString()).Text;
+}
+
+<ul class="nav nav-pills" role="tablist">
+    <li role="presentation" class="dropdown">        
+        <a id="filterDropdown" href=# class="btn btn-default dropdown-toggle" data-toggle="dropdown" role="button" 
+            aria-haspopup="true" aria-expanded="false">
+            <span class="fa fa-filter" aria-hidden="true"></span>
+            @Labels.Filter: @appliedFilter <span class="caret"></span>
+        </a>
+        <ul id="filterMenu" class="dropdown-menu" aria-labelledby="filterDropdown">
+            @if (Model.DateList.Any(i => i.Text == "All" || i.Text == "Tous"))
+            {
+                var item = Model.DateList.SingleOrDefault(i => i.Text == "All" || i.Text == "Tous");
+
+                var url = @Url.Content("~/" + Model.Url);
+
+                url += (url.Contains('?') ? "&" : "?") + "filterTime=" + item.Value;
+                
+                <li class="default">
+                    <a href="@url" style="text-decoration: none;" class="active">@item.Text</a>
+                </li>
+                
+                <li role="separator" class="divider"></li>
+            }
+            @foreach (var item in Model.DateList.Where(i => i.Text != "All" && i.Text != "Tous"))
+            {
+                var url = @Url.Content("~/" + Model.Url);
+
+                url += (url.Contains('?') ? "&" : "?") + "filterTime=" + item.Value;
+                
+                <li>
+                    <a href="@url" style="text-decoration: none;">@item.Text</a>
+                </li>
+            }
+        </ul>
+    </li>
+</ul>

@@ -1,0 +1,10 @@
+﻿.border-top-fix-tabs
+{
+    border-top:0px solid white !important;
+    border-top-left-radius:0;
+    border-top-right-radius:0;
+}
+
+.tabButton, .panel-title a {
+    outline: none !important;
+}

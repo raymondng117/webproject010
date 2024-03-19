@@ -1,0 +1,91 @@
+﻿@model OnTheFlyViewModel
+@{
+    Layout = null;
+}
+@*<link rel="stylesheet" href="~/Scripts/Hifis/Select2/css/select2.min.css" />*@
+@*<div class="panel panel-primary OnTheFlyPanel" style="min-width:300px; max-width:60%; margin-left:20% !important;">
+    <h3 class="panel-title panel-heading">
+        @Model.Title 
+        <button title="@Labels.Close" type="button" class="mfp-close wet-lightbox-close-fix">x</button>
+    </h3>
+
+    <div class="panel-body">
+        @using (Html.BeginForm(Model.ActionName, Model.ControllerName, FormMethod.Post, new { @class = "form-horizontal", id = Model.CallBackFunction }))//Because all of these OnTheFly forms are within another form, i had to use the callBackFunction variable as a unique identifier since these must be unique anyways
+        {
+            @Html.Partial(Model.PartialName, Model.ViewModel)
+            <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+				    <button type="submit" class="saveButton">@Labels.Save</button>
+			    </div>
+		    </div>       
+        }
+    </div>
+</div>*@
+
+  <div class="modal-header" style="background-color:white;">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h2 class="modal-title" id="myModalLabel">@Model.Title</h2>
+  </div>
+    @using (Html.BeginForm(Model.ActionName, Model.ControllerName, FormMethod.Post, new { @class = "form-horizontal", id = Model.CallBackFunction + "Form" }))//Because all of these OnTheFly forms are within another form, i had to use the callBackFunction variable as a unique identifier since these must be unique anyways
+    {
+        <div class="modal-body" style="background-color:white;">              
+            @Html.Partial(Model.PartialName, Model.ViewModel)
+        </div>
+        <div class="modal-footer" style="background-color:white;">
+            <button type="submit" class="saveButton">@Labels.Save</button>
+            <button type="button" class="cancelButton" data-dismiss="modal">@Labels.Close</button>            
+        </div>        
+    }
+
+@using (Html.BeginScriptContext())
+{  
+    Html.AddScriptBlock(@<script type="text/javascript" src="@Url.Content("~/Scripts/jquery.validate.min.js")"></script>);
+    Html.AddScriptBlock(@<script type="text/javascript" src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")"></script>);
+    Html.AddScriptBlock(@<script type="text/javascript" src="@Url.Content("~/Scripts/Hifis/CustomValidation.js")"></script>);
+
+
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     $(function () {
+
+		         init_hifis();
+
+		        var Name = "#@(Model.CallBackFunction + "Form")";
+
+		         $(document).on('submit', Name, function (e) {
+		             e.preventDefault();
+		             e.stopImmediatePropagation();
+		             var form = $(Name);
+
+		             if (form.valid()) {
+		                 var formData = form.serialize();
+		                 var index;
+		                 var FormDataArray = form.serializeArray();
+		                 var FormObject = {};
+		                 for (index = 0; index < FormDataArray.length; ++index)
+		                     FormObject[FormDataArray[index].name] = FormDataArray[index].value;
+
+		                 @Html.Partial("_Ajax", new AjaxViewModel()
+                         {
+                             Url = "'" + Url.Content("~/" + Model.ControllerName + "/" + Model.ActionName) + "'",
+                             OnSuccess = "" + Model.CallBackFunction + "(data, FormObject); $('.close').click(); form.trigger('reset'); displayNotification('success', null, \"" + Labels.DefaultDataSavedMessage + "\");",
+                             OnFailure = "$('.mfp-close').click(); displayNotification('error', null, \"<p>\" + data.Result.ValidationMessages[0] + \"</p>\"); console.log(data.Result.ValidationMessages[0]);",
+                             Data = "formData",
+                             IsOnTheFly = true,
+                         });
+		             }
+
+		             $(Name).unbind("submit");
+		         });
+                //.find('.onTheFlyButton').hide();
+               @* @Html.Partial("_RadioButtonFix")*@
+                
+                //$('input[type="date"]').mask("9999-99-99", { placeholder: " " });
+
+		        //$("select[multiple]").select2();
+                //$("select").select2();
+        });
+    </script>);
+}
+
+@Html.RenderScripts()

@@ -1,0 +1,69 @@
+﻿@model ClientBarViewModel
+
+<div class=" displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OnBehalfOfPersonID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.OnBehalfOfPersonID,
+                            List = ViewBag.Staff as SelectList
+                        })
+    </div>
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+        @Html.HifisDisplayFor(model => model.DateStart, null, true, "DateAndTime")
+    </div>
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+        @Html.HifisDisplayFor(model => model.DateEnd, null, true, "DateAndTime")
+    </div>
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.SelectedOrganizations, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+                        new MultipleItemSelectList 
+                        {
+                            IDs = Model.SelectedOrganizations.Select(l => l.ToString()).ToList(),
+                            List = (ViewBag.Orgs != null ? ViewBag.Orgs as SelectList : new SelectList(new List<SelectListItem> { new SelectListItem() }))
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.SelectedModules, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+                        new MultipleItemSelectList 
+                        {
+                            IDs = Model.SelectedModules.Select(l => l.ToString()).ToList(),
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServiceRestrictionsModuleTypes, Culture, Model.SelectedModules.Select(l => l.ToString()).ToList())
+                        })
+    </div>
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReasonBarredTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.ReasonBarredTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonBarredTypes, Culture, Model.ReasonBarredTypeID)
+                        })
+    </div>
+    
+    <div>
+        <label class="control-label wdth-strct-200" >@Labels.Comment</label>
+        @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Barred_Edit, Model.OrganizationID))
+        {
+            @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ReadOnlyVitals.ClientID, restrictedPeriodID = Model.ClientBarredPeriodID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+        @Html.ActionLink(Labels.Cancel, "ClientList", "ServiceRestrictions", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>

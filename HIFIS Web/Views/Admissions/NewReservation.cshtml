@@ -1,0 +1,1610 @@
+﻿@model IndexPageViewModel
+
+@{
+    ViewBag.Title = Labels.Admissions + " - " + Labels.Reservation;
+    ViewBag.ViewTitle = Labels.Reservation;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/Stylesheets/HifisModules/AdmissionStyles.css")" />
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<!-- This div contains the form in which a new book-in or reservation is processed. -->
+<div class="row">
+    <div id="admissionFormDiv" class="col-sm-12">
+        @using (Html.BeginForm("NewAdmission", "Admissions", FormMethod.Post, new { @class = "form-horizontal", id = "admissionsForm" }))
+        {
+            <div class="row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-9">
+                    <div class="btn-group mrgn-bttm-sm">
+                        <button id="familyBtn" type="button" class="btn-default familyButton hide">@Labels.BookInFamily</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                    @Html.HifisLabelFor(model => model.ClientIDs, new { @class = "col-sm-3 control-label" })
+                    <div class="col-sm-8" style="display: block;">
+                        @Html.HifisMultiAutocompleteFor(model => model.ClientIDs, "~/ClientTombstone/AjaxGetClientList",
+                                                            Model.clientListForMultiSelect,
+                                                            new AutocompleteViewModelOptions
+                                                            {
+                                                                Placeholder = Labels.Clients,
+                                                                ExcludeLabel = true
+                                                                //OnSelect = "HIFIS_Admissions.BookInView.Utility_Functions.autocompleteCallback();"
+                                                            }, new { @class = "" })
+                </div>
+            </div>
+
+            <div id="stayFormDiv" class="row">
+                @Html.Partial("_AdmissionsForm", Model.NewAdmission)
+            </div>
+
+            <div class="row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-9 nopadding">
+                    <a href="#" id="showBedsButton" class="nextButton" role="button">@Labels.Next</a>
+
+                    @if (Model.ClientIDs.Count != 0 && Model.NewAdmission.StayID == null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "ClientAdmissions", "Admissions", new { id = Model.ClientIDs.FirstOrDefault() }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" });
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "Index", "Admissions", new { id = "" }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" });
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+</div>
+<!-- end form -->
+<!-- This div contains the graphical view of the rooms and beds. -->
+<div id="bedsView" class="row">
+
+    <!-- This div contains the toolbar that contains the buttons which manipulate how the graphical view is displayed. -->
+    <div id="toolbar" class="col-xs-12 mrgn-bttm-sm no-print">
+        <div>
+            <label style="margin-left: 3px;" for="viewButtons">@Labels.ChangeYourView</label><br />
+            <span id="viewButtons">
+                <button id="smallViewBtn" class="smallTileButton">@Labels.SmallIcons</button>
+                <button class="largeTileButton">@Labels.LargeIcons</button>
+            </span>
+
+            <span class="align-right toolbar-controls">
+                <button id="backBtn" class="prevButton">@Labels.Back</button>
+                <span id="book-in-controls">
+                    <button id="backToFormBtn" class="prevButton">@Labels.Back</button>
+                    <button id="confirmBtn" class="saveButton">@Labels.Save</button>
+                    @if (Model.ClientIDs.Count != 0 && Model.NewAdmission.StayID == null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "ClientAdmissions", "Admissions", new { id = Model.ClientIDs.FirstOrDefault() }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button"  });
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "Index", "Admissions", new { id = "" }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button"  });
+                    }
+
+                </span>
+                <button id="refresh-beds" class="reloadButton no-print">@Labels.RefreshOccupancy</button>
+            </span>
+        </div>
+    </div>
+    <div class="anchor">
+        <div id="clientToolBar" class="col-xs-12">
+            <!-- Client object buttons go here. -->
+        </div>
+    </div>
+
+    <!-- This div contains the graphical view which displays the rooms and beds of the shelter. -->
+    <div class="bedsPanel">
+        <div class="body col-xs-12">
+            @{int i = 0; int count = 0; string classes = "";}
+            @foreach (RoomViewModel room in Model.OrganizationRooms)
+            {
+                if ((i % 4) == 0)
+                {
+                    @:<div class="row">
+                        @* To evenly distribute rooms within the view i've switched the class labels for each row of the display *@
+                        if ((Model.OrganizationRooms.Count - i) < 4)
+                        {
+                            count = Model.OrganizationRooms.Count - i;
+                            switch (count)
+                            {
+                                case 1:
+                                    classes = "room col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 align-text-center";
+                                    break;
+                                case 2:
+                                    classes = "room col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 align-text-center";
+                                    break;
+                                case 3:
+                                    classes = "room col-xs-12 col-sm-6 col-md-4 col-lg-4 col-xl-4 align-text-center";
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            classes = "room col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3 align-text-center";
+                        }
+                    }
+                    @:<div id="room-@room.ID" class="@classes" data-room-id="@room.ID">
+                        <h5 style="margin-top: 0px;">
+                            @room.Name
+                            @Html.ActionLink(Labels.ManageRoom, "ShelterBedsList", "Organization",
+                            new { roomID = room.ID, roomName = room.Name, shelterID = room.OrganizationID, shelterName = room.ShelterName, isAdminView = false },
+                            new { @class = "align-right glyphicon glyphicon-cog noText no-print", style = "margin-top: -5px; text-decoration: none;", target = "_blank", alt=Labels.ManageRoom, aria_label=Labels.ManageRoom, @role="button"  })
+                        </h5>
+                        foreach (BedViewModel bed in room.Beds)
+                        {
+                            if (bed.ActiveYN)
+                            {
+                                if (bed.OverflowYN)
+                                {
+                                    <div id="bed-@bed.ID" class="bedButton btn-sm overflowBed bed" data-bed-id="@bed.ID" data-toggle="popover" data-trigger="hover" data-placement="top" title="@Labels.BedName: @bed.Name">
+                                        <div class="glyphicon glyphicon-bed bedContent">
+                                            @if (bed.ID == Model.NewAdmission.BedID)
+                                            {
+                                                <div class="clientButton btn btn-primary" data-clientid="@Model.ClientAdmissions.FirstOrDefault().ClientID">
+                                                    <span class="glyphicon glyphicon-user"></span>
+                                                    @Model.ClientAdmissions.FirstOrDefault().FullName
+                                                </div>
+                                            }
+                                        </div>&nbsp
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div id="bed-@bed.ID" class="bedButton btn-sm activeBed bed" data-bed-id="@bed.ID" data-toggle="popover" data-trigger="hover" data-placement="top" title="@Labels.BedName: @bed.Name">
+                                        <div class="glyphicon glyphicon-bed bedContent">
+                                            @if (bed.ID == Model.NewAdmission.BedID)
+                                            {
+                                                <div class="clientButton btn btn-primary" data-clientid="@Model.ClientAdmissions.FirstOrDefault().ClientID">
+                                                    <span class="glyphicon glyphicon-user"></span>
+                                                    @Model.ClientAdmissions.FirstOrDefault().FullName
+                                                </div>
+                                            }
+                                        </div>&nbsp
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div id="bed-@bed.ID" class="bedButton btn-sm inactiveBed bed"
+                                     data-bed-id="@bed.ID" data-toggle="popover" data-trigger="hover" data-placement="top" title="@Labels.BedName: @bed.Name" data-content="<div class='inactive-popover'><p><strong>@Labels.Inactive:</strong>&nbsp @bed.BedStatusName</p></div>">
+                                    <div class="glyphicon glyphicon-bed bedContent"></div>&nbsp
+                                </div>
+                            }
+                        }
+                    @:</div>
+
+
+                    if ((i % 4) == 3 || i == (Model.OrganizationRooms.Count - 1))
+                    {
+                    @:</div>
+                }
+
+                i++;
+            }
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="bookinControlPanel closed pddng-xs visible-sm visible-md visible-lg no-print">
+        <h5 class="mrgn-tp-none mrgn-bttm-none">@Labels.ControlPanel@*<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>*@</h5>
+        <hr />
+
+        <h6>@Labels.SearchClient</h6>
+        <div style="display: inline;">
+            <input id="search-box" class="form-control align-left" type="text" value="" name="SearchClient" placeholder="@Labels.Search">
+            <button class="searchButton noText" style="width: 38px; height: 38px; margin-top: -1px;">@Labels.Search</button>
+        </div>
+
+        <h6>@Labels.Beds</h6>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    <input id="chk-OccupiedBeds" type="checkbox" checked>
+                    @Labels.OccupiedBeds
+                </label>
+                <div class="legend booked-bed btn-sm glyphicon glyphicon-bed col-xs-3 mrgn-bttm-xs"></div>
+            </div>
+        </div>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    <input id="chk-UnoccupiedBeds" type="checkbox" checked>
+                    @Labels.UnoccupiedBeds
+                </label>
+                <div class="legend activeBed btn-sm glyphicon glyphicon-bed col-xs-3"></div>
+            </div>
+        </div>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    <input id="chk-overflowBeds" type="checkbox" checked>
+                    @Labels.Overflow
+                </label>
+                <div class="legend overflowBed btn-sm glyphicon glyphicon-bed col-xs-3"></div>
+            </div>
+        </div>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    <input id="chk-InactiveBeds" type="checkbox" checked>
+                    @Labels.InactiveBeds
+                </label>
+                <div class="legend inactiveBed btn-sm glyphicon glyphicon-bed col-xs-3"></div>
+            </div>
+        </div>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    @Labels.RequestedBeds
+                </label>
+                <div class="legend requested-bed btn-sm glyphicon glyphicon-bed col-xs-3"></div>
+            </div>
+        </div>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    @Labels.ReservedForToday
+                </label>
+                <div class="legend btn-sm glyphicon glyphicon-exclamation-sign col-xs-3"></div>
+            </div>
+        </div>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    @Labels.ReservedForAFutureDate
+                </label>
+                <div class="legend btn-sm glyphicon glyphicon-flag col-xs-3"></div>
+            </div>
+        </div>
+
+        <h6>@Labels.Rooms</h6>
+        <div class="row checkbox">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    <input id="chk-OccupiedRooms" type="checkbox" checked>
+                    @Labels.OccupiedRooms
+                </label>
+                <div class="legend btn-sm room col-xs-3"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- end graphical view -->
+<!-- Modals -->
+<!-- Delete Reservation Modal -->
+<div id="delete-confirm" class="modal greyTransparentBackground">
+    <div class="modal-dialog whiteBackground">
+        <div class="modal-content">
+            <div class="modal-header">
+                @*<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>*@
+                <h2 class="modal-title">@Labels.Confirmation</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.DeleteResoConfirmation</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal">@Labels.Cancel</button>
+                <button type="button" id="modalDeleteButton" class="btn btn-primary no-print">@Labels.Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Move Booked-In Client Modal -->
+<div id="move-confirm" class="modal greyTransparentBackground">
+    <div class="modal-dialog whiteBackground">
+        <div class="modal-content">
+            <div class="modal-header">
+                @*<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>*@
+                <h2 class="modal-title">@Labels.Confirmation</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.MoveClient</p>
+                <p class="text-warning"><small>@Labels.SaveOrLoseChanges</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal">@Labels.Cancel</button>
+                <button type="button" id="modalYesButton" class="btn btn-primary no-print">@Labels.Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Display Stay Modal -->
+<div id="display-stay" class="modal greyTransparentBackground">
+    <div class="modal-dialog whiteBackground">
+        <div class="modal-content">
+            <div class="modal-header">
+                @Html.ActionLink(Labels.Print, "Details", "Admissions", new { id = "" }, new { @class = "printButton noText align-right", id = "printBtn", alt=Labels.Print, aria_label=Labels.Print, @role="button"  })
+                <h2 class="modal-title">@Labels.Display</h2>
+            </div>
+            <div class="modal-body" style="min-height: 300px; z-index:1000;">
+
+            </div>
+            <div class="modal-footer">
+                @Html.ActionLink(Labels.ClientAdmissions, "ClientAdmissions", "Admissions", new { id = "" }, new { @class = "clientsButton no-print", id = "clientAddmissionsBtn", alt=Labels.ClientAdmissions, aria_label=Labels.ClientAdmissions, @role="button"  })
+                <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal" role="button">@Labels.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End Modals -->
+
+<a href="#0" class="cd-top upButton noText no-print">@Labels.ScrollToTop</a>
+
+<div id="JSGlobalVar">
+    @Html.Partial("_SharedGlobalVar", Model)
+</div>
+
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(document).on('ready', function () {
+                $('#AssociatedProgramIDs').parents('.form-group').hide();
+                $('#AssociatedProgramIDs').attr('data-val', 'false');
+                $('.form-horizontal').removeData('unobtrusiveValidation');
+                $('.form-horizontal').removeData('validator');
+                $.validator.unobtrusive.parse('.form-horizontal');
+            });
+        </script>
+    );
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript" charset="utf-8">
+
+            //***************************************************************************
+            //*
+            //*   Global variables
+            //*
+            //****************************************************************************
+
+            var clients = '@Model.ClientIDs.FirstOrDefault()';
+
+            var URL_Admission_IndexReservation = '@Url.Content("~/Admissions/Index/?isReservation=true")';
+            var returnToClient = '@ViewBag.ReturnToClient';
+
+            var session_currentOrg ='@Session["currentOrg"]';
+            var session_BedDisplayExpanded ="@Session["BedDisplayExpanded"]";
+
+            $(document).on('SharedGlobalVar_OnReady', function () {
+
+                HIFIS_Admissions.NewReservationView.ApplyOnLoad.OnReady();
+            });
+
+            $(document).on("ready", function () {
+    
+                //HIFIS_Admissions.NewReservationView.ApplyOnLoad.OnReady();
+            });
+
+
+
+            @*
+            var jsArray = [];
+            var family = null;
+
+            var selectedClient = null;
+            var selectedToolBarBtn = null;
+            var selectedBookedInClient = null;
+
+            var deleteID = "";
+            var clientIDs = $("#ClientIDs");
+
+            /****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************
+            *
+            *   EVENTS
+            *
+            *****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************/
+
+            /***************************************************************************
+            *
+            *   The document on ready function. This function will check if any client
+            *   ids came pre-populated and sends out ajax calls to check if they are al-
+            *   ready booked in or have service restrictions. If not, the calls go ahead
+            *   and append clientButtons to the client toolbar.
+            *
+            *   It then creates the popover for all of the bed panels and changes back-
+            *   ground colors for selected beds if necessary. If a reservation is pre-
+            *   populated it calls the function getCurrentAdmissionDetails, to check for
+            *   conflicts with a current book-in and the reserved bed.
+            *
+            *   BASICALLY, the on ready function will decide how to initially display
+            *   the content of the Index view.
+            *
+            ****************************************************************************/
+            $(function () {
+
+                $('#ClientIDs').on('select2:select', function (e) {
+                    if ($("#ClientIDs").val() != null) {
+                        isClientBookedIn(e.params.data.id, e.params.data.text);
+                    }
+                });
+
+                $(".cd-top").hide();
+                var clients = "@Model.ClientIDs.FirstOrDefault()";
+
+                // IF THERE ARE PRE-POPULATED CLIENTS IN THE VIEWMODEL
+                if (clients != "") {
+
+                    // display index pages form
+                    $("#admissionFormDiv").fadeIn(800);
+                    $("#tablesView").fadeOut(300);
+                    $("#bedsView").fadeOut(300);
+
+                    // IF INTAKE IS NOT A RESERVATION
+                    if ($("#IsReservation").val() === "False" || $("#IsReservation").val() === "false") {
+
+                        clientIDs.children("option").each(function () {
+                            isClientBookedIn($(this).attr("value"), $(this).text().trim());
+                        });
+
+                        // get the current admission details which will prevent the use of a booked in bed
+                        getCurrentAdmissionDetails(false, false);
+
+                        $("h3#page-title").html("@Labels.NewBookIn");
+
+                    } else {
+
+                        // hide unused form controls
+                        $("#wake").hide();
+                        $("#intox").hide();
+                        $("#latePass").hide();
+
+                        if ($("#StayID").val() === "") {
+                            // append client object buttons to the toolbar
+                            clientIDs.children("option").each(function () {
+                                $("#clientToolBar").append("<div class='clientButton btn btn-primary' data-clientid='" + $(this).attr("value")
+                                    + "'><span class='glyphicon glyphicon-user'></span>&nbsp&nbsp" + $(this).text().trim() + "</div>");
+                            });
+                        }
+
+                        if ($("#IsReservation").val() === "True" || $("#IsReservation").val() === "true") {
+                            $("h3#page-title").html("@Labels.viewTitle_EditReservation");
+                        }
+                        else {
+                            $("h3#page-title").html("@Labels.NewReservation");
+                        }
+                    }
+
+                    clientIDs.attr("disabled", true);
+
+                } else {
+
+                    // display index page normally
+                    $("#bedsView").fadeOut(300);
+                    $("#admissionFormDiv").fadeIn(800);
+
+
+                }// END IF
+
+                // Filter Bed Availability list
+                $("#details-panel3").on("change", "#GeoRegionID", function () {
+                    var table = $('#availabilityTable').DataTable();
+                    table.ajax.url('@Url.Action("SheltersAdmissionsStatsJson", "Admissions")?GeoRegionID=' + $('#GeoRegionID').val()).load();
+                });
+
+                // find all client object buttons within an active bed to change display
+                if ($(".clientButton").parent().parent(".activeBed").attr("data-reset") === "booked") {
+                    $(".clientButton").parent().parent(".activeBed").addClass("requested-bed").removeClass(".activeBed").removeClass(".booked-bed-res");
+                }
+                else {
+                $(".clientButton").parent().parent(".activeBed").addClass("requested-bed").removeClass(".activeBed");
+
+                }
+
+                // initialize the popover display of the beds
+                $(".bedButton").popover({
+                    html: true,
+                    container: "body",
+                    template: "<div class=\"popover styled\"><div class=\"arrow styled\"></div><div class=\"popover-inner styled\"><h3 class=\"popover-title styled\"></h3><div class=\"popover-content styled\"><p></p></div></div></div>",
+                });
+
+                // Modals
+                //$(".modal").hide().css("display", "normal");
+
+                // window scroll check
+                $(window).scroll(function () {
+                    if ($(this).scrollTop() > 100 && !$("#admissionFormDiv").is(":visible") && !$("#tablesView").is(":visible")) {
+                        $(".cd-top").fadeIn();
+                    } else {
+                        $(".cd-top").fadeOut();
+                    }
+                });
+
+                //Click event to scroll to top
+                $(".cd-top").on("click", function () {
+                    $("html, body").animate({ scrollTop: 0 }, 800);
+                    return false;
+                });
+
+                // call function to fix toolbar when scrolling
+                moveToolBar();
+
+
+
+            }); // END ON READY FUNCTION
+
+            $(document).on("wb-ready.wb", function (event) {
+                // Show page!
+                //$("#container").show();
+
+            });
+
+            $(document).on("wb-ready.wb-tables", ".wb-tables", function (event) {
+                $("#loader-div").addClass("hide").css({"margin-left": "250px", "margin-top": "100px"});
+                $("#container").css('margin-left', '');
+
+            });
+
+            /***************************************************************************
+            *
+            *   Draw event for the DataTables plugin. Since the tables data loads after
+            *   the JavaScript loads, the buttons within the tables need to be initia-
+            *   lized here.
+            *
+            ****************************************************************************/
+            $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+
+                initButtons();
+                var currentOrg = "@Session["currentOrg"]";
+                for (var i = 0; i < $("#availabilityTable > tbody > tr > td").length; i+=4) {
+                    var element = $("#availabilityTable > tbody > tr > td").eq(i);
+                    if (element.text() === currentOrg)
+                        element.parent("tr").css("font-weight", "bolder");
+                }
+
+
+                $(".info-pop").popover({
+                    html: true,
+                    container: "body",
+                    content: function () {
+                        return getShelterInfo($(this).attr("data-id"));
+                    },
+                    placement: "left",
+                    trigger: "focus",
+                    template: "<div class=\"popover styled\"><div class=\"arrow styled\"></div><div class=\"popover-inner styled\"><h3 class=\"popover-title styled\"></h3><div class=\"popover-content styled\"><p></p></div></div></div>",
+                });;
+            });
+
+            /***************************************************************************
+            *
+            *   Submit event for the intake form. This event triggers when the user
+            *   clicks the next button of the admissions form.
+            *
+            ****************************************************************************/
+
+            $("#showBedsButton").click(function (event) {
+                if ($("#admissionsForm").valid() && $("#ClientIDs").val() != null) {
+                    var displayType = "@Session["BedDisplayExpanded"]";
+                    if (displayType == "False")
+                        $(".smallTileButton").trigger("click");
+                    else
+                        $(".largeTileButton").trigger("click");
+                }
+
+                $("#book-in-controls").show();
+                $("#backBtn").hide();
+
+                if ($("#admissionsForm").valid()) {
+                    var isReso = $("#IsReservation").val();
+                    if (isReso == "false" || isReso == "False")
+                        $("h3#page-title").html("@Labels.BookIn - @Labels.BedSelection");
+                    else
+                        $("h3#page-title").html("@Labels.Reservation - @Labels.BedSelection");
+                }
+                //event.preventDefault();
+            });
+
+            /***************************************************************************
+            *
+            *   Click event which posts the admission details to be inserted into the
+            *   database. This page displays after the above submit event which validates
+            *   the form.
+            *
+            ****************************************************************************/
+            $("#confirmBtn").on("click", function () {
+                if ($("#clientToolBar").children(".clientButton").length == 0) {
+
+                    // re-initialize the array of client accomodation detail objects
+                    jsArray = [];
+
+                    // disable the save button to prevent double clicking and resubmitting
+                    $(this).attr("disabled", true);
+
+                    $(".clientButton").each(function () {
+                        var temp = new Object();
+                        temp.ClientID = $(this).attr("data-clientid");
+                        temp.RoomID = $(this).parents("div").parents(".bedButton").parents(".room").attr("data-room-id"); // change
+                        temp.BedID = $(this).parents("div").parents(".bedButton").attr("data-bed-id"); // change
+                        jsArray.push(temp);
+                    });
+
+                    // serialize form and create JSON object out of client accomodations array
+                    var formData = $("#admissionsForm").serialize();
+                    var clientAdmissions = JSON.stringify(jsArray);
+
+                    // POST ADMISSION
+                    $.ajax({
+
+                        url: "@Url.Action("Reservations", "Admissions")",
+                        type: "POST",
+                        data: formData + "&clientAdmissions=" + clientAdmissions,
+
+                    }).done(function (data) {
+
+                        //this could be used in order to remove the url
+                                 @*if (($("#IsReservation").val() === "True" || $("#IsReservation").val() === "true") && ($("#StayID").val() !== "" || $("#StayID").val() !== null)) {
+                                     window.location = "@Url.Action("Index", "Admissions", new { id = "" })";
+                                 }*@@*
+
+                        // reset display of beds upon successful completion
+                        $(".requested-bed").not(".legend").removeClass("requested-bed");
+
+                        // append any failed submissions because of bed conflicts, due to concurrency issues, to the tool bar for re-submission
+                        for (var i = 0; i < data.Result.ValidationMessages.length; i++) {
+                            var client = $("#bed-" + data.Result.ValidationMessages[i]).children(".bedContent").children(".clientButton");
+                            $("#clientToolBar").append(client);
+                            client.show();
+                        }
+
+                        // remove successfully submitted clients
+                        $(".bedButton").children(".bedContent").children(".clientButton").each(function () {
+                            $("#ClientIDs option[value=" + $(this).attr("data-clientid") + "]").prop("selected", false).parent().trigger("change");
+                            $(this).remove();
+                        });
+
+                        getCurrentAdmissionDetails(true, true);
+
+                        // if there are no leftover clients for re-submission then display table views
+                        if ($("#clientToolBar").children(".clientButton").length == 0) {
+
+                            @if ((bool)ViewBag.ReturnToClient) {
+                                         @:var ClientID = '@Model.ClientIDs.FirstOrDefault()';
+                                                             @:var url = "@Url.Content("~/Admissions/ClientAdmissions/" + @Model.ClientIDs.FirstOrDefault() + "?isReservation=true")";
+                                                             @:window.location.href = url;
+                                                         }
+                                     else
+                                     {
+                                         @:var url = "@Url.Content("~/Admissions/Index/?isReservation=true")";
+                                         @:window.location.href = url;
+                                     }
+
+                            //$("#backBtn").trigger("click");
+                            //$("#ClientIDs").val("").trigger("change");
+
+                        } else {
+
+                            var clientLabels = "";
+                            $("#clientToolBar").children(".clientButton").each(function () {
+                                clientLabels += $(this).text().trim() + ", ";
+                            });
+                            clientLabels += "@Labels.ConcurrencyConflict";
+                            displayNotification('error', '', "<p>@Labels.FailedToSave: <br />" + clientLabels + "</p>");
+
+                        }
+
+                        if (jsArray.length == 0 || jsArray.length > data.Result.ValidationMessages.length)
+                            displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                        $("#confirmBtn").attr("disabled", false);
+
+                    }).fail(function (data) {
+
+                        displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                        $("#confirmBtn").attr("disabled", false);
+
+                    });
+                } else {
+
+                    alert("@Labels.Selectedclients");
+
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Allows the control panels client search control to be initiated with
+            *   the return key.
+            *
+            ****************************************************************************/
+            $(document).keypress(function (e) {
+                if (e.which == 13 && $("#search-box:focus").length > 0)
+                    $(".searchButton").trigger("click");
+            });
+
+            /***************************************************************************
+            *
+            *   This click event initiates the service call to move a client to another
+            *   bed
+            *
+            ****************************************************************************/
+            $("#modalYesButton").on("click", function () {
+
+                $.ajax({
+
+                    url: "@Url.Action("ChangeClientBed", "Admissions")",
+                    type: "GET",
+                    data: {
+                        id: selectedBookedInClient.attr("data-stay"),
+                        room: selectedBookedInClient.parents().parents().parents().attr("data-room-id"),
+                        bed: selectedBookedInClient.parents().parents().attr("data-bed-id")
+                    },
+
+                }).done(function (data) {
+
+                    $(".modal").hide();
+                    getCurrentAdmissionDetails(false, false); // calling this function displays the current admission details in the graphical view
+                    selectedBookedInClient = null;
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                    //$("#bookedInTable").DataTable().ajax.reload();
+                    //$("#reservationsTable").DataTable().ajax.reload();
+
+                });
+
+            });
+
+            /***************************************************************************
+            *
+            *   This click event closes any open modal. This acts like a cancel button.
+            *
+            ****************************************************************************/
+            $(".modalCloseButton").on("click", function () {
+                // calling this function displays the current admission details in the graphical view
+                getCurrentAdmissionDetails(false, false);
+                selectedBookedInClient = null;
+                $(".modal").hide();
+            });
+
+            /***************************************************************************
+            *
+            *   This click event will trigger a click event for the required bed view
+            *   button which will reload the data for the current beds.
+            *
+            ****************************************************************************/
+            $("#refresh-beds").on("click", function () {
+                if (selectedToolBarBtn.attr("id") === "smallViewBtn")
+                    $(".smallTileButton").trigger("click");
+                else
+                    $(".largeTileButton").trigger("click");
+            });
+
+            /***************************************************************************
+            *
+            *   Click event on an available bed which will select this bed for the new
+            *   admission. First off, it checks if there is a selected booked in client,
+            *   in which case it means the user is trying to move a booked in client to
+            *   this bed rather than be part of a new admission. Secondly, it checks if
+            *   the event target is an existing client within the bed, in which case the
+            *   event stops and only fires an event on the client button. In any other
+            *   case, the event is fired and the selected client is moved to this bed as
+            *   part of a new admission process.
+            *
+            ****************************************************************************/
+            $("#bedsView").on("click", ".activeBed", function (event) {
+                // if an already booked in client is selected
+                if (selectedBookedInClient != null) {
+
+                    $(this).children(".bedContent").html(selectedBookedInClient); // display client within bed
+
+                    // if the user is in the small icons view then hide the client buttons
+                    if (selectedToolBarBtn.attr("id") == "smallViewBtn")
+                        $(".bedContent").children().hide();
+
+                    // show the confirm move modal to confirm whether the user wants to move the client or not
+                    $("#move-confirm").show();
+
+                } else if ($(".clientButton").length > 0) {
+
+                    if (selectedClient == null) // if a client is not selected then the event selects the first matching element.
+                        selectedClient = $(".clientButton").first();
+
+                    // check if this client is within a requested bed and reset the bed so it is available
+                    var requestedBed = selectedClient.parents().parents(".requested-bed");     // get the selected client's currently selected bed
+                    if (requestedBed.length > 0) {                                             //
+                        removeProcessingPopover(requestedBed);                                 // remove existing popover details for a processing request
+                        if (requestedBed.attr("data-reset") === "booked") {
+                            requestedBed.removeClass("requested-bed").addClass("activeBed").addClass("booked-bed-res");       // reset the bed back to an active bed
+                        }
+                        else {
+                        requestedBed.removeClass("requested-bed").addClass("activeBed");       // reset the bed back to an active bed
+                    }
+                    }
+
+                    // we can now write the client div to this new .activeBed element
+                    $(this).children(".bedContent").html(selectedClient);
+
+                    // if the user is in the small icon view then hide the client button
+                    if (selectedToolBarBtn.attr("id") == "smallViewBtn")
+                        $(".bedContent").children().hide();
+
+                    // append info to the popover display
+                    var content = $(this).attr("data-content");
+                    content += "<p class='process'><strong>@Labels.Processing:</strong>&nbsp&nbsp" + selectedClient.text().trim() + "</p>"
+                    $(this).attr("data-content", content);
+
+                    // change background color and selection types of bedButtons for all of the beds that contain a client admission request
+                    if ($(this).attr("data-reset") === "booked") {
+                        $(this).addClass("requested-bed").removeClass("activeBed").removeClass("booked-bed-res");
+                    }
+                    else {
+                    $(this).addClass("requested-bed").removeClass("activeBed");
+                    }
+
+                    // within an if in case a null value exists
+                    if (selectedClient.length > 0) {
+                        selectedClient.removeClass("selected-client"); // reset
+                        displayNotification('info', '', "<p>" + selectedClient.text().trim() + "</p>");
+                    }
+
+                    selectedClient = null;
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Click event on a requested bed.
+            *
+            ****************************************************************************/
+            $("#bedsView").on("click", ".requested-bed", function (event) {
+                // stops the event if click is on a client button within an active bed
+                if (!$(event.target).is(".clientButton")) {
+
+                    removeProcessingPopover($(this));
+
+                    var clientButton = $(this).children().children(".clientButton");
+                    $("#clientToolBar").append(clientButton);
+                    clientButton.show();
+                    if (selectedClient != null)
+                        selectedClient.removeClass("selected-client");
+
+                    if ($(this).attr("data-reset") === "booked") {
+                        $(this).removeClass("requested-bed").addClass("activeBed").addClass("booked-bed-res");
+                    }
+                    else {
+                    $(this).removeClass("requested-bed").addClass("activeBed");
+                    }
+                    selectedClient = null;
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Click event on a client that is part of a new admission.
+            *
+            ****************************************************************************/
+            $("#bedsView").on("click", ".clientButton", function (event) {
+                selectedBookedInClient = null;
+                $(".selected-booked").removeClass("selected-booked");
+                if ($(this).is(".selected-client")) {
+                    $(this).removeClass("selected-client");
+                    selectedClient = null;
+                } else {
+                    selectedClient = $(this);
+                    $(".clientButton").removeClass("selected-client");
+                    $(this).addClass("selected-client");
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Click event on a client that is already booked in. This allows the user
+            *   to move the client to another bed.
+            *
+            ****************************************************************************/
+            $("#bedsView").on("click", ".clientButton_booked", function (event) {
+                selectedClient = null;
+                $(".selected-client").removeClass("selected-client");
+                if ($(this).is(".selected-booked")) {
+                    $(this).removeClass("selected-booked");
+                    selectedBookedInClient = null;
+                } else {
+                    selectedBookedInClient = $(this);
+                    $(".clientButton_booked").removeClass("selected-booked");
+                    $(this).addClass("selected-booked");
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Click event on the client toolbar that is delegated to the clientButton.
+            *
+            ****************************************************************************/
+            $("#toolbar").on("click", ".clientButton", function (event) {
+                if ($(this).is(".selected-client")) {
+                    $(this).removeClass("selected-client");
+                    selectedClient = null;
+                } else {
+                    selectedClient = $(this);
+                    $(".clientButton").removeClass("selected-client");
+                    $(this).addClass("selected-client");
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Select event on the client IDs multi-select/auto-complete control.
+            *
+            ****************************************************************************/
+            clientIDs.on("select2:select", function (e) {
+                if ($("#IsReservation").val() == "false" || $("#IsReservation").val() == "False") {
+                    isClientBookedIn(e.params.data.id, e.params.data.text);
+                } else if ($(".clientButton[data-clientid='" + e.params.data.id + "']").length == 0) {
+                    $("#clientToolBar").append("<div class='clientButton btn btn-primary' data-clientid='" + e.params.data.id
+                        + "'><span class='glyphicon glyphicon-user'></span>&nbsp&nbsp" + e.params.data.text + "</div>");
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Unselect event on the client IDs multi-select/auto-complete control.
+            *
+            ****************************************************************************/
+            clientIDs.on("select2:unselect", function (e) {
+                var clientObject = $(".clientButton[data-clientid='" + e.params.data.id + "']");
+                clientObject.parent().parent(".bedButton").removeClass("requested-bed");
+                clientObject.remove();
+                $("#ClientIDs option[value='" + e.params.data.id + "']").remove();
+
+                if (clientIDs.val() != null && clientIDs.val().length == 1) {
+                    clientFamilyCheck(clientIDs.val().toString());
+                } else {
+                    $("#familyBtn").addClass("hide");
+                    if (clientIDs.val() == null)
+                        $("#ClientIDs > option").remove();
+                }
+            });
+
+            /***************************************************************************
+            *
+            *   Selects family for a book in by placing them as selected options in the
+            *   multi-select control for client ids.
+            *
+            ****************************************************************************/
+            $("#familyBtn").on("click", function () {
+                $("#ClientIDs > option").remove();
+                clientIDs.val("").trigger("change");
+                $("#clientToolBar").html("");
+                // add clients to the options list
+                for (var key in family) {
+                    if (family.hasOwnProperty(key)) {
+                        clientIDs.append($("<option>", { value: key, text: family[key] }));
+                        $("select#ClientIDs option[value='" + key + "']").prop("selected", true).parent().trigger("change");
+                    }
+                }
+                // check if clients are already booked in
+                clientIDs.children("option").each(function () {
+                    isClientBookedIn($(this).attr("value"), $(this).text().trim());
+                });
+            });
+
+            /***************************************************************************
+            *
+            *   Get stay details to display to the user.
+            *
+            ****************************************************************************/
+            $("#tablesView").on("click", ".display-btn", function () {
+
+                var displayModal = $("#display-stay");
+                var id = $(this).attr("data-id");
+                var client = $(this).attr("data-client");
+                $("#printBtn").attr("href", "@Url.Content("~/Admissions/Details?id=")" + id); // sets the print url to the right stay id
+                $("#clientAddmissionsBtn").attr("href", "@Url.Content("~/Admissions/ClientAdmissions?id=")" + client); // sets the client url to the right client id
+                displayModal.find(".modal-body").html($("#loader-div").removeClass("hide"));
+                displayModal.show();
+
+                $.ajax({
+                    url: "@Url.Action("DisplayBookedInStay", "Admissions")",
+                    type: "GET",
+                    data: { "id": id },
+                }).done(function (data) {
+                    displayModal.find(".modal-body").html($("#loader-div"));
+                    displayModal.find(".modal-body").append(data.Result);
+                    $("#loader-div").addClass("hide");
+                }).fail(function () {
+                    alert("@Labels.GetStayInformation");
+                    displayModal.hide();
+                });
+
+            });
+
+            /***************************************************************************
+            *
+            *   When a user clicks on the print button within the display modal we want
+            *   to open the display in a new tab but also close the modal for smoother
+            *   interaction.
+            *
+            ****************************************************************************/
+            $("#printBtn").on("click", function () {
+                $(".modal").hide();
+            });
+
+            /***************************************************************************
+            *
+            *   Display state events.
+            *
+            ****************************************************************************/
+            // starts a new book-in
+            $("#tablesView").on("click", "#book-in-btn", function () {
+                $("#admissionFormDiv").fadeIn(800);
+                $("#tablesView").fadeOut(300);
+                $("#bedsView").fadeOut(300);
+
+                getNewForm(false);
+
+                $("h3#page-title").html("@Labels.NewBookIn");
+            });
+
+            // starts a new reservation
+            $("#tablesView").on("click", "#reserve-btn", function () {
+                $("#ClientIDs").attr("disabled", false);
+
+                $("#admissionFormDiv").fadeIn(800);
+                $("#tablesView").fadeOut(300);
+                $("#bedsView").fadeOut(300);
+
+                getNewForm(true);
+
+                $("h3#page-title").html("@Labels.NewReservation");
+            });
+
+            // brings you to the graphical view to manage booked in clients
+            $("#tablesView").on("click", ".manage-btn", function () {
+                $(".largeTileButton").trigger("click");
+                $("#book-in-controls").hide();
+                $("#backBtn").show();
+                $("#IsReservation").val("false")
+                $("#search-box").trigger("focus");
+
+                $("h3#page-title").html("@Labels.ManageRoomsBeds");
+            });
+
+            // displays the modal to confirm deletion of a reservation
+            $("#tablesView").on("click", ".deleteButton", function (event) {
+                $("#delete-confirm").show();
+                deleteID = $(this).attr("data-stayid");
+                event.preventDefault();
+            });
+
+            // refresh the bed availability table
+            $("#tablesView").on("click", "#refresh-stats", function () {
+                $("#availabilityTable").DataTable().ajax.reload();
+            });
+
+            $(".wb-tabs").on("wb-updated.wb-tabs", function (event, $newPanel) {
+                $('#GeoRegionID').select2();
+            });
+
+            // removes a reservation from the list
+            $("#modalDeleteButton").on("click", function () {
+                $.ajax({
+                    url: "@Url.Action("DeleteReservation", "Admissions")",
+                    type: "GET",
+                    data: { "id": deleteID },
+                }).done(function (data) {
+                    $(".modal").hide();
+                    getCurrentAdmissionDetails(true, false);
+                    $("#reservationsTable").DataTable().ajax.reload();
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                    $(".bedContent").removeClass("glyphicon-flag").removeClass("glyphicon-exclamation-sign").addClass("glyphicon-bed");
+                });
+            });
+
+
+            // goes back to the admission form from the manage rooms and beds view
+            $("#backToFormBtn").on("click", function () {
+                $("#admissionFormDiv").fadeIn(800);
+                $("#tablesView").fadeOut(300);
+                $("#bedsView").fadeOut(300);
+
+                var isReso = $("#IsReservation").val();
+                if (isReso == "false" || isReso == "False")
+                    $("h3#page-title").html("@Labels.NewBookIn");
+                else
+                    $("h3#page-title").html("@Labels.NewReservation");
+            });
+
+            // goes back to the tables view from the manage rooms and beds view
+            $("#backBtn").on("click", function () {
+                $("#tablesView").fadeIn(800);
+                $("#admissionFormDiv").fadeOut(300);
+                $("#bedsView").fadeOut(300);
+
+                selectedBookedInClient = null; // reset, if any, selected clients that are booked in.
+
+                $("#bookedInTable").DataTable().ajax.reload();
+                $("#reservationsTable").DataTable().ajax.reload();
+
+                $("h3#page-title").html("@Labels.Admissions");
+            });
+
+            // displays the graphical view as small icons
+            $(".smallTileButton").on("click", function () {
+                selectedBookedInClient = null;
+                $(".selected-booked").removeClass("selected-booked");
+                selectedClient = null;
+                $(".selected-client").removeClass("selected-client");
+                $("div.body").hide(); // hides the content of the entire graphical view
+                getCurrentAdmissionDetails(true, false);
+
+                $(".bedContent").children().hide(); // since this is the small icon view then hide the content so it does not overflow
+                selectedToolBarBtn = $(this);
+
+                $("#admissionFormDiv").fadeOut(300);
+                $("#bedsView").fadeIn(800);
+
+                var lastRoom = $("div.body").children(".row").last().children(".room");
+                if (lastRoom.length != 1)
+                    $(".room").removeClass("col-xs-12").removeClass("col-sm-12").removeClass("col-md-12").removeClass("col-lg-12");
+                else
+                    $(".room").not(lastRoom).removeClass("col-xs-12").removeClass("col-sm-12").removeClass("col-md-12").removeClass("col-lg-12");
+                $(".bed").css("width", "35px").css("height", "30px");
+
+                unifyDivHeights();
+            });
+
+            // displays the graphical view as large icons
+            $(".largeTileButton").on("click", function () {
+                selectedBookedInClient = null;
+                $(".selected-booked").removeClass("selected-booked");
+                selectedClient = null;
+                $(".selected-client").removeClass("selected-client");
+                $("div.body").hide(); // hides the content of the entire graphical view
+                getCurrentAdmissionDetails(false, false);
+
+                $(".clientButton").show();
+                selectedToolBarBtn = $(this);
+
+                $("#admissionFormDiv").fadeOut(300);
+                $("#tablesView").fadeOut(300);
+                $("#bedsView").fadeIn(800);
+
+                $(".room").addClass("col-md-12").addClass("col-lg-12").addClass("col-sm-12").addClass("col-xs-12");
+                $(".bed").css("width", "157px").css("height", "90px");//.removeClass("noText")
+
+                unifyDivHeights();
+            });
+
+            /***************************************************************************
+            *
+            *   Booking control panel.
+            *
+            ****************************************************************************/
+            $(".bookinControlPanel").on({
+                mouseenter: function () {
+                    if ($(this).is(".closed"))
+                        $(this).stop(true, true).animate({ left: "+=250px" }, 500).removeClass("closed").addClass("open");
+                },
+                mouseleave: function () {
+                    if ($(this).is(".open"))
+                        $(this).stop(true, true).animate({ left: "-=250px" }, 500).removeClass("open").addClass("closed");
+                }
+            });
+
+            $("#chk-OccupiedBeds").on("change", function () {
+                if ($(this).is(":checked"))
+                    $(".booked-bed-res").not(".legend").show();
+                else
+                    $(".booked-bed-res").not(".legend").hide();
+            });
+
+            $("#chk-UnoccupiedBeds").on("change", function () {
+                if ($(this).is(":checked"))
+                    $(".activeBed").not(".legend").show();
+                else
+                    $(".activeBed").not(".legend").hide();
+            });
+
+            $("#chk-overflowBeds").on("change", function () {
+                if ($(this).is(":checked"))
+                    $(".overflowBed").not(".legend").show();
+                else
+                    $(".overflowBed").not(".legend").hide();
+            });
+
+            $("#chk-InactiveBeds").on("change", function () {
+                if ($(this).is(":checked"))
+                    $(".inactiveBed").not(".legend").show();
+                else
+                    $(".inactiveBed").not(".legend").hide();
+            });
+
+            $("#chk-OccupiedRooms").on("change", function () {
+                var availableRooms = $(".activeBed").parents(".room");
+                if ($(this).is(":checked"))
+                    $(".room").not(".legend").not(availableRooms).show();
+                else
+                    $(".room").not(".legend").not(availableRooms).hide();
+            });
+
+            /***************************************************************************
+            *
+            *   This function searches the text of client buttons for matching search
+            *   query.
+            *
+            ****************************************************************************/
+            var index = 0, flag = false;
+            $(".searchButton").on("click", function () {
+                $(".selected-booked").removeClass("selected-booked");
+                var array = $(".clientButton_booked");
+                var q = $("#search-box").val().toLowerCase();
+                array.slice(index).each(function () {
+                    var text = $(this).attr("data-label").toLowerCase();
+                    if (text.search(q) >= 0) {
+                        client = $(this);
+                        $('html, body').stop(true, true).animate({
+                            scrollTop: client.parent().parent().parent(".room").offset().top
+                        }, 1000);
+                        flag = true;
+                        index = ++index % array.length;
+                        client.trigger("click");//.addClass("selected-booked");
+                        return false;
+                    }
+                    index = ++index % array.length;
+                });
+            });
+
+            /****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************
+            *
+            *   UTILITY FUNCTIONS
+            *
+            *****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************
+            *****************************************************************************************************************************************************/
+
+            /***************************************************************************
+            *
+            *   This function gets all of the current admission details for the entire
+            *   shelter.
+            *
+            ****************************************************************************/
+            function getCurrentAdmissionDetails(isHidden, isOnComplete) {
+
+                $.ajax({
+
+                    url: "@Url.Action("AdmissionDetailsAjax", "Admissions")",
+                    type: "POST",
+                    data: { date: $("#DateStart").val() },
+
+                }).done(function (data) {
+
+                    // remove any static information from the bed details. Static meaning book-ins or reservations. A requested bed can still be moved around.
+                    $(".bedButton").not(".inactiveBed").removeClass("booked-bed-res").removeAttr("data-reset").addClass("activeBed");
+                    $(".clientButton_reserved").remove(); // clear reserved client divs
+                    $(".clientButton_booked").remove(); // clear booked client divs
+
+                    appendClientDivsToBeds(data, isOnComplete); // create client content which will be seen in the expanded graphical view
+                    createPopover(); // create popover menus which will be seen when you hover over a bed panel
+
+                    $(".clientButton_reserved").hide();
+                    if ($("#IsReservation").val() == "true" || $("#IsReservation").val() == "True")
+                        $(".clientButton_booked").hide();
+                    // for the collapsed view this will hide the bed content
+                    if (isHidden == true)
+                        $(".bedContent").children().hide();
+
+                    $(".clientButton_reserved").parents(".bedContent").parents(".bed").removeClass("activeBed").addClass("inactiveBed");
+                    $(".clientButton_booked").parents(".bedContent").parents(".bed").removeClass("requested-bed").addClass("booked-bed-res").attr("data-reset", "booked");
+                    // removes the identifier of an active bed if a client is currently booked in to this bed
+                    //if ($("#IsReservation").val() == "false" || $("#IsReservation").val() == "False")
+                    //$(".clientButton_booked").parents(".bedContent").parents(".bed").removeClass("activeBed").removeClass("requested-bed").addClass("booked-bed-res");
+                    //$(".clientButton").parents(".bedContent").parents(".bed").removeClass("activeBed");
+
+                    $("div.body").fadeIn(800);
+
+                });
+            }
+
+            /***************************************************************************
+            *
+            *   This function will append client information to the bed panels after the
+            *   the function getCurrentAdmissionDetails get the updated data.
+            *
+            ****************************************************************************/
+            function appendClientDivsToBeds(data, isOnComplete) {
+                $(".bedContent").removeClass("glyphicon-flag").removeClass("glyphicon-exclamation-sign").addClass("glyphicon-bed");
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i]["isReserved"] == "True") {
+                        var glyph = "glyphicon-flag";
+                        if (data[i]["date"].split("<span class='today'>").length > 1)
+                            glyph = "glyphicon-exclamation-sign";
+                        $("#bed-" + data[i]["bedID"]).children(".bedContent").removeClass("glyphicon-bed").addClass(glyph).append("<div class=\"clientButton_reserved btn btn-primary\"" // change
+                                + "data-clientid=\"" + data[i]["clientID"] + "\" data-date=\"" + data[i]["date"] + "\" data-label=\"" + data[i]["label"] + "\" data-stay=\""
+                                + data[i]["stayID"] + "\"><span class=\"glyphicon glyphicon-user\"></span>&nbsp" + data[i]["label"] + "</div>");
+
+                    } else {
+                        var bed = $("#bed-" + data[i]["bedID"]);
+                        var bedContent = bed.children(".bedContent");
+                        var clientButton = bedContent.children(".clientButton");
+                        bedContent.append("<div class=\"clientButton_booked btn btn-primary\" data-clientid=\"" + data[i]["clientID"] + "\" data-date=\"" + data[i]["date"]
+                            + "\" data-label=\"" + data[i]["label"] + "\" data-stay=\"" + data[i]["stayID"] + "\"><span class=\"glyphicon glyphicon-user\"></span>&nbsp" + data[i]["label"] + "</div>");
+
+                        // checks if there is a clientButton inside bedContent which would mean someone is trying to book in a reservation which conflicts with a current stay
+                        if (clientButton.length > 0 && ($("#IsReservation").val() == "false" || $("#IsReservation").val() == "False")) {
+                            $("#clientToolBar").append(clientButton);
+                            if (!isOnComplete) // only if is not an oncomplete function
+                                alert("@Labels.ReservationConflictStay");
+                        }
+                    }
+                }
+            }
+
+            /***************************************************************************
+            *
+            * - This function iterates through each bed panel and writes the bed content
+            *   to the popover display.
+            *
+            ****************************************************************************/
+            function createPopover() {
+                $(".bedButton").not(".inactiveBed").each(function () {
+
+                    var content = "<div>";
+                    //if ($(this).is(".booked-bed-res"))
+                    //    content = "<div class=\"booked-popover\">";
+
+                    // print reserved details first
+                    $(this).children(".bedContent").children(".clientButton_reserved").each(function () {
+                        content += "<p><strong>@Labels.DateOfReservation:</strong>&nbsp&nbsp" + $(this).attr("data-date") + "<br />"
+                        + "<strong>@Labels.ReservationFor:</strong>&nbsp&nbsp" + $(this).attr("data-label") + "</p>";
+                    });
+                    // print booked in details under reservation details
+                    $(this).children(".bedContent").children(".clientButton_booked").each(function () {
+                        content += "<p><strong>@Labels.BookInDate:</strong>&nbsp&nbsp" + $(this).attr("data-date") + "<br />"
+                        + "<strong>@Labels.Client:</strong>&nbsp&nbsp" + $(this).attr("data-label") + "</p>";
+                    });
+
+                    content += "</div>";
+
+                    if (content === "<div></div>")
+                        //content = "<div class=\"available-popover\"><p><strong>@Labels.Available</strong></p></div>";
+                        content = "";
+
+                    $(this).attr("data-content", content);
+                });
+            }
+
+            /***************************************************************************
+            *
+            *   This function sets the height property of rooms within a row.
+            *
+            ****************************************************************************/
+            function unifyDivHeights() {
+
+                $("div.body").children(".row").each(function () {
+
+                    var maxHeight = 0;
+
+                    $(this).children(".room").each(function () {
+                        var height = $(this).outerHeight();
+                        if (height > maxHeight)
+                            maxHeight = height;
+                    });
+
+                    $(this).children(".room").css("min-height", maxHeight + 13); // 13 seems to be needed to close the gap
+
+                });
+
+            }
+            /***************************************************************************
+            *
+            *   This function gets the form for a new admission.
+            *
+            ****************************************************************************/
+            function getNewForm(isReservation) {
+
+                $.ajax({
+
+                    url: "@Url.Content("~/Admissions/GetNewAdmissionForm?isReservation=")" + isReservation,
+                    type: "GET",
+
+                }).done(function (data) {
+
+                    $("#stayFormDiv").html(data.Result);
+                    init_hifis();
+                    if (isReservation) {
+                        $("#wake").hide();
+                        $("#intox").hide();
+                        $("#latePass").hide();
+                        $("#IsReservation").val(true);
+                    } else {
+                        $("#IsReservation").val(false);
+                    }
+
+                });
+
+            }
+            /***************************************************************************
+            *
+            *   This function checks if the client is currently booked in and if not
+            *   it then checks for a service restriction.
+            *
+            ****************************************************************************/
+            function isClientBookedIn(id, text) {
+
+                $.ajax({
+
+                    url: "@Url.Action("IsClientBookedIn", "Admissions")",
+                    type: "POST",
+                    data: { "id": id, "date": $("#DateStart").val() }//,
+                    //contentType: "charset=UTF-8"
+
+                }).done(function (data) {
+
+                    if (data && ($("#IsReservation").val() == "false" || $("#IsReservation").val() == "False")) {
+                        alert(text + "@Html.Raw(@Labels.AlreadyBooked)");
+                        $("#ClientIDs option[value=" + id + "]").prop("selected", false).parent().trigger("change");
+                        $("#ClientIDs option[value=" + id + "]").remove();
+                        $(".clientButton[data-clientid='" + id + "']").remove();
+                    } else {
+                        isServiceRestricted(id, text);
+                    }
+
+                    if (clientIDs.val() != null && clientIDs.val().length == 1)
+                        clientFamilyCheck(id);
+                    else
+                        $("#familyBtn").addClass("hide");
+
+                });
+
+            }
+            /***************************************************************************
+            *
+            *   This function checks for a service restriction.
+            *
+            ****************************************************************************/
+            function isServiceRestricted(id, text) {
+                $("#familyBtn").hide();
+                $.ajax({
+
+                    url: "@Url.Action("IsServiceRestrictedAjax", "Master")",
+                    type: "GET",
+                    data: { "id": id, "moduleType": "@ServiceRestrictionModules.Stays", "requestDate": $("#DateStart").val().toString() + " " + $("#DateStart_TimeOfDay").val().toString()},
+
+                }).done(function (data) {
+
+                    if (data) {
+                        if ("@RightsHelper.HasRight(UserRights.Barred_Override)" === "False") {
+
+                        alert(text + "@Labels.ActiveServiceRestriction");
+                        $("#ClientIDs option[value=" + id + "]").prop("selected", false).parent().trigger("change");
+                        $("#ClientIDs option[value=" + id + "]").remove();
+                        $(".clientButton[data-clientid='" + id + "']").remove();
+
+                        } else {
+                            alert(text + "@Labels.ActiveServiceRestriction");
+                            $("#familyBtn").show();
+                        }
+                    } else if ($(".clientButton[data-clientid='" + id + "']").length == 0) {
+                        $("#familyBtn").show();
+                        $("#clientToolBar").append("<div class=\"clientButton btn btn-primary\" data-clientid=\"" + id
+                            + "\"><span class=\"glyphicon glyphicon-user\"></span>&nbsp&nbsp" + text + "</div>");
+                    }
+                });
+
+            }
+
+            /***************************************************************************
+            *
+            *   This function will stick the client button toolbar to the top of the
+            *   window when scrolling down.
+            *
+            ****************************************************************************/
+            function moveToolBar() {
+                var move = function () {
+                    var st = $(window).scrollTop();
+                    var ot = $(".anchor").offset().top;
+                    var s = $("#clientToolBar");
+                    if (st > ot) {
+                        s.css({
+                            position: "fixed",
+                            top: "0px",
+                            left: "0px",
+                        });
+                        s.css("background-color", "rgba(235, 235, 235, 0.80)");
+                        s.append($(".toolbar-controls"));
+                    } else {
+                        if (st <= ot) {
+                            s.css({
+                                position: "relative",
+                                top: "",
+                                left: "",
+                            });
+                            s.css("background-color", "#fff");
+                        }
+                        $("#toolbar").children("div").append($(".toolbar-controls"));
+                    }
+                };
+                $(window).scroll(move);
+                move();
+            }
+
+            /***************************************************************************
+            *
+            *   Removes any processing details of a popover display. Processing details
+            *   are the details that display when you have moved a client into a bed
+            *   during a admission process.
+            *
+            ****************************************************************************/
+            function removeProcessingPopover(bed) {
+                var dataContent = bed.attr("data-content");
+                var splitContent = dataContent.split("<p class='process'><strong>");
+                dataContent = splitContent[0];
+                bed.attr("data-content", dataContent);
+            }
+
+            /***************************************************************************
+            *
+            *   Checks if client has a family, if so, shows the add client button.
+            *
+            ****************************************************************************/
+            function clientFamilyCheck(id) {
+                family = null;
+                $.ajax({
+                    url: "@Url.Content("~/Admissions/GetFamilyListAjax")",
+                    type: "GET",
+                    data: { "id": id }
+                }).done(function (data) {
+                    if ($.isEmptyObject(data) || clientIDs.attr("disabled") !== undefined) // if the client ids button is disabled then don't show the add family button
+                        $("#familyBtn").addClass("hide");
+                    else if (clientIDs.val() != null && clientIDs.val().length == 1 && clientIDs.val().toString() == id) {
+                        $("#familyBtn").removeClass("hide");
+                        family = data;
+                    }
+                });
+            }
+
+            /***************************************************************************
+            *
+            *   Gets the organizations contact information to be displayed in the bed
+            *   availability popover.
+            *
+            ****************************************************************************/
+            function getShelterInfo(id) {
+                var htmlstring;
+
+                $.ajax({
+                    url: "@Url.Content("~/Admissions/ShelterInfo")",
+                    type: "GET",
+                    data: { "id": id },
+                    async: false,
+                }).done(function (data) {
+                    htmlstring =       "<div><p>" + data["address"] + "</p>"
+                                       + "<p>" + data["phone"] + "<br />"
+                                       + data["email"] + "<br />"
+                                       + data["website"] + "</p>"
+                                       + "<p>@Labels.CutOffTime:&nbsp" + data["cutofftime"] + "</p>"
+                                       + "<p>" + data["visibility"] + "</p></div>";
+
+                    var popoverdiv = $("div[data-id=\"" + id + "\"]");
+                    popoverdiv.html(htmlstring);
+                    $("div.popover-content").popover("show");
+
+
+                });
+
+                //return '<div data-id="' + id + '">@Labels.Loading <img src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" alt="Loader Image" /></div>';
+                return htmlstring;
+            }
+            *@
+        </script>
+    );
+}

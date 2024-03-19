@@ -1,0 +1,31 @@
+﻿
+@model GeoRegionFilterViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.ReferredFilter</h2>
+	</header>
+	<div class="modal-body">
+        <form id="newItemForm" class="form-horizontal">
+		    @Html.Partial("_GeoRegionCity", Model)
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="filterButton" class="saveButton">@Labels.Filter</button>		
+        <button id="filterCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+
+    $(function () { $("#newItemForm").hifisValidation(); });
+
+    
+</script>
+
+

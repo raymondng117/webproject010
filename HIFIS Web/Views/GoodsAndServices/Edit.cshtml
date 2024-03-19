@@ -1,0 +1,168 @@
+﻿@model GoodsAndServicesViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_GoodsAndServicesEdit;
+    
+    ViewBag.HIFISTombstone = Model.ClientService;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="clearfix"></div> 
+
+<div>
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    @Labels.GoodsAndServicesDetails
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">
+                @using (Html.BeginForm("Edit", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+                    @Html.HiddenFor(model => model.ServiceID)
+                    @Html.HiddenFor(model => model.GoodsActivitiesID)
+                    @Html.Partial("_GoodsAndServiceEdit", Model.ClientService as GoodsAndServices_ServiceViewModel)
+
+                    <div class="form-group">
+			            <div class="col-sm-offset-3 col-sm-9">
+				            <button type="submit" class="saveButton  ">@Labels.Save</button>
+                            @Html.ActionLink(Labels.Cancel, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			            </div>
+		            </div>
+                }
+            </div>
+        </div>
+    </div>    
+</div>
+
+<ul class="nav nav-tabs border-top-fix-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#Goods" role="tab" data-toggle="tab">@Labels.Goods</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Services" role="tab" data-toggle="tab">@Labels.Services</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="Goods">
+                @if (Model.IsGoodsServiceRestricted)
+                {
+                    <div class="row">
+                        <div class="col-sm-12 mrgn-tp-md">
+			                <div class="alert exception-panel">
+				                <div class="mrgn-bttm-sm align-center">                                   
+					                <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+				                </div>
+				                <div>
+					                <p>@Labels.GoodsRestriction</p>
+				                </div>
+			                </div>
+		                </div>
+	                </div>
+                }
+				<div id="GoodsTableDiv">
+					@Html.Partial("_GoodsTable", Model)
+				</div>
+                @if (!Model.IsGoodsServiceRestricted)
+                {
+				    if (RightsHelper.HasRight(UserRights.Goods_Add, Model.OrganizationID))
+				    {        
+                        <div class="panel panel-default mrgn-tp-md">
+                            <div class="panel-heading" role="tab" id="headingtwo">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#addGood" aria-expanded="false" aria-controls="addGood">
+                                        @Labels.AddNewGood
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="addGood" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    @using (Html.BeginForm("NewGood", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal", id = "GoodAddForm" }))
+                                    {
+					                    @Html.Partial("_Good", Model.ClientGood)                      
+                                        <div class="form-group">
+	                                        <div class="col-sm-offset-3 col-sm-9">
+		                                        <button class="saveButton" type="submit" id ="AddNewGood">@Labels.Save</button>
+	                                        </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>                   
+				    }
+                }
+			</div>
+			<div class="tab-pane" id="Services">
+                @if (Model.IsServicesServiceRestricted)
+                {
+                    <div class="row">
+                        <div class="col-sm-12 mrgn-tp-md">
+			                <div class="alert exception-panel">
+				                <div class="mrgn-bttm-sm align-center">                                   
+					                <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+				                </div>
+				                <div>
+					                <p>@Labels.ServicesRestriction</p>
+				                </div>
+			                </div>
+		                </div>
+	                </div>
+                }
+				<div id="ServiesTableDiv">
+					@Html.Partial("_ServicesTable", Model)
+				</div>
+                @if (!Model.IsServicesServiceRestricted)
+                {
+				    if (RightsHelper.HasRight(UserRights.Activity_Add, Model.OrganizationID))
+				    {
+                        <div class="panel panel-default mrgn-tp-md">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#addService" aria-expanded="false" aria-controls="addService">
+                                        @Labels.AddNewService
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="addService" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body">
+                                    @using (Html.BeginForm("NewService", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal", id = "ServiceAddForm" }))
+                                    { 
+					                    @Html.Partial("_Service", Model.ClientActivity)
+
+                                        <div class="form-group">
+	                                        <div class="col-sm-offset-3 col-sm-9">
+		                                        <button class="saveButton" type="submit" id ="AddNewService">@Labels.Save</button>
+	                                        </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    
+				    }
+                }
+			</div>
+		</div>	
+	</div>
+</div>    
+
+@Html.ActionLink(Labels.Cancel, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel })
+<br /><br />
+
+@Html.Partial("_gsJS")
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model.ClientService)</div>
+

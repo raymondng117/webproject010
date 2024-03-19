@@ -1,0 +1,172 @@
+﻿@model IncidentListViewModel          
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_IncidentList;
+
+    int j = 1;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+ 
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+    Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values *@
+@Html.Partial("_DateFilterList", Model.DateFilter)
+<div class="clearfix"></div>
+<br />
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th class="col-md-2">@Labels.IncidentType</th>
+                    <th>@Labels.Location</th>
+                    <th>@Labels.Date</th>
+                    <th>@Labels.PeopleWitness</th>
+                    <th>@Labels.PeopleInvolved</th>
+                    @if (RightsHelper.HasRight(UserRights.Incidents_Display))
+                    {
+                        <th class="col-md-2">@Labels.Attachments</th>
+                    }
+                    <th class="col-md-2">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Incidents != null && Model.Incidents.Count > 0)
+                {
+                    foreach (IncidentViewModel item in Model.Incidents)
+                    {
+                        <tr>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_IncidentTypes, Culture, item.IncidentType)</td>
+                            <td>@item.Location</td>
+                            <td class="align-text-center">@Html.DisplayFor(ModelItem => item.IncidentDateAndTime)</td>
+                            <td>
+                                @if (!item.PeopleWitnesses.IsEmptyOrNull())
+                                {
+                                    if (item.PeopleWitnesses.Count() > 1)
+                                    {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                                    @item.PeopleWitnesses.Count() @Labels.Witnesses 
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var client in item.PeopleWitnesses)
+                                                    {                            
+                                                        <li>@client.PeopleWitnessFullName</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        j++;   
+                                    }
+                                    else
+                                    {
+                                        @item.PeopleWitnesses.First().PeopleWitnessFullName
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (!item.PeopleInvolved.IsEmptyOrNull())
+                                {
+                                    if (item.PeopleInvolved.Count() > 1)
+                                    {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                                    @item.PeopleInvolved.Count() @Labels.PeopleInvolved 
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var client in item.PeopleInvolved)
+                                                    {                            
+                                                        <li>@client.PeopleInvolvedFullName</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        j++; 
+                                    }
+                                    else
+                                    {
+                                        @item.PeopleInvolved.First().PeopleInvolvedFullName
+                                    }
+                                }
+                            </td>
+                            
+                            @if (RightsHelper.HasRight(UserRights.Incidents_Display))
+                            {
+                                <td>                       
+                                    @if (item.AttachmentsDisplay != null)
+                                    {
+                                        if (item.AttachmentsDisplay.Count() > 1)
+                                        {
+                                            <div class="panel-default">
+                                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                    <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                                        @item.AttachmentsDisplay.Count() @Labels.Attachments 
+                                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                                    </a>
+                                                </div>
+                                                <div id="@j" class="panel-collapse collapse">
+                                                    <ul class="pddng-lft-md">
+                                                        @foreach (var attachment in item.AttachmentsDisplay)
+                                                        {
+                                                            <li>@Html.ActionLink(attachment.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(attachment.DocumentID) }, new { alt = attachment.Name, aria_label = attachment.Name })</li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            j++;
+                                        }
+                                        else
+                                        {
+                                            foreach (var attachment in item.AttachmentsDisplay)
+                                            {
+                                                @Html.ActionLink(attachment.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(attachment.DocumentID) }, new { alt = attachment.Name, aria_label = attachment.Name })
+                                            }
+                                        }
+                                    }
+                                </td>
+                            }
+                            <td class="align-text-center">   
+                                @if (RightsHelper.HasRight(UserRights.Incidents_Display))
+                                {                     
+                                    @Html.ActionLink(Labels.Display, "Display", "Incident", new { id = item.ClientID, incidentID = item.IncidentID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.Incidents_Edit))
+                                {  
+                                    @Html.ActionLink(Labels.Edit, "Edit", "Incident", new { id = item.ClientID, incidentID = item.IncidentID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.Incidents_Delete))
+                                { 
+                                    @Html.ActionLink(Labels.Delete, "Delete", "Incident", new { id = item.ClientID, incidentID = item.IncidentID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Incidents_Add))
+        {
+            @Html.ActionLink(Labels.NewIncident, "New", null, new { @class = "addButton", alt=Labels.NewIncident, aria_label = Labels.NewIncident, @role = "button" })
+        }
+    </div>
+</div>
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+

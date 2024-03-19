@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+@{
+    string lang = ViewBag.CurrentCulture == Constants.Eng ? "en" : "fr";
+}
+
+<!--[if lt IE 9]><html class="no-js lt-ie9" lang="@lang" dir="ltr"><![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="@lang" dir="ltr">
+<!--<![endif]-->
+
+<head>
+
+    <style>
+	@@font-face {
+		font-family: "TradeGothicLT20";
+		src: url("@Url.Content("~/Content/wet-boew/fonts/Trade-Gothic-LT-Bold-Condensed-No-20.ttf")") format("truetype");
+	}
+
+    </style>
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta name="description" content="" />
+    @*MPT: Moved to the Application_BeginRequest in Global.aspx.cs to avoid HTML validation error
+        <meta http-equiv="Content-Type" content="text/html;">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />*@
+    <meta name="hifis.viewmodel" content="@(ViewContext.ViewData.ModelMetadata != null ? ((ViewContext.ViewData.ModelMetadata).ModelType).FullName : String.Empty)" />
+    <meta name="hifis.view" content="@(((System.Web.Mvc.BuildManagerCompiledView)(ViewContext.View)).ViewPath)" />
+
+    <title>@Labels.Title - @Html.Raw(ViewBag.ViewTitle)</title>
+
+    <link href="@Url.Content("~/Content/wet-boew/assets/favicon.ico")" rel="icon" type="image/x-icon" />
+
+    @* This can not be bundled due to relational resources *@
+    <link href="@Url.Content("~/Content/wet-boew/css/wet-boew.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/wet-boew/css/theme.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/wet-boew/font-awesome/css/font-awesome.min.css")" rel="stylesheet" />
+
+    @Styles.Render("~/Content/Stylesheets/HifisStyles/stylescss")
+    @Styles.Render("~/Content/plugins/style.css") @*TODO: is this being bundled twice?*@
+
+    <script type="text/javascript">
+        window.rootUrl = "@Url.Content("~/")";
+        window.helpURL = "@Url.Content("~/HifisHelp/GetFieldHelp")";
+    </script>
+
+    <noscript><link rel="stylesheet" href="~/Content/wet-boew/css/noscript.css" /></noscript>
+</head>
+
+<body>
+
+    @Html.Partial("LayoutParts/_Header")
+    @Html.Partial("_ConfirmDelete")
+
+    @{ var layoutView = (LayoutPage)ViewBag.LayoutView; }
+    <main role="main" class="container">
+        <div class="row">
+            @Html.Partial("_PitAlert")
+
+            @if (ViewBag.LayoutView != null)
+            {
+                <div class="col-md-3">
+                    <div id="thesidebar">
+                        @if (layoutView == LayoutPage.Client)
+                        {
+                            <div class="row">
+                                <div class="mrgn-tp-sm">
+                                    @Html.Partial("_SideMenu")
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div id="hifis-client-profile" class="mrgn-tp-md">
+                                    @Html.Partial("_ClientVitalsSideBar", (ViewBag.ReadOnlyVitals as ClientVitalsReadOnlyViewModel ?? Model.ReadOnlyVitals as ClientVitalsReadOnlyViewModel ?? new ClientVitalsReadOnlyViewModel()))
+                                </div>
+                            </div>
+                        }
+                        else if (layoutView == LayoutPage.People)
+                        {
+                            <div class="mrgn-tp-sm">
+                                @Html.Partial("_SideMenu")
+                            </div>
+                            <div id="hifis-people-profile" class="mrgn-tp-md">
+                                @if (ViewBag.ReadOnlyVitals != null)
+                                {
+                                    @Html.Partial("_PeopleVitalsSideBar", new PeopleVitalsReadOnlyWrapperViewModel((PeopleVitalsReadOnlyViewModel)ViewBag.ReadOnlyVitals))
+                                }
+                                else if (Model.ReadOnlyVitals != null)
+                                {
+                                    @Html.Partial("_PeopleVitalsSideBar", new PeopleVitalsReadOnlyWrapperViewModel((PeopleVitalsReadOnlyViewModel)Model.ReadOnlyVitals))
+                                }
+                            </div>
+                        }
+                        else if (layoutView == LayoutPage.SecNav)
+                        {
+                            <div class="mrgn-tp-sm">
+                                @Html.Partial("_SideMenu")
+                            </div>
+                        }
+                    </div>
+
+                    <div class="btn-group mrgn-tp-sm">
+                        @RenderSection("SideNavFooter", required: false)
+                    </div>
+                </div>
+            }
+
+            <div class="@(layoutView != null && layoutView != LayoutPage.ContentOnly && layoutView != LayoutPage.Help ? "col-md-9" : "col-md-12")">
+                <div class="row mrgn-lft-xs mrgn-rght-xs">
+
+                    @if (layoutView == LayoutPage.Client)
+                    {
+                        string clientID = "";
+                        if (Model != null && Model.GetType().GetProperty("ClientID") != null && Model.ClientID != null && Model.ClientID != "")
+                        {
+                            clientID = Model.ClientID;
+                        }
+                        else if (Model != null && Model.GetType().GetProperty("ReadOnlyVitals") != null && Model.ReadOnlyVitals != null)
+                        {
+                            clientID = Model.ReadOnlyVitals.ClientID;
+                        }
+                        else if (Model != null && Model.GetType().GetProperty("ClientROVVitals") != null && Model.ClientROVVitals != null)
+                        {
+                            clientID = Model.ClientROVVitals.ClientID;
+                        }
+                        else if (ViewBag.ReadOnlyVitals != null)
+                        {
+                            clientID = ViewBag.ReadOnlyVitals.ClientID;
+                        }
+
+                        if (!clientID.IsEmptyOrNull())
+                        {
+                            <div id="updateHousingHistoryAlert" class="alert alert-warning mrgn-tp-lg mrgn-bttm-sm" style="display: none">
+                                @*<p>The Housing History is out of date. Please <a href="@Url.Content("~/ClientTombstone/ClientHousingHistory/" + Model.ReadOnlyVitals.ClientID)" class="text-primary">update</a> the client’s housing history.</p>*@
+                                <p>@Html.Raw(String.Format(Labels.HousingHistoryAlert, Url.Content("~/ClientTombstone/ClientHousingHistory/" + clientID.ToString())))</p>
+                                <button class="btn btn-default mrgn-tp-md mrgn-lft-md">@Labels.Close</button>
+                            </div>
+
+                            using (Html.BeginScriptContext())
+                            {
+                                Html.AddScriptBlock(
+                                @<script type="text/javascript">
+                                                        $(document).ready(function () {
+                                                            $.ajax({
+                                                                url: "@Url.Content("~/ClientTombstone/CheckLastHousingHistory?clientID=" + clientID.ToString())",
+                                                                success: function (data) {
+                                                                    console.log(data)
+                                                                    if (data.Result.showHousingUpdateNotification === true) {
+                                                                        $("#updateHousingHistoryAlert").show();
+                                                                    }
+                                                                }
+                                                            });
+                                                        });
+                                                        $("#updateHousingHistoryAlert > button").click(function () {
+                                                            $("#updateHousingHistoryAlert").hide();
+                                                        });
+                                </script>
+                                );
+                            }
+
+                        <div id="updateRacialIdentityAlert" class="alert alert-warning mrgn-tp-lg mrgn-bttm-sm" style="display: none">
+                            <p>@Html.Raw(String.Format(Labels.RacialIdentityAlert, Url.Content("~/ClientTombstone/UpdateVitals/" + clientID.ToString())))</p>
+                            <button class="btn btn-default mrgn-tp-md mrgn-lft-md">@Labels.Close</button>
+                        </div>
+
+                            using (Html.BeginScriptContext())
+                            {
+                                Html.AddScriptBlock(
+                                    @<script type="text/javascript">
+                                                $(document).ready(function () {
+                                                    $.ajax({
+                                                        url: "@Url.Content("~/ClientTombstone/CheckClientRacialIdentityStatus?clientID=" + clientID.ToString())",
+                                                        success: function (data) {
+                                                            console.log(data)
+                                                            if (data.Result.showRacialIdentityUpdateNotification === true) {
+                                                                $("#updateRacialIdentityAlert").show();
+                                                            }
+                                                        }
+                                                    });
+                                                });
+                                                 $("#updateRacialIdentityAlert > button").click(function () {
+                                                                $("#updateRacialIdentityAlert").hide();
+                                                            });
+                                    </script>
+                                    );
+                            }
+                        }
+
+                    }
+                    @if (ViewBag.ViewTitle != null && layoutView != null && layoutView != LayoutPage.Help)
+                    {
+                        if (ViewBag.HelpID != null)
+                        {
+                            @Html.Partial("LayoutParts/_HelpSlideout")
+                        }
+
+                        <div class="col-xs-8" style="padding-left:0px !important;">
+                            <h1 id="page-title" class="mrgn-bttm-0 mrgn-tp-md">@Html.Raw(ViewBag.ViewTitle)</h1>
+                        </div>
+
+                        <div class="col-xs-4" style="padding-right:0px !important;">
+                            <div class=" pull-right">
+                                @if (ViewBag.FamilyView != null)
+                                {
+                                    @Html.ActionLink(Labels.FamilyHistory, "ClientFamilyList", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "mrgn-tp-sm listButton ", alt = Labels.FamilyHistory, aria_label = Labels.FamilyHistory, @role = "button" })
+                                }
+                                @if (ViewBag.ProgramServiceID != null)
+                                {
+                                    <button style="display:none;" onclick="EditProgramsButtonClick();" id="ServiceProgramsButton" class="mrgn-tp-sm listButton" data-serviceid="@ViewBag.ProgramServiceID" data-service-type-id="@ViewBag.ServiceTypeID" role="button">
+                                        @Labels.Programs
+                                        @if (ViewBag.isProgramRequired == true)
+                                        {
+                                            <span id="progRequiredStar" class="glyphicon glyphicon-star mandatory-star text-danger" style="padding-left: 5px"></span>
+                                        }
+                                    </button>
+
+                                    <span style="border-right: 1px solid #bebebe; margin-left:5px; margin-right: 10px; padding-bottom: 15px;"></span>
+
+                                    //Desperate attempt to insure that the datatables plugin is loaded.
+                                    <div style="display:none;">
+                                        <table class="wb-tables table"><thead><tr><th></th></tr></thead><tbody><tr><td></td></tr></tbody></table>
+                                    </div>
+                                }
+
+                                <button id="helpToggle" aria-label="@Labels.ToggleFieldHelp.ToString()" class="mrgn-tp-sm helpButton noText" role="button">@Labels.ToggleFieldHelp</button>
+                                @if (ViewBag.HelpID != null)
+                                {
+                                    <a href="#help-panel" aria-controls="help-panel" aria-label="@Labels.GetHelp" class="mrgn-tp-sm helpInfoButton noText overlay-lnk" role="button">@Labels.GetHelp</a>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="clearfix"></div>
+                        <div id="wb-cont" class="mrgn-bttm-sm pddng-bttm-0"></div>
+                    }
+                </div>
+                <div id="mainContentDiv" class="row mrgn-lft-xs mrgn-rght-xs">
+                    <div id="renderBodyDiv">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        @* Modal overlay for form submit *@
+        <section id="waiting-overlay" class="wb-lbx mfp-hide modal-dialog modal-content overlay-def">
+            <header class="modal-header">
+                <h2 class="modal-title">@Labels.PleaseWaitForRequest</h2>
+            </header>
+            <div class="modal-body">
+                <img src="~/Content/images/Loaders/loader-20.gif" alt="@Labels.Loading" />
+                &nbsp;&nbsp;@Labels.Processing...<br /><br />
+            </div>
+        </section>
+    </main>
+    @* Hidden Global values used for dynamic functionality *@
+    @Html.Partial("LayoutParts/_HiddenGlobals")
+    @Html.Partial("LayoutParts/_Footer")
+
+    @* This can not be bundled due to relational resources *@
+    <script src="~/Content/wet-boew/js/wet-boew.min.js" defer></script>
+
+    @Html.Partial("Plugins/_Notify")
+    @Html.Partial("LayoutParts/_AdditionalScripts")
+
+    @Scripts.Render("~/Content/Plugins/javascripts")
+    @if (ViewBag.CurrentCulture == Constants.Fr)
+    {
+        @Scripts.Render("~/Content/Plugins/javascripts-fr")
+    }
+
+    @Scripts.Render("~/Scripts/CaseManagementModule")
+
+    @Html.RenderScripts()
+
+    @* Easy way to get default placeholder text in scripts *@
+    @Html.Hidden("DropdownPlaceholder", Labels.SelectAnOption)
+
+    @* Session manager modal *@
+    @if (Session["AuthenticationToken"] != null)
+    {
+        var sessTimeout = (Session.Timeout * 0.8) * 60 * 1000;
+        var sessReaction = (Session.Timeout * 0.2) * 60 * 1000;
+        <span id="sesstoSpan" class="wb-sessto" data-wb-sessto='{
+	                                "inactivity": "@sessTimeout",
+                                    "reactionTime": "@sessReaction",
+	                                "sessionalive": "@(Session.Timeout * 60 * 1000)",
+	                                "logouturl": "@Url.Content("~/Account/LogOff")",
+	                                "refreshCallbackUrl": "@Url.Content("~/Account/SessionPing")",
+	                                "refreshOnClick": true,
+	                                "refreshLimit": 200000,
+	                                "method": "POST",
+	                                "additionalData": null}' />
+    }
+</body>
+</html>

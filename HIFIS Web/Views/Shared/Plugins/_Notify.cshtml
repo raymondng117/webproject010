@@ -1,0 +1,237 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            //Initialize Notify
+            $(function () {
+                //$('body').addClass("wet-boew-notifications");
+            });
+
+            function defaultNotify(isSuccess) {
+                if (isSuccess) {
+                    displayNotification('success', null, '@Labels.DefaultDataSavedMessage');
+                }
+                else {
+                    displayNotification('error', null, '@Labels.FailedToSave');
+                }
+            }
+
+            //Display the notification - Types include: success, error, alert and info
+            function displayNotification(sType, sTitle, sMessage) {
+                sTitle = sTitle || "";
+                //Toaster Options
+                toastr.options = {
+                    "closeButton": true,
+                    "debug": false,
+                    "positionClass": "toast-top-right",
+                    "onclick": null,
+                    "showDuration": "10",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut"
+                };
+                //Different notification types
+                switch (sType) {
+                    case "success":
+                    case "Success":
+                        toastr.success(sMessage, sTitle);
+                        break;
+                    case "info":
+                    case "Info":
+                        toastr.info(sMessage, sTitle);
+                        break;
+                    case "alert":
+                    case "Alert":
+                        toastr.warning(sMessage, sTitle);
+                        break;
+                    case "error":
+                    case "Error":
+                        toastr.error(sMessage, sTitle);
+                        break;
+                    default:
+                        toastr.warning("The creator of this notification failed to specify a type.", "Notification Warning");
+                }
+            }
+        </script>);
+}
+
+@* The following is for displaying the successfully saved message *@
+@if (Session != null && Session["DataSavedSuccessfully"] != null && (bool)Session["DataSavedSuccessfully"])
+{
+    Session["DataSavedSuccessfully"] = false;
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+
+                var delay = 1000; //Delay 1 seconds so notify_init can load first
+                setTimeout(function () {
+                    displayNotification('success', null, '@Session["DataSavedMessage"]');
+                }, delay);
+            </script>);
+    }
+}
+
+@{
+    if (TempData["MessageDeleted"] != null && (bool)TempData["MessageDeleted"])
+    {
+        using (Html.BeginScriptContext())
+        {
+            Html.AddScriptBlock(
+                @<script type="text/javascript">
+                    setTimeout(function () {
+                        displayNotification('success', null, '<p>@Labels.DeleteSuccess</p>');
+                    }, 500); //Delay .5 seconds so notify_init can load first
+                </script>);
+        }
+    }
+}
+
+@* The following is for displaying the error message, used for non ajax calls *@
+@if (Session != null && Session["DataError"] != null && (bool)Session["DataError"])
+{
+    Session["DataError"] = false;
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+
+                var delay = 1000; //Delay 1 seconds so notify_init can load first
+                setTimeout(function () {
+                    displayNotification('error', null, '@Session["DataErrorMessage"]');
+                }, delay);
+            </script>);
+    }
+}
+
+            @* The following is for displaying broadcast messages *@
+            @using (Html.BeginScriptContext())
+            {
+                Html.AddScriptBlock(
+
+                    @<script type="text/javascript">
+
+                        $(document).ready(function () {
+
+                            //This stops an error from occuring on the logon page.
+                            if (window.location.href.indexOf("/Account/LogOn") == -1 && window.location.href.indexOf("/Account/ForgetPassword") == -1) {
+                                CheckForNewMessages();
+                            }
+
+                        });
+
+                        function CheckForNewMessages() {
+                            @Html.Partial("_Ajax", new AjaxViewModel()
+{
+    Url = "'" + Url.Content("~/Messages/CheckForNewMessages") + "'",
+    OnSuccess = "ChangeUnreadDisplay(data);",
+    Type = "GET",
+    LoaderGif = false
+});
+                        }
+
+                        function ChangeUnreadDisplay(data) {
+
+                            if (data > 0) {
+                                document.getElementById("unreadMessageCount").innerHTML = data;
+                            }
+                            else {
+                                document.getElementById("unreadMessageCount").innerHTML = "";
+                            }
+                        }
+
+                    </script>
+);
+
+                    @*Html.AddScriptBlock(
+                            @<script src="~/Scripts/jquery.signalR-1.2.1.js" type="text/javascript"></script>
+                        );*@
+                Html.AddScriptBlock(
+                    @<script src="~/signalr/hubs" type="text/javascript"></script>
+);
+                Html.AddScriptBlock(
+                    @<script type="text/javascript">
+                        $(function () {
+                            //This stops an error from occuring on the logon page.
+                            if (window.location.href.indexOf("/Account/LogOn") == -1 && window.location.href.indexOf("/Account/ForgetPassword") == -1) {
+
+                                // Proxy created on the fly
+                                var chat = $.connection.messageHub;
+
+                                // Declare a function on the message hub so the server can invoke it
+                                chat.client.sendMessage = function (name, message, numberUnreadMsgs) {
+                                    sendMessage(name, message, numberUnreadMsgs);
+                                };
+                                chat.client.broadcast = function (name, subject, message, dateSent) {
+                                    broadcast(name, subject, message, dateSent);
+                                };
+
+                                chat.client.broadcastIndividual = function (name, subject, message, dateSent) {
+                                    broadcast(name, subject, message, dateSent);
+                                };
+
+                                function sendMessage(name, message, numberUnreadMsgs) {
+
+                                    ChangeUnreadDisplay(numberUnreadMsgs);
+
+                                    var displayMessage = '<a href="@Url.Content("~/Messages/List")">' +
+                                                       "@Labels.newMessage</a><br />" +
+                                                       "<strong>@Labels.Sender: </strong>" + name + "<br />" +
+                                                       "<strong>@Labels.Subject: </strong>" + message;
+
+                                    displayNotification('alert', null, displayMessage);
+                                }
+
+                                function broadcast(name, subject, message, dateSent) {
+
+                                    var displayMessage = "<strong>@Labels.Subject: </strong>" + subject + "<br />" +
+                                                       "<strong>@Labels.Sender: </strong>" + name + "<br />" +
+                                                       "<strong>@Labels.DateSent: </strong>" + dateSent + "<br />" +
+                                                       "<strong>@Labels.message: </strong>" + "<br />" +
+                                                       "<p class='preserveWhiteSpace'>" + message + "</p>";
+                                    
+                                    toastr.options = {
+                                        "closeButton": true,
+                                        "debug": false,
+                                        "newestOnTop": false,
+                                        "progressBar": false,
+                                        "positionClass": "toast-top-right",
+                                        "preventDuplicates": false,
+                                        "onclick": null,
+                                        "showDuration": "500",
+                                        "hideDuration": "300",
+                                        "timeOut": "0",
+                                        "extendedTimeOut": "0",
+                                        "showEasing": "swing",
+                                        "hideEasing": "linear",
+                                        "showMethod": "fadeIn",
+                                        "hideMethod": "fadeOut"
+                                    }
+                                    
+                                    toastr.warning(displayMessage);
+                                }
+
+                                // Start the connection
+                                $.connection.hub.start().done(function () {
+                                    $("#sendBroadcast").click(function () {
+
+                                        var bcSubject = $('#broadcastSubject').val();
+                                        var bcMessage = $('#broadcastMsg').val();
+
+                                        if (bcSubject != '' || bcMessage != '') {
+                                            // Call the chat method on the server
+                                            chat.server.broadcast($('#sendersNameBroadcast').val(), bcSubject, bcMessage);
+                                        } else {
+                                            displayNotification('error', null, '@Labels.msgInvalidEntry');
+                                        }
+                                    });
+                                });
+                            } //End of if (window.location.href.indexOf("/Account/LogOn") == -1) {
+                        });
+                    </script>
+);
+            }

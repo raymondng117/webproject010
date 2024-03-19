@@ -1,0 +1,144 @@
+﻿@model ConsentViewModel
+
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+@Html.HiddenFor(model => model.ConsentID)
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.ParentConsentID)
+@Html.HiddenFor(model => model.IsEdit)
+
+@if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+{
+    @Html.HiddenFor(model => model.AttachmentsDisplay.Name)
+    @Html.HiddenFor(model => model.AttachmentsDisplay.PersonID)
+    @Html.HiddenFor(model => model.AttachmentsDisplay.DocumentID)
+}
+
+<div>
+    @* We only want to use the following when the lookup table is modifiable *@
+@*
+    @if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ConsentTypes, Model.ConsentTypeID) != (short)ConsentTypes.Explicit)
+    && (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ConsentTypes, Model.ConsentTypeID) != (short)ConsentTypes.CoordinatedAccessExplicit))*@
+@if ((Model.ConsentTypeID != (short)ConsentTypes.Explicit) && (Model.ConsentTypeID != (short)ConsentTypes.CoordinatedAccessExplicit))
+{
+    @Html.HifisEditorFor(model => model.StartDate, null, new { disabled = true, id = "roStartDate" })
+    @Html.TextBoxFor(model => model.StartDate, "{0:yyyy-MM-dd}", htmlAttributes: new { @type = "hidden" })
+    @*@Html.HiddenFor(model => model.StartDate)*@
+}
+else
+{
+    @Html.HifisEditorFor(model => model.StartDate)
+}
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ExpiryDate, null, new { id = "txtExpiryDate" })
+</div>
+
+<div>
+    @*@if (Model.ConsentTypeID == (short)ConsentTypes.Inherited)
+        {*@
+    @Html.HifisEditorFor(model => model.ConsentTypeID, CachedTableTypes.HIFIS_ConsentTypes, new { disabled = true, id = "roConsentType" })
+    @Html.HiddenFor(model => model.ConsentTypeID)
+    @*}
+        else
+        {
+            @Html.HifisEditorFor(model => model.ConsentTypeID, CachedTableTypes.HIFIS_ConsentTypes)
+        }*@
+</div>
+
+@*<div>
+        @Html.HifisEditorFor(model => model.AcceptYN, "YesNo")
+    </div>*@
+
+<div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">@Labels.FileOnRecord</label>
+        <div class="col-sm-10">
+            <div id="currentAttachment">
+                <p class="form-control align-left form-control-static" data-locale="en-CA">
+                    @if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+                    {
+                        @Html.DisplayFor(model => model.AttachmentsDisplay.Name)
+                    }
+                    else
+                    {
+                        <span>@Labels.None</span>
+                    }
+
+                    @* We only want to use the following when the lookup table is modifiable *@
+                    @*@if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ConsentTypes, Model.ConsentTypeID) != (short)ConsentTypes.Inherited)*@                </p>
+                @if (Model.ConsentTypeID != (short)ConsentTypes.Inherited)
+                {
+
+                    <a href="#" id="editConsentFile" class="noText editButton" aria-label=@Labels.Edit role="button">@Labels.Edit</a>
+                }
+                @if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Name != null)
+                {
+                    @Html.ActionLink(Labels.DeleteAttachedDocument, "RemoveConsentDocument", new { id = Model.ClientID, consentID = Model.ConsentID }, new { @class = "noText deleteButton", data_callback = "uploadedFileDeleted", alt=Labels.DeleteAttachedDocument, aria_label = Labels.DeleteAttachedDocument, @role = "button" })
+                }
+            </div>
+            <div id="newAttachment" class="mrgn-lft-md">
+                <div>
+                    @Html.HifisEditorFor(model => model.UploadedFile, "File", null, true,
+                        String.Format("<a id=\"cancelEditConsentFile\" role=\"button\" href=\"#\" class=\"noText cancelButton align-left \" role\"button\">{0}</a>",
+                        Labels.Cancel))
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comment, new { @class = "mceEditor_Messaging" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript">
+
+        function setUpFileUpload() {
+            $('#newAttachment').hide();
+            $('#cancelEditConsentFile').parent().removeClass('input-group-addon').removeClass('help-block');
+            $('#cancelEditConsentFile').addClass('mrgn-lft-sm');
+            $('#editConsentFile').addClass('mrgn-lft-sm');
+            $('#cancelEditConsentFile').removeClass('btn-sm');
+            $('#editConsentFile').removeClass('btn-sm');
+        }
+
+        function clearFileUpload() {
+            $('#UploadedFile').val("");
+            $('#UploadedFile').trigger('change');
+            $('#UploadedFile').siblings("span.file-content-setter").attr('data-content-after', "@Html.Raw(Labels.SelectAFile)");
+        }
+
+
+        function uploadedFileDeleted() {
+            //clear input file
+            $('#currentAttachment').children('p').html("@Labels.None");
+            $('#AttachmentsDisplay_DocumentID').val("");
+            $('#AttachmentsDisplay_Name').val("");
+        }
+
+        $(function () {
+            setUpFileUpload();
+
+            $('#editConsentFile').on('click', function (event) {
+                $('#newAttachment').show();
+                $('#currentAttachment').hide();
+            });
+
+            $('#cancelEditConsentFile').on('click', function (event) {
+                clearFileUpload();
+
+                $('#newAttachment').hide();
+                $('#currentAttachment').show();
+            });
+        });
+
+
+    </script>
+);
+}

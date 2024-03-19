@@ -1,0 +1,148 @@
+﻿@model DiversionViewModel
+@{
+    ViewBag.ViewTitle = Labels.NewDiversion;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+    TempData["culture"] = Culture;  //this is use for contributing factors
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Hidden("FormSubmitted", "false")
+
+@using (Html.BeginForm("New", "Diversion", FormMethod.Post, new { @class = "form-horizontal", id = "Diversion_FormPortion", onsubmit = "return disableElements('clientdisable',false);" }))
+{
+
+    @Html.AntiForgeryToken()
+    @Html.Partial("_Diversion")
+
+    <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-9">
+            <button type="submit" class="saveButton">@Labels.Save</button>
+
+            @Html.ActionLink(Labels.Cancel, "CancelDiversion", "Diversion"
+                , new { diversionID = Model.DiversionID, clientid = Model.PrimaryClientID, returnurl = Model.returnUrl, bDelDiversion = false }
+                , new { @class = "cancelButton", @role = "button", @id = "clxButton" })
+
+        </div>
+    </div>
+}
+
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+
+    $(document).on('ready', function () {
+
+        //Attach trigger on all different field required to make sure that when a change happen it force an update from that change
+        $(document).on('change', '#PrimaryClientID', function () {
+            ValidateForm();
+        });
+
+        $(document).on('change', '#DiversionDateTime', function () {
+            ValidateForm();
+        });
+
+        $(document).on('change', '#ReasonForServiceTypeID', function () {
+            ValidateForm();
+        });
+
+        $(document).on('change', '#CaseWorkerID', function () {
+            ValidateForm();
+        });
+
+    });
+
+    //Validate that all required field are fill before continuing with the partial save
+    function ValidateForm(event)
+    {
+        var bIsAnonymous = $("#IsAnonymous").bootstrapSwitch("state");
+
+        if (!(bIsAnonymous)  && $('#PrimaryClientID').val() !== "" && $('#DiversionDateTime').val() !== ""
+            && $('#ReasonForServiceTypeID').val() !== "" && $('#CaseWorkerID').val() !== "")
+        {
+            autoSave();//Call ajax and pass values
+        }
+    }
+
+
+    //Save the partial form
+    function autoSave()
+    {
+        //Has the init form been submitted?
+        if (!formsubmitted())
+            {
+            //AJAX to call the partial save
+            console.log("FD - form NOt submitted");
+            var postdata = $('#Diversion_FormPortion').serialize();
+
+            $.ajax({
+                url: "@Url.Content("~/Diversion/New")",
+                type: "POST",
+                data: postdata
+            }).done(function (data) {
+
+                if (data.Success)
+                {
+                    defaultNotify(data.Success);
+                    $("#FormSubmitted").val("true");
+
+                    $("#DiversionID").val(data.Result.diversionID);
+                    $("#ServiceID").val(data.Result.serviceID);
+
+                    //update Cancel button att
+                    $("#clxButton").attr("href", "@Url.Content("~/Diversion/CancelDiversion?diversionID=")" + data.Result.diversionID
+                        + '&clientid=' + data.Result.clientID + '&returnurl=ClientList&bDelDiversion=true');
+
+                    ShowGoodsServicesSection(data.Result.clientID, data.Result.diversionID)
+                    $('#IsAnonymousSection').hide();  //too late to go back to choose anonymous at this point
+
+                    disableElements("clientdisable", true);
+                   //$('#primaryclientsection').hide();
+
+                } else
+                {
+                    defaultNotify(data.Success);
+                }
+
+            });
+
+            }
+            else
+                console.log("FD - form has been already submitted ");
+    }
+
+    function ShowGoodsServicesSection(clientID,diversionID)
+        {
+
+            //Buttons update : sets the client url to the right client id
+            console.log("FD - Buttons update with serviceID : " + diversionID);
+
+            $("#addGoodBtn").attr("href", "@Url.Content("~/Diversion/NewDiversionGoods?clientID=")" + clientID + '&diversionID=' + diversionID);
+            $("#addActivityBtn").attr("href", "@Url.Content("~/Diversion/NewDiversionActivities?clientID=")" + clientID + '&diversionID=' + diversionID);
+
+
+            $('#goodsservices_section').show();
+         }
+
+    //Check if main intake form has been submitted yet       m?isReservation=")" + isReservation,
+    function formsubmitted() {
+        var isInitFormSubmitted = $("#FormSubmitted").val();
+
+        if (typeof isInitFormSubmitted === "undefined" || isInitFormSubmitted === 'true') {
+            return true;//Okay to save questions
+        }
+        else
+        {
+            return false;//No okay to save questions
+        }
+    }
+
+
+</script>
+);
+}

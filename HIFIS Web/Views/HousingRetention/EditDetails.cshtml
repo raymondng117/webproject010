@@ -1,0 +1,48 @@
+﻿@model HousingRetentionViewModel
+@{
+	ViewBag.ViewTitle = Labels.EditHousingRetention;
+	ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="clearfix"></div>
+
+<div>
+	@using (Html.BeginForm("Edit", "HousingRetention", FormMethod.Post, new { @class = "form-horizontal" }))
+	{
+		@Html.Partial("_BaseHiddenFor")
+
+        @Html.AntiForgeryToken()
+		@Html.HiddenFor(model => model.OrganizationID)
+		@Html.HiddenFor(model => model.HouseRetentionID) @*This is basically a housing placement id for now*@
+		@Html.HiddenFor(model => model.ServiceID)
+		@Html.HiddenFor(model => model.ClientHouseID)
+		@Html.HiddenFor(model => model.OrganizationID)
+		@Html.HiddenFor(model => model.PrimaryClientID)
+		<div>
+			@Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+		</div>
+		<div>
+			@Html.HifisEditorFor(model => model.DateStart)
+		</div>
+		<div>
+			@Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseworkersList as SelectList)
+		</div>
+		<div>
+			@Html.Partial("DisplayViewTemplates/_DisplayStringList",
+								new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.AssociatedProgramIDs).ToString() })
+		</div>
+		<div>
+			@Html.HifisEditorFor(model => model.NextScheduledFollowUp)
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+				@Html.ActionLink(Labels.Cancel, "ClientList", "HousingRetention", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>
+	}
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

@@ -1,0 +1,28 @@
+﻿@model ClientConflictListViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientConflictList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>       
+    @Html.Partial("_ConflictList", Model)
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Conflicts_Add))
+        { 
+	        @Html.ActionLink(Labels.NewConflict, "New", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewConflict, aria_label = Labels.NewConflict, @role = "button" })
+        }
+
+        @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+        {                        
+            <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "Conflicts", DataSetName = "ClientList", ClientID = Model.ReadOnlyVitals.ClientID }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls="Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+        }
+        
+    </div>
+</div>

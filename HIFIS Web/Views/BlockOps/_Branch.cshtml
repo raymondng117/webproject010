@@ -1,0 +1,48 @@
+﻿@model BranchViewModel
+
+@if (Model.SubBranches != null && Model.IsRoot)
+{
+    <text><li data-branch-id="@Model.BranchID" data-additional-details="@Model.AdditionalDetails" data-jstree='{ "icon" : "@Model.Settings.RootImg" }'></text>
+}
+else if (Model.SubBranches != null && Model.SubBranches.Count() > 0)
+{
+    <text><li data-branch-id="@Model.BranchID" data-additional-details="@Model.AdditionalDetails" data-jstree='{ "icon" : "@Model.Settings.BranchImg" }'></text>
+}
+else
+{
+    <text><li data-branch-id="@Model.BranchID" data-additional-details="@Model.AdditionalDetails" data-jstree='{ "icon" : "@Model.Settings.LeafImg" }'></text>
+}
+
+@if (Model.IsChecked && Model.SubBranches == null)
+{    
+    @Html.ActionLink(Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), Model.Settings.Action, Model.Settings.Controller, new { id = Model.BranchID }, new { @class = "jstree-clicked", alt=Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : "") })
+}
+else if (Model.IsChecked && Model.SubBranches != null && Model.SubBranches.Count() <= 0)
+{    
+    @Html.ActionLink(Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), Model.Settings.Action, Model.Settings.Controller, new { id = Model.BranchID }, new { @class = "jstree-clicked", alt=Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : "") })
+}
+else if (!Model.IsChecked && Model.SubBranches == null || Model.SubBranches.Count() <= 0)
+{    
+    @Html.ActionLink(Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), Model.Settings.Action, Model.Settings.Controller, new { id = Model.BranchID }, new { @class = "leafNode", alt=Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : "") })
+}
+else if (Model.IsChecked && Model.SubBranches == null || Model.SubBranches.Count() <= 0)
+{    
+    @Html.ActionLink(Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), Model.Settings.Action, Model.Settings.Controller, new { id = Model.BranchID }, new { @class = "jstree-clicked leafNode", alt=Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : "") })
+}
+else
+{    
+    @Html.ActionLink(Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), Model.Settings.Action, Model.Settings.Controller, new { id = Model.BranchID }, new { alt = Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubBranches != null && Model.SubBranches.Count > 0) ? " (" + Model.SubBranches.Count.ToString() + ")" : "") })
+}
+        
+    <img class="loaderImg hide hght-strct-15 mrgn-0" src="~/Content/images/Loaders/loader-20.gif" alt="@Labels.DynamicLoading" />
+    @if (Model.SubBranches != null)
+    {
+        <ul>
+            @foreach (BranchViewModel right in Model.SubBranches)
+            {
+                @Html.Partial("_Branch", right)
+            }            
+        </ul>
+    }
+</li>
+

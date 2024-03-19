@@ -1,0 +1,106 @@
+﻿@model GoodsAndServicesViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_GoodsAndServices;
+
+    ViewBag.HIFISTombstone = Model.ClientService;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="clearfix"></div>
+
+<div class="mrgn-bttm-md">
+    @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/GoodsAndServices/_DisplayGoodsService.cshtml"), ViewModel = Model })
+</div>
+
+<ul class="nav nav-tabs border-top-fix-tabs" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#Goods" role="tab" data-toggle="tab">@Labels.Goods</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#Services" role="tab" data-toggle="tab">@Labels.Services</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane active" id="Goods">
+                @if (Model.IsGoodsServiceRestricted)
+                {
+                    <div class="row">
+                        <div class="col-sm-12 mrgn-tp-md">
+                            <div class="alert exception-panel">
+                                <div class="mrgn-bttm-sm align-center">
+                                    <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+                                </div>
+                                <div>
+                                    <p>@Labels.GoodsRestriction</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div id="GoodsTableDiv">
+                    @Html.Partial("_GoodsTable", Model)
+                </div>
+            </div>
+            <div class="tab-pane" id="Services">
+                @if (Model.IsServicesServiceRestricted)
+                {
+                    <div class="row">
+                        <div class="col-sm-12 mrgn-tp-md">
+                            <div class="alert exception-panel">
+                                <div class="mrgn-bttm-sm align-center">
+                                    <h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+                                </div>
+                                <div>
+                                    <p>@Labels.ServicesRestriction</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div id="ServiesTableDiv">
+                    @Html.Partial("_ServicesTable", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model.ClientService)</div>*@
+<div>
+    @if (RightsHelper.HasRight(UserRights.Goods_Services_Client_List, Model.OrganizationID))
+    {
+        @Html.ActionLink(Labels.BackToGoodsServicesList, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "prevButton ", alt=Labels.BackToGoodsServicesList, aria_label = Labels.BackToGoodsServicesList, @role = "button" })
+    }
+    @if (RightsHelper.HasRight(UserRights.Goods_Services_Edit, Model.OrganizationID))
+    {
+        @Html.ActionLink(Labels.EditGoodsServicesDetails, "Edit", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID, serviceID = Model.ServiceID, GoodActivityID = Model.GoodsActivitiesID }, new { @class = "editButton", alt=Labels.EditGoodsServicesDetails, aria_label = Labels.EditGoodsServicesDetails, @role = "button" })
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            //resizes the data table columns when you switch tabs, hidden tables break tab width.
+            $(document).ready(function () {
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    if (jQuery().DataTable) {
+                        $('.dataTable').DataTable().columns.adjust();
+                    }
+                });
+            });
+
+            $(document).on('draw.dt', '.dataTable', function (event) {
+                init_hifis();
+                //This re-init any lightboxes that are dynamically added via the datables reload call
+                $(".wb-lbx").removeClass("wb-init").removeClass("wb-lbx-inited");
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+                $("div[id^='tooltip']").remove();
+            });
+
+        </script>);
+}

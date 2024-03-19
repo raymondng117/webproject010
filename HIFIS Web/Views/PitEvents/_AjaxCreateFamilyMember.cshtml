@@ -1,0 +1,191 @@
+﻿@model PitFamilyMemberAnswerViewModel
+@{ 
+	bool showIntervieweeID = false;
+	var FamilySurveysList = (List<PitSurveyViewModel>)ViewBag.FamilySurveysList;
+
+	if (!FamilySurveysList.IsEmptyOrNull())
+	{
+		showIntervieweeID = FamilySurveysList.Any(s => !s.SurveyIdentifier.IsEmptyOrNull());
+	}
+}
+<section id="Modal_NewFamilyMember" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.NewFamilyMember</h2>
+    </header>
+    <div class="modal-body">
+        <form id="newFamilyMemberForm" class="form-horizontal">
+            <div>
+                @Html.HiddenFor(m => m.PitFamilyMemberAnswerID)
+                @Html.HiddenFor(m => m.PitQuestionAnswerID)
+                @Html.HiddenFor(m => m.QuestionID)
+            </div>
+            <div>
+                @Html.HifisEditorFor(m => m.FamilyMemberRole, ViewBag.FamilyMemberRoles as SelectList, null, new { @id = "selectFamilyMemberRole", style = "width: 350px;" })
+                @Html.HifisEditorFor(m => m.PitSurveyNo, null, new { @id = "pitSurveyNo", @type = "", @readonly = "readonly" })
+                @*<div class="alert alert-info" role="alert">
+            <p>Or select a survey number from the list below.</p>
+        </div>*@
+                <table id="FamilySurveyList" class="wb-tables table table-striped table-hover"
+                       data-wb-tables='{ "info": false, "paging": false, "ordering": true, "searching": false }'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.PitSurveyNo</th>
+                            <th>@Labels.PitEventTimeTaken</th>
+                            @if (showIntervieweeID)
+                            {
+                                <th>@Labels.IntervieweeIdYN</th>
+}
+                            <th>@Labels.Age</th>
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!FamilySurveysList.IsEmptyOrNull())
+                        {
+                            foreach (var surv in FamilySurveysList)
+                            {
+                                <tr famroles="@surv.Comment">
+                                    <td>@surv.SurveyNo</td>
+                                    <td>@surv.ShiftTime</td>
+                                    @if (showIntervieweeID)
+                                    {
+                                        <td>@surv.SurveyIdentifier</td>
+}
+                                    <td>@surv.ReasonForAbandonedFreeText</td>
+                                    <td>
+                                        <a id="setSurveyNo" surveyNo="@surv.SurveyNo" class="addButton noText" href="javascript:;" role="button">@Labels.Select</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+                @Html.HifisEditorFor(m => m.GenderTypeID, ViewBag.GenderTypes as SelectList, null, new { @id = "genderTypeID", @class = "input" })
+                @Html.HifisEditorFor(m => m.Age, null, new { @id = "age", @class = "input" })
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newFamilyMemberAnswerSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="newFamilyMemberAnswerCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function () {
+        //Get everything to display correctly
+        init_hifis();
+        autoWidthBoot('.modal-body');
+        //// disable all inputs until a role is selected
+        //$('#pitSurveyNo').attr('disabled', 'disabled');
+        $('#genderTypeID').parents('.form-group').hide();
+        $('#age').parents('.form-group').hide();
+
+        $('#age').keypress(function (e) {
+            if (e.which < 48 || e.which > 57) {
+                return false;
+            }
+        });
+
+        $('#FamilySurveyList').on('click', '#setSurveyNo', function () {
+        	if (!$('#selectFamilyMemberRole').val()) {
+        		if ($(this).parents('tr').attr('famroles').indexOf(1) != -1) {
+        			$('#selectFamilyMemberRole').val(1);
+        		} else if($(this).parents('tr').attr('famroles').indexOf(2) != -1) {
+        			$('#selectFamilyMemberRole').val(2);
+				}
+        		$('#selectFamilyMemberRole').trigger('change');
+			}
+        	$('#pitSurveyNo').val($(this).attr('surveyNo'));
+
+        	var row = $(this).parents('tr');
+        	if (row.attr('id') == 'famSelectedRow') {
+        		$('#pitSurveyNo').val('');
+        		row.removeAttr('style');
+        		row.removeAttr('id');
+        	} else {
+        		$('#famSelectedRow').removeAttr('style');
+        		$('#famSelectedRow').removeAttr('id');
+
+        		row.attr('id', 'famSelectedRow')
+        		row.attr('style', 'background-color: #7cc0ff;')
+        	}
+        });
+    });
+
+
+    var form = $("#newFamilyMemberForm");
+
+    $(function () { form.hifisValidation(); });
+
+    $("#newFamilyMemberAnswerSaveBtn").click(function () {
+        if (form.valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+                url: "@Url.Content("~/PitEvents/AjaxCreateFamilyMember")",
+                type: "POST",
+                data: form.serialize()
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+                $("#newFamilyMemberAnswerCloseBtn").click(); //Close the modal window
+
+            	//console.log("QuestID-->#SurveyFMQuestion_ Model.QuestionID");
+                //console.log(data);
+
+                $("#SurveyFMQuestion_@Model.QuestionID").html(data);//display new data
+                
+                // If it is  a live survey ajax save FMs
+                var pitQuestionAnswerID = $("#SurveyQuestion_@Model.QuestionID").attr('ansid');
+                var qType = $("#SurveyQuestion_@Model.QuestionID").attr('questiontype');
+                if (pitQuestionAnswerID) 
+                	SaveQuestion('@Model.QuestionID', qType, pitQuestionAnswerID);
+            })
+        };
+    });
+
+    $('#selectFamilyMemberRole').change(function () {
+        var fmTypr = $('#selectFamilyMemberRole').val();
+        switch (fmTypr) {
+            case '1': // Partner
+            case '2': // Other Adult disable all except  surveyNo
+            default :
+                $('#pitSurveyNo').parents('.form-group').show();
+                $('#FamilySurveyList').show();
+
+                $('#genderTypeID').parents('.form-group').hide();
+                $('#genderTypeID').val("");
+                $('#genderTypeID').trigger('change');
+
+                $('#age').parents('.form-group').hide();
+                $('#age').val("");
+                break;
+            case '3': //Dependent Child, disable surveyNo only
+            	$('#pitSurveyNo').parents('.form-group').hide();
+                $('#FamilySurveyList').hide();
+
+            	//$('#genderTypeID').parents('.form-group').show();
+            	$('#age').parents('.form-group').show();
+                break;
+            case '4': // Pet(s)
+                $('#pitSurveyNo').parents('.form-group').hide();
+                $('#genderTypeID').parents('.form-group').hide();
+                $('#age').parents('.form-group').hide();
+                $('#FamilySurveyList').hide();
+                break;
+        }
+
+		$('#pitSurveyNo').val("");
+        $('#famSelectedRow').removeAttr('style');
+        $('#famSelectedRow').removeAttr('id');
+
+        $('tr[famroles]').each(function (index, element) {
+        	if ($(this).attr("famroles").indexOf(fmTypr) == -1) {
+        		$(this).hide();
+        	} else {
+        		$(this).show();
+        	}
+        });
+    });
+</script>

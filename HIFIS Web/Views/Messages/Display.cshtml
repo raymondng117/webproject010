@@ -1,0 +1,36 @@
+﻿@model MessageViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayMessage;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ConfirmDeleteMessage")
+
+<div>
+    @if (RightsHelper.HasRight(UserRights.Messaging_Send))
+    {
+        @Html.ActionLink(Labels.reply, "SendMessage", new { id = Model.MessageID, type = MessageTypes.Reply }, new { @class = "replyButton", alt=Labels.reply, aria_label = Labels.reply, @role = "button" })
+        @Html.ActionLink(Labels.replyAll, "SendMessage", new { id = Model.MessageID, type = MessageTypes.ReplyAll }, new { @class = "replyButton", alt=Labels.replyAll, aria_label = Labels.replyAll, @role = "button" })
+        @Html.ActionLink(Labels.forward, "SendMessage", new { id = Model.MessageID, type = MessageTypes.Forward }, new { @class = "forwardButton", alt=Labels.forward, aria_label = Labels.forward, @role = "button" })
+        
+        //Attaching id of value "New" for new messages because the ID needs to be something, and New is explicit and easy to filter on
+        @Html.ActionLink(Labels.NewMessageButton, "SendMessage", new { id = "New", type = MessageTypes.New }, new { @class = "addButton", alt=Labels.NewMessageButton, aria_label = Labels.NewMessageButton, @role = "button" })
+    }
+
+    @if (RightsHelper.HasRight(UserRights.Messaging_Delete))
+    {
+        @Html.ActionLink(Labels.Delete, (ViewBag.IsOutgoing ? "DeleteFromOutgoing" : "DeleteFromIncoming"), new { id = Model.MessageID },  new {@id = "deleteMessageButton" , @class = "deleteMessageButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+    }
+
+</div>
+
+<div class="mrgn-tp-sm">
+    @Html.EditorFor(model => model.MessageBody, "TinyMCE_Print")
+</div>
+
+<div class="mrgn-tp-sm">
+    @Html.ActionLink(Labels.Cancel, "List", "Messages", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+</div>
+
+

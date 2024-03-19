@@ -1,0 +1,149 @@
+﻿@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="dialog-confirm" class="modal mrgn-tp-20">
+    <div class="modal-dialog whiteBackground">
+        <div id="ConfirmDeleteModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <button type="button" id="modalXButton_Shared_ConfirmDelete" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h2 class="modal-title">@Labels.ttlDeleteConfirmation</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.DeleteConfirmation</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="modalCloseButton_Shared_ConfirmDelete" class="btn btn-default modalCloseButton" data-dismiss="modal">@Labels.Close</button>
+                <button type="button" id="modalSaveButtonInConfirmDelete" class="btn btn-primary">@Labels.Delete</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+                $("#dialog-confirm").appendTo("body");
+            });
+
+            // to execute the delete...
+            var targetUrl;
+
+            // to clear the table row that was deleted
+            var rowToDelete;
+            var rootTableID;
+
+
+            // in case we need any unique functionality for the delete...
+            // instances where deleted object is not in a table for example...
+            var clickedDeleteButton;
+            var deleteCallback;
+
+            //Had to do this so that click event works on dynamically created buttons
+            //Had to add the consent checks here to prevent the delete modal showing before the consent modal...
+            $(document).on('click', '.deleteButton', function (e) {
+                e.preventDefault();
+
+                // in case we need any unique functionality for the delete...
+                clickedDeleteButton = this;
+                deleteCallback = $(this).attr('data-callback');
+
+                if ($("#hifis-client-profile").length) {
+                    var isConsentEnforced = '@appSettings.EnforceConsent()'.toLowerCase() === "true";
+                    var clientHasConsent = $("#HasActiveConsent").val().toLowerCase() === "true";
+                    if (isConsentEnforced && !clientHasConsent) {
+                        var clientPersonID = $("#PersonID").val();
+                        var clientFullName = $("#ClientFullName").val();
+                        var clientID = $("#HiddenClientID").val();
+                        var aproxAge = $("#AproximativeAge").val();
+                        var returnPath = window.location.href;
+                        window.location.href = '@Url.Action("ConsentRedirect", "Master")' + "?id=" + clientID
+                            + "&age=" + aproxAge
+                            + "&callback=" + returnPath
+                            + "&returnPath=" + returnPath
+                            + "&personID=" + clientPersonID
+                            + "&fullName=" + clientFullName;
+                    } else {
+                        showDeleteModal($(this));
+                    }
+                } else {
+                    showDeleteModal($(this));
+                }
+            });
+
+            function showDeleteModal($row) {
+                targetUrl = $row.attr("href");
+                rowToDelete = $row.closest("tr");
+                rootTableID = $row.closest("table").attr('id');
+
+                $("#dialog-confirm").modal('toggle');
+            }
+
+            //function refreshAlertsForBehavOrWatchconc() {
+            function refreshClientVitalsSideBar() {
+                //MPT 486788: includes is not recgnize in IE. Need to use .search() or .IndexOf() to have IE compatible.
+                //JLD ADO#769993 Coordinated Access - Housing Status - Client Housing status doesn't reset after deleting last HH record. Refresh Client Vitals SideBar when delete client address as well
+                if (targetUrl.search("ClientFactors/DeleteWatchConcern") >= 0 ||
+                    targetUrl.search("ClientFactors/DeleteFactor") >= 0 || 
+                    targetUrl.search("ClientTombstone/DeleteClientAddress") >= 0) {
+                    var clientID = $("#HiddenClientID").val();
+
+                    getROVitals(clientID);
+                }
+            }
+
+            $(document).on('click', "#modalSaveButtonInConfirmDelete", function () {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+           {
+               Url = "targetUrl",
+               //OnSuccess = "deleteRow(); $(this).remove(); refreshAlertsForBehavOrWatchconc();",
+               OnSuccess = "deleteRow(); $(this).remove(); refreshClientVitalsSideBar();",
+               OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.DeleteFailure + "</p>\");",
+               OnComplete = "$('#dialog-confirm').modal('toggle');",
+               Type="POST",
+               Data="{ __RequestVerificationToken: gettoken()}"
+           });
+            });
+
+            function gettoken() {
+                var token = '@Html.AntiForgeryToken()';
+                token = $(token).val();
+                return token;
+            }
+
+            function deleteRow() {
+
+                //If it is not part of a table.
+                if (rowToDelete.length == 0){
+                    // remove the delete button on successful delete
+                    clickedDeleteButton.remove();
+
+                    // execute callback on delete button
+                    window[deleteCallback]();
+
+                    displayNotification('success', '', "<p>@Labels.DeleteSuccess</p>");
+                    return;
+                }
+
+                var rootTable = rowToDelete.parents('table').DataTable();
+
+                rootTable.row(rowToDelete).remove().draw();
+
+                if ($('#' + rootTableID).dataTable().fnSettings().ajax != null)
+                    rootTable.ajax.reload();
+
+                $(document).trigger(rootTableID + ":row:removed");
+
+                if (window.location.href.indexOf("/Messages/List") != -1) {
+                    CheckForNewMessages();
+                }
+
+                displayNotification('success', '', "<p>@Labels.DeleteSuccess</p>");
+            }
+        </script>
+);
+}

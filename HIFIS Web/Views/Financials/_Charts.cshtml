@@ -1,0 +1,47 @@
+﻿
+
+    <!-- Income / Expense Chart -->
+    <div class="col-xs-6">
+        <h3>@Labels.IncomeExpense</h3>
+        <table class="wb-charts wb-charts-bar table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th class="wb-charts-color-darkgreen">@Labels.Income</th>
+                    <td>@TempData["income"]</td>
+                </tr>
+                <tr>
+                    <th class="wb-charts-color-darkred">@Labels.Expenses</th>
+                    <td>@TempData["expense"]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Assets / Liabilities Chart -->
+    <div class="col-xs-6">
+        <h3>@Labels.AssetsLiabilities</h3>
+        <table class="wb-charts wb-charts-bar table" id="thing">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th class="wb-charts-color-darkblue">@Labels.Assets</th>
+                    <td>@TempData["asset"]</td>
+                </tr>
+                <tr>
+                    <th class="wb-charts-color-goldenrod">@Labels.Liabilities</th>
+                    <td>@TempData["liability"]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>

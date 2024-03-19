@@ -1,0 +1,8 @@
+﻿@{
+    if(@TempData["ShowCreatePitLiveVolunteersResults"].Equals(true)){
+    <div class="panel panel-warning">
+        <div class="panel-heading">@Labels.AddPiTLiveVolunteers</div>
+        <div class="panel-body">@Html.Raw(@TempData["CreatePitLiveVolunteersResults"])</div>
+    </div>
+}
+}

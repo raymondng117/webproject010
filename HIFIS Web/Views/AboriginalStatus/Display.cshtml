@@ -1,0 +1,11 @@
+﻿@model IndianStatusViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_displayIndianStatus;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")   
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/AboriginalStatus/_DisplayAboriginalStatus.cshtml"), ViewModel = Model })  
+
+<div class="span-6">@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

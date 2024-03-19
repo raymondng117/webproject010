@@ -1,0 +1,46 @@
+﻿@model HIFISControllerActionHolderListModel
+@{
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = "HIFIS Internal Controller and Actions List";
+}
+<ol class="breadcrumb mrgn-tp-sm">
+    <li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+    <li>HIFIS Internal Controller and Actions List</li>
+</ol>
+<div>
+    <h2 class="mrgn-bttm-sm mrgn-tp-sm" id="wb-cont">HIFIS Internal Controller and Actions List</h2>
+</div>
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        @{ string classlink1 = (!ViewBag.getListActions ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink("Exclude List Actions", "InternalActionsList", null, new { @class = classlink1, alt = "Exclude List Actions", aria_label = "Exclude List Actions", @role = "button" })
+
+        @{ string classlink2 = (ViewBag.getListActions ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink("Include List Actions", "InternalActionsList", new { getListActions = true }, new { @class = classlink2, alt = "Include List Actions", aria_label = "Include List Actions", @role = "button" })
+        <div class="clearfix"></div>
+    </div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+        <thead>
+            <tr>
+                <th>Controller Name</th>
+                <th>Action Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListOfControllerAction)
+            { 
+                <tr>
+                    <td>
+                        @item.controllerName
+                    </td>
+                    <td>
+                        @item.actionName
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table></div>
+</div>

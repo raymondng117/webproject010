@@ -1,0 +1,36 @@
+﻿@model System.Boolean
+
+@*@{ 
+    var radIDCount = ViewBag.radIDCount as int? ?? 0;
+    ViewBag.radIDCount = ++radIDCount;
+
+    object rad1HTMLattr = null;
+    object rad2HTMLattr = null;
+
+    if (Model) { rad1HTMLattr = new { @class = "mrgn-bttm-md align-top", id = ViewData.TemplateInfo.HtmlFieldPrefix + "-Yesasd", @checked = "checked" }; }
+    else { rad1HTMLattr = new { @class = "mrgn-bttm-md align-top", id = ViewData.TemplateInfo.HtmlFieldPrefix + "-Yesasd" }; }
+
+    if (!Model) { rad2HTMLattr = new { @class = "mrgn-bttm-md align-top", id = ViewData.TemplateInfo.HtmlFieldPrefix + "-Nodsa", @checked = "checked" }; }
+    else { rad2HTMLattr = new { @class = "mrgn-bttm-md align-top", id = ViewData.TemplateInfo.HtmlFieldPrefix + "-Nodsa" }; }
+}
+
+<p class="form-control-static">
+    @Html.RadioButtonFor(model => model, true, rad1HTMLattr)
+    @Html.Label(Labels.Yes, new { @for = ViewData.TemplateInfo.HtmlFieldPrefix + "-Yesasd" }) 
+
+
+    @Html.RadioButtonFor(model => model, false, rad2HTMLattr)
+    @Html.Label(Labels.No, new { @for = ViewData.TemplateInfo.HtmlFieldPrefix + "-No" }) 
+</p>*@
+
+
+
+@{   
+    object HTMLattr = null;
+    //id = "Yesasd"
+    HTMLattr = new { @class = "YesAndNo", data_on_text = Labels.Yes, data_off_text = Labels.No };
+}
+
+<p class="form-control-static">
+    @Html.CheckBoxFor(m => m, HTMLattr)
+</p>

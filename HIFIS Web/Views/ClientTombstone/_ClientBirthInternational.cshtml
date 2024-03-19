@@ -1,0 +1,18 @@
+﻿@model ClientVitalsViewModel
+
+<div class="ClientBirthInternational_Section">
+    
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ProvinceFreeText, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ProvinceFreeText, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CityFreeText, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.CityFreeText, null, null, true, null)
+        </div>
+    </div>
+</div>

@@ -1,0 +1,93 @@
+﻿@model List<AppSettingViewModel>
+
+
+@using (Html.BeginForm("Edit", "ApplicationSettings", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    for (int i = 0; i < Model.Count; i++)
+    {
+        <div class="form-group">
+            @Html.Label(Model[i].Name, new { @class = "col-sm-2 control-label" })
+            <div class="col-sm-10">
+                @switch (Model[i].SettingTypeID)
+                {
+                    case (int)SettingFieldTypes.TextAreaBox:
+                        @*@Html.HifisEditorFor(m => m[i].StringValue, null, new { style="width: 100%;" }, true, null)*@
+
+                        @Html.HifisTextAreaFor(m => m[i].StringValue, false, new { @class = "mceEditor_Messaging" }, true)
+                        break;
+                    case (int)SettingFieldTypes.TextBox:
+                        @Html.HifisEditorFor(m => m[i].StringValue, null, (Model[i].EditableYN == "Y" ? null : new { @readonly = "true" }), true, null)
+                        break;
+                    case (int)SettingFieldTypes.YesNo:
+                        @Html.HifisEditorFor(m => m[i].BoolValue, "YesNo", null, true, null)
+                        break;
+                    case (int)SettingFieldTypes.Numeric:
+                        if (Model[i].SettingKey == "MinimumCharacterInput_Key" || Model[i].SettingKey == "EMailExpiry_Key")
+                        {
+                            @Html.HifisEditorFor(m => m[i].IntValue, null, new { id = "charInputField", min = "0", max = "4" }, true, null)
+                        }
+                        else
+                        {
+                            @Html.HifisEditorFor(m => m[i].IntValue, null, null, true, null)
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                @Html.HiddenFor(m => m[i].SettingID)
+                @Html.HiddenFor(m => m[i].SettingTypeID)
+                @Html.HiddenFor(m => m[i].SettingKey)
+                @if (Model[i].SettingKey == "BingMapKey_Key")
+                {
+                    // Show some additional instructions for the Bing Map Key - this should probably be added as an additional field in the DB maybe, or as a popover (with less text than here).
+                    <div class="module-alert module-simplify mrgn-tp-lg" style="margin-left:-15px;">
+                        <div>
+                            <section class="alert alert-info">
+                                @Labels.BingMapKey <a href="https://www.bingmapsportal.com/Application">www.bingmapsportal.com</a>.
+                            </section>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    }
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="saveButton">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "Edit", "ApplicationSettings", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role="button"  })
+        </div>
+    </div>
+}
+
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            @{
+                if (TempData["passError"] != null) {
+                    if(TempData["passError"].ToString().Equals("y")) {
+                        <text>displayNotification('error', null, '@Labels.PasswordError');</text>
+                    }
+                }
+            }
+
+            //To Prevent non-number or numbers lower than 1 to be input in the 'Minimum Character Input for Search' field
+            $(document).ready(function () {
+                $('#charInputField').on('keypress', function (e) {
+                    return e.metaKey || // cmd/ctrl
+                      e.which <= 0 || // arrow keys
+                      e.which == 8 || // delete key
+                      /[0-9]/.test(String.fromCharCode(e.which)); // numbers
+                })
+            });
+
+</script>
+);
+}

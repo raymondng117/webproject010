@@ -1,0 +1,153 @@
+﻿@model MedicationViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayMedication;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    TempData["redirectToDisplay"] = true;
+}
+
+<div class="displayView col-xs-12 mrgn-tp-md">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MedicationName, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="MedicationName" name="MedicationName"
+                   value="@Html.DisplayFor(model => model.MedicationName)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.HealthIssueID, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="HealthIssueID" name="HealthIssueID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.HealthIssueID,
+                                List = ViewBag.healthIssuesList as SelectList
+                            })" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PharmacyID, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="PharmacyID" name="PharmacyID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.PharmacyID,
+                            List = ViewBag.placeList as SelectList
+                        })" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PrescriberName, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="PrescriberName" name="PrescriberName"
+                   value="@Html.DisplayFor(model => model.PrescriberName)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Recurrence, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="Recurrence" name="Recurrence"
+                   value="@Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.Recurrence.Select(l => l.ToString()).ToList(),
+                            AddHtmlFormWrappers = false,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_RecurrenceTypes, Culture, Model.Recurrence.Select(l => l.ToString()).ToList())
+                        }).ToString().Replace(" ", "").Replace(",", ", ").Replace(System.Environment.NewLine, "")"
+                   style="width: 100%;" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Dosage, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="Dosage" name="Dosage"
+                   value="@Html.DisplayFor(model => model.Dosage)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MaxNoOfPillsPerDay, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="MaxNoOfPillsPerDay" name="MaxNoOfPillsPerDay"
+                   value="@Html.DisplayFor(model => model.MaxNoOfPillsPerDay)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="DateStart" name="DateStart"
+                   value="@Html.DisplayFor(model => model.DateStart)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="DateEnd" name="DateEnd"
+                   value="@Html.DisplayFor(model => model.DateEnd)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FulfillmentDate, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="FulfillmentDate" name="FulfillmentDate"
+                   value="@Html.DisplayFor(model => model.FulfillmentDate)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.RefillDate, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="RefillDate" name="RefillDate"
+                   value="@Html.DisplayFor(model => model.RefillDate)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MedicationDisposalTypeID, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="MedicationDisposalTypeID" name="MedicationDisposalTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.MedicationDisposalTypeID,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_MedicationDisposalTypes, ViewBag.CurrentCulture, Model.MedicationDisposalTypeID)
+                        })"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Comments, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <textarea class="commentBoxSize" id="Comments" name="Comments" style="width:100%;"
+                      readonly>@Html.DisplayFor(model => model.Comments)</textarea>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="form-group">
+                @if (RightsHelper.HasRight(UserRights.Health_Medication_Edit))
+                {
+                    @Html.ActionLink(Labels.Edit, "EditMedication", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = Model.MedicationID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                }
+                @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+
+    <div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+</div>

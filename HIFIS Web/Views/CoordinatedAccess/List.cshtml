@@ -1,0 +1,202 @@
+﻿@model CoordinatedAccessViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CoordinatedAccess;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    string fullCaUrl = Url.Content("~/CoordinatedAccess/GetCaListJson/");
+}
+
+<!-- Filter Panel -->
+<section id="filter-panel" class="wb-overlay modal-content overlay-def wb-popup-mid outside-off">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.FilterOptions</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Partial("_CASearchFilters", new CoordinatedAccessSearchFilterViewModel()
+        {
+            tableUrl = fullCaUrl
+        })
+    </div>
+</section>
+
+<!-- Print Panel -->
+
+<section id="print-panel" class="modal-dialog modal-content overlay-def mfp-hide">
+    <header class="modal-header">
+        <h2 class="modal-title" id="lbx-title">@Labels.Print</h2>
+    </header>
+    <div class="modal-body">
+        @Html.HifisListBoxFor(model => model.PrintColumnsSelected, Model.PrintColumns, new { id = "printColumns", @class = "fixedContainer", style = "width:250px;" })
+        <div class="mrgn-tp-sm">
+            <button id="printBtn" class="btn btn-primary">@Labels.Print</button>
+        </div>
+    </div>
+</section>
+
+
+<div class="mrgn-tp-md mrgn-bttm-md">
+    <a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+    <a href="#print-panel" id="openPrintOverlay" aria-controls="print-panel" class="wb-lbx btn btn-primary pull-right" role="button">@Labels.Print</a>
+    <div class="clearfix"></div>
+    <div class="table-responsive mrgn-bttm-md">
+
+        @*If any of the datatable parameters are changed then they have to be changed in the _CASearchFilters.cshtml filter partial view as well*@
+        <table id="caListTable"
+               class="wb-tables table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>@Labels.ClientID</th>
+                    <th>@Labels.FullName</th>
+                    <th>@Labels.Age</th>
+                    <th>@Labels.GenderIdentity</th>
+                    <th>@Labels.DaysSinceLastActivity</th>
+                    <th>@Labels.txtCurrentHousingType</th>
+                    <th>@Labels.RecentInteractionModule</th>
+                    <th>@Labels.RecentInteractionDate</th>
+                    <th>@Labels.CurrentEpisodeDays</th>
+                    <th>@Labels.LifeTimeHomelessDays</th>
+                    <th>@Labels.HouseholdType</th>
+                    <th>@Labels.AcuityTriageScore</th>
+                    <th>@Labels.AcuityFullAssessmentScore</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!--This is the export to excel button for clients by name export to excel.-->
+
+    @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+    {
+        <div>
+            <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "ClientsByName", "Excel", new { }, new { @class = "excelButton mrgn-lft-sm", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel })</span>
+        </div>
+    }
+
+    @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+    {
+        <div>
+            <span class="float-right">@Html.ActionLink(Labels.ExportToExcelNoNames, "ClientsByName", "Excel", new { hideNames = true }, new { @class = "excelButton", alt=Labels.ExportToExcelNoNames, aria_label = Labels.ExportToExcelNoNames })</span>
+        </div>
+    }
+    <!--end of button-->
+
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+  
+        var filterFormData; // filter form data of _CASearchFilter.cshtml
+
+        $(document).on( "wb-ready.wb", function( event ) {
+            var table = $('#caListTable')
+            table.DataTable().destroy();
+            table.DataTable({
+                "columns": [
+                            { "width": "25%", "data": "CID", "orderable": true, "type": "integer", "name" : "ClientID"},
+                            { "width": "20%", "data": "FN", "orderable": true, "type": "string", "name" : "FullName"},
+                            { "width": "12%", "data": "Age", "orderable": true, "type": "integer", "name" : "CurrentAge"},
+                            { "width": "25%", "data": "Gen", "orderable": true, "type": "string", "name" : "GenderTypeID"},
+                            { "width": "20%", "data": "DSLA", "orderable": true, "type": "string", "name" : "DaysSinceLastActivity"},
+                            { "width": "20%", "data": "CHT", "orderable": true, "type": "string", "name" : "HousingType"},
+                            { "width": "25%", "data": "RIM", "orderable": true, "type": "string", "name" : "RecentInteractionModule"},
+                            { "width": "25%", "data": "RID", "orderable": true, "type": "string", "name" : "RecentInteractionDate"},
+                            { "width": "25%", "data": "CED", "orderable": true, "type": "string", "name" : "CurrentEpisodeDays"},
+                            { "width": "25%", "data": "LHD", "orderable": true, "type": "string", "name" : "LifetimeHomelessDays"},
+                            { "width": "25%", "data": "HT", "orderable": true, "type": "string", "name" : "HouseholdType"},
+                            { "width": "25%", "data": "AS", "orderable": true, "type": "string", "name" : "AcuityTriageScore"},
+                            { "width": "25%", "data": "AFA", "orderable": true, "type": "string", "name" : "AcuityFullAssessmentScore"}
+                ],
+                "serverSide": true,
+                "processing": true,
+                "bFilter": false,
+                "paging": true,
+                "ajax": {
+                    type: "POST",
+                    url: "@fullCaUrl",
+                    data: function (data) { 
+                        data.form = filterFormData
+                    }       
+                }
+            });           
+        });           
+
+        //open the filter panel
+        $('#openFilters').on('click', function () {
+            if ($("#filter-panel").hasClass('open'))
+                $('#filter-panel').trigger('close.wb-overlay');
+            else {
+                reinitSelect2($('#CGs'));
+                reinitSelect2($('#CCs'));
+            }
+
+            $('#filter-panel').trigger('open.wb-overlay');
+        });
+
+     //when the filter panel opens reinit select2s
+     $(document).on('open.wb-overlay', function (event) {
+         doSelect2Init();
+     });
+
+     //close filter panel
+     $('#closeFilters').on('click', function () {
+         $("#filter-panel").trigger("close.wb-overlay");
+     });
+
+     //reapplies container class to the large select2 drop downs
+     function reinitSelect2(selector) {
+         selector.select2('destroy');
+         select2InitFunctions.push(function () {
+             selector.select2(
+                 {
+                     allowClear: true,
+                     placeholder: $("#DropdownPlaceholder").val(),
+                     dropdownAutoWidth: true,
+                     containerCssClass: "custom-select2-container"
+                 });
+         });
+         doSelect2Init();
+     }
+
+     // Print Overlay Panel
+    $('#openPrintOverlay').on('click', function () {
+        $('.select2-search__field').css('width', '248px');
+     });
+     $('#printBtn').on('click', function () {
+         let tableClone = document.querySelector('#caListTable').cloneNode(true);
+
+         // Removing these Attributes. Causes problem with Print Layout.
+         tableClone.removeAttribute("class");
+         tableClone.removeAttribute("style");
+         tableClone.removeAttribute('data-wb-tables');
+
+         let rows = tableClone.rows; // Cloning table for printing
+         let removeColumns = [];
+
+         // Get all of the not selected that are going to be ignored from printing
+         $('#printColumns').find('option').not(':selected').each(function (k, v) {
+             removeColumns.push(parseInt(v.value));
+         });
+
+         // Removing columns from the cloned table
+         if (removeColumns != null && removeColumns.length > 0 && $('#caListTable').DataTable().data().count() > 0) {
+             // sort array in ascending order
+             if (removeColumns.length > 1)
+                 removeColumns.sort(function (a, b) { return a - b });
+             for (let i = 0; i < rows.length; i++) {
+                 for (let j = removeColumns.length - 1; j >= 0; j--) {
+                     rows[i].deleteCell(parseInt(removeColumns[j]));
+                 }
+             }
+         }
+
+         // Creating new window for Printing.
+         let w = window.open();
+         let html = "<!DOCTYPE html><html><head><style>table {border-collapse: collapse;width: 90%;}table, th, td {border: 1px solid black;}</style></head><body>" + tableClone.outerHTML + "</body></html>";
+         w.document.write(html);
+         w.print();
+     });
+</script>
+);
+}

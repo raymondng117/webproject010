@@ -1,0 +1,84 @@
+﻿@model DigitalContactViewModel
+
+<section id="Modal_addContact" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.AddContact</h2>
+    </header>
+    <div class="modal-body">
+        <form id="addContactForm" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            <div class="row">
+                @Html.Partial("_DigitalContact", Model)
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button type="submit" id="addContactButton" class="saveButton">@Labels.Save</button>
+            <button id="addContactCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#addContactForm").hifisValidation();
+        $('input[id=ClientID]').val($('#HiddenClientID').val());
+    });
+    
+    $("#addContactButton").click(function () {
+
+        if ($("#addContactForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/ClientTombstone/AjaxAddClientVitalsContact")",
+                type: "POST",
+                data: $("#addContactForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#digitalContactTable').DataTable().ajax.reload();
+                    $("#addContactCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+    function toggleMask(e)
+        {
+            switch(e.target.value)
+            {
+                case '@((short)DigitalContactTypes.HomePhone)':
+                case '@((short)DigitalContactTypes.MobilePhone)':
+                case '@((short)DigitalContactTypes.WorkPhone)':
+                case '@((short)DigitalContactTypes.Telephone1)':
+                case '@((short)DigitalContactTypes.Telephone2)':
+                case '@((short)DigitalContactTypes.Fax)':
+                    $('#DigitalContactValue').mask("(999) 999-9999", { placeholder: " " });
+                    $('#extDiv').show();
+                break;
+
+                default: $('#DigitalContactValue').unmask(); $('#extDiv').hide();
+            }
+        }
+
+        $(function () {
+            $('#DigitalContactTypeID').change(toggleMask).change();
+        });
+</script>
+
+

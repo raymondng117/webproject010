@@ -1,0 +1,169 @@
+﻿@model ClientVitalsReadOnlyViewModel
+@{	
+    ViewBag.ViewTitle = Labels.viewTitle_ClientBulletins;
+    ViewBag.LayoutView = LayoutPage.Client;
+}	
+
+@Html.Partial("_ValidationSummaryOuter")   
+
+<div id="radio" class="btn-group mrgn-bttm-md">
+    @{ string classlink1 = (!ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.Active, "ClientBulletins", new { id  = Model.ClientID, showAll = false }, new { @class = classlink1, alt=Labels.Active, aria_label=Labels.Active, @role="button" })
+
+    @{ string classlink2 = (ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.All, "ClientBulletins", new { id = Model.ClientID, showAll = true }, new { @class = classlink2, alt=Labels.All, aria_label=Labels.All, @role="button" })
+
+    <div class="clearfix"></div>
+</div>
+
+<div class="table-responsive">
+    <table id="userBulletinList" class="wb-tables table table-striped table-hover" data-wb-tables='{ 
+                "ajax": "@Url.Action("GetClientBulletinListJson", "Bulletins", new { clientID = Model.ClientID , showAll = ViewBag.showAll})",
+                "order": [[ 3, "desc" ]],
+                    "columns": [
+                        { "data": "subject" },
+                        { "data": "clients" },
+                        { "data": "priority" },
+                        { "data": "dateStart" },
+                        { "data": "dateEnd" },
+                        { "data": "active" },
+                        { "data": "action" }
+                    ] 
+        }'>
+        <thead>
+            <tr>
+                <th>@Labels.Subject</th>
+                <th>@Labels.Clients</th>
+                <th>@Labels.hdrPriority</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.DateEnd</th>
+                <th>@Labels.Active</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+
+@*<div class="panel-group mrgn-tp-md" id="accordion">   
+    @if (Model.Bulletins.Count == 0)
+    {  
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @Labels.NoCurrentBulletins
+            </div>
+        </div>   
+    }
+    else
+    {
+        if (Model.Bulletins.Count > 1)
+        { @Html.Partial("Plugins/_ActiveAccordion") }
+        for (int i = 0; i < Model.Bulletins.Count; i++)
+        {   
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#@(i)">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Model.Bulletins[i].Subject
+                            </div>
+                            <div class="col-md-4">
+                                @if (Model.Bulletins[i].OnBehalfOfID != null && !Model.Bulletins[i].OnBehalfOfName.Equals(Model.Bulletins[i].CreatedByName))
+                                {
+                                    <span class="bulletins-color">@Labels.OnBehalfOf:</span>
+                                    @Model.Bulletins[i].OnBehalfOfName 
+                                }
+                                else
+                                {
+                                    <span class="bulletins-color">@Labels.CreatedByName:</span>
+                                    @Model.Bulletins[i].CreatedByName 
+                                }
+                            </div>
+                            <div class="col-md-4">
+                                @if (Model.Bulletins[i].DateEnd < DateTime.Today)
+                                {
+                                    <div class="pull-right">@Labels.NoLongerActive</div>
+                                }
+                                else
+                                {
+                                    <div class="pull-right">
+                                        <span class="bulletinPriority">@Labels.BulletinPriorityTypeID:</span>
+                                        @Model.Bulletins[i].BulletinPriorityName
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div id="@(i)" class="panel-collapse collapse">
+                    <div class="panel-body">                    
+                        <div>
+                            <div>
+                                <div>                   
+                                    @Html.Raw(HttpUtility.HtmlDecode(Model.Bulletins[i].Description))
+                                </div>
+                            </div>
+                            <div>
+                                <hr />
+                            </div>
+                            <div>
+                                <div class="form-group">
+			                        @Html.Label(Labels._EffectiveDate, new { @class = "control-label" })
+				                    @Html.DisplayFor(model => model.Bulletins[i].DateStart) @Labels.To.ToLower() @Html.DisplayFor(model => model.Bulletins[i].DateEnd)
+	                            </div>
+                            </div>
+                            <div>
+                                <hr />
+                            </div>
+                            <div class="control-label">@Labels.BulletinsServiceProviders:</div>
+                            <div>
+                            <ul>
+                    
+                                @for (int j = 0; j < Model.Bulletins[i].OrgNames.Count; j++)
+                                { 
+                                    <li>@Model.Bulletins[i].OrgNames[j]</li>
+                                } 
+                            </ul>
+                            </div>
+                            <div class="clearfix"></div>                
+                            @if (!Model.Bulletins[i].Clients.IsEmptyOrNull())
+                            {  
+                                <div class="control-label">@Labels.ClientsAppliesTo:</div>
+                            }
+                            <div>
+                                <ul>
+                                    @foreach (var client in Model.Bulletins[i].Clients)
+                                    {
+                                        if (Model.Bulletins[i].Clients != null)
+                                        {
+                                            if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+                                            {
+                                                <li>@Html.ActionLink(client.FullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, null)</li>
+                                            }
+                                            else
+                                            {
+                                                <li>@client.FullName</li>
+                                            }
+
+                                        }
+                                    }
+                                </ul>
+                            </div>                                
+                            <div class="align-text-right">                   
+                                @if (RightsHelper.HasRight(UserRights.Bulletins_Print))
+                                { 
+                                    @Html.ActionLink(Labels.Print, "Display", "Bulletins", new { id = Model.Bulletins[i].BulletinID }, new { @class = "printButton  " }) 
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>    
+        }
+    }	
+</div>*@
+   

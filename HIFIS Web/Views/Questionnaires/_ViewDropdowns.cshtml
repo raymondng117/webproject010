@@ -1,0 +1,16 @@
+﻿@* TODO: Should delete this - JdV *@
+
+@*@model HIFIS.CONTRACTS.WCFContracts.DataContracts.QuestionnaireQuestionDropdown
+         
+foreach (var dropdown in Model)
+{
+    <div>
+        @Html.DisplayFor(m => m.Name)
+    </div>
+
+    <div>
+        @Html.DisplayFor(m => m.ActiveYN)
+    </div>
+}
+
+*@

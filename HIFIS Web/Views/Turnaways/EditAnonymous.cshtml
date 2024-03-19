@@ -1,0 +1,51 @@
+﻿@model TurnawayViewModel
+@{  
+    ViewBag.ViewTitle = Labels.viewTitle_EditAnonymousTurnAway;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("Edit", "Turnaways", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.PrimaryClientID)
+        @Html.HiddenFor(model => model.EffectiveDT)
+        @Html.HiddenFor(model => model.TurnawayID)
+        if (ViewBag.EnabledPresumedIndigenousIndicator == true)
+        {
+            <div>
+                @Html.HifisEditorFor(model => model.PresumedAboriginalYN, "YesNo")
+            </div>
+        }
+        if (ViewBag.EnabledObservedDisabilityIndicator == true)
+        {
+            <div>
+                @Html.HifisEditorFor(model => model.ObservedDisability, "YesNo")
+            </div>
+        }
+        <div>
+            @Html.HifisEditorFor(model => model.AgeCategoryTypeID, CachedTableTypes.HIFIS_AgeCategoryTypes)
+        </div>
+        <div>
+            @Html.HifisEditorFor(model => model.GenderTypeID, CachedTableTypes.HIFIS_GenderTypes)
+        </div>
+
+        <div class="clearfix"></div>
+        
+        @Html.Partial("_Turnaway")
+        
+        <div class="form-group">
+			<div class="col-sm-offset-5 col-sm-7">
+				<button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "List", "Turnaways", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+

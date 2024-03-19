@@ -1,0 +1,56 @@
+﻿@model ContinuumViewModel
+@{
+    ViewBag.ViewTitle = Labels.Manage + " - " + Model.Name;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="table-responsive">
+    <table id="categoryTable" class="wb-tables table table-striped table-hover"
+           data-wb-tables='{
+               "ajax": "@Url.Action("GetCategoryListJSON", "Continuum", new { ContinuumID = Model.ContinuumID })",
+               "columns": [
+                    { "data": "sequence" },
+                    { "data": "name" },
+                    { "data": "housingTypes" },
+                    { "data": "actions" }
+               ]
+           }'>
+        <thead>
+            <tr>
+                <th>@Labels.Sequence</th>
+                <th>@Labels.HousingContinuum_CategoryName</th>
+                <th>@Labels.HousingContinuum_HousingTypes</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="mrgn-tp-md">
+
+    @{ if (Model.ContinuumTypeID == (int)HIFIS.ENUMS.CommonClasses.ContinuumTypes.Custom)
+        {
+            <a href="@Url.Content("~/Continuum/GetAddCategoryForm?ContinuumID=" + Model.ContinuumID)" aria-controls="Modal_AddCategory" class="wb-lbx lbx-modal addButton" role="button">@Labels.HousingContinuum_NewCategory</a>
+
+            <a href="@Url.Content("~/Continuum/GetOrderCategoriesForm?ContinuumID=" + Model.ContinuumID)" aria-controls="Modal_OrderCategories" class="wb-lbx lbx-modal orderButton" role="button">@Labels.HousingContinuum_ChangeCategoryOrder</a>
+        }
+    }
+    
+    @Html.ActionLink(Labels.HousingContinuum_Display, "Display", "Continuum", new { ContinuumID = Model.ContinuumID }, new { @class = "displayButton", alt=Labels.HousingContinuum_Display, aria_label = Labels.HousingContinuum_Display, @role = "button" })
+
+    <a href="javascript:expandHousingTypes();" class="expandButton" role="button">@Labels.HousingContinuum_ExpandCollapseHousingTypes</a>
+
+    @Html.ActionLink(Labels.Cancel, "List", "Continuum", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+
+</div>
+
+<script>
+    function expandHousingTypes() {
+        $(".expandableSummary").click();
+    }
+</script>

@@ -1,0 +1,260 @@
+﻿@model HIFIS.WEB.ViewModels.PitSurveyViewModel
+@{
+    ViewBag.ViewTitle = Labels.CreatePitSurveyLive;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<section id="popup-screen" class="wb-overlay modal-content overlay-def wb-popup-full" style="height: 100% !important; width: 100%">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.Info</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Raw(Model.PitQuestionnaire.QuickInfo)
+    </div>
+    <!-- GeomapStart -->
+    <div id="location_map" style="height: 100% !important; width: 100%"
+         class="wb-geomap static"
+         data-wb-geomap='{
+		        "tables": [{
+			        "id": "addNRCan",
+			        "style": {
+				        "type": "symbol",
+				        "init": {
+					        "pointRadius": 12,
+					        "graphicName": "star",
+					        "strokeColor": "#FF0000",
+					        "fillColor": "#FF0000",
+					        "fillOpacity": 0.7 } } }] }'>
+        <div class="row">
+            <div class="col-md-4 hidd" style="height: 100%;">
+                <!-- Insert Map Start (mandatory) -->
+                <div class="wb-geomap-map" style="height: 100% !important; width: 100%"></div>
+                <!-- Insert Map End -->
+            </div>
+        </div>
+        <div class="row">
+            <!-- Insert Layer Data Start (mandatory) -->
+            <div class="wb-geomap-layers col-md-4">
+                <table id="addNRCan" aria-label="PIT Survey Locations" class="table">
+                    <caption class="wb-inv">Live PIT Survey</caption>
+                    <thead>
+                        <tr>
+                            <th>Current location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            string longitude = "-75.71941";
+                            string latitude = "45.42579";
+
+                            if (Model.Longitude.HasValue && Model.Latitude.HasValue)
+                            {
+                                longitude = ((decimal)Model.Longitude.Value).ToString("F5");
+                                latitude = ((decimal)Model.Latitude.Value).ToString("F5");
+                            }
+                        }
+                        <tr data-geometry="POINT (@longitude @latitude)" data-type="wkt">
+                            <td>
+                                Current location @longitude @latitude
+
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Insert Layer Data End -->
+        </div>
+    </div>
+    <!-- GeomapEnd -->
+</section>
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="form-horizontal">
+    <div id="geolocation-info" class="alert alert-info alert-dismissible hide" role="alert">
+        <a href="#" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </a>
+        <p id="geo-info-text"></p>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="pull-left">
+        <a href="#popup-screen" aria-controls="popup-screen" class="overlay-lnk listButton" role="button">
+            @Labels.Info
+        </a>
+    </div>
+
+    <a class="closeButton wb-lbx align-right btn-danger" href="#Modal_AbandonSurvey">
+        @Labels.AbandonSurvey
+    </a>
+
+    <div class="clearfix"></div>
+
+    <br />
+
+    @*<div class="ProgressNodes">
+            <a class="current">1</a>
+            @{
+                var i = 2;
+                foreach (var question in (PitQuestionViewModel[]) Session["PagesList"])
+                {
+                    <a class="pending">@i</a>
+                    i++;
+                }
+            }
+
+        </div>*@
+
+    <div class="clearfix"></div>
+
+    <div class="callout callout-primary">
+        <div class="" style="display: table; width: 100%; ">
+            <h3>@Labels.SurveyDetails</h3>
+            <hr />
+            <form id="Survey_FormPortion">
+                <div class="">
+                    @Html.Partial("SurveyPartials/_EditPitSurveyRevised", Model)
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="align-right">
+        <ul class="pager pit-pager margin-none">
+            <li>
+                @Html.ActionLink(Labels.Begin, "EditPitSurveyLivePagingQuestion", "PitEvents", new { PitSurveyID = @Model.PitSurveyID }, new { @id = "GoToSurveyQBtn", @class = "enabledbutton", style = "width: 145px; !important", rel = "next", alt=Labels.Begin, aria_label = Labels.Begin, @role = "button" })
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
+@Html.Partial("_AbandonSurvey", Model)
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript">
+
+        var p_map;
+
+		function SurveyModel() {
+			var self = this;
+			self.PitSurveyID = $("#PitSurveyID").val();
+			self.PitQuestionnaireID = $("#PitQuestionnaireID").val();
+			self.PitScreenedIN = $("#PitScreenedIN").val();
+			self.IsLive = $("#IsLive").val();
+			self.Longitude = $("#Longitude").val();
+			self.Latitude = $("#Latitude").val();
+			self.ShiftTime = $("#ShiftTime").val();
+			self.IsComplete = $("#IsComplete").val();
+			self.SurveyNo = $("#SurveyNo").val();
+			self.ShiftID = $("#ShiftID").val();
+			self.Location = $("#Location").val();
+			self.Comment = $("#Comment").val();
+			self.SurveyIdentifier = $("#SurveyIdentifier").val();
+			self.SurveyDate = $("#SurveyDate").val();
+		}
+
+		function getLocation() {
+			var timeoutVal = 10 * 1000 * 1000;
+			if (navigator.geolocation)
+				navigator.geolocation.getCurrentPosition(showPosition, showError, { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 75000 });
+			else
+				showGeoLocationAlert("@Labels.GeolocationNotSupported");
+		}
+
+		function showPosition(position) {
+			var lat = position.coords.latitude;
+			var long = position.coords.longitude;
+			alert('Found location: ' + lat + ', ' + long);
+			$("#Latitude").val(lat);
+			$("#Longitude").val(long);
+		}
+
+		function showError(error) {
+			switch (error.code) {
+				case error.PERMISSION_DENIED:
+					// alert("User denied the request for Geolocation.");
+					showGeoLocationAlert("@Labels.GeolocationUserDeniedRequest");
+					break;
+				case error.POSITION_UNAVAILABLE:
+					//alert("Location information is unavailable.");
+					showGeoLocationAlert("@Labels.GeolocationUnavailable");
+					break;
+				case error.TIMEOUT:
+					//alert("The request to get user location timed out.");
+					showGeoLocationAlert("@Labels.GeolocationTimedOut");
+					break;
+				case error.UNKNOWN_ERROR:
+					//alert("An unknown error occurred.");
+					showGeoLocationAlert("@Labels.GeolocationUnknownError");
+					break;
+			}
+		}
+
+		function showGeoLocationAlert(errorText) {
+			$("#geolocation-info").removeClass("hide");
+			//$("#geo-info-text").text(errorText);
+            document.getElementById('geo-info-text').innerHTML = errorText;
+			$("#geolocation-info").addClass("show");
+		}
+
+		$(function () {
+			getLocation();
+
+			$("#GoToSurveyQBtn").click(function (event) {
+				event.preventDefault();
+				var isValid = ($("#Location").valid() && $("#ShiftID").valid());
+				if (isValid) {
+					var survey = new SurveyModel();
+					$.ajax({
+						url: "@Url.Content("~/PitEvents/SaveSurveyAttr")",
+						type: 'POST',
+						async: false,
+						dataType: "json",
+						contentType: "application/json; charset=utf-8",
+						data: JSON.stringify(survey)
+					});
+					window.location = $(this)[0].href;
+				}
+				$("#ShiftID").valid();
+			});
+
+			$('#Survey_FormPortion :input, #Survey_FormPortion [class*="date"]').on('change dp.change', function () {
+				var survey = new SurveyModel();
+
+				$.ajax({
+					url: "@Url.Content("~/PitEvents/SaveSurveyAttr")",
+					type: 'POST',
+					async: true,
+					dataType: "json",
+					contentType: "application/json; charset=utf-8",
+					data: JSON.stringify(survey),
+					success: function (response) { // If required fields are missing disable next btn
+						//if (response != null && response.Success) {
+						//    $("#GoToSurveyQBtn").removeClass("disabledbutton");
+						//    $("#GoToSurveyQBtn").removeAttr('disabled');
+						//}
+						//else {
+						//    $("#GoToSurveyQBtn").addClass("disabledbutton");
+						//    $("#GoToSurveyQBtn").attr('disabled', 'disabled');
+						//}
+					}
+				});
+			});
+		});
+
+        $(".wb-geomap").on("wb-ready.wb-geomap", function (event, map) {
+            p_map = map;
+        });
+
+</script>);
+}
+
+
+
+

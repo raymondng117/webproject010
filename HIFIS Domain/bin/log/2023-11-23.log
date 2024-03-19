@@ -1,0 +1,21 @@
+2023-11-23 16:13:04.9132 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Created temppath: C:\Repo\4.0\Releases\4.0.60\Dependencies\reports\temp\8ebf53b0-e385-459f-b441-5093bc4ede8c.rpt
+2023-11-23 16:13:04.9157 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Created instance of ReportManager()
+2023-11-23 16:13:04.936 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Wrote report file to temp folder, result = Bed List.rpt
+2023-11-23 16:13:04.938 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): No errors creating file, attempting to build report...
+2023-11-23 16:13:06.1539 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): An exception was thrown: The types of the parameter field and parameter field current values are not compatible.
+2023-11-23 16:13:06.1559 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Cleanup - attempting to delete the temporary Crysal Report rpt file...
+2023-11-23 16:13:06.1589 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Returning Result - end of method.
+2023-11-23 16:14:17.5984 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Created temppath: C:\Repo\4.0\Releases\4.0.60\Dependencies\reports\temp\49318aa4-be14-4821-8482-4d052e3ab221.rpt
+2023-11-23 16:14:17.6004 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Created instance of ReportManager()
+2023-11-23 16:14:17.6282 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Wrote report file to temp folder, result = Community Homelessness Report - Rapport communautaire en matiere d'itinerance.rpt
+2023-11-23 16:14:17.6292 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): No errors creating file, attempting to build report...
+2023-11-23 16:14:18.4132 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): RMBuildReport completed...
+2023-11-23 16:14:18.4258 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Updated Report Page Footer with Version: 59.1
+2023-11-23 16:14:18.4278 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): RMBuildReport completed... no errors.
+2023-11-23 16:14:18.4288 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Created instance of ReportDocument. Ready to execute report.
+2023-11-23 16:14:28.5905 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Exported Report to data stream.
+2023-11-23 16:14:28.5935 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Converted stream to array for serialization.
+2023-11-23 16:14:28.5945 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Report has parameters - storing them for user so they can auto populate next time.
+2023-11-23 16:14:28.5965 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Done - setting result to the ReportDocument.
+2023-11-23 16:14:28.6237 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Cleanup - attempting to delete the temporary Crysal Report rpt file...
+2023-11-23 16:14:28.6267 TRACE Log: ReportService.Build(HifisReportParameters,Authentication): Returning Result - end of method.

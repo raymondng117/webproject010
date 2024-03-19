@@ -1,0 +1,119 @@
+﻿@model PeopleVitalsViewModel
+
+@Html.HiddenFor(model => model.PersonID)
+
+@if (RightsHelper.HasRight(UserRights.People_Language_List))
+            {
+            <div class="tab-pane" id="LanguageInfo" style="padding: 10px;">
+
+                @if (RightsHelper.HasRight(UserRights.People_Language_Add))
+                {
+                    <h4 class="mrgn-tp-sm">@Labels.NewLanguage</h4>
+
+                    <form id="languageForm" class="form-horizontal" method="post">
+                        @Html.Hidden("PersonID", Model.ReadOnlyVitals.PersonID as object)
+
+                        <div>
+                            @Html.Partial("_PeopleLanguage", new PeopleLanguageViewModel { PersonID = Model.ReadOnlyVitals.PersonID })
+                        </div>
+                    </form>
+                     <div class="form-group">
+                            <div class="col-sm-offset-5 col-sm-7">
+                                <button id="addLanguageButton" class="addButton" type="submit">@Labels.Add</button>
+                            </div>
+                     </div>
+                }
+                <h4>@Labels.Languages</h4>
+                
+                    <table id="languageListTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                                    { "width": "35%", "data": "Language"},
+                                                                                                    { "width": "35%", "data": "Service"},
+                                                                                                    { "width": "30%", "data": "Action"}
+                                                                                                ],
+                                                                                                "order": [ [0, "desc"] ],
+                                                                                                "ajax": "@Url.Content("~/PeopleTombstone/LanguageListJson?id=" + Model.PersonID)"                         
+                                                                                            }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.Language</th>
+                                <th class="align-text-center">@Labels.IsLanguageOfSevice</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+            </div>
+            }
+            
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            // Add Language
+            $("#addLanguageButton").click(function () {
+
+                if ($("#languageForm").valid()) {
+                    $("#addlanguageButton").attr("disabled", true);
+                    $.ajax({
+                        url: "@Url.Content("~/PeopleTombstone/InsertLanguage")",
+                        type: "POST",
+                        data: $("#languageForm").serialize()
+
+                    }).done(function (data) {
+
+                        $("#addlanguageButton").attr("disabled", false);
+                        if (data.Success) {
+
+                            $("#languageListTable").DataTable().ajax.reload();
+                            displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage </p>");
+
+                        } else {
+
+                            if (data.ValidationMessages != null) {
+                                displayNotification('error', '', "<p>" + data.ValidationMessages[0] + "</p>");
+                            } else {
+                                displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                            }
+                        }
+                    });
+                }
+            });
+
+            // On Service Language Toggle
+            $(document).on('switchChange.bootstrapSwitch', "input[id=ServiceYN]", function () {
+
+                var targetUrl = $(this).attr("href");
+                var btn = $(this);
+                btn.attr("disabled", true); //Disable the button so multiple requests don't go through
+                clID = btn.val();
+                cID = $("input[id=PersonID]").val();
+
+                $.ajax({
+                    url: "@Url.Content("~/PeopleTombstone/ToggleServiceLanguage")",
+                    type: "POST",
+                    data: { pPersonID: cID, pPeopleLanguageID: clID }
+
+                }).done(function (data) {
+
+                    btn.attr("disabled", false);
+                    if (data.Success) {
+
+                        $("#languageListTable").DataTable().ajax.reload();
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage </p>");
+
+                    } else {
+
+                        if (data.ValidationMessages != null) {
+                            displayNotification('error', '', "<p>" + data.ValidationMessages[0] + "</p>");
+                        } else {
+                            displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                        }
+                    }
+                });
+            });
+
+</script>
+);
+}

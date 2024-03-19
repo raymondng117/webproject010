@@ -1,0 +1,90 @@
+﻿@model ClientGoodsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_GoodsEdit;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="clearfix"></div>         
+
+<div class="form-group">
+	<label class="col-sm-2 control-label">@Labels.ServiceProvider:</label>
+	<div class="col-sm-10">
+		<p class="form-control-static"><strong>@Model.ServiceTombstone.OrganizationName</strong></p>
+	</div>
+</div>
+<div class="clearfix"></div>
+
+<div class="form-group">
+	<label class="col-sm-2 control-label">@Labels.ReasonForService:</label>
+    <div class="col-sm-10"><strong>
+    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                    new SingleItemSelectList
+                    {
+                        ID = Model.ServiceTombstone.ReasonForGoodsActivityTypeID,
+                        List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForGoodsActivityTypes, ViewBag.CurrentCulture, Model.ServiceTombstone.ReasonForGoodsActivityTypeID)
+                    })
+       </strong>
+    </div>
+        @*<div class="col-sm-10">
+                <p class="form-control-static"><strong>@Model.ServiceTombstone.ReasonForGoodsActivityTypeName</strong></p>
+            </div>*@
+    </div>
+<div class="clearfix"></div>
+
+<div class="form-group">
+	<label class="col-sm-2 control-label">@Labels.Date:</label>
+	<div class="col-sm-10">
+		<p class="form-control-static"><strong>@Html.DisplayFor(m => m.ServiceTombstone.DateStart, "DateOnly") @Labels.To @Html.DisplayFor(m => m.ServiceTombstone.DateEnd, "DateOnly")</strong></p>
+	</div>
+</div>
+<div class="clearfix"></div>
+
+<div class="form-group">
+	<label class="col-sm-2 control-label">@Labels.ReferredFrom:</label>
+	<div class="col-sm-10">
+		<p class="form-control-static"><strong>@Model.ServiceTombstone.FromReferrerPlaceName</strong></p>
+	</div>
+</div>
+<div class="clearfix"></div>
+
+<div class="form-group">
+	<label class="col-sm-2 control-label">@Labels.ReferredTo:</label>
+	<div class="col-sm-10">
+		<p class="form-control-static"><strong>@Model.ServiceTombstone.ToReferrerPlaceName</strong></p>
+	</div>
+</div>
+<div class="clearfix"></div>
+
+<div class="form-group">
+	<label class="col-sm-2 control-label">@Labels.NumberOfPeople:</label>
+	<div class="col-sm-10">
+		<p class="form-control-static"><strong>@Model.ServiceTombstone.NumberOfPeople</strong></p>
+	</div>
+</div>
+<div class="clearfix"></div>
+                  
+@using (Html.BeginForm("EditGood", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    //@Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+    //@Html.HiddenFor(model => model.ServiceTombstone.ServiceID)
+    @Html.HiddenFor(model => model.GoodsID)
+    @Html.HiddenFor(model => model.GoodsActivitiesID)
+    //@Html.HiddenFor(model => model.ServiceTombstone.ReasonForGoodsActivityTypeID)
+
+    <div>        
+        @Html.Partial("_Good", Model)    
+        
+        <div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "Edit", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID, serviceID = Model.ServiceTombstone.ServiceID, GoodActivityID = Model.GoodsActivitiesID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>    
+
+    </div>  
+}
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

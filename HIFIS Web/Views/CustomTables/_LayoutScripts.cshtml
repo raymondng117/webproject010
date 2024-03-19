@@ -1,0 +1,225 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            var customTableFieldsLabels;
+            var gridColumns;
+            var inputDivs;
+            var viewArea;
+            var columns;
+            var rows;
+
+            function ClearLayout() {
+                var gridCell = $('.gridCell');
+
+                if (gridCell.length != 0) {
+                    inputDivs.appendTo(viewArea);
+                    $('.gridCell').remove();
+                }
+        
+                if(viewArea.data('ui-sortable'))
+                    viewArea.sortable('destroy');
+
+                if (inputDivs.data('ui-draggable')) {
+                    inputDivs.css('left', '');
+                    inputDivs.css('top', '');
+                    inputDivs.draggable('destroy');
+                }
+            }
+
+            //function LayoutAbsolute(){
+            //    inputDivs.css('display', 'inline-block');
+            //    inputDivs.draggable({
+            //        scroll: false,
+            //        containment: '#ViewArea',
+            //        stack: '.InputDiv'
+            //    }).disableSelection();
+            //}
+
+            function LayoutLinear(){
+                inputDivs.css('display', 'block');
+                viewArea.sortable({
+                    containment: '#ViewArea',
+                    tolerance: 'pointer'
+                }).disableSelection();
+            }
+
+            //function LayoutGrid(){
+            //    inputDivs.css('display', 'block');
+            //    ResizeGrid();
+            //    ToggleGridBorder();
+            //}
+
+            function ToggleLayoutType() {
+                ClearLayout();
+
+                switch ($('#LayoutTypeID').val()) {
+                    case '@((byte)LayoutTypes.Linear)':
+                        $('#GridSizer').hide();
+                        LayoutLinear();
+                        break;
+                    @*case '@((byte)LayoutTypes.Absolute)':
+                        $('#GridSizer').hide();
+                        LayoutAbsolute();
+                        break;
+                    case '@((byte)LayoutTypes.Grid)':
+                        $('#GridSizer').show();
+                        LayoutGrid();
+                        break;*@
+                }
+
+                OverlayDiv();
+            }
+
+            function ToggleAutowidth() {
+                if ($('#ToggleAutowidth').prop('checked')) {
+                    customTableFieldsLabels.addClass('autowidth').css('padding-right', 0);
+                    autoWidth();
+                }
+                else {
+                    customTableFieldsLabels.removeClass('autowidth');
+                    customTableFieldsLabels.width('auto').css('padding-right', 20);
+                }
+            }
+
+        @*changes size of grid*@
+            //function ResizeGrid() {
+            //    columns = $('#NumGridCols').val();
+            //    rows = $('#NumGridRows').val();
+
+            //    var width = (100.0 / columns - 0.3) + '%';
+            //    var height = (100.0 / rows - 0.3) + '%';
+            //    var numcells = columns * rows;
+            //    var emptyCell = $('#emptyGridCell');
+            //    var newInputDivs = inputDivs.clone();
+
+            //    $('.gridCell').remove();
+
+            //    for (var i = 0, j = 0; i < inputDivs.length || i < numcells; ++i, ++j) {
+            //        if (i < numcells) {
+            //            viewArea.append(
+            //                emptyCell
+            //                    .clone()
+            //                    .attr('id', '')
+            //                    .addClass('cell' + j + ' gridCell')
+            //                    .height(height)
+            //                    .width(width)
+            //                    .css('display', 'inline-block')
+            //            );
+            //        }
+
+            //        if (j == numcells)
+            //            j = 0;
+
+            //        $('.cell' + j).append(inputDivs.get(i));
+            //    }
+        
+            //    $('.gridCell')
+            //        .sortable({
+            //            connectWith: '.gridCell',
+            //            cursor: "move",
+            //            start: function (e) {
+            //                $('.gridCell').css('border', 'thin dashed black');
+            //            },
+            //            stop: function (e) {
+            //                $('.gridCell').css('border', 'thin dashed white');
+            //                OverlayDiv();
+            //            },
+                
+            //        })
+            //        .droppable({
+            //            activeClass: "ui-state-highlight",
+            //            accept: ".InputDiv"
+            //        });
+
+            //}
+
+            //function ToggleGridBorder() {
+            //    if($('#ToggleGrid').prop('checked'))
+            //        $('.gridCell').css('border', 'thin dashed black');
+            //    else
+            //        $('.gridCell').css('border', 'thin dashed white');
+            //}
+
+        @*Creates overlay divs on inputs*@
+            function OverlayDiv() {
+                $('.overlayDiv').each(function (index, element) {
+                    var ele = $(element);
+                    var parent = ele.parent();
+                    ele.height(parent.height());
+                    ele.width(parent.width());
+                });
+            }
+
+        @*Updates hidden layout values before submitting*@
+            function updateLayoutValues(e){
+                var ele;
+
+                switch ($('#LayoutTypeID').val()) {
+                    case '@((byte)LayoutTypes.Linear)':
+                        $('.InputDiv').each(function (index, element) {
+                            ele = $(element);
+                            ele.find('input[name$=Position]').val(index);
+                        });
+                        break;
+                    @*case '@((byte)LayoutTypes.Absolute)':
+                        inputDivs.each(function (index, element) {
+                            ele = $(element);
+                            ele.find('input[name$=XCoordinate]').val(parseInt(ele.position().left - parseInt(ele.css('padding-left'))));
+                            ele.find('input[name$=YCoordinate]').val(parseInt(ele.position().top - parseInt(ele.css('padding-top'))));
+                        });
+                        break;
+                    
+                    case '@((byte)LayoutTypes.Grid)':
+                        var curCol = 0;
+                        var curRow = 0;
+                        $('.gridCell').each(function (gridIndex, gridElement) {
+                            if (gridIndex - (curRow * columns) == columns) {
+                                ++curRow;
+                                curCol = 0;
+                            }
+                            var inputOrder = 0;
+                            $(gridElement).find('.InputDiv').each(function (inputIndex, element) {
+                                ele = $(element);
+                                ele.find('input[name$=XCoordinate]').val(curCol);
+                                ele.find('input[name$=YCoordinate]').val(curRow);
+                                ele.find('input[name$=Position]').val(inputOrder++);
+                            });
+                            ++curCol;
+                        });
+                        break;*@
+                }
+            }
+    
+        @*Onload*@
+            $(function () {
+                customTableFieldsLabels = $('.InputDiv label');
+                inputDivs = $('.InputDiv');
+                viewArea = $('#ViewArea');
+
+                var sum = 0;
+
+                inputDivs.each(function (index, element) {
+                    sum += $(element).height();
+                });
+
+                viewArea.height(sum + 5);
+
+                $('#ToggleAutowidth').change(ToggleAutowidth);
+                ToggleAutowidth();
+
+                $('#LayoutTypeID').change(ToggleLayoutType);
+                ToggleLayoutType();
+
+                //$('#NumGridCols, #NumGridRows').change(ResizeGrid);
+                //$('#ToggleGrid').change(ToggleGridBorder);
+
+                OverlayDiv();
+
+                $('#ToggleAutowidth').rules('remove', 'required');
+
+                $('#CustomTableLayoutForm').submit(updateLayoutValues);
+            });
+        </script>
+    );
+}

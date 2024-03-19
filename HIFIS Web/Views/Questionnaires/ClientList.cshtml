@@ -1,0 +1,114 @@
+﻿@model ClientQuestionnairesHistoryViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    
+    ViewBag.ViewTitle = Labels.ViewAllClientQuestionnaires;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+    @if (RightsHelper.HasRight(UserRights.Questionnaire_Client_Add))
+    {
+        <div class="panel panel-default mrgn-tp-md">
+	        <div class="panel-heading" role="tab" id="TakeQuestionaireHeader">
+		        <h4 class="panel-title">
+			        <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#TakeQuestionairePanel" aria-expanded="false" aria-controls="TakeQuestionairePanel" data-checkConsent >
+				        @Labels.CompleteNewQuestionnaire
+				        <span class="caret pull-right mrgn-tp-sm"></span>
+			        </a>
+		        </h4>
+	        </div>
+	        <div id="TakeQuestionairePanel" class="panel-collapse collapse" role="tabpanel" aria-labelledby="TakeQuestionaireHeader">
+		        <div class="panel-body">
+			        @using (Html.BeginForm("AddClientQuestionnaire", "Questionnaires", null, FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        @Html.Partial("_ClientQuestionnaire", new ClientQuestionnaireViewModel { ClientID = Model.ClientID, DateAnswered = System.DateTime.Now })
+
+                        <div class="form-group">
+			                <div class="col-sm-offset-3 col-sm-9">
+				                <button type="submit" class="addButton align-vetical-top">@Labels.BeginQuestionnaire</button>
+			                </div>
+		                </div>
+                    }
+		        </div>
+	        </div>
+        </div>   
+    }
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Survey</th>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.DateTaken</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var clientQuestionnaire in Model.ClientList)
+                {
+                    <tr>
+                        <td>
+                            @clientQuestionnaire.QuestionnaireName
+                        </td>
+                        <td>
+                            @clientQuestionnaire.OrgName
+                        </td>
+                        <td>@(clientQuestionnaire.DateAnswered.HasValue ? Html.DisplayFor(model => clientQuestionnaire.DateAnswered).ToString() : Labels.NA)</td>
+                        <td class="nowrap">
+                            
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Client_View, clientQuestionnaire.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.ViewQuestionnaire, "ViewClientAnswers", new { id = Model.ClientID, clientQuestionnaireID = clientQuestionnaire.ClientQuestionnaireID }, new { @class = "viewButton noText", alt=Labels.ViewQuestionnaire, aria_label = Labels.ViewQuestionnaire, @role = "button" })
+                            }
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Client_Edit, clientQuestionnaire.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Edit, "EditClientQuestionnaire", "Questionnaires", new { id = Model.ClientID, clientQuestionnaireID = clientQuestionnaire.ClientQuestionnaireID }, new { @class = "editButton noText no-print", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Client_Delete, clientQuestionnaire.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Delete, "DeleteClientQuestionnaire", new { clientQuestionnaireID = clientQuestionnaire.ClientQuestionnaireID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+                            {                        
+                                <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "Questionannire", "Excel", new { DataSetName = "ClientHistory", QuestionnaireID = clientQuestionnaire.QuestionnaireID, ClientID = Model.ClientID }, new { @class = "excelButton no-print noText", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+                            }
+                            
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if ((ViewBag.questionnariesList as SelectList).IsEmptyOrNull())
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+		    @<script type="text/javascript">
+                $(function () {
+                    $('#newQuestionnaireDiv').html('<p>@Labels.NoAvailableQuestionnaires</p>');
+                });
+            </script>
+        );
+    }
+}
+
+@using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(function () {
+                $('[data-checkConsent]').each(function () {
+                    interceptClick($(this));
+                });
+            });
+        </script>
+        );
+    }

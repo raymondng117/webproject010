@@ -1,0 +1,113 @@
+﻿@model FoodBankEditViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayFoodBankTransaction;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="clearfix"></div>   
+
+@using (Html.BeginForm("EditTransaction", "FoodBanks", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    <div class="displayView mrgn-bttm-md">
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.OrganizationID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.Transaction.OrganizationID,
+                            List = ViewBag.Orgs as SelectList
+                        })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.ProgramServiceProviderID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                    new MultipleItemSelectList
+                        {
+                            IDs = Model.Transaction.ProgramIDs,
+                            List = ViewBag.ProgramList as SelectList
+                        })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.ReasonForServiceTypeID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.Transaction.ReasonForServiceTypeID,
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, ViewBag.CurrentCulture, Model.Transaction.ReasonForServiceTypeID)
+                        })
+        </div>
+
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.Transaction.ReferredByName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.FromReferrerPlaceID, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.Transaction.FromReferrerPlaceName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.ToReferrerPlaceID, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.Transaction.ToReferrerPlaceName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.DateStart, new { @class = "autowidth" })
+            @Html.HifisDisplayFor(model => model.Transaction.DateStart, null, true, "DateAndTime")
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.DateEnd, new { @class = "autowidth" })
+            @Html.HifisDisplayFor(model => model.Transaction.DateEnd, null, true, "DateAndTime")
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.SessionID, new { @class = "autowidth col-sm-4" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.Transaction.SessionID,
+                            List = ViewBag.SessionList as SelectList
+                        })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Transaction.NumberOfPeople, new { @class = "autowidth" })
+            @Html.DisplayFor(m => m.Transaction.NumberOfPeople)
+        </div>
+
+        <div>
+            @Html.ActionLink(Labels.Edit, "EditTransaction", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID, transactionID = Model.Transaction.ServiceID }, new { @class = "editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+            @Html.ActionLink(Labels.Cancel, "ClientList", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+}      
+    
+    
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#FoodItem" role="tab" data-toggle="tab">@Labels.FoodItem</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="FoodItem">
+				<div id="FoodBankItemsTableDiv">
+					@*The entire viewmodel is passed due to a need for client vitals*@
+					@Html.Partial("_FoodBankItemTable", Model)
+				</div>
+			</div>
+		</div>	
+	</div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model.Transaction)</div>

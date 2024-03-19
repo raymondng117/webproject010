@@ -1,0 +1,63 @@
+﻿@model IEnumerable<PitQuestionViewModel>
+
+<div>
+    @if(ViewBag.Questionaire != null)
+    {
+        using (Html.BeginScriptContext())
+        {
+            Html.AddScriptBlock(
+		        @<script type="text/javascript">
+                    $(document).ready(function () {
+                        $("#allQuestions").addClass("");
+                    });
+                </script>);
+        }
+    }
+    <table id="allQuestions" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th>@Labels.NumberAbbr</th>
+                <th>@Labels.Question</th>
+                <th>@Labels.PitQuestionCategoryType</th>
+                <th>@Labels.QuestionType</th>
+                <th>@Labels.PossibleResponses</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.IsEmptyOrNull())
+            {
+                foreach (var question in Model)
+                {
+                    <tr>
+                        <td>@question.QuestionNo</td>
+                        <td>@question.Question</td>
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionCategoryTypes, Culture, question.QuestionCategoryTypeID)</td>
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, question.QuestionTypeID)</td>
+                        <td>
+                            @if (question.IsDropdown())
+                            {
+                                foreach (var dropdown in question.DropdownValues)
+                                {
+                                    <text>@dropdown.Name</text>if (dropdown != question.DropdownValues.Last()) { <text>, </text> }
+                                }
+                            }
+                            else
+                            {
+                                <text>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, question.QuestionTypeID)</text>
+                            }
+                        </td>
+                        <td class="align-text-center">
+                            @Html.ActionLink(Labels.EditQuestion, "EditPitTemplateQuestion", new { questionID = question.QuestionID, isNewQuestionaire = true }, new { @class = "editButton", alt=Labels.EditQuestion, aria_label = Labels.EditQuestion, @role = "button" })                              
+
+                            @((question.QuestionTypeID == (byte)PitQuestionTypes.DropdownSingle || question.QuestionTypeID == (byte)PitQuestionTypes.DropdownMultiple) ?
+                               Html.ActionLink(Labels.EditDropdown, "EditPitDropdowns", "PitEvents", new { questionID = question.QuestionID }, new { @class = "editButton", alt=Labels.EditDropdown, aria_label = Labels.EditDropdown, @role = "button" }) : null)
+
+
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

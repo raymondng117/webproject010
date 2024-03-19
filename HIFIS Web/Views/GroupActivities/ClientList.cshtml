@@ -1,0 +1,86 @@
+﻿@model GroupActivitiesListViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_GroupActivities;  
+    int j = 1;   
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+    
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md no-print">
+         
+        @{ string classlink1 = (ViewBag.FilterType == 1 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(30 + " " + Labels.Days, "ClientList", new {id = Model.ReadOnlyVitals.ClientID, filterType = 1 }, new { @class = classlink1, title=30+" "+Labels.Days, aria_label = 30+" "+Labels.Days, @role = "button" })
+
+        @{ string classlink2 = (ViewBag.FilterType == 2 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(90 + " " + Labels.Days, "ClientList", new { id = Model.ReadOnlyVitals.ClientID, filterType = 2 }, new { @class = classlink2, title=90+" "+Labels.Days, aria_label = 90+" "+Labels.Days, @role = "button" })
+
+        @{ string classlink3 = (ViewBag.FilterType == 3 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(180 + " " + Labels.Days, "ClientList", new { id = Model.ReadOnlyVitals.ClientID, filterType = 3 }, new { @class = classlink3, title=180+" "+Labels.Days, aria_label = 180+" "+Labels.Days, @role = "button" })
+    
+        @{ string classlink4 = (ViewBag.FilterType == 4 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.All, "ClientList", new { id = Model.ReadOnlyVitals.ClientID, filterType = 4 }, new { @class = classlink4, title=Labels.All, aria_label = Labels.All, @role = "button" })
+
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="form-color-white module-form-block">
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order": [[3, "desc"]] }'>
+                <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.Organization</th>
+                        <th class="align-text-center">@Labels.ActivityName</th>
+                        <th class="align-text-center">@Labels.Location</th>
+                        <th class="align-text-center">@Labels.Date</th>
+                        <th class="align-text-center">@Labels.Time</th>
+                        <th class="align-text-center">@Labels.Attendees</th>
+                        <th class="align-text-center">@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody class="align-text-center">
+                    @foreach (GroupActivityViewModel vm in Model.Activities)
+                    {
+                        <tr>
+                            <td>
+                                @vm.OrganizationName
+                            </td>
+                            <td>                                
+                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GroupActivitiesTypes, Culture, vm.GroupActivityTypeID)
+                            </td>
+                            <td>
+                                @vm.LocationName
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => vm.DateStart)
+                            </td>
+                            <td>
+                                @DateHelper.TimeFormaterENFR(vm.DateStart, Labels.CurrentCulture)
+                            </td>
+                            <td>
+                                @(vm.ClientAttendees+ vm.AnonymousAttendees)
+                            </td>
+                            <td class="align-text-center no-print">
+                                @if (RightsHelper.HasRight(UserRights.GroupActivities_Display, vm.OrganizationID))
+                                {
+                                   @Html.ActionLink(Labels.Display, "Display", "GroupActivities", new { activityID = vm.GroupActivityID}, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })                                   
+                                }
+                                @if (RightsHelper.HasRight(UserRights.GroupActivities_Edit, vm.OrganizationID))
+                                {
+                                   @Html.ActionLink(Labels.Manage, "Manage", "GroupActivities", new { activityID = vm.GroupActivityID}, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })                                   
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+</div>

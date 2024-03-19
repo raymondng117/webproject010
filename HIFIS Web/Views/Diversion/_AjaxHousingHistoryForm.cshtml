@@ -1,0 +1,379 @@
+﻿@model DiversionHousingViewModel
+
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@ViewBag.HousingTitle</h2>
+    </header>
+
+    <div class="modal-body">
+        <form id="HousingHistoryForm" class="form-horizontal">
+            @Html.Partial("_BaseHiddenFor", Model)
+            @*@Html.Partial("_BaseHiddenFor", Model.HouseDetails, "HouseDetails")*@
+            @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ClientHouseID)
+            @Html.HiddenFor(m => m.ClientID)
+            @Html.HiddenFor(m => m.HouseID)
+            @Html.HiddenFor(m => m.AddressID)
+            @*@Html.HiddenFor(m => m.HouseDetails.IsNewHousingUnit)*@
+            @Html.HiddenFor(m => m.HousePlacementID)
+            @Html.HiddenFor(m => m.HouseRetentionID)
+            @Html.HiddenFor(m => m.AddressDetails.CountryID, new { id = "ddlCountry" })
+
+            @Html.HiddenFor(m => m.AddressDetails.isAddressRequired, new { id = "isAddressRequired" })
+
+            <div>
+                @Html.HifisEditorFor(model => model.HouseTypeID, CachedTableTypes.HIFIS_HouseTypes, false, new { id = "ddlHouseType" })
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.DateStart)
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.DateEnd)
+            </div>
+
+
+            <div>
+                @Html.HifisEditorFor(model => model.AddressDetails.AddressLn1,null, new { id = "AddressLn1" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.AddressDetails.Unit)
+            </div>
+
+            @*<div>
+            @Html.HifisEditorFor(model => model.AddressDetails.CountryID, CachedTableTypes.HIFIS_CountryTypes, false, new { id = "ddlCountry" })
+        </div>*@
+
+            <div>
+                @Html.HifisEditorFor(model => model.AddressDetails.ProvinceID, ViewBag.Provinces as SelectList, false, "DropDownList", new { id = "ddlProvince" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.AddressDetails.CityID, ViewBag.Cities as SelectList, false, "DropDownList", new { id = "ddlCity" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.AddressDetails.PostalCode)
+            </div>
+
+
+
+        </form>
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        @if (ViewBag.IsAdd)
+        {
+            <button type="submit" id="newHousingHistorySaveBtn" class="saveButton">@Labels.Save</button>
+        }
+        else
+        {
+            <button type="submit" id="EditHousingHistorySaveBtn" class="saveButton">@Labels.Save</button>
+        }
+        
+
+        <button id="HousingHistoryCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+
+<script type="text/javascript">
+
+    var defaultCityID = '@Model.AddressDetails.CityID';
+    var defaultProvinceID = '@Model.AddressDetails.ProvinceID';
+    var defaultCountryID = '@Model.AddressDetails.CountryID';
+
+    //Onload
+    $(document).ready(function () {
+
+        //Get everything to display correctly
+        init_hifis();
+        autoWidthBoot('.modal-body');
+
+        onPageReady();
+    });
+
+
+    $("#newHousingHistorySaveBtn").click(function () {
+        console.log("FD - newHousingHistorySaveBtn.click");
+         if ($("#HousingHistoryForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/Diversion/HousingHistoryNew")",
+                type: "POST",
+                data: $('#HousingHistoryForm').serialize()
+            }).done(function (data)
+            {
+
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success)
+                {
+                    console.log("FD - NEW HOUSING data.Success");
+                    $("#HousingHistoryCloseBtn").click(); //Close the modal window on success
+                    defaultNotify(data.Success); //display the default error or success message
+
+                    var gaId = data.Result.gaID;
+                    var clientid = data.Result.clientid;
+                    var serviceid = data.Result.serviceid;
+                    var orgid = data.Result.orgid;
+
+                    $('#HousingHistoryTable').DataTable().ajax.url('@Url.Content("~/Diversion/GetHousingHistoryList?")' + 'clientID=' + clientid + "&includeStay=false").load(null, false);
+                    $('#HousingHistoryTable').DataTable().ajax.reload();
+                }
+                else
+                {
+                    console.log("FD - NEW HOUSING data.NOT.Success");
+                    var ErrList = data.Result.ErrMsgList;
+                    for (var i in ErrList)
+                    {
+                        displayNotification("error", ErrList[i]);
+                    }
+
+                }
+            });
+        }
+     });
+
+
+    $("#EditHousingHistorySaveBtn").click(function () {
+        console.log("FD - EditHousingHistorySaveBtn.click");
+         if ($("#HousingHistoryForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/Diversion/HousingHistoryEdit")",
+                type: "POST",
+                data: $('#HousingHistoryForm').serialize()
+            }).done(function (data)
+            {
+
+               
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success)
+                {
+                    defaultNotify(data.Success); //display the default error or success message
+                    console.log("FD - data.Success");
+                    $("#HousingHistoryCloseBtn").click(); //Close the modal window on success
+
+
+                    var gaId = data.Result.gaID;
+                    var clientid = data.Result.clientid;
+                    var serviceid = data.Result.serviceid;
+                    var orgid = data.Result.orgid;
+
+                    $('#HousingHistoryTable').DataTable().ajax.url('@Url.Content("~/Diversion/GetHousingHistoryList?")' + 'clientID=' + clientid + "&includeStay=false").load(null, false);
+                    $('#HousingHistoryTable').DataTable().ajax.reload();
+                }
+                else
+                {
+                    console.log("FD - data.NOT.Success");
+                    var ErrList = data.Result.ErrMsgList ;
+                    for (var i in ErrList) {
+                        displayNotification("error", ErrList[i]);
+                    }
+                    
+                }
+            });
+        }
+     });
+
+            function UpdateDropdowns()
+            {
+                $("#ddlCountry").trigger('change');
+                $("#ddlProvince").trigger('change');
+                $("#ddlCity").trigger('change');
+                $("#ddlGeo").trigger('change');
+            }
+
+            function UpdateDropdownValues(dropdown, values)
+            {
+                dropdown.options.length = 0; // clear out existing items
+
+                for(var i = 0; i < values.length; i++)
+                    dropdown.options.add(new Option(values[i].Text, values[i].Value));
+
+                //$(dropdown).trigger('change');
+            }
+
+            function PopulateCity()
+            {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Async = false,
+                    Url = "'" + Url.Content("~/Master/AjaxGetCityList") + "'",
+                    Data = "{ ProvinceID: $('#ddlProvince').val()}",
+                    OnSuccess = @"UpdateDropdownValues(document.getElementById('ddlCity'), data);
+                                     if(defaultCityID){ $('#ddlCity').val(defaultCityID).trigger('chosen:updated').change(); defaultCityID = false;}"
+                });
+            }
+
+            function PopulateProvince()
+            {
+                if ($('#ddlCountry').val()) {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/Master/AjaxGetProvinceList") + "'",
+                        Data = "{CountryID: $('#ddlCountry').val()}",
+                        OnSuccess = @"UpdateDropdownValues(document.getElementById('ddlProvince'), data);
+                                         if(defaultProvinceID){ $('#ddlProvince').val(defaultProvinceID).trigger('chosen:updated').change(); defaultProvinceID = false; }"
+                    });
+                }
+                else{
+                    $('#ddlCity').html('').trigger('change');
+                    $('#ddlProvince').html('').trigger('change');
+                }
+            }
+
+
+            //Populates hidden inputs so we can get the string name of selections in the view model
+            function populateAddressNames() {
+                $('#Country').val($("#ddlCountry").children('option[value="' + $('#ddlCountry').val() + '"]').text());
+                $('#Province').val($("#ddlProvince").children('option[value="' + $('#ddlProvince').val() + '"]').text());
+                $('#City').val($("#ddlCity").children('option[value="' + $('#ddlCity').val() + '"]').text());
+
+            }
+
+            function checkAddressRequired() {
+                if ($('#isAddressRequired').val() == 'True') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function checkGeoRequired() {
+                if ($('#isGeoRegionEnforced').val() == 'True') {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function onPageReady() {
+
+                console.log("FD - onPageReady");
+                populateAddressNames()
+
+                $("#ddlProvince").change(function () {
+                    var selection = $(this).children('option[value="' + $('#ddlProvince').val() + '"]').text()
+                    $('#Province').val(selection);
+                    $('#ddlCountry').val() == 1? PopulateCity() : null;
+                });
+
+                $("#ddlCity").change(function () {
+                    var selection = $(this).children('option[value="' + $('#ddlCity').val() + '"]').text()
+                    $('#City').val(selection);
+                });
+
+                $("#ddlCountry").change(function () {
+                    var selection = $(this).children('option[value="' + $('#ddlCountry').val() + '"]').text()
+                    $('#Country').val(selection);
+                    console.log("FD - ddlCountry selection is : " + selection)
+                });
+
+                //Required var id, input element id
+                if ($('#isAddressRequired').val() === "True")
+                    $('#AddressLn1').siblings(".glyphicon-star").addClass("show");
+
+                if ($('#isAddressRequired').val() === "False")
+                    $('#AddressLn1').siblings(".glyphicon-star").addClass("hide");
+
+
+                if ($('#isGeoRegionEnforced').val() === "True")
+                    $('#ddlGeo').siblings(".glyphicon-star").addClass("show");
+
+                if ($('#isGeoRegionEnforced').val() === "False")
+                    $('#ddlGeo').siblings(".glyphicon-star").addClass("hide");
+
+
+
+
+                //#region Mandatory
+                //When Province is set to mandatory through the user, this area ensures the international Province and city fields
+                // behave with similar required behavoiur.
+
+                //Adds the star glypicon and a span for the error message----
+                if ($('#ddlProvince').attr('data-val') != null) {
+                    $('#InternationalProvinceName').parent('.input-group').append('<span class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger"></span>');
+                    $('#InternationalProvinceName').parent('.input-group').append('<span id="provincefree-error" style="display: none;" class="align-left field-validation-error"><span>' + $('#ddlProvince').attr('data-val-required') + '</span></span>');
+                }
+                if ($('#ddlCity').attr('data-val') != null) {
+                    $('#InternationalCityName').parent('.input-group').append('<span class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger"></span>');
+                    $('#InternationalCityName').parent('.input-group').append('<span id="cityfree-error" style="display: none;" class="align-left field-validation-error"><span>' + $('#ddlCity').attr('data-val-required') + '</span></span>');
+                }
+                if ($('#PostalCode').attr('data-val') != null) {
+                    $('#InternationalPostalCode').parent('.input-group').append('<span class="glyphicon glyphicon-star visible-lg visible-md visible-sm visible-xs align-left mrgn-bttm-0 mrgn-tp-sm mrgn-lft-xs mandatory-star text-danger"></span>');
+                    $('#InternationalPostalCode').parent('.input-group').append('<span id="postalfree-error" style="display: none;" class="align-left field-validation-error"><span>' + $('#PostalCode').attr('data-val-required') + '</span></span>');
+                }
+                //If Canada is not selected AND province is required,
+                // AND the International field is empty THEN display error and dont post.('#ddlProvince').parents
+                $('.form-horizontal').on('submit', function () {
+                    if ($('#ddlProvince').attr('data-val') != null && $('#ddlCountry').val() != 1) {
+                        if ($('#InternationalProvinceName').val() == null || $('#InternationalProvinceName').val() == '') {
+                            $('#provincefree-error').show();
+                            return false; // prevents the form from posting
+                        }
+                    }
+                });
+                $('.form-horizontal').on('submit', function () {
+                    if ($('#ddlCity').attr('data-val') != null && $('#ddlCountry').val() != 1) {
+                        if ($('#InternationalCityName').val() == null || $('#InternationalCityName').val() == '') {
+                            $('#cityfree-error').show();
+                            return false;
+                        }
+                    }
+                });
+                $('.form-horizontal').on('submit', function () {
+                    if ($('#PostalCode').attr('data-val') != null && $('#ddlCountry').val() != 1) {
+                        if ($('#InternationalPostalCode').val() == null || $('#InternationalPostalCode').val() == '') {
+                            $('#postalfree-error').show();
+                            return false;
+                        }
+                    }
+                });
+
+                //Removes the error message when user types something in
+                $('#InternationalProvinceName').on('change', function () {
+                    if ($(this).val() != null && $(this).val() != '')
+                        $('#provincefree-error').hide();
+                });
+                $('#InternationalCityName').on('change', function () {
+                    if ($(this).val() != null && $(this).val() != '')
+                        $('#cityfree-error').hide();
+                });
+                $('#InternationalPostalCode').on('change', function () {
+                    if ($(this).val() != null && $(this).val() != '')
+                        $('#postalfree-error').hide();
+                });
+
+                //Displays the error when is appears after postback
+                if ($('.validation-summary-errors').children('ul').children('li').text().includes('Province/Territory field is required')
+                 || $('.validation-summary-errors').children('ul').children('li').text().includes('Province/territoire est requis')) {
+                    $('#provincefree-error').show();
+                }
+                if ($('.validation-summary-errors').children('ul').children('li').text().includes('City field is required')
+                 || $('.validation-summary-errors').children('ul').children('li').text().includes('Ville est requis')) {
+                    $('#cityfree-error').show();
+                }
+                if ($('.validation-summary-errors').children('ul').children('li').text().includes('Postal Code field is required')
+                 || $('.validation-summary-errors').children('ul').children('li').text().includes('Code postal est requis')) {
+                    $('#postalfree-error').show();
+                }
+                //#endregion Mandatory
+            }
+</script>
+
+
+
+

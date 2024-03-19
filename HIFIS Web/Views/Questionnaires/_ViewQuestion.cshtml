@@ -1,0 +1,20 @@
+﻿@model QuestionnaireQuestionViewModel
+      
+<div>
+    <h4 class="mrgn-tp-sm">@Labels.NumberAbbr</h4>
+    @Html.DisplayFor(m => m.QuestionNo)
+</div>  
+       
+<div>
+    @Html.DisplayFor(m => m.Question)
+</div>
+
+<div>
+     @Html.DisplayFor(m => m.QuestionTypeName)
+</div>
+
+@if (Model.IsDropdown())
+{
+     @Html.Partial("_ViewDropdown", Model.DropdownValues)
+}
+

@@ -1,0 +1,34 @@
+﻿@model ChoreViewModel
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ChoreID)
+@Html.HiddenFor(model => model.ClientID)
+
+<div>
+    @Html.HifisEditorFor(model => model.StayPeriodInfo.StayID, ViewBag.stayPeriodsList as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ChoreTypeID, CachedTableTypes.HIFIS_ChoreTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)
+</div>
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Description, new { @class = "mceEditor_Messaging" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Hours)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.Minutes)  
+</div>
+

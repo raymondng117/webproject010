@@ -1,0 +1,16 @@
+﻿@model ClientVitalsViewModel
+@{ 
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+<div>
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(ViewBag.ReadOnlyVitals)) 
+    
+    @Html.Partial("_ClientVitalsDisplay", Model)
+    
+    <div>
+        <br />
+        @Html.ActionLink(Labels.Edit, "UpdateVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" }) 
+    </div>
+</div>

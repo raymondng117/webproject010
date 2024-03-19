@@ -1,0 +1,70 @@
+﻿@model DietViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<section id="Modal_EditDiet" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditDiet</h2>
+    </header>
+
+    <div class="modal-body" style="overflow: hidden;">
+        <div id="EditDietFormSection" class="row">
+            <form id="editDietForm" class="form-horizontal">
+                @Html.Partial("_DietaryRequirement", Model)
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="editDietSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editDietCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $('input[id=ClientID]').val($('#HiddenClientID').val());
+
+    $("#editDietSaveBtn").click(function () {
+
+        if ($("#editDietForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/Diet/Edit")",
+                type: "POST",
+                data: $("#editDietForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#dietsTable').DataTable().ajax.reload();
+                    $("#editDietCloseBtn").click(); //Close the modal window on success
+                    
+                }
+            });
+        }
+    });
+
+    //on unit list redraw reinit hifis scripts and reinit lightboxes
+    $('#dietsTable').on('draw.dt', function () {
+        init_hifis();
+        $('.wb-lbx').trigger("wb-init.wb-lbx");
+    });
+</script>
+
+
+
+

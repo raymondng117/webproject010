@@ -1,0 +1,214 @@
+﻿@model OrganizationViewModel
+@{
+    if (Model.OrganizationID != null)
+    {
+        ViewBag.ViewTitle = Labels.OrganizationDetailsTitle + ": " + Model.CurrentName;
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.OrganizationDetailsTitle;
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("OrganizationEdit", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.HiddenFor(model => model.TopParentOrganizationID)
+    @Html.HiddenFor(model => model.CanSeeMale)
+    @Html.HiddenFor(model => model.CanSeeFemale)
+    @Html.HiddenFor(model => model.CanSeeYouth)
+    @Html.HiddenFor(model => model.CanSeeChildren)
+    @Html.HiddenFor(model => model.ChildhoodAge)
+    @Html.HiddenFor(model => model.YouthAge)
+    @Html.HiddenFor(model => model.SeniorAge)
+    @Html.HiddenFor(model => model.FamilyHeadAgeMin)
+    @Html.HiddenFor(model => model.CustomTablesName)
+    @Html.HiddenFor(model => model.EditingOrg)
+    @Html.HiddenFor(model => model.Privacy)
+
+    @Html.HiddenFor(model => model.CurrentName)
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details @Html.Partial("_MandatoryTab")</a>
+        </li>
+        <li>
+            <a class="tabButton" href="#Address" role="tab" data-toggle="tab">@Labels.Address @Html.Partial("_MandatoryTab")</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+        <div class="panel-body">
+            <div class="tab-content">
+                <div class="tab-pane active" id="Details">
+                    <div>
+                        @Html.HifisEditorFor(model => model.Name)
+                    </div>
+
+                    @if (Model.OrganizationID == null)
+                    {
+
+                        <div>
+                            @Html.HifisEditorFor(model => model.JoinCluster, "YesNo")
+                        </div>
+
+                        <div id="divClusterOption">
+                            @Html.HifisEditorFor(model => model.ClusterID, ViewBag.ClusterList as SelectList, null, new { id = "ddlCluster", @class = "type-required" })
+                        </div>
+
+                        <div id="divClusterName">
+                            @Html.HifisEditorFor(model => model.ClusterNameInput, null, new { id = "txtCluster", @class = "type-required" })
+                        </div>
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(model => model.ClusterID)
+                    }
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.ServiceProviderTypeID, CachedTableTypes.HIFIS_ServiceProviderTypes)
+                    </div>
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.ParentOrganizationID, ViewBag.OrganizationList as SelectList)
+                    </div>
+
+                    <div>
+                        @Html.HifisListBoxFor(model => model.GendersServed, CachedTableTypes.HIFIS_GenderTypes)
+                    </div>
+
+                    <div>
+                        @Html.HifisListBoxFor(model => model.Attributes, CachedTableTypes.HIFIS_OrgAttributeTypes)
+                    </div>
+
+                    <div>
+                        @Html.HifisListBoxFor(model => model.ServicesOffered, CachedTableTypes.HIFIS_ServicesOfferedTypes)
+                    </div>
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.TargetClienteleTypeID, CachedTableTypes.HIFIS_TargetClienteleTypes)
+                    </div>
+
+                    @if (Model.OrganizationID == null)
+                    {
+                        <div>
+                            @Html.HifisEditorFor(model => model.ReferrerCategTypeID, CachedTableTypes.HIFIS_ReferrerCategTypes)
+                        </div>
+                    }
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.AllowConcurrentStays, "YesNo")
+                    </div>
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.Active, "YesNo")
+                    </div>
+
+                    @if (Model.OrganizationID == null)
+                    {
+                        <div>
+                            @Html.HifisEditorFor(model => model.CopyMandatoriesFromSP, ViewBag.OrganizationList as SelectList)
+                        </div>
+                        <div>
+                            @Html.HifisEditorFor(model => model.CopyLookupsFromSP, ViewBag.OrganizationList as SelectList)
+                        </div>
+                    }
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.CutOffTime)
+                    </div>
+
+                    <div>
+                        @Html.HifisTextBoxFor(model => model.Telephone, new { type = "tel" })
+                        @Html.HifisEditorFor(model => model.Extension)
+                    </div>
+
+                    <div>
+                        @Html.HifisTextBoxFor(model => model.Fax, new { type = "tel" })
+                    </div>
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.Email)
+                    </div>
+
+                    <div>
+                        @Html.HifisEditorFor(model => model.Web)
+                    </div>
+                    <div>
+                        @Html.HifisTextAreaFor(model => model.Comments, new { @class = "largeCommentBox" })
+                    </div>
+
+                </div>
+                <div class="tab-pane" id="Address">
+                    <span id="AddressFormFields">@Html.Partial("_AddressSearch", Model.Address, "Address.")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mrgn-bttn-md">
+        <button type="submit" class="saveButton">@Labels.Save</button>
+        @Html.ActionLink(Labels.Cancel, "Index", "Organization", new { }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+    <br />
+}
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     $(function () {
+         if ($('#JoinCluster').bootstrapSwitch('state')) {
+             $('#divClusterName').hide();
+         }
+         else {
+             $('#divClusterOption').hide();
+             $('#txtCluster').siblings(".glyphicon-star").addClass("hide");
+         }
+     });
+
+     $('input[id="JoinCluster"]').on("switchChange.bootstrapSwitch", function (event, state) {
+         if (state == true) {
+             $('#divClusterOption').show();
+             $('#ddlCluster').siblings(".glyphicon-star").addClass("show");
+             $('#divClusterName').hide();
+             $('#txtCluster').siblings(".glyphicon-star").addClass("hide");
+
+         }
+         else {
+             $('#divClusterName').show();
+             $('#txtCluster').siblings(".glyphicon-star").addClass("show");
+             $('#divClusterOption').hide();
+             $('#ddlCluster').siblings(".glyphicon-star").addClass("hide");
+         }
+     });
+
+     function checkClusterIDRequired() {
+         if ($('#JoinCluster').bootstrapSwitch('state')) {
+             return true;
+         }
+         else {
+             return false;
+         }
+     }
+
+     function checkClusterNameRequired() {
+         if ($('#JoinCluster').bootstrapSwitch('state')) {
+             return false;
+         }
+         else {
+             return true;
+         }
+     }
+</script>
+);
+}

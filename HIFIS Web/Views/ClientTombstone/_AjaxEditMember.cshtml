@@ -1,0 +1,82 @@
+﻿@model ClientFamilyMemberDetailViewModel
+
+<section id="Modal_EditMember" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Model.MemberName - @Labels.ChangeFamilyStatus</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editFamilyMemberForm" class="form-horizontal">
+            <div>
+                @Html.HiddenFor(m => m.GroupID)
+                @Html.HiddenFor(m => m.PersonID)
+                @Html.HiddenFor(m => m.ClientID)
+                @Html.HiddenFor(m => m.ClientGroupID)
+                @Html.HiddenFor(m => m.CurrentClientID)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.GroupRoleTypeID, CachedTableTypes.HIFIS_GroupRoleTypes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ClientRelationshipTypeID, CachedTableTypes.HIFIS_PeopleRelationshipTypes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateStart)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateEnd)
+            </div> 
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="editFamilyMemberSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editFamilyMemberCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_EditMember');
+
+    $(function () {
+        $("#editFamilyMemberForm").hifisValidation();
+    });
+    
+    $("#editFamilyMemberSaveBtn").click(function () {
+
+        if ($("#editFamilyMemberForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+                url: "@Url.Content("~/ClientTombstone/EditMember")",
+                type: "POST",
+                data: $('#editFamilyMemberForm').serialize()
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#editFamilyMemberCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $(document).trigger("familyTable:change");
+                }
+                else {
+                    data.Result.message.forEach(function (element) {
+                        displayNotification('error', '', element);
+                    });
+                }
+            });
+        }
+    });
+
+</script>
+
+

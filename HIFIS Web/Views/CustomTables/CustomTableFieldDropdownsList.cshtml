@@ -1,0 +1,208 @@
+﻿@model CustomTableFieldDropdownListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CustomTableFieldDropdownList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<style type="text/css"> 
+    .hide_column {
+        display : none;
+    }
+</style>
+
+@Html.Partial("_ValidationSummaryOuter")
+
+    <div>
+        @if (!Model.CustomTableFieldDropdownList.IsEmptyOrNull())
+        {
+            <div class="table-responsive">
+                <table id="ctDropDownTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                    { "data": "up", "width": "2.5%"},
+                                                                                    { "data": "down", "width": "2.5%"},
+                                                                                    { "data": "namee", "width": "40%"},
+                                                                                    { "data": "namef", "width": "40"},
+                                                                                    { "data": "active", "width": "5%"},
+                                                                                    { "data": "rowdata", "className": "hide_column" },
+                                                                                    { "data": "actions", "width": "5%"}
+                                                                                ],
+                                                                                "paging":   false,
+                                                                                "ordering" : false,
+                                                                                "bFilter" : false,
+                                                                                "info" : false }'>
+                    <thead>
+                    <tr>
+                        <th class="align-text-center"><span class="glyphicon glyphicon-arrow-up"/></th>
+                        <th class="align-text-center"><span class="glyphicon glyphicon-arrow-down"/></th>
+                        <th>@Labels.NameE</th>
+                        <th>@Labels.NameF</th>
+                        <th>@Labels.Active</th>
+                        <th></th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>@{int counter = 0;}
+                    @foreach (var customTableFieldDropdown in Model.CustomTableFieldDropdownList)
+                    {
+                        <tr id="row_@customTableFieldDropdown.CustomFieldDropdownID" class="">
+                            <td>
+                                @Html.Button("Up", Labels.Up, HtmlButtonType.Button, null, new {@class = "glyphicon glyphicon-arrow-up noText"})
+                            </td>
+                            <td>
+                                @Html.Button("Down", Labels.Down, HtmlButtonType.Button, null, new {@class = "glyphicon glyphicon-arrow-down noText"})
+                            </td>
+                            <td class="">@Html.DisplayFor(m => m.CustomTableFieldDropdownList[counter].NameE)</td>
+                            <td class="">@Html.DisplayFor(m => m.CustomTableFieldDropdownList[counter].NameF)</td>
+                            <td class="align-text-center">@if (customTableFieldDropdown.IsActive)
+                                                          {<span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Active">&nbsp; </span>}</td>
+                            <td>
+                                <input type="hidden" class="finder" value="sequenceInput@(counter)"/>
+                            </td>
+                            <td class="align-text-center">
+                                @Html.ActionLink(Labels.EditCustomTableField, "EditCustomTableFieldDropdown", new {id = customTableFieldDropdown.CustomFieldDropdownID, customTableID = Model.CustomTableID}, new {@class = "editButton noText", alt=Labels.EditCustomTableField, aria_label = Labels.EditCustomTableField, @role = "button"})
+
+                            </td>
+                        </tr>
+                        counter++;
+                    }
+                    </tbody>
+                </table>
+
+                <br/>
+
+                @using (Html.BeginForm("UpdateCTFDropdownSequence", "CustomTables", FormMethod.Post, new {id = "form1"}))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.CustomFieldID)
+                    @Html.HiddenFor(m => m.CustomTableID)
+
+                    for (int i = 0; i < Model.CustomTableFieldDropdownList.Count; i++)
+                    {
+                        @Html.HiddenFor(m => m.CustomTableFieldDropdownList[i].Sequence, new {@class = "sequenceInput" + i})
+                        @Html.HiddenFor(m => m.CustomTableFieldDropdownList[i].CustomFieldDropdownID)
+                        @Html.HiddenFor(m => m.CustomTableFieldDropdownList[i].NameE)
+                        @Html.HiddenFor(m => m.CustomTableFieldDropdownList[i].NameF)
+                    }
+                }
+            </div>
+
+            if (RightsHelper.HasRight(UserRights.CustomTables_Fields_Dropdowns_Add))
+            {
+                @Html.ActionLink(Labels.viewTitle_NewCustomTableFieldDropdown, "NewCustomTableFieldDropdown", new { id = Model.CustomFieldID, customTableID = Model.CustomTableID }, new { @class = "addButton", alt=Labels.viewTitle_NewCustomTableFieldDropdown, aria_label = Labels.viewTitle_NewCustomTableFieldDropdown, @role = "button" })
+            }
+                        
+            @Html.ActionLink(Labels.AlphaOrder, "AlphaSortDropdowns", new { fieldID = Model.CustomFieldID, ctID = Model.CustomTableID }, new { @class = "orderButton", alt=Labels.AlphaOrder, aria_label = Labels.AlphaOrder, @role = "button" })
+
+            @Html.Button("", Labels.Save, HtmlButtonType.Submit, null, new { @class = "saveButton", form = "form1" })
+
+            @Html.ActionLink(Labels.Cancel, "CustomTableFieldsList", new { id = Model.CustomTableID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        }   
+        else
+        {
+            <p>@Labels.NoCustomFields</p>
+
+            if (RightsHelper.HasRight(UserRights.CustomTables_Fields_Dropdowns_Add))
+            {
+                @Html.ActionLink(Labels.viewTitle_NewCustomTableFieldDropdown, "NewCustomTableFieldDropdown", new { id = Model.CustomFieldID, customTableID = Model.CustomTableID }, new { @class = "addButton", alt=Labels.viewTitle_NewCustomTableFieldDropdown, aria_label = Labels.viewTitle_NewCustomTableFieldDropdown, @role = "button" })
+            }
+
+            @Html.ActionLink(Labels.Cancel, "CustomTableFieldsList", new { id = Model.CustomTableID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        }
+    </div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            //var table;
+
+            $(document).ready(function () {
+
+                //console.log(table + "Table");
+                $('#ctDropDownTable').on('init.dt', function () {
+                    //table = $('.dataTable').DataTable();
+
+                    console.log('Table initialisation complete: ' + new Date().getTime());
+                    
+                    $('#ctDropDownTable').on('draw.dt', function () {
+                        updateButtons();
+                    });
+
+                    // re-init buttons
+                    updateButtons();
+                });
+            });
+
+            // re-init buttons
+            function updateButtons() {
+                
+                // re-enable all buttons
+                $('.glyphicon').prop('disabled', false);
+
+                // disable the boundaries
+                $('#ctDropDownTable tbody tr:last .glyphicon-arrow-down').prop('disabled', true);
+                $('#ctDropDownTable tbody tr:first .glyphicon-arrow-up').prop('disabled', true);
+
+                // Remove previous binding before adding it
+                $('.glyphicon-arrow-up').unbind('click');
+                $('.glyphicon-arrow-down').unbind('click');
+
+                // Bind clicks to functions
+                $('.glyphicon-arrow-up').click(moveUp);
+                $('.glyphicon-arrow-down').click(moveDown);
+            }
+
+            // Move the row up
+            function moveUp() {
+                var tr = $(this).parents('tr');
+                decrement(tr);
+                increment(tr.prev());
+                moveRow(tr, 'up');
+            }
+
+            // Move the row down
+            function moveDown() {
+                var tr = $(this).parents('tr');
+                increment(tr);
+                decrement(tr.next());
+                moveRow(tr, 'down');
+            }
+
+            // Increment sequence val
+            function increment(selector) {
+                var hiddenSeq = "." + selector.find('.finder').val();
+                $(hiddenSeq).val(function (i, oldval) {
+                    return ++oldval;
+                });
+            }
+
+            // decrement sequence val
+            function decrement(selector) {
+                var hiddenSeq = "." + selector.find('.finder').val();
+                $(hiddenSeq).val(function (i, oldval) {
+                    return --oldval;
+                });
+            }
+            // Move up or down (depending...)
+            function moveRow(row, direction) {
+                
+                var index = $('#ctDropDownTable').DataTable().row(row).index();
+
+                var order = -1;
+                if (direction === 'down') {
+                    order = 1;
+                }
+
+                var data1 = $('#ctDropDownTable').DataTable().row(index).data();
+                data1.order += order;
+                var data2 = $('#ctDropDownTable').DataTable().row(index + order).data();
+                data2.order += -order;
+                
+                $('#ctDropDownTable').DataTable().row(index).data(data2);
+                $('#ctDropDownTable').DataTable().row(index + order).data(data1);
+
+                $('#ctDropDownTable').DataTable().page(0).draw(false);
+            }
+        </script>
+);
+}

@@ -1,0 +1,81 @@
+﻿@model CustomTablesListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CustomTableList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        @{ string classlink1 = (!Model.IncludeInactive ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Active, "CustomTablesList", "CustomTables", null, new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+        @{ string classlink2 = (Model.IncludeInactive ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.All, "CustomTablesList", "CustomTables", new { IncludeInactive = true }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+       <div class="clearfix"></div>
+    </div>
+    
+    <div>
+    @if (!Model.CustomTableList.IsEmptyOrNull())
+    {
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.NameE</th>
+                        <th>@Labels.NameF</th>
+                        <th>@Labels.ModuleType</th>
+                        <th>@Labels.ActiveYN</th>
+                        <th>@Labels.OneToMany</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customTable in Model.CustomTableList)
+                    {
+                        <tr>
+                            <td>@customTable.NameE</td>
+                            <td>@customTable.NameF</td>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ModuleTypes, Culture, customTable.ModuleTypeID)</td>
+                            <td>@if (customTable.IsActive)
+                                                        {<span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Active">&nbsp; </span>}</td>
+                            <td>@if (customTable.One2Many)
+                                                        {<span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.OneToMany">&nbsp; </span> }</td>
+                            <td class="text-center">
+
+                                @if (RightsHelper.HasRight(UserRights.CustomTables_Edit))
+                                { 
+	                                @Html.ActionLink(Labels.Table, "EditCustomTable", new { id = customTable.CustomTableID }, new { @class = "editButton", alt=Labels.Table, aria_label = Labels.Table , @role = "button"})
+                                    @Html.ActionLink(Labels.Layout, "CustomTableLayout", new { id = customTable.CustomTableID }, new { @class = "orderButton", alt=Labels.Layout, aria_label = Labels.Layout, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.CustomTables_Fields_Dropdowns_Edit))
+                                {
+                                    @Html.ActionLink(Labels.Fields, "CustomTableFieldsList", new { id = customTable.CustomTableID }, new { @class = "editButton", alt=Labels.Fields, aria_label = Labels.Fields, @role = "button" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>@Labels.NoCustomTables</p>
+    }
+    </div>
+    <div class="clearfix"></div>
+    <div class="mrgn-tp-md">
+        
+        @if (RightsHelper.HasRight(UserRights.CustomTables_Add))
+        {
+            @Html.ActionLink(Labels.CreateCustomTable, "NewCustomTable", null, new { @class = "addButton",alt=Labels.CreateCustomTable, aria_label = Labels.CreateCustomTable, @role = "button" })
+        }
+
+    </div>
+</div>

@@ -1,0 +1,194 @@
+﻿@model HIFIS.WEB.ViewModels.PitTemplateViewModel
+
+@{
+    ViewBag.Title = "EditPitTemplate";
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<h1>@Labels.EditPitTemplate</h1>
+
+<div>
+    <div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading" role="tab" id="tDetails">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#templateDetails" aria-expanded="false" aria-controls="templateDetails">
+                    @Labels.PitTemplate
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+        <div id="templateDetails" class="panel-collapse collapse" role="tabpanel" aria-labelledby="tDetails">
+            <div class="panel-body">
+                @using (Html.BeginForm("EditPitTemplate", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+                    <div>
+                        @Html.Partial("_EditPitTemplate", Model)
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="saveButton">@Labels.Save</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading" role="tab" id="scrQs">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#scrQuestions" aria-expanded="false" aria-controls="scrQuestions">
+                    @Labels.ScreeningQuestions
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+
+        <div id="scrQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="scrQs">
+            <div class="panel-body">
+                <div>
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>@Labels.PitQuestionSequenceNo</th>
+                                    <th>@Labels.Question</th>
+                                    <th>@Labels.PitQuestionSequenceLabel</th>
+                                    <th>@Labels.PitQuestionCategoryType</th>
+                                    <th>@Labels.QuestionType</th>
+                                    <th>@Labels.PossibleResponses</th>
+                                    <th>@Labels.Active</th>
+                                    <th>@Labels.InitiallyEnabledYN</th>
+                                    <th>@Labels.PitQuestionActionType</th>
+                                    <th>@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.Questions.IsEmptyOrNull())
+                                {
+                                    foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (short)PitQuestionCategories.Screening).OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+                                    {
+                                        @Html.Partial("_PitTemplateQuestion", question)
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading" role="tab" id="coreQs">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#coreQuestions" aria-expanded="false" aria-controls="coreQuestions">
+                    @Labels.PitCoreCOHQuestions
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+
+        <div id="coreQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="coreQs">
+            <div class="panel-body">
+                <div>
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.NumberSign</th>
+                                    <th>@Labels.PitQuestionSequenceNo</th>
+                                    <th>@Labels.Question</th>
+                                    <th>@Labels.PitQuestionSequenceLabel</th>
+                                    <th>@Labels.PitQuestionCategoryType</th>
+                                    <th>@Labels.QuestionType</th>
+                                    <th>@Labels.PossibleResponses</th>
+                                    <th>@Labels.Active</th>
+                                    <th>@Labels.InitiallyEnabledYN</th>
+                                    <th>@Labels.PitQuestionAction</th>
+                                    <th>@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.Questions.IsEmptyOrNull())
+                                {
+                                    foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (short)PitQuestionCategories.Core || q.QuestionCategoryTypeID == (short)PitQuestionCategories.COHCoreRelated).OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+                                    {
+                                        @Html.Partial("_PitTemplateQuestion", question)
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading" role="tab" id="cohQs">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#cohQuestions" aria-expanded="false" aria-controls="cohQuestions">
+                    @Labels.COHQuestions
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+
+        <div id="cohQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="cohQs">
+            <div class="panel-body">
+                <div>
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>@Labels.PitQuestionSequenceNo</th>
+                                    <th>@Labels.Question</th>
+                                    <th>@Labels.PitQuestionSequenceLabel</th>
+                                    <th>@Labels.PitQuestionCategoryType</th>
+                                    <th>@Labels.QuestionType</th>
+                                    <th>@Labels.PossibleResponses</th>
+                                    <th>@Labels.Active</th>
+                                    <th>@Labels.InitiallyEnabledYN</th>
+                                    <th>@Labels.PitQuestionActionType</th>
+                                    <th>@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.Questions.IsEmptyOrNull())
+                                {
+                                    foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (short)PitQuestionCategories.COH).OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+                                    {
+                                        @Html.Partial("_PitTemplateQuestion", question)
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <p>
+        @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Edit))
+        {
+            @Html.ActionLink(Labels.AddQuestion, "CreatePitTemplateQuestion", "PitEvents", new { pitTemplateID = Model.PitTemplateID }, new { @class = "addButton", alt=Labels.AddQuestion, aria_label = Labels.AddQuestion, @role = "button" })
+            @Html.ActionLink("Create XML File", "GeneratePitTemplateXML", "PitEvents", new { pitTemplateID = Model.PitTemplateID, templateName = Model.PitTemplateName, filename = Model.PitTemplateName + ".xml" }, new { @class = "saveButton", alt="Create XML File", aria_label = "Create XML File", @role = "button" })
+        }
+
+        @Html.ActionLink(Labels.Cancel, "PitTemplatesList", "PitEvents", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </p>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

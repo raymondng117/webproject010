@@ -1,0 +1,75 @@
+﻿@model IdentificationViewModel 
+
+
+
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ClientIdentificationID)  
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.PersonID)
+
+<div>
+    @Html.HifisEditorFor(model => model.IdentificationTypeID, CachedTableTypes.HIFIS_IdentificationTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ExpiryDate)
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.IdentificationNo)
+</div>
+        
+<div>
+    @Html.HifisTextAreaFor(model => model.Description)
+
+</div>
+    
+<div class="mrgn-bttm-md">
+    @Html.HifisEditorFor(model => model.Attachments, "File")
+</div>
+
+<div class="form-group">
+	<div class="col-sm-offset-3 col-sm-9">
+		<button type="submit" class="saveButton  ">@Labels.Save</button>
+        @Html.ActionLink(Labels.Cancel, "IdentificationList", "Identification", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	</div>
+</div>
+		 
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">  
+
+            var attachmentsDiv;
+            var emptyAttachment;
+
+            function AddAttachment() {
+                var att = emptyAttachment
+                            .clone(true)
+                            .attr('id','')
+                            .css('display', 'block');
+
+                att.find('input').prop('disabled', false);
+
+                attachmentsDiv.append(att);
+            }
+
+            $(function () {
+                attachmentsDiv = $('#attachmentsDiv');
+                emptyAttachment = $('#emptyAttachment');
+
+                emptyAttachment.hide();
+
+                $('#addAttachment').click(AddAttachment);
+
+                $('.removeAttachment').click(function (e) {
+                    $(e.target).parents('.attachment').remove();
+                });
+            });
+        </script>
+    );
+}

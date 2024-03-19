@@ -1,0 +1,9 @@
+﻿@* TODO: What is this??? - JdV *@
+@{
+    var htmlAttributes = HtmlHelper.AnonymousObjectToHtmlAttributes(ViewData["htmlAttributes"]);
+    htmlAttributes.Add("class", "form-control align-left");
+    htmlAttributes.Add("type", "number");
+}
+
+@Html.TextBoxFor(m => m, htmlAttributes)
+

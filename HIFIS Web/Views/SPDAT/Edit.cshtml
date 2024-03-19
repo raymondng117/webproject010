@@ -1,0 +1,35 @@
+﻿@model SPDATIntakeViewModel
+@{
+    ViewBag.ViewTitle = Labels.Edit + " " + Model.IntakeTypeName + " " + Labels.Intake;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="row">
+    <div class="col-xs-12">
+        @Html.Partial("_ValidationSummaryOuter")
+        
+        @using (Html.BeginForm("Edit", "SPDAT", FormMethod.Post, new { @class = "form-horizontal", id = "SPDATIntakeForm" }))
+        {
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+           <div id="Intake_FormPortion">
+                @Html.AntiForgeryToken()
+                @Html.Partial("_SPDATIntake", Model)
+            </div>
+
+            <div id="Question_FormPortion">
+                @Html.Partial("_SPDATQuestionList", Model)       
+            </div>         
+            
+            <div class="form-group">
+	            <div class="col-sm-offset-2 col-sm-10">
+		            <button type="submit" class="saveButton no-print">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "SPDAT", new { id = Model.PrimaryClientID }, new { @class = "cancelButton no-print", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	            </div>
+            </div>              
+        }
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+@Html.Partial("_SPDATProgressPanel")

@@ -1,0 +1,127 @@
+﻿@model ClientAppearanceViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayPhysicalAppearance;    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+<div class="displayView col-sm-offset-1 col-sm-11 mrgn-bttm-md">
+
+    <div class="row">
+        @Html.HifisLabelFor("ClientHeight", Labels.ClientHeight, new { @class = "col-md-3" })
+        <div class="col-sm-9">
+
+            <fieldset>
+                <div class="row">
+                    <input type="text" class="inputTextOnly" id="ClientHeight" name="ClientHeight_cm"
+                           value="@Html.DisplayFor(model => model.ClientHeightCM)" readonly style="width: 10%;"
+                           aria-label="@Labels.AriaLabel_ClientHeightInCM" />
+                    <label for="ClientHeight">@Labels.ClientHeightCM</label>
+                </div>
+
+                <div class="row">
+                    <input type="text" class="inputTextOnly" id="ClientHeight_ft" name="ClientHeight_ft"
+                           value="@Html.DisplayFor(model => model.ClientHeightFT)" readonly style="width: 10%;"
+                           aria-label="@Labels.AriaLabel_ClientHeightInFT" />
+                    <label class="mrgn-rght-sm" for="ClientHeight_ft">@Labels.ClientHeightFT</label>
+
+                    <input type="text" class="inputTextOnly" id="ClientHeight_in" name="ClientHeight_in"
+                           value="@Html.DisplayFor(model => model.ClientHeightIN)" readonly style="width: 10%;"
+                           aria-label="@Labels.AriaLabel_ClientHeightInIN" />
+                    <label for="ClientHeight_in">@Labels.ClientHeightIN</label>
+                </div>
+            </fieldset>
+        </div>
+        <hr />
+    </div>
+
+
+    <div class="row">
+        @Html.Label("ClientWeight", Labels.ClientWeight, new { @class = "col-md-3" })
+        <div class="col-sm-9">
+
+            <fieldset>
+                <div class="row">
+                    <input type="text" class="inputTextOnly" id="ClientWeight" name="ClientWeight_KG"
+                           value="@Html.DisplayFor(model => model.ClientWeightKG)" readonly style="width: 10%;"
+                           aria-label="@Labels.AriaLabel_ClientWeightInKG" />
+                    <label class="mrgn-rght-sm" for="ClientWeight">@Labels.ClientWeightKG</label>
+                </div>
+
+                <div class="row">
+                    <input type="text" class="inputTextOnly" id="ClientWeight_LB" name="ClientWeight_LB"
+                           value="@Html.DisplayFor(model => model.ClientWeightLB)" readonly style="width: 10%;"
+                           aria-label="@Labels.AriaLabel_ClientWeightInLB" />
+                    <label class="mrgn-rght-sm" for="ClientWeight_LB">@Labels.ClientWeightLB</label>
+                </div>
+            </fieldset>
+
+        </div>
+        <hr />
+    </div>
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.HairColorTypeID, new { @class = "col-md-3" })
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="HairColorTypeID" name="HairColorTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.HairColorTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HairColorTypes, Culture, Model.HairColorTypeID)
+                            })" readonly />
+        </div>
+        <hr />
+    </div>
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.EyeColorTypeID, new { @class = "col-md-3" })
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="EyeColorTypeID" name="EyeColorTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.EyeColorTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_EyeColorTypes, Culture, Model.EyeColorTypeID)
+                        })" readonly />
+        </div>
+    </div>
+
+</div>
+
+
+<h3>@Labels.DistinguishingFeatures</h3>
+<div class="table-responsive">
+    <table id="distinguishingFeatureTable" class="wb-tables table table-striped table-hover" 
+           data-wb-tables='{
+                "ajax": "@Url.Action("GetDistinguishingFeatureListJSON", "ClientTombstone", new { clientID = Model.ClientID, isDisplay = true })",
+                "columns": [
+                    { "data": "feature" },
+                    { "data": "description" },
+                    { "data": "actions" }
+                ]
+            }'>
+        <thead>
+            <tr>
+                <th>@Labels.Feature</th>
+                <th>@Labels.Description</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="row mrgn-tp-md">
+    <div class="col-sm-12">
+        <div class="btn-group">
+            @if (RightsHelper.HasRight(UserRights.Client_Appearance_Edit))
+            {
+                @Html.ActionLink(Labels.Edit, "UpdateAppearance", "ClientTombstone", new { id = Model.ClientID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button"  })
+            }
+        </div>
+
+    </div>
+</div>
+           

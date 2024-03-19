@@ -1,0 +1,25 @@
+﻿@model BedStatusHistoryViewModel
+
+@Html.Partial("_BaseHiddenFor", Model)
+
+@Html.HiddenFor(model => model.BedID)
+@Html.HiddenFor(model => model.BedName)
+@Html.HiddenFor(model => model.RoomID)
+@Html.HiddenFor(model => model.RoomName)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.ShelterName)
+@Html.HiddenFor(model => model.BedStatusHistoryID)
+@Html.HiddenFor(model => model.BedStatusTypeID)
+
+<div>
+    @Html.HifisEditorFor(model => model.StartDate)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.EndDate)
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.Comments)
+</div>
+

@@ -1,0 +1,56 @@
+﻿@model TemplateRightsViewModel
+
+@Html.Partial("_BaseHiddenFor", Model)
+
+<div>
+    @Html.HifisEditorFor(model => model.Name)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.OwnerOrganizationID, (ViewBag.Orgs != null ? ViewBag.Orgs as SelectList : new SelectList(new List<SelectListItem> { new SelectListItem() })))
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.SelectedOrganizationIDs, (ViewBag.ServiceProviders != null ? ViewBag.ServiceProviders as SelectList : Enumerable.Empty<SelectListItem>()))
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.ReportCategories, CachedTableTypes.HIFIS_ReportCategoriesTypes)
+</div>
+
+
+@if (Model.TemplateRightsID == null)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.CopyTemplateRightsID, ViewBag.templateList as SelectList)
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.TemplateRightsID)
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.ActiveYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Description)
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $("#OwnerOrganizationID").on('change', function () {
+                var ownerID = $(this).val();
+                $('#SelectedOrganizationIDs option').each(function () {
+                    if ($(this).val() == ownerID)
+                        $(this).prop('selected', true);
+                })
+            })
+
+        </script>
+    );
+}

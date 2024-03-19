@@ -1,0 +1,25 @@
+﻿@model ClientRisksViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditClientRisk;
+
+    ViewBag.LayoutView = LayoutPage.Client;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("EditRisk", "ClientFactors", FormMethod.Post, new { @class = "form-horizontal" }))
+{      
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.Partial("_RiskFactor", Model)
+
+    <div class="form-group">
+	    <div class="col-sm-offset-2 col-sm-10">
+		    <button type="submit" class="saveButton  ">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "ClientList", "ClientFactors", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+	    </div>
+    </div> 
+}
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+

@@ -1,0 +1,36 @@
+﻿  @model PeopleVitalsReadOnlyWrapperViewModel 
+ 
+    <div class="VitalsRO">
+        
+        <div class=" mrgn-bttm-0"><hr /></div>
+           
+        <div class=" mrgn-bttm-0">
+            @if (Model.ReadOnlyVitals.HasPicture)
+            {
+            <div class="wet-boew-lightbox">
+                <a href="@Url.Action("GetPeoplePhotoThumbnail", "Documents", new { id = Model.ReadOnlyVitals.PersonID})?.jpg" class="lb-item" title="@Model.ReadOnlyVitals.FirstName @Model.ReadOnlyVitals.LastName">
+                    <img alt="@Model.ReadOnlyVitals.FirstName @Model.ReadOnlyVitals.LastName" class="thumb" src="@Url.Action("GetPeoplePhotoThumbnail", "Documents", new { id = Model.ReadOnlyVitals.PersonID })" title="@Model.ReadOnlyVitals.FirstName @Model.ReadOnlyVitals.LastName" /><br />
+                    <span class="glyphicon glyphicon-zoom-in"></span><span class="font-xsmall color-accent">@Labels.Enlarge</span>
+                </a>
+            </div>
+            }
+            else
+            {
+                <img alt="" src="@Url.Content("~")Content/images/70px-No_Image_@(Model.ReadOnlyVitals.GenderID == (int)GenderTypes.Female ? "Female" : "Male").jpg" class="thumb"/>
+            }   
+        </div>
+            
+        <div>
+            <div><strong><span class="color-accent">@Labels.ClientFullName</span> <span class="color-attention">@Model.ReadOnlyVitals.LastName, @Model.ReadOnlyVitals.FirstName</span></strong></div>
+            <div><strong><span class="color-accent">@Labels.Gender</span></strong> @Model.ReadOnlyVitals.Gender</div>
+            <div><strong><span class="color-accent">@Labels.DOB</span></strong> @Model.ReadOnlyVitals.DOB.Value.Date.ToString("yyyy-MM-dd") (@Model.ReadOnlyVitals.AproximativeAge)</div>
+        </div>
+        <div>
+            <div><strong><span class="color-accent">@Labels.MiddleName</span></strong> @Model.ReadOnlyVitals.MiddleName</div>
+            <div><strong><span class="color-accent">@Labels.Aka1</span></strong> @Model.ReadOnlyVitals.Aka1</div>
+            <div><strong><span class="color-accent">@Labels.Aka2</span></strong> @Model.ReadOnlyVitals.Aka2</div>
+        </div>
+
+    </div>    
+    <div class=" mrgn-bttm-0"><hr /> </div>
+ <!--<br /><br />-->

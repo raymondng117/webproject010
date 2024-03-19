@@ -1,0 +1,50 @@
+﻿@model IdentificationViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_IdentificationAddEdit;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("EditIdentification", "Identification", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+    {  
+
+        @Html.Partial("_Identification")
+        
+        if (Model.AttachmentsDisplay != null && Model.AttachmentsDisplay.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.ExistingAttachments</th>
+                        </tr> 
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.AttachmentsDisplay.Count; i++)
+                        {
+                            <tr class="align-center">
+
+                                <td>
+                                    @if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                                    {
+                                        @Html.ActionLink(Model.AttachmentsDisplay[i].Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(Model.AttachmentsDisplay[i].DocumentID), ClientID = Model.ClientID }, new { alt = Model.AttachmentsDisplay[i].Name, aria_label = Model.AttachmentsDisplay[i].Name })
+                                    }
+                                    else
+                                    { 
+                                        @Model.AttachmentsDisplay[i].Name
+                                    }
+                                </td>
+
+                            </tr>
+                        }  
+                    </tbody>    
+                </table>
+            </div>
+        }    
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

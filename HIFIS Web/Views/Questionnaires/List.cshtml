@@ -1,0 +1,77 @@
+﻿@model List<QuestionnaireViewModel>      
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_QuestionnairesList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Name</th>
+                    <th>@Labels.OwnerOrg</th>
+                    <th>@Labels.NumberOfQuestions</th>
+                    <th>@Labels.Active</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.IsEmptyOrNull())
+                {
+                    foreach (var questionnaire in Model)
+                    {
+                        <tr>
+                            <td>@questionnaire.QuestionnaireName</td>
+                            <td>@questionnaire.OwnerOrgName</td>
+                            <td class="align-text-center">@(questionnaire.NumberOfQuestions.Equals(null) ? 0 : questionnaire.NumberOfQuestions)</td>
+                            <td>@(questionnaire.ActiveYN ? Labels.Yes : Labels.No)</td>
+                            <td class="align-text-left">
+
+                                @if (RightsHelper.HasRight(UserRights.Questionnaire_Edit, questionnaire.OwnerOrganizationID))
+                                { 
+                                    @Html.ActionLink(Labels.EditQuestionnaire, "EditQuestionnaire", new { id = questionnaire.QuestionnaireID }, new { @class = "editButton noText", alt=Labels.EditQuestionnaire, aria_label = Labels.EditQuestionnaire, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Questionnaire_Delete, questionnaire.OwnerOrganizationID))
+                                {
+                                    if (questionnaire.HasCompletedSurveys)
+                                    {
+                                        <span class="noText btn btn-default btn-sm" disabled="disabled" title="" data-toggle="tooltip" data-placement="top" data-trigger="hover" data-original-title="&nbsp;@Labels.msgRecordHasDependencies"><span class="glyphicon glyphicon-trash"></span></span>
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink(Labels.Delete, "DeleteQuestionnaire", new { questionnaireID = questionnaire.QuestionnaireID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                    }
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.ExportToExcelButton, questionnaire.OwnerOrganizationID) && questionnaire.NumberOfQuestions != 0 && questionnaire.HasCompletedSurveys)
+                                {
+                                    <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "Questionannire", "Excel", new { DataSetName = "History", QuestionnaireID = questionnaire.QuestionnaireID }, new { @class = "excelButton no-print noText", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+                                }
+                                else
+                                {
+                                    <span class="excelButton no-print noText float-right" disabled="disabled" data-toggle="tooltip" data-trigger="hover">@Labels.ExportToExcelDisabled</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <p>        
+        @if (RightsHelper.HasRight(UserRights.Questionnaire_Add))
+        { 
+            @Html.ActionLink(Labels.CreateQuestionnaire, "CreateQuestionnaire", "Questionnaires", null, new { @class = "addButton", alt=Labels.CreateQuestionnaire, aria_label = Labels.CreateQuestionnaire, @role = "button" })
+        }
+        
+    </p>
+</div>

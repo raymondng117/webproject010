@@ -1,0 +1,245 @@
+﻿
+@* Scripts that are needed on every page request, however need server info as well, example ViewBag *@
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@* Functions used to generate the client side menu *@
+@if (ViewBag.FamilyView != null)
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+		    @<script type="text/javascript">
+                    //opens family history menu from family screens
+                    function FamilyHistoryClick() {
+                        window.location.replace("/Clienttombstone/ClientFamilyList/" + $('#HiddenClientID').val());
+                    }
+            </script>
+        );
+    } 
+}  
+@* Functions used to generate the client side menu *@
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            function populateROVitals(data){
+                $('#hifis-client-profile').html(data);
+                initButtons();
+            }
+    
+            function getROVitals(clientID) {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/Master/GetROVitalsPartial") + "'",
+                    OnSuccess = "populateROVitals(data); ",
+                    Data = "{ClientID: clientID}"
+                });
+            }
+        </script>);
+}   
+
+
+@* Scripts used to access program information for transactions on the website *@
+@if (ViewBag.ProgramServiceID != null)
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+
+                //TODO: Get this out of the layout view! - JdV
+
+                $(function () {
+                    $("#ServiceProgramsButton").show();
+                    $("#ServiceProgramsButton").attr("disabled", false);
+                });
+
+                function cleanup() {
+                    renderBodyDiv.hide("fast");
+                    $("#programContentDiv").remove();
+                    $("#loader-icon").remove();
+                }
+
+                function finishAjax(data) {
+                    mainContentDiv.prepend("<div id='programContentDiv'></div>");
+
+                    $("#loader-icon").remove();
+
+                    $("#programContentDiv").html(data.Result);
+
+                    if (!jQuery().DataTable) {
+                        $(".wb-tables").trigger("wb-init.wb-tables");
+                    }
+
+                    init_hifis();
+                }
+
+                var mainContentDiv = $("#mainContentDiv");
+                var renderBodyDiv = $("#renderBodyDiv");
+                var loader = $('<img id="loader-icon" src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" alt="@Labels.Loading" style="display: block; margin-left: auto; margin-right: auto; margin-top:10%;" />');
+                
+                //Opens program menu from services edit view
+                function EditProgramsButtonClick() {
+                                        
+                    var button = $("#ServiceProgramsButton");
+                    var serviceID = button.attr("data-serviceid");
+                    var serviceTypeID = button.attr("data-service-type-id");
+
+                    $("#ServiceProgramsButton").attr("disabled", true);
+
+                    cleanup();
+                    mainContentDiv.prepend(loader);
+
+                    $.ajax({
+
+                        url: "@Url.Content("~/Programs/GetProgramListView?serviceID=")" + serviceID + "&serviceTypeID=" + serviceTypeID,
+                        type: "GET",
+
+                    }).done(function (data) {
+
+                        finishAjax(data);
+
+                        $("#ServiceProgramsButton").attr("disabled", false);
+                    });
+                }
+
+
+                function EditPaymentsButtonClick(programID, serviceID, programName) {
+                    cleanup();
+                    mainContentDiv.prepend(loader);
+
+                    $.ajax({
+
+                        url: "@Url.Content("~/Programs/GetPaymentListView?programID=")" + programID + "&serviceID=" + serviceID + "&programName=" + programName,
+                        type: "GET",
+
+                    }).done(function (data) {
+                        finishAjax(data);
+                    });
+                }
+
+                function backToService() {
+
+                    $('#programsDisplayText').html(
+                        $('#programListTable').DataTable()
+                            .columns(0)
+                            .data()
+                            .eq(0)      // Reduce the 2D array into a 1D array of data
+                            .sort()       // Sort data alphabetically
+                            .unique()     // Reduce to unique values
+                            .join(', ')
+                    );
+
+                    cleanup();
+
+                    renderBodyDiv.show("fast");
+
+                    //Make sure the pages CSS and JS style are reapply to hidden section
+                    init_hifis();
+                }
+            </script>
+        );
+    }
+}
+
+@* Script used to determine the last open tab on a page *@
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(document).ready(function () {
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+                    //save the latest tab; use cookies if you like 'em better:
+                    localStorage.setItem('lastTab', $(this).attr('href'));
+                });
+
+                //go to the latest tab, if it exists:
+                var lastTab = localStorage.getItem('lastTab');
+                if (lastTab) {
+                    $('a[href=' + lastTab + ']').tab('show');
+                }
+                else {
+                    // Set the first tab if cookie do not exist
+                    $('a[data-toggle="tab"]:first').tab('show');
+                }
+            })
+        </script>);
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">            
+            ///This will be used whenever an user tries to add or edit any client information
+            function interceptClick($element) {
+                $element.one("click", function (event) {
+                    event.preventDefault();
+                    ///Here add all functions that need to be called before the default click behaviour
+                    confirmConsent($element);
+                });
+            }
+
+            function confirmConsent($element) {
+                @if (appSettings != null)
+            {
+                <text>
+                var isConsentEnforced = '@appSettings.EnforceConsent()'.toLowerCase() === "true";
+                var clientHasConsent = $("#HasActiveConsent").val().toLowerCase() === "true";
+
+                if (isConsentEnforced && !clientHasConsent) {
+                    var clientPersonID = $("#PersonID").val();
+                    var clientFullName = $("#ClientFullName").val();
+                    var clientID = $("#HiddenClientID").val();
+                    var aproxAge = $("#AproximativeAge").val();
+                    var returnPath = window.location.href;
+                    window.location.href = '@Url.Action("ConsentRedirect", "Master")' + "?id=" + clientID
+                        + "&age=" + aproxAge
+                        + "&callback=" + returnPath
+                        + "&returnPath=" + returnPath
+                        + "&personID=" + clientPersonID
+                        + "&fullName=" + clientFullName;
+                } else {
+                    var clickExists = $._data($element.get(0), 'events') != undefined;
+                    if (clickExists) {
+                        $element.click();
+                    } else {
+                        window.location.href = $element.get(0).href;
+                    }
+                }
+                </text>
+            }
+                else
+                {
+                <text>
+                var clickExists = $._data($element.get(0), 'events') != undefined;
+                if (clickExists) {
+                    $element.click();
+                } else {
+                    window.location.href = $element.get(0).href;
+                }
+                </text>
+                    
+                }
+                
+            }
+
+        </script>);
+}
+
+@* On any form submit, display the processing overlay *@
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(document).ready(function () {
+                $("form").submit(function (e) {
+                    if ($(this).valid()) {
+                        $(wb.doc).trigger("open.wb-lbx", [[{ src: "#waiting-overlay", type: "inline" }], true]);
+                    }
+                });
+            })
+        </script>);
+}

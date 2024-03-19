@@ -1,0 +1,127 @@
+﻿@model AssetViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+<section id="Modal_DisplayAsset" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_DisplayAsset</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="displayView">
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssetTypeID, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="AssetTypeID" name="AssetTypeID"
+                           value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AssetTypes, Culture, Model.AssetTypeID))"
+                           readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssetAmount, new { @class = "col-xs-4 control-label", type = "number" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="AssetAmount" name="AssetAmount"
+                           value="@Html.DisplayFor(model => model.AssetAmount, new { @class = "money" })" readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.CountryID, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="CountryID" name="CountryID"
+                           value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CountryTypes, Culture, Model.CountryID))"
+                           readonly />
+                </div>
+            </div>
+
+            @if (Model.ProvinceID != null)
+            {
+                <div id="province" class="row">
+                    @Html.HifisLabelFor(model => model.ProvinceID, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="ProvinceID" name="ProvinceID"
+                               value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ProvinceTypes, Culture, Model.ProvinceID))"
+                               readonly />
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssetDateStart, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="AssetDateStart" name="AssetDateStart"
+                           value="@Html.DisplayFor(model => model.AssetDateStart)" readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssetDateEnd, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="AssetDateEnd" name="AssetDateEnd"
+                           value="@Html.DisplayFor(model => model.AssetDateEnd)" readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssetDescription, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    <input type="text" class="inputTextOnly" id="AssetDescription" name="AssetDescription"
+                           value="@Html.DisplayFor(model => model.AssetDescription)" readonly />
+                </div>
+            </div>
+
+            @if (appSettings.EnableSharing())
+            {
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="ShareYN" name="ShareYN"
+                               value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ShareYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")"
+                               readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="EditableYN" name="EditableYN"
+                               value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.EditableYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")"
+                               readonly />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button id="newPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script>
+
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_DisplayAsset');
+    @*if(@Model.ProvinceID == null)
+        $("#province").hide();
+    else
+        $("#province").show();*@
+
+    //$(function () { $("#excelParamForm").hifisValidation(); });
+
+    //$("#excelGetBtn").click(function () {
+
+    //    if ($("#excelParamForm").valid()) {
+    //        $("#excelParamForm").submit();
+    //    }
+    //});
+
+</script>
+
+

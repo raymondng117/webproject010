@@ -1,0 +1,81 @@
+﻿@model AssetViewModel          
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayAsset;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="AssetTypeID" name="AssetTypeID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AssetTypes, Culture, Model.AssetTypeID))" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetAmount, new { @class = "col-xs-4 control-label", type = "number" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="AssetAmount" name="AssetAmount"
+                   value="@Html.DisplayFor(model => model.AssetAmount, new { @class = "money" })" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CountryID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="CountryID" name="CountryID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CountryTypes, Culture, Model.CountryID))" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ProvinceID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="ProvinceID" name="ProvinceID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ProvinceTypes, Culture, Model.ProvinceID))" 
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="AssetDateStart" name="AssetDateStart"
+                   value="@Html.DisplayFor(model => model.AssetDateStart)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="AssetDateEnd" name="AssetDateEnd"
+                   value="@Html.DisplayFor(model => model.AssetDateEnd)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssetDescription, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="AssetDescription" name="AssetDescription"
+                   value="@Html.DisplayFor(model => model.AssetDescription)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="btn-group">
+                @if (RightsHelper.HasRight(UserRights.Financials_Assets_Liabilities_Edit))
+                {
+                    @Html.ActionLink(Labels.Edit, "EditAsset", "Financials", new { id = Model.ReadOnlyVitals.ClientID, assetID = Model.LiabilityOrAssetID }, new { @class = "editButton mrgn-rght-sm", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                }
+                @Html.ActionLink(Labels.Cancel, "Display", "Financials", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

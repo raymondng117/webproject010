@@ -1,0 +1,14 @@
+﻿@model StayViewModel
+@{
+    ViewBag.Title = "EditDetails";
+    ViewBag.ViewTitle = Labels.viewTitle_EditStay;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Admissions/_EditStay.cshtml"), ViewModel = Model })
+
+<div id="JSGlobalVar">
+    @Html.Partial("_SharedGlobalVar", Model)
+</div>
+
+@*@Scripts.Render("~/Scripts/AdmissionModule")*@

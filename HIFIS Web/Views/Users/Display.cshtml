@@ -1,0 +1,89 @@
+﻿@model UserProfileViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayUserProfile;
+    
+}
+
+    <div class=" displayView">
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.UserName, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.UserName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.UserFirstName, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.UserFirstName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.UserLastName, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.UserLastName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.GenderTypeID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.GenderTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture, Model.GenderTypeID)
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.CultureTypeID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.CultureTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_UserCultureTypes, Culture, Model.CultureTypeID)
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.OrganizationIDs, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                            new MultipleItemSelectList
+                            {
+                                IDs = Model.OrganizationIDs,
+                                List = ViewBag.SPList as SelectList
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DefaultOrganizationId, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.DefaultOrganizationName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ReportCategories, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                            new MultipleItemSelectList
+                            {
+                                IDs = Model.ReportCategories.Select(l => l.ToString()).ToList(),
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReportCategoriesTypes, Culture, Model.CultureTypeID)
+                            })
+        </div>
+
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.SelectedRoles, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                            new MultipleItemSelectList
+                            {
+                                IDs = Model.SelectedRoles.Select(l => l.ToString()).ToList(),
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, Culture, Model.SelectedRoles.Select(l => l.ToString()).ToList())
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.Comments, new { @class = "commentBoxSize", @readonly = "readonly" })
+        </div>
+
+        <div>
+            @Html.ActionLink(Labels.Cancel, "List", "Users", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>

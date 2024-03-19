@@ -1,0 +1,90 @@
+﻿@model HIFIS.WEB.ViewModels.ClientHIFISServiceViewModelList
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_FoodBankHistoryClient;   
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@if (Model.ReadOnlyVitals.IsServiceRestricted)
+{
+    <div class="row">
+        <div class="col-sm-12">
+			<div class="alert exception-panel">
+				<div class="mrgn-bttm-sm align-center">                                   
+					<h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+				</div>
+				<div>
+					<p>@Labels.FoodBankRestriction</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+<div>    
+    @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+
+    <div class="form-color-white module-form-block">   
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.ReasonForService</th>
+                        <th>@Labels.ServiceProvider</th>
+                        <th>@Labels.Date</th>
+                        <th>@Labels.NumberOfPeople</th>
+                        <th>@Labels.Action</th>          
+                    </tr>
+                </thead> 
+                @if (Model.ClientHIFISServicesListMini != null && Model.ClientHIFISServicesListMini.Count > 0)
+                {
+                    for (int i = 0; i < Model.ClientHIFISServicesListMini.Count; i++)
+                    {
+                        <tr>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, Culture, Model.ClientHIFISServicesListMini[i].ReasonType)</td>
+                            <td>@Html.DisplayFor(m => m.ClientHIFISServicesListMini[i].OrganizationName)</td>
+                            <td>@Html.DisplayFor(m => m.ClientHIFISServicesListMini[i].DateStart, "DateOnly")</td>
+                            <td>@Html.DisplayFor(m => m.ClientHIFISServicesListMini[i].NumberOfPeople)</td>
+                            <td class="align-text-center">
+
+                                @if (RightsHelper.HasRight(UserRights.FoodBanks_Display, Model.ClientHIFISServicesListMini[i].OrganizationID))
+                                { 
+                                    @Html.ActionLink(Labels.Display, "DisplayTransaction", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID, transactionID = Model.ClientHIFISServicesListMini[i].ServiceID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })  
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.FoodBanks_Edit, Model.ClientHIFISServicesListMini[i].OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.Edit, "EditTransaction", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID, transactionID = Model.ClientHIFISServicesListMini[i].ServiceID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })  
+                                }
+
+                            </td>
+                        </tr>
+                    }
+                }
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+   @if (!Model.ReadOnlyVitals.IsServiceRestricted || RightsHelper.HasRight(UserRights.Barred_Override))
+   {
+        <div class="mrgn-tp-md">            
+            @if (RightsHelper.HasRight(UserRights.FoodBanks_Display))
+            { 
+                @Html.ActionLink(Labels.NewFoodBank, "NewTransaction", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton  ", title = @Labels.New, alt=Labels.NewFoodBank, aria_label=Labels.NewFoodBank, @role = "button" })     
+            } 
+
+            @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+            {                        
+                <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "FoodBanks", DataSetName = "ClientList", ClientID = Model.ReadOnlyVitals.ClientID }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls="Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+            }        
+        </div>
+    }   
+</div>
+
+
+
+
+
+
+

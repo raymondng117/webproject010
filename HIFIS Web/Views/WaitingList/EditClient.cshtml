@@ -1,0 +1,43 @@
+﻿@model ClientWaitingListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditClientInWaitingLists;
+    
+    ViewBag.LayoutView = LayoutPage.Client;   
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("EditClient", "WaitingList", new { id = Model.ClientID, WaitingListID = Model.WaitingListID }, FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        @Html.HiddenFor(model => model.ClientWaitingListID)   
+        @Html.HiddenFor(model => model.ClientID)
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.CurrentStatusTypeID)
+        @Html.HiddenFor(model => model.ReturnToMain);
+
+        <div>
+            @Html.HifisEditorFor(model => model.WaitingListID, ViewBag.WaitingLists as SelectList, null, new { disabled=true })
+        </div>
+        
+        @Html.Partial("_ClientWaitingList", Model); 
+        
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				<button type="submit" class="saveButton">@Labels.Save</button>
+                @if (Model.ReadOnlyVitals.ClientID == null)
+                {
+                    @Html.ActionLink(Labels.Cancel, "ManageClients", "WaitingList", new { WaitingListID = Model.WaitingListID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+                else
+                {
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "WaitingList", new { id = Model.ClientID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+			</div>
+		</div>
+    }
+</div>
+

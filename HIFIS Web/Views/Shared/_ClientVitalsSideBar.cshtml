@@ -1,0 +1,383 @@
+﻿@model ClientVitalsReadOnlyViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@{
+    if (Model == null || Model.ClientID == null)
+    {
+        <div class="row">
+            <section class="col-md-12">
+                <div class="well well-sm mrgn-tp-sm">
+                    <h5 class="mrgn-tp-0">
+                        @HttpUtility.HtmlDecode(Labels.CouldNotShowClientProfile).
+                    </h5>
+                    @HttpUtility.HtmlDecode(Labels.NoClientSpecified)
+                </div>
+            </section>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @{
+                var pic = Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg");
+                if (Model.HasPicture && RightsHelper.HasRight(UserRights.Client_ProfilePicture_Display))
+                {
+                    pic = Url.Action("GetClientPhotoThumbnail", "Documents", new { id = Model.ClientID });
+                }
+                else
+                {
+                    switch ((GenderTypes)Model.GenderID)
+                    {
+                        case GenderTypes.Female: pic = Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg"); break;
+                        case GenderTypes.Male: pic = Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg"); break;
+                    }
+                }
+            }
+        </div>
+
+        <div class="row">
+
+            <section class="col-md-12 visible-md visible-lg">
+                @if (!Model.HasPicture && RightsHelper.HasRight(UserRights.Client_ProfilePicture_Add) && ViewBag.isPartial != true)
+                {
+                    <a href="@Url.Content("~/Documents/NewprofilePic?id=" + Model.ClientID)" aria-label=@Labels.AddProfilePicture.ToString() aria-controls="Modal_AddProfilePic" class="noText btn btn-default btn-sm updateButton opct-80 wb-lbx lbx-modal label label-default" role="button"><div class='glyphicon glyphicon-plus'></div>@Labels.AddProfilePicture</a>
+                }
+                else if (Model.HasPicture && RightsHelper.HasRight(UserRights.Client_ProfilePicture_Add) && ViewBag.isPartial != true)
+                {
+                    <a href="@Url.Content("~/Documents/NewprofilePic?id=" + Model.ClientID)" aria-label=@Labels.EditProfilePicture.ToString() aria-controls="Modal_AddProfilePic" class="noText btn btn-default btn-sm updateButton opct-80 wb-lbx lbx-modal label label-default" role="button"><div class='glyphicon glyphicon-pencil'></div>@Labels.EditProfilePicture</a>
+                }
+            </section>
+
+            <section class="col-md-12 visible-md visible-lg profile-frame">
+                @* Hiding the clientID for the selected client so its not necessary to parse the URL below to access the ID. *@
+                @Html.HiddenFor(model => model.HiddenClientID)
+                @Html.HiddenFor(model => model.ClientFullName)
+                @Html.HiddenFor(model => model.HasActiveConsent)
+                @Html.HiddenFor(model => model.PersonID)
+                @Html.HiddenFor(model => model.AproximativeAge)
+
+                <a id="vitalsSidebarLink" href="@Url.Action("DisplayVitals", "ClientTombstone", new { id = Model.ClientID })">
+                    <img class="img-rounded profile-image" alt="@Model.FirstName @Model.LastName" src="@pic" title="@Model.FirstName @Model.LastName - @Model.cID" style="@(Model.HasPicture ? "" : "width:250px; height:250px;")" />
+                </a>
+            </section>
+
+            <section class="col-md-12">
+                <div class="row">
+                    <div class="pstn-bttm-md col-md-12">
+                        <p class="text-right opct-80 well brdr-rds-0 well-sm mrgn-bttm-0"><strong>@Model.FirstName @Model.LastName</strong></p>
+                    </div>
+                    @if (RightsHelper.HasRight(UserRights.Client_Activity_Log))
+                    {
+                        <div class="pstn-bttm-md col-md-12 pad_bottom_margin_5 pad_left_margin_5">
+                            @Html.ActionLink(Labels.viewTitle_ClientActivityLog, "ClientActivityLogList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "noText listButton", alt=Labels.viewTitle_ClientActivityLog, aria_label = Labels.viewTitle_ClientActivityLog, @role = "button" })
+                        </div>
+                    }
+
+                </div>
+            </section>
+
+        </div>
+
+        <div class="row client-profile">
+
+            <section class="col-md-12">
+                @if (Model.HasActiveBar || Model.HasActiveBulletin || Model.HasActiveBehaviourFactor || Model.HasActiveWatchConcern || Model.HasActiveDiversionAttempt)
+                {
+                    <div class="well well-sm mrgn-tp-sm mrgn-bttm-sm">
+                        <div class="profile-outer-box">
+                            <div class="row profile-info">
+                                <div class="col-xs-6 text-left profile-info-content-vcentered">
+                                    <span>@Labels.ClientAlerts</span>
+                                </div>
+                                <div class="col-xs-6 text-right profile-info-content-vcentered">
+                                    @if (Model.HasActiveBulletin)
+                                    {
+                                        @Html.ActionLink(Labels.ClientBulletins, "ClientBulletins", "Bulletins", new { id = Model.ClientID }, new { @class = "viewButton noText", alt = Labels.ClientBulletins, aria_label = Labels.ClientBulletins, @role = "button" })
+                                    }
+                                    @if (Model.HasActiveBar)
+                                    {
+                                        @Html.ActionLink(Labels.ClientServiceRestrictions, "ClientList", "ServiceRestrictions", new { id = Model.ClientID }, new { @class = "alertButton noText", alt = Labels.ClientServiceRestrictions, aria_label = Labels.ClientServiceRestrictions, @role = "button" })
+                                    }
+                                    @if (Model.HasActiveBehaviourFactor)
+                                    {
+                                        var temp = Model.ClientID + "#BehaviouralFactors";
+                                        @Html.ActionLink(Labels.ClientBehaviouralFactors, "ClientList", "ClientFactors", new { id = temp }, new { @class = "warningButton noText", alt = Labels.ClientBehaviouralFactors, aria_label = Labels.ClientBehaviouralFactors, @role = "button" })
+                                    }
+                                    @if (Model.HasActiveWatchConcern)
+                                    {
+                                        var temp = Model.ClientID + "#WatchConcerns";
+                                        @Html.ActionLink(Labels.ClientWatchConcerns, "ClientList", "ClientFactors", new { id = temp }, new { @class = "eyeButton noText", alt = Labels.ClientWatchConcerns, aria_label = Labels.ClientWatchConcerns, @role = "button" })
+                                    }
+
+                                    @if (Model.HasActiveDiversionAttempt)
+                                    {
+                                        @Html.ActionLink(Labels.ClientDiversionAttempts, "ClientList", "Diversion", new { id = Model.ClientID }, new { @class = "alertButton noText", alt = Labels.ClientDiversionAttempts, aria_label = Labels.ClientDiversionAttempts, @role = "button" })
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </section>
+
+            <section class="col-md-12 visible-md visible-lg">
+                <div class="well well-sm mrgn-tp-sm mrgn-bttm-sm">
+                    <div class="profile-outer-box">
+                        @if (appSettings.EnforceConsent())
+                        {
+                            <div class="row profile-info">
+                                <div class="col-xs-6 text-left profile-info-content">
+                                    <label class="color-accent" for="ConsentStatus_Profile">@Labels.ConsentStatus</label>
+                                </div>
+                                <div class="col-xs-6 text-right profile-info-content">
+                                    @if (Model.HasActiveConsent)
+                                    {
+                                        <input type="text" class="inputTextOnly align-text-right text-success" id="ConsentStatus_Profile" name="ConsentStatus_Profile"
+                                               value="@Labels.Active" readonly style="width: 100%; font-weight: bold;" />
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="inputTextOnly align-text-right text-danger" id="ConsentStatus_Profile" name="ConsentStatus_Profile"
+                                               value="@Labels.Inactive" readonly style="width: 100%; font-weight: bold;" />
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content">
+                                <label class="color-accent" for="ClientStateType_Profile">@Labels.ClientStateType</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content">
+                                @switch ((ClientStateTypes)Model.ClientStateTypeID)
+                                {
+                                    case ClientStateTypes.Active:
+                                        <input type="text" class="inputTextOnly align-text-right text-success" id="ClientStateType_Profile" name="ClientStateType_Profile"
+                                               value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                             new SingleItemSelectList
+                                             {
+                                                 ID = Model.ClientStateTypeID,
+                                                 List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientStateTypes, ViewBag.CurrentCulture, Model.ClientStateTypeID)
+                                             })" readonly style="width: 100%; font-weight: bold;" />
+                                        break;
+
+                                    case ClientStateTypes.InActive:
+                                        <input type="text" class="inputTextOnly align-text-right text-danger" id="ClientStateType_Profile" name="ClientStateType_Profile"
+                                               value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                 new SingleItemSelectList
+                                                 {
+                                                     ID = Model.ClientStateTypeID,
+                                                     List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientStateTypes, ViewBag.CurrentCulture, Model.ClientStateTypeID)
+                                                 })" readonly style="width: 100%; font-weight: bold;" />
+                                        break;
+
+                                    case ClientStateTypes.Archived:
+                                        <input type="text" class="inputTextOnly align-text-right text-info" id="ClientStateType_Profile" name="ClientStateType_Profile"
+                                               value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                 new SingleItemSelectList
+                                                 {
+                                                     ID = Model.ClientStateTypeID,
+                                                     List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientStateTypes, ViewBag.CurrentCulture, Model.ClientStateTypeID)
+                                                 })" readonly style="width: 100%; font-weight: bold;" />
+                                        break;
+
+                                    case ClientStateTypes.Deceased:
+                                        <input type="text" class="inputTextOnly align-text-right text-warning" id="ClientStateType_Profile" name="ClientStateType_Profile"
+                                               value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                 new SingleItemSelectList
+                                                 {
+                                                     ID = Model.ClientStateTypeID,
+                                                     List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientStateTypes, ViewBag.CurrentCulture, Model.ClientStateTypeID)
+                                                 })" readonly style="width: 100%; font-weight: bold;" />
+                                        break;
+
+                                    default:
+                                        <input type="text" class="inputTextOnly align-text-right" id="ClientStateType_Profile" name="ClientStateType_Profile"
+                                               value="@Labels.NA" readonly style="width: 100%; font-weight: bold;" />
+                                        break;
+                                }
+                            </div>
+                        </div>
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content-vcentered">
+                                <label class="color-accent" for="HousingStatus_Profile">@Labels.HousingStatus</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content-vcentered">
+                                @if (Model.ClientHousingStatusTypeID <= 8) // Housed = 1, Homeless = 2, ChronicallyHomeless = 3, Unknown = 4, Transitional = 5, SuspectedHomeless = 6, SuspectedChronicallyHomeless = 7, PublicInstitution = 8
+                                {
+                                 <textarea type="text" class="inputTextOnly align-text-right text-warning" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                              readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow: hidden;">@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                          new SingleItemSelectList
+                                                          {
+                                                              ID = Model.ClientHousingStatusTypeID,
+                                                              List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                                          })
+                                </textarea>
+
+                                }
+                                else
+                                {
+                                    <textarea type="text" class="inputTextOnly align-text-right" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                              readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow:auto;">@Labels.NA</textarea>
+                                }
+
+                                @*@switch ((ClientHousingStatusTypes)Model.ClientHousingStatusTypeID)
+                                    {
+                                        case ClientHousingStatusTypes.Homeless:
+                                            <textarea type="text" class="inputTextOnly align-text-right text-warning" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                                      readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow: hidden;">@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                              new SingleItemSelectList
+                                                              {
+                                                                  ID = Model.ClientHousingStatusTypeID,
+                                                                  List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                                              })
+                                            </textarea>
+                                            break;
+
+                                        case ClientHousingStatusTypes.ChronicallyHomeless:
+                                            <textarea type="text" class="inputTextOnly align-text-right text-danger" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                                      readonly style="width: 100%; height: auto; font-weight: bold; resize: none; overflow: hidden;">@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                              new SingleItemSelectList
+                                                              {
+                                                                  ID = Model.ClientHousingStatusTypeID,
+                                                                  List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                                              })
+                                            </textarea>
+                                            break;
+
+                                        case ClientHousingStatusTypes.Housed:
+                                            <textarea type="text" class="inputTextOnly align-text-right text-success" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                                      readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow: hidden;">@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                              new SingleItemSelectList
+                                                              {
+                                                                  ID = Model.ClientHousingStatusTypeID,
+                                                                  List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                                              })</textarea>
+                                            break;
+
+                                        case ClientHousingStatusTypes.Unknown:
+                                            <textarea type="text" class="inputTextOnly align-text-right text-info" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                                      readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow: hidden;">@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                              new SingleItemSelectList
+                                                              {
+                                                                  ID = Model.ClientHousingStatusTypeID,
+                                                                  List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                                              })</textarea>
+                                            break;
+
+                                        case ClientHousingStatusTypes.Transitional:
+                                            <textarea type="text" class="inputTextOnly align-text-right text-info" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                                      readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow: hidden;">@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                              new SingleItemSelectList
+                                                              {
+                                                                  ID = Model.ClientHousingStatusTypeID,
+                                                                  List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                                              })</textarea>
+                                            break;
+
+                                        default:
+                                            <textarea type="text" class="inputTextOnly align-text-right" id="HousingStatus_Profile" name="HousingStatus_Profile"
+                                                      readonly rows="1" style="width: 100%; height: auto; font-weight: bold; resize: none; overflow:auto;">@Labels.NA</textarea>
+                                            break;
+                                    }*@
+                            </div>
+                        </div>
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content">
+                                <label class="color-accent" for="ChronicHomeless_Profile">@Labels.ChronicHomeless</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content">
+                                <input type="text" class="inputTextOnly align-text-right" id="ChronicHomeless_Profile" name="ChronicHomeless_Profile"
+                                        value="@(Model.IsChronicallyHomelessYN ? Labels.Yes : Labels.No)" readonly style="width: 100%;" />
+                            </div>
+                        </div>
+
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content">
+                                <label class="color-accent" for="FileNumber_Profile">@Labels.FileNumber</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content">
+                                <input type="text" class="inputTextOnly align-text-right" id="FileNumber_Profile" name="FileNumber_Profile"
+                                       value="@Model.FileNumber" readonly style="width: 100%; font-weight: bold;" />
+                            </div>
+                        </div>
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content-vcentered">
+                                <label class="color-accent" for="StaysCurrentStatus_Profile">@Labels.CurrentStays</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content-vcentered">
+                                @if (Model.StaysCurrentStatus == "")
+                                {
+                                    <input type="text" class="inputTextOnly align-text-right color-greyish" id="StaysCurrentStatus_Profile" name="StaysCurrentStatus_Profile"
+                                           value="@Labels.NotBookedStatus" readonly style="width: 100%;"/>
+                                }
+                                else
+                                {
+                                    <input type="text" class="inputTextOnly align-text-right color-greyish" id="StaysCurrentStatus_Profile" name="StaysCurrentStatus_Profile"
+                                           value="@Model.StaysCurrentStatus" readonly style="width: 100%;"/>
+                                }
+                            </div>
+                        </div>
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content">
+                                <label class="color-accent" for="Gender_Profile">@Labels.Gender</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content">
+                                <input type="text" class="inputTextOnly align-text-right" id="Gender_Profile" name="Gender_Profile"
+                                       value="@Model.Gender" readonly style="width: 100%;" />
+                            </div>
+                        </div>
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content">
+                                <label class="color-accent" for="DOB_Profile">@Labels.DOB</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content">
+                                @{string aproxAge = (Model.AproximativeAge != 0 ? @Model.AproximativeAge.ToString() : (DateTime.Now.Year - Model.DOB.Value.Year).ToString()); }
+                                <input type="text" class="inputTextOnly align-text-right" id="DOB_Profile" name="DOB_Profile"
+                                       value="@string.Format("{0} ({1})", @Model.DOB.Value.Date.ToString("yyyy-MM-dd"), @aproxAge)" readonly style="width: 100%;" />
+                            </div>
+                        </div>
+                        <div class="row profile-info">
+                            <div class="col-xs-6 text-left profile-info-content">
+                                <label class="color-accent" for="FamilyStatus_Profile">@Labels.FamilyStatus</label>
+                            </div>
+                            <div class="col-xs-6 text-right profile-info-content">
+                                <input type="text" class="inputTextOnly align-text-right" id="FamilyStatus_Profile" name="FamilyStatus_Profile"
+                                       value="@(Model.IsInFamily ? Labels.Yes : Labels.No)" readonly style="width: 100%;" />
+                            </div>
+                        </div>
+                        @if (Model.Aka1 != null)
+                        {
+                            <div class="row profile-info">
+                                <div class="col-xs-6 text-left profile-info-content-vcentered">
+                                    <label class="color-accent" for="Aka1_Profile">@Labels.Aka1</label>
+                                </div>
+                                <div class="col-xs-6 text-right profile-info-content-vcentered">
+                                    <input type="text" class="inputTextOnly align-text-right" id="Aka1_Profile" name="Aka1_Profile"
+                                           value="@Model.Aka1" readonly style="width: 100%;" />
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Aka2 != null)
+                        {
+                            <div class="row profile-info">
+                                <div class="col-xs-6 text-left profile-info-content-vcentered">
+                                    <label class="color-accent" for="Aka2_Profile">@Labels.Aka2</label>
+                                </div>
+                                <div class="col-xs-6 text-right profile-info-content-vcentered">
+                                    <input type="text" class="inputTextOnly align-text-right" id="Aka2_Profile" name="Aka2_Profile"
+                                           value="@Model.Aka2" readonly style="width: 100%;" />
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </section>
+        </div>
+    }
+
+}

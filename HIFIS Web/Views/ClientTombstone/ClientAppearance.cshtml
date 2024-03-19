@@ -1,0 +1,203 @@
+﻿@model ClientAppearanceViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PhysicalAppearance;
+
+    ViewBag.LayoutView = LayoutPage.Client;   
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("UpdateAppearance", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    <div class="col-sm-12 mrgn-bttm-md">
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ClientID)
+
+        <div class="row mrgn-bttm-md">
+            @Html.HifisLabelFor("ClientHeightCM", Labels.ClientHeight, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                <fieldset>
+                    <div class="row mrgn-bttm-md">
+                        <div class="col-sm-12">
+                            <div class="form-inline">
+                                @Html.HifisTextBoxFor(model => model.ClientHeightCM, new { @class = "wdth-strct-100", id = "ClientHeightCM" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mrgn-bttm-md">
+                        <div class="col-sm-10">
+                            <div class="form-inline">
+                                @Html.HifisTextBoxFor(model => model.ClientHeightFT, new { @class = "wdth-strct-100", id = "ClientHeightFT" })
+                                @Html.HifisTextBoxFor(model => model.ClientHeightIN, new { @class = "wdth-strct-100", id = "ClientHeightIN" })
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="row mrgn-bttm-md">
+            @Html.HifisLabelFor("ClientWeightKG", Labels.ClientWeight, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                <fieldset>
+                    <div class="row mrgn-bttm-md">
+                        <div class="col-sm-12">
+                            <div class="form-inline">
+                                @Html.HifisTextBoxFor(model => model.ClientWeightKG, new { @class = "wdth-strct-100", id = "ClientWeightKG" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mrgn-bttm-md">
+                        <div class="col-sm-12">
+                            <div class="form-inline">
+                                @Html.HifisTextBoxFor(model => model.ClientWeightLB, new { @class = "wdth-strct-100", id = "ClientWeightLB" })
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.HairColorTypeID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                @Html.HifisEditorFor(model => model.HairColorTypeID, CachedTableTypes.HIFIS_HairColorTypes, null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EyeColorTypeID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                @Html.HifisEditorFor(model => model.EyeColorTypeID, CachedTableTypes.HIFIS_EyeColorTypes, null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9">
+                <div class="form-group">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<div class="col-sm-12 mrgn-bttm-md">
+    <div class="row">
+
+        <h3>@Labels.DistinguishingFeatures</h3>
+        <div class="table-responsive">
+            <table id="distinguishingFeatureTable" class="wb-tables table table-striped table-hover"
+                   data-wb-tables='{
+                        "ajax": "@Url.Action("GetDistinguishingFeatureListJSON", "ClientTombstone", new { clientID = Model.ClientID })",
+                        "columns": [
+                            { "data": "feature" },
+                            { "data": "description" },
+                            { "data": "actions" }
+                        ]
+                    }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.Feature</th>
+                        <th>@Labels.Description</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 btn-group">
+                <a href="@Url.Content("~/ClientTombstone/GetAddDistinguishingFeatureForm?clientID=" + Model.ClientID)" aria-controls="Modal_AddDistinguishingFeature" class="wb-lbx lbx-modal addButton" role="button">@Labels.AddDistinguishingFeature</a>
+                @Html.ActionLink(Labels.Cancel, "DisplayVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            function convertHeightToMetric() {
+                //get imp values
+                var ft = parseInt($('#ClientHeightFT').val());
+                var ftToInches = ft * 12;
+                var totalInches = parseInt($('#ClientHeightIN').val()) + ftToInches;
+
+                //conversion to metric values
+                var totalCentimeters = totalInches * 2.54;
+                totalCentimeters = parseInt(totalCentimeters + 0.5);
+
+                $('#ClientHeightCM').val(totalCentimeters);
+                if (isNaN($('#ClientHeightCM').val()))
+                    $('#ClientHeightCM').val(null);
+            }
+
+            function convertHeightToImp() {
+                //get metric values
+                var totalCemtimetres = parseInt($('#ClientHeightCM').val());
+
+                //conversion to imp values
+                var totalInches = totalCentimeters * 0.39370;
+                var ft = totalInches / 12;
+                var inches = totalInches % 12;
+                inches = parseInt(inches + 0.5);
+                ft = parseInt(ft);
+
+                //conversion for 12 inches automatically changing to 1 foot instead
+                if (inches == 12)
+                {
+                    inches = 0;
+                    ft++;
+                }
+
+                //populate other field with converted data
+                $('#ClientHeightFT').val(ft);
+                if (isNaN($('#ClientHeightFT').val()))
+                    $('#ClientHeightFT').val(null);
+
+                $('#ClientHeightIN').val(inches);
+                if (isNaN($('#ClientHeightIN').val()))
+                    $('#ClientHeightIN').val(null);
+            }
+
+            $('#ClientHeightFT, #ClientHeightIN').keyup(convertHeightToMetric);
+            $('#ClientHeightCM').keyup(convertHeightToImp);
+
+            function convertWeightToMetric() {
+                var lb = parseInt($('#ClientWeightLB').val());
+                var lbToKG = lb / 2.2046;
+                lbToKG = parseInt(lbToKG + 0.5);
+
+                //populate other field with converted data
+                $('#ClientWeightKG').val(lbToKG);
+                if (isNaN($('#ClientWeightKG').val()))
+                    $('#ClientWeightKG').val(null);
+            }
+
+            function convertWeightToImp() {
+                var kg = parseInt($('#ClientWeightKG').val());
+                var kgToLB = kg * 2.2046;
+                kgToLB = parseInt(kgToLB + 0.5);
+
+                //populate other field with converted data
+                $('#ClientWeightLB').val(kgToLB);
+                if (isNaN($('#ClientWeightLB').val()))
+                    $('#ClientWeightLB').val(null);
+            }
+
+            $('#ClientWeightLB').keyup(convertWeightToMetric);
+            $('#ClientWeightKG').keyup(convertWeightToImp);
+        </script>
+    );
+}

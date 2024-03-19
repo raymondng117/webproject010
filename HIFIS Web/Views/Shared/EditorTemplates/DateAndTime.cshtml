@@ -1,0 +1,20 @@
+﻿@model System.DateTime?
+@{
+  DateTime? modelDate = (Model != null) ? Model.Value.Date : (DateTime?)null;
+  string dateString = Model.HasValue ? Model.Value.ToString("yyyy-MM-dd") : string.Empty;
+
+  TimeSpan? modelTime = (Model != null) ? Model.Value.TimeOfDay : (TimeSpan?)null;
+  string timeString = "";
+  if(System.Globalization.CultureInfo.CurrentUICulture.Name == "fr-CA")
+  { 
+      timeString += Model.HasValue ? new DateTime(Model.Value.Ticks).ToString("HH:mm") : string.Empty;
+  }
+  else
+  {
+      timeString += Model.HasValue ? new DateTime(Model.Value.Ticks).ToString("h:mm tt") : string.Empty;      
+  }
+  
+}
+@Html.TextBoxFor(m => m, new { id = ViewData["fieldName"], Name = ViewData["fieldName"], type = "date", Value = dateString }) @*, id = ViewData["fieldName"]*@ 
+@Html.TextBoxFor(m => m, new { id = ViewData["fieldName"] + "_TimeOfDay", Name = ViewData["fieldName"] + ".TimeOfDay", type = "text", realtype = "time", Value = timeString, @class = "form-control align-left" })  @* Name = ViewData["fieldName"],*@
+@*@Html.TextBox("Date", dateString, new { type="date", maxlength ="10" })@Html.TextBox("TimeOfDay", timeString, new { type="time", maxlength ="8", @class="form-control align-left" })*@

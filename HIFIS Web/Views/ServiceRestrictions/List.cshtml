@@ -1,0 +1,114 @@
+﻿@model ClientBarListViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    string fullServiceRestrictionsUrl = Url.Content("~/ServiceRestrictions/GetServiceRestrictionsFilteredJson");
+
+    ViewBag.ViewTitle = Labels.viewTitle_ServiceRestrictionsList;
+
+    ViewBag.ShowAll = Model.BarredFilterViewModel.ShowAll;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div class="mrgn-bttm-md">
+        <a aria-controls="filter-options" class="overlay-lnk filterButton openFilters" role="button">@Labels.FilterOptions</a>
+    </div>
+
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        @Html.HiddenFor(model => model.BarredFilterViewModel.ShowAll)
+
+        @{ string classlink1 = (Model.BarredFilterViewModel.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+        @Html.ActionLink(Labels.All, "List", new { showAll = true }, new { @class = classlink1, alt = Labels.All, aria_label = Labels.All, @role = "button" })
+
+        @{ string classlink2 = (!Model.BarredFilterViewModel.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+        @Html.ActionLink(Labels.Current, "List", new { showAll = false }, new { @class = classlink2, alt = Labels.Current, aria_label = Labels.Current, @role = "button" })
+
+        <div class="clearfix"></div>
+    </div>
+
+
+    <div class="table-responsive">
+
+
+        <table class="wb-tables table table-striped table-hover serviceRestrictionTable" data-wb-tables='{
+                    "columns": [
+                        {"data" : "clientFullName", "orderable": true, "type": "string", "name" : "FullName"},
+                        {"data" : "orgNames", "orderable": true, "type": "string", "name" : "ServiceProviders"},
+                        {"data" : "modules", "orderable": true, "type": "string", "name" : "Modules"},
+                        {"data" : "startDate", "orderable": true, "type": "string", "name" : "StartDate"},
+                        {"data" : "endDate", "orderable": true, "type": "string", "name" : "EndDate"},
+                        {"width": "16%", "data" : "reasonServiceRestricted", "orderable": true, "type": "string", "name" : "ReasonServiceRestricted"},
+                        {"width": "15%", "data" : "actions", "orderable": true, "type": "string"}
+                    ],
+                    "paging": true,
+                    "serverSide" : true,
+                    "processing" : true,
+                    "bFilter" : false,
+                    "ajax": "@fullServiceRestrictionsUrl" }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ClientFullName</th>
+                    <th>@Labels.ServiceProviders</th>
+                    <th>@Labels.Modules</th>
+                    <th>@Labels.StartDate</th>
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.ReasonServiceRestricted</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Barred_Add))
+        {
+            @Html.ActionLink(Labels.NewServiceRestrictions, "New", "ServiceRestrictions", null, new { @class = "addButton", alt = Labels.NewServiceRestrictions, aria_label = Labels.NewServiceRestrictions, @role = "button" })
+        }
+
+    </div>
+
+    @* Filters Panel *@
+    <section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel mrgn-md modal-lg">
+        <header class="modal-header">
+            <h2 class="modal-title">@Labels.FilterOptions</h2>
+        </header>
+        <div class="modal-body">
+            @Html.Partial("_ListSearchFilters", Model.BarredFilterViewModel)
+        </div>
+    </section>
+</div>
+
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             //open the filter panel and re-initialte style to make it pretty
+             $(document).on('click', '.openFilters', function () {
+
+                 if ($("#filter-panel").hasClass('open')) {
+                     $('#filter-panel').trigger('close.wb-overlay');
+                 }
+                 else {
+                     $('#filter-panel').trigger('open.wb-overlay');
+                     doSelect2Init();
+                 }
+
+             });
+
+             //close filter panel
+             $(document).on('click', '#closeFilters', function () {
+                 $("#filter-panel").trigger("close.wb-overlay");
+             });
+
+        </script>
+    );
+}

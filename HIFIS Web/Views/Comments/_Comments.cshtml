@@ -1,0 +1,31 @@
+﻿@model CommentViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(m => m.CommentsID)
+@Html.HiddenFor(m => m.CommentTypeID)
+@Html.HiddenFor(m => m.ClientID)
+@Html.HiddenFor(m => m.ParentCommentID)
+@Html.HiddenFor(m => m.OrganizationID)
+@Html.HiddenFor(m => m.EditableYN)
+
+<div>
+    @Html.HifisEditorFor(model => model.Subject)
+</div>
+
+@if (appSettings.EnableSharing())
+{
+    <div>
+        @Html.HifisEditorFor(m => m.ShareYN, "YesNo")
+    </div>
+}
+else
+{
+    @Html.HiddenFor(m => m.ShareYN)
+}
+                
+<div>
+    @Html.HifisTextAreaFor(model => model.CommentBody, new { @class = "largeCommentBox" })
+</div> 

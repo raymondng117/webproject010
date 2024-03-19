@@ -1,0 +1,72 @@
+﻿@model ClientEmergencyContactCommentViewModel
+@{ 
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class=" form-color-white ">
+    @using (Html.BeginForm("SaveContactComment", "ClientEmergencyContact", FormMethod.Post, new { @class = "form-horizontal" }))
+    {                    
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        <div>
+            <label class="label-gray">@Labels.ContactName</label>
+            <label class="labelValue-bold">@Html.DisplayTextFor(model => Model.ClientContacts[0].Name)</label>
+        </div>
+
+        <div>
+            <label class="label-gray">@Labels.ContactPhone</label>
+            <label class="labelValue-bold">@Html.DisplayTextFor(model => Model.ClientContacts[0].Phone)</label>
+        </div>
+        <br />
+        
+        <div>
+                @Html.Hidden("hidNewComment")
+                @Html.HiddenFor(model => Model.ClientContacts[0].PersonID)
+                @Html.HiddenFor(model => Model.ClientContacts[0].ClientID)
+                @Html.HiddenFor(model => Model.ClientContacts[0].ClientGroupID)
+                @Html.HiddenFor(model => Model.ClientContacts[0].DateEntered)
+                @Html.TextAreaFor(model => model.NewComment, new { cols = "89", rows = "4", @class="mrgn-bttm-0", id = "txtNewComment", onclick = "ClearDefaultTextComment()" })
+                <div class="commenthistory">@MvcHtmlString.Create(Model.ClientContacts[0].Comments)</div>
+        </div>
+                 
+        <br />
+        @Html.HiddenFor(model => Model.ReadOnlyVitals.ClientID)
+
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		        <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "FetchEmergencyContacts", "ClientEmergencyContact", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel , @role = "button"})
+	        </div>
+        </div> 
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            $(document).ready( function(){
+                    if (document.getElementById("txtNewComment").value == "")
+                    {
+                        $("#txtNewComment").val("@Labels.txtNewCommentPrompt");
+                        $("#hidNewComment").val("@Labels.txtNewCommentPrompt");
+                        $("#txtNewComment").css('color', 'gray');
+                    }
+
+            });
+            function ClearDefaultTextComment() {
+
+                if (document.getElementById("txtNewComment").value == document.getElementById("hidNewComment").value)
+                    {
+                        document.getElementById("txtNewComment").value = "";
+                        document.getElementById("txtNewComment").style.color = "black";
+                    }
+            }
+
+        </script>
+    );
+}

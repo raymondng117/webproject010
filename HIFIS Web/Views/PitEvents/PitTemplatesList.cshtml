@@ -1,0 +1,50 @@
+﻿@model List<PitTemplateViewModel>
+@{
+    ViewBag.ViewTitle = Labels.PiTTemplates;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Name</th>
+                    <th>@Labels.Active</th>
+                    <th>@Labels.Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.IsEmptyOrNull())
+                {
+                    foreach (var pitTemplate in Model)
+                    {    
+                        //  if (pitTemplate.PitTemplateID != ViewBag.PitTemplateNoDelete.PitTemplateID)
+                        {
+                        <tr>
+                            <td>@pitTemplate.PitTemplateName</td>
+                            <td>@(pitTemplate.ActiveYN ? Labels.Yes : Labels.No)</td>
+                            <td class="align-text-left">
+                                
+                                       
+                                    @Html.ActionLink(Labels.EditPitTemplate, "EditPitTemplate", new { pitTemplateID = pitTemplate.PitTemplateID }, new { @class = "editButton noText ", alt=Labels.EditPitTemplate, aria_label = Labels.EditPitTemplate, @role = "button" })
+                                    @Html.ActionLink(Labels.DeletePitTemplate, "DeletePitTemplate", new { pitTemplateID = pitTemplate.PitTemplateID }, new { @class = "deleteButton noText", alt=Labels.DeletePitTemplate, aria_label = Labels.DeletePitTemplate, @role = "button" })
+                                   
+                            </td> 
+                        </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+    <p>
+        @* Removed create template button, should only be used when developing a new PiT event *@
+        @*@Html.ActionLink(Labels.CreatePitTemplate, "CreatePitTemplate", "PitEvents", null, new { @class = "addButton" })*@
+    </p>
+</div>
+

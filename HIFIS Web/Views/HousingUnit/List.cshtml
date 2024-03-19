@@ -1,0 +1,174 @@
+﻿@model HousingUnitListViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = (ViewBag.LandlordPersonID == null ? "" : Labels.Landlord +  " - ") + Labels.viewTitle_HousingUnit;
+    string ajaxUrl = Url.Content("~/HousingUnit/UnitSearchResultsJson/?SP=true");
+
+    if (ViewBag.IsGeoRegionEnabled && ViewBag.LandlordPersonID ==null)
+    {
+        ajaxUrl += "&GeoID=" + ViewBag.CurrentGeoRegionID + "&IsActive=" + !ViewBag.ShowAll;
+    } else if (ViewBag.LandlordPersonID != null)
+    {
+        ajaxUrl = ajaxUrl.Replace("SP=true", "SP=" + ViewBag.LandlordUseServiceProvider);
+        ajaxUrl += "&LL=" + ViewBag.LandlordPersonID
+                 + "&GeoID=" + ViewBag.LandlordGeoRegionID
+                 + "&City=" + ViewBag.LandlordCityID
+                 + "&IsActive=" + !ViewBag.ShowAll;
+    }
+}
+
+<div>
+    <div id="radio" class="btn-group pddng-bttm-lg">
+        <ul class="list-unstyled">
+            <li class="btn-group btn-group-sm mrgn-bttm-md">
+                @{ string classlink1 = (!ViewBag.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.Active, "List", "HousingUnit", (ViewBag.LandlordPersonID == null ? null : new { landlordID = ViewBag.LandlordPersonID }), new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+                @{ string classlink2 = (ViewBag.ShowAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.All, "List", "HousingUnit", (ViewBag.LandlordPersonID == null ? (object)new { showAll = true, LandlordUseSP = "False" } : new { showAll = true, LandlordUseSP = "False", landlordID = ViewBag.LandlordPersonID }), new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+            </li>
+        </ul>
+    </div>
+
+    <br />
+    <p>
+        <a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+        <div class="clearfix"></div>
+        <div class="table-responsive">
+            <table id="unitListTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                { "width": "18%", "data": "orgs", "orderable": false, "type": "string"},
+                                                                { "width": "23%", "data": "address", "orderable": false, "type": "string"},
+                                                                { "width": "12%", "data": "type", "orderable": false, "type": "string"},
+                                                                { "width": "13%", "data": "status", "orderable": false, "type": "string"},
+                                                                { "width": "24%", "data": "properties", "orderable": false, "type": "string"},
+                                                                { "width": "10%", "data": "actions", "orderable": false, "type": "string"}
+                                                            ],
+                                                            "order": [ [0, "desc"] ],
+                                                            "serverSide": true,
+                                                            "processing": true,
+                                                            "bFilter" : false,
+                                                            "ajax": "@ajaxUrl"}'>
+                <thead>
+                    <tr>
+                        <th>@Labels.ServiceProviders</th>
+                        <th>@Labels.Address</th>
+                        <th>@Labels.HousingType</th>
+                        <th>@Labels.UnitStatus</th>
+                        <th>@Labels.Features</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="clearfix"></div>
+
+        <!-- Overlay Panel -->
+        <section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+            <header class="modal-header">
+                <h2 class="modal-title">@Labels.FilterOptions</h2>
+            </header>
+            <div class="modal-body">
+                @if (ViewBag.LandlordPersonID == null)
+                {
+                    @Html.Partial("_UnitSearchFilters", new UnitSearchFilterViewModel() { SP = true, GeoID = ViewBag.CurrentGeoRegionID, IsActive = !ViewBag.ShowAll })
+                }
+                else
+                {
+                    @Html.Partial("_UnitSearchFilters", new UnitSearchFilterViewModel()
+                    {
+                        SP = ViewBag.LandlordUseServiceProvider == null ? true : bool.Parse(ViewBag.LandlordUseServiceProvider),
+                                                                                          GeoID = (ViewBag.LandlordGeoRegionID == null ? null : short.Parse(ViewBag.LandlordGeoRegionID)),
+                                                                                          City = ViewBag.LandlordCityID,
+                                                                                          IsActive = !ViewBag.ShowAll
+                                                                                        })
+                }
+            </div>
+        </section>
+
+    <p>
+
+        @if (RightsHelper.HasRight(UserRights.HousingUnits_Add))
+        {
+            @Html.ActionLink(Labels.NewUnit, "New", (Model.LandlordPersonID == null ? null : new { landlordID = Model.LandlordPersonID }), new { @class = "addButton", alt=Labels.NewUnit, aria_label = Labels.NewUnit, @role = "button" })
+        }
+
+    </p>
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+    $(function () {
+        @*$.ajax({
+            url: "@Url.Action("GetUsedHousingTypes", "HousingUnit")",
+            type: "POST"
+        }).done(function (result) {
+            $('#HTS').append(makeOptions(result.data));
+        }).always(function () {
+            reinitSelect2($('#HTS'));
+        });*@
+
+        $.ajax({
+            url: "@Url.Action("GetLandlords", "HousingUnit")",
+            type: "POST"
+        }).done(function (data) {
+            $('#LL').append(makeOptions(data.Result));
+            var landlordId = '@(ViewBag.LandlordPersonID == null ? string.Empty : ViewBag.LandlordPersonID)';
+            $('#LL').val(landlordId);
+        }).always(function () {
+            reinitSelect2($('#LL'));
+        });
+    });
+
+    //open the filter panel
+    $('#openFilters').on('click', function () {
+        if ($("#filter-panel").hasClass('open'))
+            $('#filter-panel').trigger('close.wb-overlay');
+        else {
+            reinitSelect2($('#HTS'));
+            reinitSelect2($('#LL'));
+        }
+
+        $('#filter-panel').trigger('open.wb-overlay');
+    });
+
+    //when the filter panel opens reinit select2s
+    $(document).on('open.wb-overlay', function (event) {
+        doSelect2Init();
+    });
+
+    //on unit list redraw reinit hifis scripts and reinit lightboxes
+    $('#unitListTable').on('draw.dt', function () {
+        init_hifis();
+        $('.wb-lbx').trigger("wb-init.wb-lbx");
+    });
+
+    //close filter panel
+    $('#closeFilters').on('click', function () {
+        $("#filter-panel").trigger("close.wb-overlay");
+    });
+
+    //reapplies container class to the large select2 drop downs
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        select2InitFunctions.push(function () {
+            selector.select2(
+            {
+                allowClear: true,
+                placeholder: $("#DropdownPlaceholder").val(),
+                dropdownAutoWidth: true,
+                containerCssClass: "custom-select2-container"
+            });
+        });
+        doSelect2Init();
+    }
+
+</script>);
+}

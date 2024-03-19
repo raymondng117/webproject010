@@ -1,0 +1,24 @@
+﻿@model HIFIS.WEB.ViewModels.PitQuestionnaireViewModel
+@{
+	ViewBag.ViewTitle = Labels.CreatePitQuestionnaire;
+	
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+	@using (Html.BeginForm("CreatePitQuestionnaire", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+	{ 
+		<div>
+			@Html.Partial("_EditPitQuestionnaire", Model)
+		</div>  
+		  
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+				@Html.ActionLink(Labels.Cancel, "PitQuestionnairesList", "PitEvents", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"})
+			</div>
+		</div>
+	}   
+</div>

@@ -1,0 +1,202 @@
+﻿@model EncampmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.ManageEncampment;
+}
+
+@Html.HiddenFor(m => m.EncampmentID)
+@Html.HiddenFor(model => model.DateEnd, new { id = "EncampmentDateEnd" })
+
+<div class="mainDisplay">
+    <div id="displayForm" style="padding: 20px;">
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.EncampmentName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.EncampmentName)
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.EncampmentLocationTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.EncampmentLocationTypeID,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_EncampmentLocationTypes, ViewBag.CurrentCulture, Model.EncampmentLocationTypeID)
+                                    })
+                </div>
+                <div class="row" id="reasonForDisbandedDiv">
+                    @Html.HifisLabelFor(model => model.ReasonForDisbandedTypes, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.ReasonForDisbandedTypes,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForDisbandedTypes, ViewBag.CurrentCulture, Model.ReasonForDisbandedTypes)
+                                    })
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.DateStart)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.DateEnd)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+        </div>
+        <br />
+
+        <div class="row no-print">
+            @Html.ActionLink(Labels.Edit, "EditEncampment", "Outreach", new { encampmentID = Model.EncampmentID, returnView = "Manage" }, new { @class = "editButton ", title = Labels.Edit, id = "edit-btn", @role = "button" })
+            @Html.ActionLink(Labels.Back, "EncampmentList", "Outreach", new { }, new { @class = "backButton  ", title = Labels.Back, @role = "button" })
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+
+        @if (RightsHelper.HasRight(UserRights.GroupActivities_ClientList))
+        {
+            <li class="active">
+                <a class="tabButton" href="#Attendees" role="tab" data-toggle="tab">@Labels.viewTitle_Clients</a>
+            </li>
+        }
+
+        <li id="mapTab" class="disabled">
+            <a class="tabButton" id="mapTabLink" href="#Location" style="background-color:lightgrey" role="tab">@Labels.Location</a>
+        </li>
+
+        <li>
+            <a class="tabButton" href="#Demographics" role="tab" data-toggle="tab">@Labels.Demographics</a>
+        </li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+        <div class="panel-body">
+            <div class="tab-content">
+
+                @if (RightsHelper.HasRight(UserRights.GroupActivities_ClientList))
+                {
+                    <!-- Tab Pane #1: Attendees -->
+                    <div class="tab-pane active" id="Attendees">
+                        @Html.Partial("_Attendees", Model)
+                    </div>
+                }
+
+                <!-- Tab Pane #2: Location -->
+                <div class="tab-pane" id="Location">
+
+                    @Html.HiddenFor(m => m.Address.Latitude, new { id = "Latitude" })
+                    @Html.HiddenFor(m => m.Address.Longitude, new { id = "Longitude" })
+                    <div id="location-info" class="alert alert-info" style="display:none;" role="alert">
+                        <p id="location-info-text">@Labels.NoEncampmentLocation</p>
+                    </div>
+                    <div class="row">
+                        <div id="mappingSection" class="col-sm-6">
+                            <div id="MapContainer">
+                            </div>
+                            <br />
+                        </div>
+                        <div class="col-sm-6">
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- Tab Pane #3: Demographics -->
+                <div class="tab-pane" id="Demographics">
+                    @Html.Partial("_Demographics", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mrgn-tp-lg">
+    @Html.HiddenFor(model => model.EncampmentID)
+    @Html.HiddenFor(model => model.Address.AddressID)
+    @Html.HiddenFor(model => model.ClusterID)
+    @Html.Partial("_BaseFooter", Model)
+</div>
+
+<script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=EnableMap" async defer></script>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     //resizes the data table columns when you switch tabs, hidden tabs break table width.
+     $(document).ready(function () { 
+         // hides the reason for disbanded on page load if dateEnd is not provided
+         var encampmentDateEnd = $("#EncampmentDateEnd").val();
+         if ((encampmentDateEnd == null || encampmentDateEnd == "")) {
+             $('#reasonForDisbandedDiv').hide();
+         }
+
+         $('[href=#Location]').on('shown.bs.tab', function (e) {
+             console.log("Location tab opened...");
+
+             if ($("#Latitude").val() && $("#Longitude").val()) {
+                 console.log("Location found, building map...");
+                 encampmentLocation = {
+                     lat: $("#Latitude").val(),
+                     long: $("#Longitude").val()
+                 };
+                 buildMap(encampmentLocation);
+             }
+             else {
+                 console.log("No location found...");
+                 $('#location-info').show();
+             }
+         });
+     });
+
+     $(document).on('draw.dt', function () {
+         init_hifis();
+     });
+
+    var mapView = $('#mappingSection');
+    var map;
+
+    function EnableMap() {
+        $('#mapTab').removeClass('disabled');
+        $('#mapTabLink').css( 'background-color', '');
+        $('#mapTabLink').attr('data-toggle', 'tab');
+    }
+
+
+     function buildMap(data) {
+
+        var options = {
+            credentials: '@ViewBag.Key',
+            enableSearchLogo: false
+        };
+
+        if (typeof data === 'object' && data !== null) {
+            var loc = eval(data);
+            options.center = new Microsoft.Maps.Location(loc.lat, loc.long);
+        }
+
+        // Create and assign the map object!
+         map = new Microsoft.Maps.Map('#MapContainer', options);
+         $('#MapContainer').css({ "height": "598px", "width": "848px", "border": "thin solid black" });
+
+        //if an existing location exists
+        if ($("#Latitude").val() && $("#Longitude").val()) {
+            var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location($("#Latitude").val(), $("#Longitude").val()), {
+                draggable: false,
+                visible: true,
+                color: 'orangered',
+            });
+
+            map.entities.push(pin);
+        }
+    }
+</script>
+);
+}

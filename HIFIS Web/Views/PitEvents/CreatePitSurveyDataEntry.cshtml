@@ -1,0 +1,133 @@
+﻿@model HIFIS.WEB.ViewModels.PitSurveyViewModel
+@{
+    ViewBag.ViewTitle = Labels.CreatePitSurveyDataEntry;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("CreatePitSurveyDataEntry", "PitEvents", FormMethod.Post, new { @class = "form-horizontal", id = "pitForm" }))
+{
+    <div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading" role="tab" id="sDetails">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#surveyDetails" aria-expanded="true" aria-controls="surveyDetails">
+                    @Labels.SurveyDetails
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h4>
+        </div>
+        <div id="surveyDetails" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="sDetails">
+            <div id="Survey_FormPortion" class="panel-body">
+                @Html.Partial("SurveyPartials/_EditPitSurvey", Model)
+            </div>
+        </div>
+    </div>
+
+
+    <div id="SurveyQuestions_FormPortion">
+        @Html.Partial("SurveyPartials/_EditPitSurveyQuestions", Model)
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="saveButton" id="dataEntrySubmitButton">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "PitSurveysList", "PitEvents", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+}
+
+@using (Html.BeginScriptContext()) // handling Question dependencies
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+        $(function () {
+            $("#dataEntrySubmitButton").attr("disabled", true);           
+
+			$('[pit-fam-button="true"]').attr('href', $('[pit-fam-button="true"]').attr('href')
+				+ '&shiftID=' + $('#ShiftID').val()
+                + '&surveyNo=' + $('#SurveyNo').val());
+		});
+   
+        $('#surveyNumber').blur(function () {
+
+			$('#surveyNumber').focusin(function () {
+				$("#dataEntrySubmitButton").attr("disabled", true);
+			});
+
+			var surveyNo = $('#surveyNumber').val();
+
+            if (surveyNo != "" && surveyNo != 0) {
+
+				displayNotification("info", "@Labels.Notice", "@Labels.VerifyingSurveyNumber");
+
+				$.ajax({
+					url: "@Url.Content("~/PitEvents/CheckSurveyNumberExists")",
+					type: "GET",
+					data: { "surveyNumber": surveyNo },
+				}).done(function (data) {
+
+					if (data.Success) {
+						if (data == surveyNo) // if the data is equal to SurveyNo then Survey Number does not  exist
+						{
+							$('#surveyNumber').val(data.Result);
+							displayNotification("success", "@Labels.PitSurveyNo" + ": " + data.Result, "@Labels.Success");
+
+							$("#dataEntrySubmitButton").attr("disabled", false);
+						}
+						else {
+							$('#surveyNumber').val(data.Result);
+							displayNotification("success", "@Labels.New" + " " + "@Labels.PitSurveyNo" + ": " + data.Result, "@Labels.Success");
+
+							$("#dataEntrySubmitButton").attr("disabled", false);
+						}
+					}
+					else
+					{
+						displayNotification("error", data.Result, "@Labels.Error");
+					}
+				})
+            }
+		});
+
+		$('#pitForm').submit(function () {
+			var totalOfQuestions = 1;
+			var completedQuestionsQty = 0;
+			var completedQuestionsPercentage = 0;
+
+			totalOfQuestions = $("#SurveyQuestions_FormPortion :input[id*='Question_']")
+						.filter(function () {
+							return $("#" + this.id).parents('[id^=form-group_]').css("display") != 'none';
+						}).length;
+
+			completedQuestionsQty = $("#SurveyQuestions_FormPortion :input[id*='Question_']")
+						.filter(function () {
+							return this.value != undefined && this.value != null && this.value != "";
+						}).length;
+
+			completedQuestionsPercentage = parseInt((completedQuestionsQty / totalOfQuestions) * 100);
+
+			var isComplete = (completedQuestionsPercentage == 100);
+
+			var scrTotal = $("#scrQuestions :input[id*='Question_']")
+					.filter(function () {
+						return $("#" + this.id).parents('[id^=form-group_]').css("display") != 'none';
+					}).length;
+
+			var scrAns = $("#scrQuestions :input[id*='Question_']")
+				.filter(function () {
+					return this.value != undefined && this.value != null && this.value != "";
+				}).length;
+
+			if ((scrTotal == scrAns) && ($("#PitScreenedIN").val() == "false" || $("#PitScreenedIN").val() == "False")) {
+				$("#IsComplete").val(true);
+			} else {
+				$("#IsComplete").val(isComplete);
+			}
+
+			return true; // return false to cancel form action
+		});
+</script>);
+}
+

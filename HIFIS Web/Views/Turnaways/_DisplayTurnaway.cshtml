@@ -1,0 +1,102 @@
+﻿@model TurnawayViewModel 
+
+<div class=" displayView">
+
+    @Html.HiddenFor(model => model.OrganizationID)
+
+    <div id="familyInputs" class="row">
+        @Html.HifisLabelFor(model => model.ClientsFamilyIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+            new MultipleItemSelectList
+            {
+                IDs = Model.ClientsFamilyIDs,
+                List = ViewBag.clientFamilyList as SelectList
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.EffectiveDT, new { @class = "autowidth" })
+        @Html.HifisDisplayFor(model => model.EffectiveDT, null, true, "DateAndTime")
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.NumOfAdults, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.NumOfAdults)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.NumOfChildren, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.NumOfChildren)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReasonForServiceTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList
+            {
+                ID = Model.ReasonForServiceTypeID,
+                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, ViewBag.CurrentCulture)
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReasonsForTurnawayTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList
+            {
+                ID = Model.ReasonsForTurnawayTypeID,
+                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonsForTurnawayTypes, ViewBag.CurrentCulture)
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OnBehalfOfID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList
+            {
+                ID = Model.OnBehalfOfID,
+                List = ViewBag.Staff as SelectList
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisDisplayFor(model => model.ReferredByName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FromReferrerPlaceID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.FromReferralName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ToReferrerPlaceID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.ToReferralName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssociatedProgramIDs)
+        <div>
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                new MultipleItemSelectList
+                {
+                    IDs = Model.AssociatedProgramIDs,
+                    List = ViewBag.ProgramList as SelectList
+                })
+        </div>
+    </div>
+
+
+    <div>
+        <label class="control-label wdth-strct-200">@Labels.Comment</label>
+        @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+    </div>
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Turnaways_Edit, Model.OrganizationID))
+        {
+            @Html.ActionLink(Labels.Edit, "Edit", "Turnaways", new { id = Model.PrimaryClientID, turnawayID = Model.TurnawayID }, new { @class = "editButton", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+
+        @Html.ActionLink(Labels.Cancel, "ClientList", "Turnaways", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>

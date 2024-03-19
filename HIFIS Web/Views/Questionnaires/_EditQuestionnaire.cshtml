@@ -1,0 +1,25 @@
+﻿@model QuestionnaireViewModel
+
+@Html.AntiForgeryToken()
+
+@Html.HiddenFor(model => model.QuestionnaireID)
+
+<div>
+    @Html.HifisEditorFor(m => m.Name)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.NameF)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(m => m.SelectedOrganizationIDs, (ViewBag.Orgs != null ? ViewBag.Orgs as SelectList : Enumerable.Empty<SelectListItem>()))
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.OwnerOrganizationID, (ViewBag.Orgs != null ? ViewBag.Orgs as SelectList : Enumerable.Empty<SelectListItem>()))
+</div>

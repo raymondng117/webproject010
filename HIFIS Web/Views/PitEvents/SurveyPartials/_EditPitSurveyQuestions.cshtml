@@ -1,0 +1,157 @@
+﻿@using CsQuery.ExtensionMethods
+@model PitSurveyViewModel
+
+@{
+    var screeningQuestions =
+        Model.Questions
+            .Where(q => q.QuestionCategoryTypeID ==
+                        (int) PitQuestionCategories.Screening
+                        && ((Model.PitQuestionnaire.HiddenHomelessnessYN && q.HiddenHomelessness)
+                            || (!Model.PitQuestionnaire.HiddenHomelessnessYN && !q.HiddenHomelessness)))
+            .OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo).ToList();
+
+        
+
+    var screenCount = screeningQuestions.Count();
+    screeningQuestions.ForEach(c => c.QuestionSeed = 0);
+    //var screenCounter = 0;
+    ViewBag.QuestionWell = "well well-lg";
+
+    if (screeningQuestions.Any())
+    {
+        <div class="panel panel-default mrgn-tp-md">
+            <div class="panel-heading" role="tab" id="scrQs">
+                <h2 class="panel-title">
+                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#scrQuestions" aria-expanded="false" aria-controls="scrQuestions">
+                        @Labels.PitScreeningQuestions
+                        <span class="caret pull-right mrgn-tp-sm"></span>
+                    </a>
+                </h2>
+            </div>
+
+            <div id="scrQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="scrQs">
+                <div class="panel-body">
+                    <div>
+                        @foreach (var questionGroup in screeningQuestions.GroupBy(q => q.QuestionNo))
+                        {
+                            @Html.Partial("SurveyPartials/_EditPitSurveyQuestionAnswer", questionGroup)//, "Questions[" + (screenCounter++) + "].")
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    var coreQuestions = Model.Questions.Where(q => q.QuestionCategoryTypeID == (int) PitQuestionCategories.Core
+                                                   || q.QuestionCategoryTypeID == (int) PitQuestionCategories.COHCoreRelated)
+        .OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo).ToList();
+
+    var coreCount = coreQuestions.Count();
+    var coreIncrement = 0;
+    //coreQuestions.ForEach(c => c.QuestionSeed = screenCount);
+    //var coreCounter = 0;
+
+    if (coreQuestions.Any())
+    {
+        <div class="panel panel-primary mrgn-tp-md">
+            <div class="panel-heading" role="tab" id="coreQs">
+                <h2 class="panel-title">
+                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#coreQuestions" aria-expanded="false" aria-controls="coreQuestions">
+                        @Labels.PitCoreQuestions
+                        <span class="caret pull-right mrgn-tp-sm"></span>
+                    </a>
+                </h2>
+            </div>
+            <div id="coreQuestions" class="panel-collapse collapse disabledbutton" role="tabpanel" aria-labelledby="coreQs">
+                <div class="panel-body">
+                    <div>
+                        @{
+                            foreach (var questionGroup in coreQuestions.GroupBy(q => q.QuestionNo))
+                            {
+                                var increment = coreIncrement;
+                                questionGroup.ForEach(c => c.QuestionSeed = screenCount + increment);
+                                @Html.Partial("SurveyPartials/_EditPitSurveyQuestionAnswer", questionGroup)//, "Questions[" + (coreCounter++ + screenCounter) + "].")
+                                coreIncrement = coreIncrement + questionGroup.Count();
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    var cohQuestions = Model.Questions.Where(q => q.QuestionCategoryTypeID == (int) PitQuestionCategories.COH)
+        .OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo).ToList();
+    
+    var cohCount = cohQuestions.Count();
+    var cohIncrement = 0;                            
+    //var cohCounter = 0;
+
+    if (cohQuestions.Any())
+    {
+        <div class="panel panel-danger mrgn-tp-md">
+            <div class="panel-heading" role="tab" id="cohQs">
+                <h2 class="panel-title">
+                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#cohQuestions" aria-expanded="false" aria-controls="cohQuestions">
+                        @Labels.PitCOHQuestions
+                        <span class="caret pull-right mrgn-tp-sm"></span>
+                    </a>
+                </h2>
+            </div>
+            <div id="cohQuestions" class="panel-collapse collapse disabledbutton" role="tabpanel" aria-labelledby="cohQs">
+                <div class="panel-body">
+                    <div>
+                        @{
+                            foreach (var questionGroup in cohQuestions.GroupBy(q => q.QuestionNo))
+                            {
+                                var increment = cohIncrement;
+                                questionGroup.ForEach(c => c.QuestionSeed = screenCount + coreCount + increment);
+                                @Html.Partial("SurveyPartials/_EditPitSurveyQuestionAnswer", questionGroup)//, "Questions[" + (cohCounter++ + screenCounter + coreCounter) + "].")
+                                cohIncrement = cohIncrement + questionGroup.Count();
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    var localQuestions = Model.Questions.Where(q => q.QuestionCategoryTypeID == (int) PitQuestionCategories.Local)
+        .OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo).ToList();
+    
+    var localCount = localQuestions.Count();
+    var localIncrement = 0;
+    //localQuestions.ForEach(c => c.QuestionSeed = screenCount + coreCount + cohCount);
+    //var localCounter = 0;
+
+    if (localQuestions.Any())
+    {
+        <div class="panel panel-success mrgn-tp-md">
+            <div class="panel-heading" role="tab" id="localQs">
+                <h2 class="panel-title">
+                    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#localQuestions" aria-expanded="false" aria-controls="localQuestions">
+                        @Labels.PitLocalQuestions
+                        <span class="caret pull-right mrgn-tp-sm"></span>
+                    </a>
+                </h2>
+            </div>
+            <div id="localQuestions" class="panel-collapse collapse disabledbutton" role="tabpanel" aria-labelledby="localQs">
+                <div class="panel-body">
+                    <div>
+                        @{
+
+                            foreach (var questionGroup in localQuestions.GroupBy(q => q.QuestionNo))
+                            {
+                                var increment = localIncrement;
+                                questionGroup.ForEach(c => c.QuestionSeed = screenCount + coreCount + cohCount + increment);
+                                @Html.Partial("SurveyPartials/_EditPitSurveyQuestionAnswer", questionGroup)//, "Questions[" + (localCounter++ + cohCounter + coreCounter + screenCounter) + "].")
+                                localIncrement = localIncrement + questionGroup.Count();
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@Html.Partial("SurveyPartials/_PitSurveyQuestionsJS")

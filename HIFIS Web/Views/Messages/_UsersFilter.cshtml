@@ -1,0 +1,85 @@
+﻿@model UsersFilterViewModel
+
+<div class="modal-body">
+    <form id="usersFilterForm" class="form-horizontal">
+        <div class="row radio">
+            <div class="col-xs-12">
+                <label class="">
+                    <input id="rbUsersCurrentOrg" type="radio" name="usersFilter" checked>
+                    @Labels.FilterByUsersFromCurrentOrganization
+                </label>
+            </div>
+        </div>
+        <div class="row radio">
+            <div class="col-xs-12">
+                <label class="col-xs-9">
+                    <input id="rbAllUsers" type="radio" name="usersFilter">
+                    @Labels.FilterByUsersFromCurrentCluster
+                </label>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    function updateDropdownValues(dropdown, values) {
+        dropdown.options.length = 0; // clear out existing items
+
+        for (var i = 0; i < values.length; i++) {
+            dropdown.options.add(new Option(values[i].Text, values[i].Value));
+        }
+
+        $(dropdown).trigger('change');
+        doSelect2Init();
+    }
+
+    function populateSendToList(dropdown) {
+        if ($("#rbAllUsers").is(":checked")) {
+            $.ajax({
+                url: "@Url.Action("GetActiveUsersFromCurrentCluster")",
+                type: "POST",
+                data: {}
+            }).done(function (data) {
+                if (data.Success) {
+                    updateDropdownValues(dropdown, data.Result);
+                    $("#filterCloseBtn").click(); //Close the modal window on success
+                    displayNotification('info', '', "<p> " + data.Result.length + " @Labels.UsersFilterAdded</p>");
+                }
+            });
+        } else if ($("#rbUsersCurrentOrg").is(":checked")) {
+            $.ajax({
+                url: "@Url.Action("GetActiveUsersFromCurrentOrganization")",
+                type: "POST",
+                data: {}
+            }).done(function (data) {
+                if (data.Success) {
+                    updateDropdownValues(dropdown, data.Result);
+                    $("#filterCloseBtn").click(); //Close the modal window on success
+                    displayNotification('info', '', "<p> " + data.Result.length + " @Labels.UsersFilterAdded</p>");
+                }
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        var currentUsersFilter = "@Model.CurrentFilterType";
+
+        if (currentUsersFilter == "@MessagesUsersFilterTypes.ActiveUsersFromCurrentCluster") {
+            $("#rbAllUsers").prop("checked", true);
+        }
+
+        $("#filterButton").click(function () {
+            populateSendToList(document.getElementById("@("dd"+Model.FieldName)"));
+
+            var $useMailingList = $('#UseMailingList');
+            if ($useMailingList != undefined) {
+                $useMailingList.bootstrapSwitch('state', false);
+            }
+        });
+    });
+
+</script>

@@ -1,0 +1,54 @@
+﻿@model ClientFoodBankItemViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_FoodBankItemEdit;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+<div>  
+    <div class ="displayView mrgn-bttm-md">    
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.ServiceTombstone.OrganizationName)
+        </div> 
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.ServiceTombstone.ReasonForServiceTypeName)
+        </div> 
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.ServiceTombstone.DateStart)
+        </div> 
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.ServiceTombstone.FromReferrerPlaceName)
+        </div> 
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.ServiceTombstone.ToReferrerPlaceName)
+        </div> 
+        <div class="row">
+            @Html.HifisDisplayFor(model => model.ServiceTombstone.NumberOfPeople)
+        </div> 
+    </div>
+
+    <div class="clearfix"></div>
+                  
+     @using (Html.BeginForm("EditTransactionFoodBankItem", "FoodBanks", FormMethod.Post, new { @class = "form-horizontal" }))
+     {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+         
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.FoodBankID)     
+        @Html.HiddenFor(model => model.ServiceID)       
+
+ 
+        @Html.Partial("_FoodBankItem", Model)
+        
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "EditTransaction", "FoodBanks", new { id = Model.ReadOnlyVitals.ClientID, transactionID = Model.ServiceID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })   
+			</div>
+		</div> 
+     }
+ </div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

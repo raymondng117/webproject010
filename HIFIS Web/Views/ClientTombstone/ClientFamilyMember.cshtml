@@ -1,0 +1,105 @@
+﻿@model ClientFamilyMemberDetailViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayFamilyMember;
+
+    ViewBag.LayoutView = LayoutPage.Client;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+
+    @using (Html.BeginForm("UpdateFamilyMember", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+    {  
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.CurrentClientID)
+        @Html.HiddenFor(model => model.ClientGroupID)
+        @Html.HiddenFor(model => model.GroupID)
+        @Html.HiddenFor(model => model.EmergencyContactYN)
+        @Html.HiddenFor(model => model.GroupHeadYN)
+        @Html.HiddenFor(model => model.ServiceFee)
+        @Html.HiddenFor(model => model.HeadName)
+        @Html.HiddenFor(model => model.MemberName)
+        @Html.HiddenFor(model => model.FamilyCode)
+        @Html.HiddenFor(model => model.PersonID)
+
+        <div class="clearfix"></div>
+
+        <div class="mrgn-bttm-0">
+            <span class="color-accent"><strong>@Labels.FamilyMemberDetailsFamilyHead</strong> @Model.HeadName</span> 
+            @*Family code was not displaying anyways so I commented this line for now...*@
+            @*<span class="color-attention align-text-right align-right"><strong>@Labels.FamilyCode</strong>@Model.FamilyCode</span> *@ 
+    
+            <br />
+    
+            @if(Model.MemberName != null){
+                <span class="color-accent"><strong>@Labels.SelectedClientName:</strong> @Model.MemberName</span>
+            }
+
+            <hr />
+        </div>
+
+        if (Model.PersonID == null)
+        { 
+            <div>
+                @Html.HifisAutocompleteFor(
+                    m => m.ClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.PersonName
+                    , new AutocompleteViewModelOptions()
+                    {
+                        HiddenValue = true
+                    })
+            </div>
+        }
+        else
+        {   
+            <div>
+                @Html.HiddenFor(model => model.ClientID)
+            </div>
+        }
+
+        <div class="hght-strct-10"></div> 
+   
+        <div>
+            @Html.HifisEditorFor(model => model.GroupRoleTypeID, CachedTableTypes.HIFIS_GroupRoleTypes)
+        </div> 
+    
+        <div>
+            @Html.HifisEditorFor(model => model.ClientRelationshipTypeID, CachedTableTypes.HIFIS_PeopleRelationshipTypes)
+        </div> 
+    
+        <div>
+            @Html.HifisEditorFor(model => model.DateStart)   
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.DateEnd)
+        </div> 
+    
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		        <button type="submit" class="saveButton  " value="@Labels.Save">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "DisplayFamily", "ClientTombstone", new { clientID = Model.CurrentClientID, familyID = Model.GroupID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button"  })
+	        </div>
+        </div> 
+    }
+ </div> 
+ 
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+		     function OnTheFlyCallBack(objectID, formData) {
+
+		         var Name = formData["LastName"] + ", " + formData["FirstName"];
+		         $("#ClientIDSearchBox").val(Name);
+		         $("#ClientID").val(objectID.id);
+		     }
+        </script>
+    );
+}

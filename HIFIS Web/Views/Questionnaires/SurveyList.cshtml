@@ -1,0 +1,50 @@
+﻿@model ClientQuestionnairesHistoryViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+    ViewBag.ViewTitle = Labels.SurveyList;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Survey</th>
+                    <th>@Labels.Client</th>
+                    <th>@Labels.DateTaken</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var clientQuestionnaire in Model.ClientList)
+                {
+                    <tr>
+                        <td>
+                            @clientQuestionnaire.QuestionnaireName
+                        </td>
+                        <td>
+                            @clientQuestionnaire.ClientName
+                        </td>
+                        <td>@(clientQuestionnaire.DateAnswered.HasValue ? Html.DisplayFor(model => clientQuestionnaire.DateAnswered).ToString() : Labels.NA)</td>
+                        <td class="nowrap">
+                            
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Client_View, clientQuestionnaire.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.ViewQuestionnaire, "ViewClientAnswers", new { id = clientQuestionnaire.ClientID, clientQuestionnaireID = clientQuestionnaire.ClientQuestionnaireID }, new { @class = "viewButton noText", alt=Labels.ViewQuestionnaire, aria_label = Labels.ViewQuestionnaire, @role = "button" })
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Client_Delete, clientQuestionnaire.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Delete, "DeleteClientQuestionnaire", new { clientQuestionnaireID = clientQuestionnaire.ClientQuestionnaireID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                            }                            
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

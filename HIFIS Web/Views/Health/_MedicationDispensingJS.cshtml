@@ -1,0 +1,105 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            var medicationID;
+            var recurrenceTypeID;
+            var numberOfPills;
+            var dispensingForm;
+
+            function setPRNValues(e){
+                recurrenceTypeID.val(@((short)MedicationRecurrenceTypes.PRN));
+
+                $(document.getElementsByName(e.target.name)).val(e.target.value);
+
+                numberOfPills.val(e.target.value);
+
+                saveDispensing(e);
+            }
+
+             function setDispensingValues(e) {
+                recurrenceTypeID.val(e.target.value);
+        
+                //Need native getElementsByName because of format of encrypted ids
+                $(document.getElementsByName(e.target.name)).prop('checked', e.target.checked);
+
+                saveDispensing(e);
+            }
+
+             function saveDispensing(e) {
+                medicationID.val( $(e.target).parents('tr').data('medid') );
+                formData = dispensingForm.serialize();
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "'" + Url.Content("~/Health/AjaxNewDispensing") + "'",
+                       OnSuccess = "displayNotification('success', null, \"" + Labels.DefaultDataSavedMessage + "\");",
+                       Data = "formData"
+                   });
+            }
+
+            function gotoSummary(e, opt)
+            {
+                e.preventDefault();
+
+                var summaryID = '#' + opt.item.value;
+
+                $('.open').children('summary').click();
+
+                $(this).val(opt.item.label);
+
+                document.location = summaryID;
+        
+                $(summaryID).click();
+            }
+
+        //onload
+            $(function () {
+                medicationID = $('#MedicationID');
+                recurrenceTypeID = $('#RecurrenceTypeID');
+                numberOfPills = $('#NumberOfPills');
+                dispensingForm = $('#dispensingForm');
+
+                $('#Today input[type=checkbox]')
+                    .change(setDispensingValues);
+
+                $('.prnInput')
+                    .change(setPRNValues);
+
+                var autocompleteList = [];
+
+                $('#clientsAutocomplete option')
+                    .each(function(index,ele){ 
+                        autocompleteList.push({value: ele.value, label: ele.label}); 
+                    });
+
+                $('#ClientSearch')
+                    .autocomplete({
+                        minLength: 1,
+                        source: autocompleteList,
+                        delay: 0,
+                        select: gotoSummary,
+                        focus: function(){ return false; }
+                    })
+                    .focus(function(){ this.value = ''; });
+
+                autocompleteList = [];
+            
+                $('#roomsAutocomplete option')
+                    .each(function(index,ele){ 
+                        autocompleteList.push({value: ele.value, label: ele.label}); 
+                    });
+
+                $('#RoomSearch')
+                    .autocomplete({
+                        minLength: 1,
+                        source: autocompleteList,
+                        delay: 0,
+                        select: gotoSummary,
+                        focus: function(){ return false; }
+                    })
+                    .focus(function(){ this.value = ''; });
+            });
+        </script>
+    );
+}

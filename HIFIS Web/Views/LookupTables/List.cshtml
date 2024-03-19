@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+    ViewBag.ViewTitle = Labels.viewTitle_LookupTablesList;
+}
+
+<div>
+    <div class="table-responsive">
+        <table id="lookupTablesList" class="wb-tables table table-striped table-hover" 
+            data-wb-tables='{                    
+                            "ajax": "@Url.Action("GetTableListJson", "LookupTables")",
+                            "order": [[ 1, "desc" ]],
+                             "columns": [
+                                 { "data": "tableName" },
+                                 { "data": "moduleName" },
+                                 { "data": "action" }
+                             ] 
+                        }'>
+            <thead>
+                <tr>
+                    <th>@Labels.LookUpTable</th>
+                    <th>@Labels.ModuleUsedIn</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,117 @@
+﻿@model HousingUnitViewModel
+           
+@Html.HiddenFor(model => model.HouseID)
+@Html.HiddenFor(model => model.AddressID)
+@Html.HiddenFor(model => model.IsInPlacementInventory)
+
+@*These two hidden values are used only for the shortcut in housing placement display*@
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.PlacementID)
+
+<div>
+        @Html.HifisEditorFor(model => model.HouseTypeID, ViewBag.HouseTypes as SelectList, Model.OnlyIfMandatory, Culture)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.StatusTypeID, CachedTableTypes.HIFIS_HouseStatusTypes, Model.OnlyIfMandatory, Culture)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.StatusDate, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.OccupanyStatus, CachedTableTypes.HIFIS_OccupancyStatusTypes, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateOfOccupancy, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.OccupancyComment, Model.OnlyIfMandatory, new { @class = "commentBoxSize" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.LandlordPersonID, ViewBag.landlordList as SelectList, Model.OnlyIfMandatory)
+    </div> 
+         
+<div> 
+    @Html.HifisEditorFor(model => model.OrganizationID, ViewBag.orgList as SelectList, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.Attributes, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseAttributeTypes, Culture), Model.OnlyIfMandatory, new { @class = "wdth-strct-350" })
+</div>
+   
+<div>
+    @Html.HifisEditorFor(model => model.IsShareable, Model.OnlyIfMandatory, "YesNo")
+</div>
+
+@*<div>    
+    @Html.HifisEditorFor(model => model.IsInPlacementInventory, "YesNo") 
+</div>*@
+        
+<div>
+    @Html.HifisEditorFor(model => model.AreaSqFt, Model.OnlyIfMandatory, "Number", null, false, "&nbsp" + Labels.Sqft)
+    @*@Html.HifisTextBoxFor(model => model.AreaSqFt, null, false, "&nbsp" + Labels.Sqft)*@
+</div>
+      
+<div>
+    @Html.HifisEditorFor(model => model.AreaSqM, Model.OnlyIfMandatory, "Number", null, false, "&nbsp" + Labels.M2)
+    @*@Html.HifisTextBoxFor(model => model.AreaSqM, null, false, "&nbsp" + Labels.M2)*@
+</div>      
+        
+<div>
+    @Html.HifisEditorFor(model => model.YearOfBuilt, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.NoOfBedrooms, Model.OnlyIfMandatory)
+</div>
+     
+<div>
+    @Html.HifisEditorFor(model => model.NoOfFloors, Model.OnlyIfMandatory)
+</div>
+     
+<div>
+    @Html.HifisEditorFor(model => model.Floor, Model.OnlyIfMandatory)
+</div>
+
+<div>
+    @*@Html.HifisTextBoxFor(model => model.Rent, new { @class = "money wdth-100" }, false, "&nbsp/ " + Labels.Month)*@
+    @Html.HifisEditorFor(model => model.Rent, Model.OnlyIfMandatory, "Money", new { @class = "money wdth-100" }, false, "&nbsp/ " + Labels.Month)
+</div>
+
+<div id="active">
+    @Html.HifisEditorFor(model => model.ActiveYN, Model.OnlyIfMandatory, "YesNo")
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.Comments, Model.OnlyIfMandatory, new { @class = "commentBoxSize" })
+</div> 
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(function () {
+                $('#AreaSqFt').keyup(
+                    function (e) {
+                        var value = parseFloat($("#AreaSqFt").val());
+                        $('#AreaSqM').val((value * 9.2903040 * 0.01).toFixed(2));
+                        if (isNaN($('#AreaSqM').val()))
+                            $('#AreaSqM').val(null);
+                    });
+
+                $('#AreaSqM').keyup(
+                    function (e) {
+                        var value = parseFloat($("#AreaSqM").val());
+                        $('#AreaSqFt').val((value * 10.764).toFixed(2));
+                        if (isNaN($('#AreaSqFt').val()))
+                            $('#AreaSqFt').val(null);
+                    });
+            });
+
+        </script>);
+}

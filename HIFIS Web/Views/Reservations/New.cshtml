@@ -1,0 +1,142 @@
+﻿@model ReservationViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_AddReservation;    
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div id="serviceRestrictionAlert" class="row hide">
+    <div class="col-sm-12">
+		<div class="alert exception-panel">
+			<div class="mrgn-bttm-sm align-center">                                   
+				<h3 class="panel-title">@Labels.ClientServiceRestrictions</h3>
+			</div>
+			<div>
+				<p>@Labels.StaysRestrictionAjax</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+@*@if (Model.PrimaryClientID == null) {
+    <div class="row">    
+        <div class="col-sm-offset-2 mrgn-bttm-md">
+	        @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add))
+            { 
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.NewClient,
+                        Title = Labels.NewClient,
+                        ActionName = "NewVitals",
+                        ControllerName = "ClientTombstone",
+                        PartialName = "~/Views/ClientTombstone/_ClientVitalsEdit.cshtml",
+                        CallBackFunction = "OnTheFlyCallBack",
+                        ViewModel = new ClientVitalsViewModel() { IsStealth = false }
+                    }
+                )
+            }
+        </div>
+    </div>
+}*@    
+
+<div class="clearfix"></div>
+
+<div>     
+    @using (Html.BeginForm("New", "Reservations", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        if (Model.PrimaryClientID == null)
+        {
+            <div>
+                @Html.HifisAutocompleteFor(
+                    m => m.PrimaryClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.ReadOnlyVitals.ClientFullName
+                    , new AutocompleteViewModelOptions()
+                    {
+                        OnSelect = "getROVitalsOnSelect()"
+                        , Placeholder = Labels.SearchClientPlaceholder
+                        , HiddenValue = true
+                    })
+
+                <input type="hidden" id="SelectedClient" value="" />        
+            </div> 
+        }
+        else
+        { 
+            @Html.HiddenFor(m => m.PrimaryClientID)
+        }
+        
+        @Html.Partial("_Reservation")
+        
+        <div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton" name="submitBtn" value="default">@Labels.Save</button>
+                <button type="submit" class="saveButton" name="submitBtn" value="bookIn">@Labels.SaveAndGoToBookIn</button>
+
+                @if (Model.ReadOnlyVitals == null || Model.PrimaryClientID == null)
+                {
+                    @Html.ActionLink(Labels.Cancel, "List", "Reservations", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })            
+                }
+                else if (Model.PrimaryClientID != null)
+                {
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "Reservations", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+			</div>
+		</div>        
+    }   
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $(function () {
+                 $("#OrganizationID").on("change", isClientRestricted);
+                 $("#DateOfReservation").on("change", isClientRestricted);
+                 $("#ClientsFamilyIDs").on("change", isClientRestricted);
+             });
+
+             function OnTheFlyCallBack(objectID, formData) {
+
+                 var Name = formData["LastName"] + ", " + formData["FirstName"];
+                 $("#ClientIDSearchBox").val(Name);
+                 $("#PrimaryClientID").val(objectID);
+
+                 getROVitals(objectID);
+             }
+
+             function getROVitalsOnSelect() {
+                 getROVitals($('#PrimaryClientID').val());
+                 GetFamilyList($('#PrimaryClientID').val());
+
+                 isClientRestricted();
+             }
+
+             function isClientRestricted() {
+
+                 var formData = $("form").serialize();
+
+                 $.ajax({
+                     url: "@Url.Action("IsStayRestrictedAjax", "Reservations")",
+                    type: "POST",
+                    data: formData,
+                 }).done(function (data) {
+                     console.log(data);
+                     if (data) {
+                         $("#serviceRestrictionAlert").removeClass("hide");
+                         $(".saveButton").addClass("hide");
+                     } else if (!data) {
+                         $(".saveButton").removeClass("hide");
+                         $("#serviceRestrictionAlert").addClass("hide");
+                     }
+                 });
+             }
+
+        </script>
+    );
+}

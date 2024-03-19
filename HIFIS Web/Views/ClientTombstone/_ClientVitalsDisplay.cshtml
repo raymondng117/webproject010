@@ -1,0 +1,101 @@
+﻿@model ClientVitalsViewModel
+
+@Html.HiddenFor(model => model.ClientID, Model.ClientID)
+
+<div>
+    @Html.HifisDisplayFor(m => m.FirstName)
+</div>
+   
+<div>
+    @Html.HifisDisplayFor(m => m.LastName)
+</div>
+   
+<div>
+    @Html.HifisDisplayFor(m => m.MiddleName)
+</div>
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.GenderID)
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture, Model.GenderID)
+		</div>
+	</div>
+</div>
+        
+<div>
+    @Html.HifisDisplayFor(m => m.Aka1)
+</div>     
+     
+<div>
+    @Html.HifisDisplayFor(m => m.Aka2)
+</div>
+
+<div>
+    @Html.HifisDisplayFor(m => m.DOB)
+</div>
+
+<div>
+    @Html.HifisDisplayFor(m => m.DOBDateFirmYNbool)
+</div>
+        
+<div>
+    @Html.HifisDisplayFor(m => m.AproximativeAge)
+</div>
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.ClientStateTypeID)
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ClientStateTypes, Culture, Model.ClientStateTypeID)
+		</div>
+	</div>
+</div>
+ 
+<div>
+    @Html.HifisDisplayFor(m => m.DisabilityYN)
+</div>
+
+<div>
+    @Html.HifisDisplayFor(m => m.MedicAlertYN)
+</div>
+   
+<div>
+    @Html.HifisDisplayFor(m => m.IsStealth)
+</div>
+        
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.VeteranStateID)
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_VeteranStatesTypes, Culture, Model.VeteranStateID)
+		</div>
+	</div>
+</div>
+        
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.CitizenshipTypeID)
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CitizenshipTypes, Culture, Model.CitizenshipTypeID)
+		</div>
+	</div>
+</div>
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.AboriginalIndicatorID)
+
+		<div class="col-sm-offset-2 col-sm-10">
+			@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, Culture, Model.AboriginalIndicatorID)
+		</div>
+	</div>
+</div>
+
+<div>
+    @Html.HifisDisplayFor(m => m.FileNumber)
+</div>

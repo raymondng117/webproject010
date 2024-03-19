@@ -1,0 +1,28 @@
+﻿@model ClientLifeEventsViewModel
+@{
+    //TODO: Why is this being done in the view -JdV
+    if (Model.BailFactor == null) { Model.BailFactor = new ClientBailViewModel(); }
+}
+
+
+@Html.HiddenFor(model => model.BailFactor.BailEventID)
+@Html.HiddenFor(model => model.LifeEventTypeID)
+
+<fieldset class="color-white">
+
+    <legend>@Labels.NewBail</legend>
+
+    <div>
+        @Html.HifisEditorFor(model => model.BailFactor.RiskTypeID, CachedTableTypes.HIFIS_RiskTypes, new { @class = "max_width_90" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.BailFactor.Curfew)
+    </div>
+
+    <div>
+        @Html.HifisTextAreaFor(model => model.BailFactor.Comments, new { @class = "commentBoxSize max_width_90" })
+        @Html.ValidationImageFor(model => model.BailFactor.Comments)
+    </div>
+
+</fieldset>

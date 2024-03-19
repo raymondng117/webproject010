@@ -1,0 +1,7 @@
+﻿@model ClientQuestionnaireViewModel
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(m => m.ClientID)
+@Html.HiddenFor(m => m.DateAnswered)
+
+@Html.HifisEditorFor(model => model.QuestionnaireID, ViewBag.questionnariesList as SelectList)

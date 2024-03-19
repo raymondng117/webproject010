@@ -1,0 +1,57 @@
+﻿@model QuestionnaireViewModel
+@{
+    ViewBag.ViewTitle = Labels.AddQuestion;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div class="panel panel-default mrgn-tp-md">
+	    <div class="panel-heading" role="tab" id="NewQuestionHeader">
+		    <h4 class="panel-title">
+			    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#NewQuestionPanel" aria-expanded="true" aria-controls="NewQuestionPanel">
+				    @Labels.AddQuestion
+				    <span class="caret pull-right mrgn-tp-sm"></span>
+			    </a>
+		    </h4>
+	    </div>
+	    <div id="NewQuestionPanel" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="NewQuestionHeader">
+		    <div class="panel-body">
+			    @using (Html.BeginForm("AddQuestion", "Questionnaires", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    <div>
+                        @Html.Partial("_EditQuestion", new QuestionnaireQuestionViewModel() { QuestionnaireID = Model.QuestionnaireID, QuestionNo = (byte)(Model.Questions.Count() + 1), QuestionaireName = Model.Name })
+                    </div>
+        
+                    <div class="form-group">
+			            <div class="col-sm-offset-2 col-sm-10">
+				            <button type="submit" class="addButton">@Labels.AddQuestion</button>
+                            <button id="saveQuestionButton" type="submit" class="addButton">@Labels.SaveQuestionAndFinishQuestionaire</button>
+                            @Html.ActionLink(Labels.DiscardQuestionAndFinishQuestionaire, "EditQuestionnaire", new { id = Model.QuestionnaireID }, new { @class = "saveButton", alt=Labels.DiscardQuestionAndFinishQuestionaire, aria_label = Labels.DiscardQuestionAndFinishQuestionaire, @role = "button" })
+			            </div>
+		            </div>
+                }
+		    </div>
+	    </div>
+    </div>
+
+    <h4 class="mrgn-tp-0">@Labels.Questions</h4>    
+
+    @Html.Partial("_AllQuestions", Model.Questions)    
+    
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $("#saveQuestionButton").click(function (e) {
+                 $("#SaveQuestion").val("true");
+             });
+        </script>
+    );
+}

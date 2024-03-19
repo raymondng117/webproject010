@@ -1,0 +1,593 @@
+﻿@model ClientVitalsViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="_ClientVitalsNew_FormSection" class="mrgn-tp-md">
+
+    @Html.AntiForgeryToken()
+
+    <div class="row hiddenInputSection">
+        @Html.HiddenFor(model => model.ClientID, Model.ClientID)
+        @Html.HiddenFor(model => model.PersonID)
+        @Html.HiddenFor(model => model.IsCreatingFamilyMember)
+        @Html.HiddenFor(model => model.EnforceConsent)
+        @Html.HiddenFor(model => model.ClientHousingStatusTypeID)
+    </div>
+
+    @if (Model.EnforceConsent)
+    {
+        <div class="consent-fields mrgn-bttm-sm">
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ConsentStartDate, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    @Html.HifisEditorFor(model => model.ConsentStartDate, null, new { disabled = "disabled" }, true, null)
+                </div>
+            </div>
+
+            <div id="explicitConsentFields">
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ConsentExpiryDate, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        @Html.HifisEditorFor(model => model.ConsentExpiryDate, null, null, true, null)
+                    </div>
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ConsentUploadedFile, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        @Html.HifisEditorFor(model => model.ConsentUploadedFile, "File", null, true, null)
+                    </div>
+                </div>
+            </div>
+
+            <div id="inheritedConsentFields">
+                @Html.HiddenFor(model => model.FamilyHeadClientID)
+                @Html.HiddenFor(model => model.GroupID)
+                @Html.HiddenFor(model => model.FromClientID)
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="row hiddenInputSection">
+            @Html.HiddenFor(model => model.FamilyHeadClientID)
+            @Html.HiddenFor(model => model.GroupID)
+            @Html.HiddenFor(model => model.FromClientID)
+            @Html.HiddenFor(model => model.ConsentTypeID)
+        </div>
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor("ConsentTypeID", Labels.ConsentType, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <div class="form-group">
+                @if (Model.ConsentTypeID != null)
+                {
+                    <input type="text" class="inputTextOnly" id="ConsentTypeID" name="ConsentTypeID"
+                           value="@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConsentTypes, Culture, Model.ConsentTypeID)" readonly />
+                }
+                else
+                {
+                    <input type="text" class="inputTextOnly" id="ConsentTypeID" name="ConsentTypeID"
+                           value="@Labels.NoConsent" readonly />
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LastName, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.LastName, null, new { @class = "attachSearchEvent" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FirstName, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.FirstName, null, new { @class = "attachSearchEvent" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MiddleName, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.MiddleName, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Aka1, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.Aka1, null, new { @class = "attachSearchEvent" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Aka2, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.Aka2, null, new { @class = "attachSearchEvent" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DOBDateFirmYNbool, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.DOBDateFirmYNbool, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    <div id="AgeAndDOBSection">
+
+        <div id="DOBFlag" class="row">
+            @Html.HifisLabelFor(model => model.DOB, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.DOB, null, null, true, null)
+            </div>
+        </div>
+
+        <div id="AgeFlag" class="row">
+            @Html.HifisLabelFor(model => model.AproximativeAge, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.AproximativeAge, null, null, true, null)
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.InfoVerifiedYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.InfoVerifiedYN, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.GenderID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.GenderID, CachedTableTypes.HIFIS_GenderTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DisabilityYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.DisabilityYN, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.MedicAlertYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.MedicAlertYN, "YesNo", null, true, null)
+        </div>
+    </div>
+
+    @if (RightsHelper.HasRight(UserRights.Client_Hide))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(m => m.IsStealth, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                <div class="form-group">
+                    @{
+                        object first = new { @class = "YesAndNo", data_on_text = Labels.Hidden, data_off_text = Labels.Visible, data_on_color = "danger", data_off_color = "info" };
+                    }
+                    @Html.CheckBoxFor(m => m.IsStealth, first)
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row hiddenInputSection">
+            @Html.HiddenFor(model => model.IsStealth)
+        </div>
+    }
+
+
+    <div class="row">
+        <div class="form-group">
+            <div class="col-xs-4"></div>
+            <div id="veteransSite" class="col-xs-8 hide">
+                <a href="http://www.veterans.gc.ca" rel="nofollow" target="_blank">www.veterans.gc.ca</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(m => m.VeteranStateID, new { @class = "col-xs-4 control-label" })
+        <div class="col-sm-8">
+            @Html.HifisEditorFor(m => m.VeteranStateID, CachedTableTypes.HIFIS_VeteranStatesTypes, new { id = "veteransEdit", @class = "mrgn-lft-sm" }, true, null)
+            @Html.HiddenFor(m => m.VeteranStateID, new { id = "veteransEditHidden" })
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CitizenshipTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.CitizenshipTypeID, CachedTableTypes.HIFIS_CitizenshipTypes, null, true, null)
+        </div>
+    </div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.AboriginalIndicatorID, new { @class = "col-xs-4 control-label" })
+    <div class="col-xs-8">
+        @Html.HifisEditorFor(m => m.AboriginalIndicatorID, CachedTableTypes.HIFIS_AboriginalIndicatorTypes, new { @class = "Aboriginal", id = "ddlAboriginalIndicatorID" }, true, null)
+    </div>
+</div>
+
+<div class="row" id="divRacialIdentity">
+        @Html.Partial("_RacialIdentity", Model)
+</div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.GeoRegionTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.GeoRegionTypeID, CachedTableTypes.HIFIS_GeoRegionTypes, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FileNumber, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(m => m.FileNumber, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CountryOfBirth, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.CountryOfBirth, CachedTableTypes.HIFIS_CountryTypes, new { @class = "Country", id = "ddlCountryOfBirth" }, true, null)
+        </div>
+    </div>
+
+    <div id="BirthSelectSection">
+        <div id="divClientBirthCanada">
+            @Html.Partial("_ClientBirthCanada", Model)
+        </div>
+        <div id="divClientBirthUnitedStates">
+            @Html.Partial("_ClientBirthUnitedStates", Model)
+        </div>
+        <div id="divClientBirthInternational">
+            @Html.Partial("_ClientBirthInternational", Model)
+        </div>
+    </div>
+
+    @if (Model.ClientID == null)
+    {
+        <div class="row hiddenInputSection">
+            @Html.HiddenFor(m => m.ClientStateTypeID)
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ClientStateTypeID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.ClientStateTypeID, ViewBag.TypeList as SelectList, null, new { id = "ddlClientStateType" }, true, null)
+            </div>
+        </div>
+    }
+
+    <div id="Deceased">
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.CauseOfDeathTypeID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.CauseOfDeathTypeID, CachedTableTypes.HIFIS_CauseOfDeathTypes, null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DODApproxYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.DODApproxYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DOD, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.DOD, null, null, true, null)
+            </div>
+        </div>
+
+    </div> 
+
+</div>
+
+<hr>
+
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(document).ready(function()
+            {
+                $(".Country").change(function()
+                {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "'" + Url.Content("~/ClientTombstone/AjaxGetProvinceList") + "'",
+                       Data = "{CountryID: $(this).val()}",
+                       OnSuccess = @"var select = document.getElementById('ProvinceOfBirth');
+                                        select.options.length = 0; // clear out existing items
+                                        for(var i=0; i < data.length; i++) {
+                                            var d = data[i];
+                                            select.options.add(new Option(d.Text, d.Value))
+                                        }
+                                        $('#ProvinceOfBirth').trigger('change');
+                                        "
+                   })
+                });
+                $('#housingDetails').hide();
+
+                $(".Aboriginal").change(function () {
+
+                        var selectedIndigenousOption = $(".Aboriginal").val();
+
+                        if (selectedIndigenousOption ==@((byte)IndianStatusTypes.NonAboriginal)) {
+
+                           
+
+
+                            $("#ddlRacialIdentityTypeIDEdit option[value='@((short)ClientRacialIdentityTypes.IdentifyAsIndigenousOnly)']").prop('disabled', true);
+                        }
+                        else {
+
+                            $("#ddlRacialIdentityTypeIDEdit option[value='@((short)ClientRacialIdentityTypes.IdentifyAsIndigenousOnly)']").prop('disabled', false);
+                        }
+
+                   
+
+
+                    });
+            });
+
+
+
+</script>
+);
+
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $('#ddlCountryOfBirth').ready(ShowHideCountryDIV);
+            $('#ddlCountryOfBirth').change(ShowHideCountryDIV);
+
+            function ShowHideCountryDIV() {
+                var countryID = parseInt($('#ddlCountryOfBirth').val());
+                console.log(countryID);
+
+                if (countryID == 1) { // Canada
+                    $('#divClientBirthCanada').show();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').hide();
+                }
+                else if (countryID == 2) { // United States
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').show();
+                    $('#divClientBirthInternational').hide();
+                }
+                else if (countryID >= 3) { // International
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').show();
+                }
+                else if (countryID != undefined || countryID != NaN || countryID != '') { // No Selection
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').hide();
+                }
+                else { // Default
+                    $('#divClientBirthCanada').hide();
+                    $('#divClientBirthUnitedStates').hide();
+                    $('#divClientBirthInternational').hide();
+                }
+            }
+        </script>
+    );
+}
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            function FamReq() {
+                if($('#ConsentTypeID').val() == "3"){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            function ConReq() {
+                if($('#EnforceConsent').val() == "True"){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            function ConReq2() {
+                if($('#ConsentTypeID').val() == "3"){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+
+            var veteransEdit = $("#veteransEdit");
+            veteransEdit.on("blur", function() {
+                var veteransSite = $("#veteransSite");
+                if (veteransEdit.val() == 1)
+                    veteransSite.removeClass("hide");
+                else
+                    veteransSite.addClass("hide");
+            });
+
+            function ShowHideDIV() {
+                var StateID = parseInt($('#ddlClientStateType').val());
+                switch (StateID) {
+                    case @((byte)ClientStateTypes.Active):
+                    case @((byte)ClientStateTypes.InActive):
+                        $('#Deceased').hide();
+                        break;
+                    case @((byte)ClientStateTypes.Deceased):
+                        $('#Deceased').show();
+                        break;
+                    default:
+                        $('#Deceased').hide();
+                }
+            }
+
+            function validateMinVeteranAge(silent) {
+                var clientAgeDate = $('#DOB').val()
+                    mCurrentDate = moment(),
+                    mClientAgeDate = moment(clientAgeDate);
+
+                if (mClientAgeDate._isAMomentObject && mClientAgeDate._d instanceof Date && !isNaN(mClientAgeDate._d)) {
+                    var years = mCurrentDate.diff(mClientAgeDate, 'years', true);
+                    if (years < @Constants.ClientMinimumVeteranAge) {
+                        var notVeteran = @((byte)VeteranStatus.NotVeteran);
+                        $('#veteransEdit').val(notVeteran).trigger('change').prop('disabled', true);
+                        $('#veteransEditHidden').val(notVeteran).trigger('change');
+                        if (!silent) {
+                            displayNotification('info', '', "<p>@Labels.VeteranMinimumAgeInfo @Constants.ClientMinimumVeteranAge @Labels.YearsOther</p>");
+                        };
+                    } else {
+                        $('#veteransEdit').prop("disabled", false);
+                        $('#veteransEdit').change();
+                    }
+                } else {
+                    $('#veteransEdit').prop("disabled", false);
+                    $('#veteransEdit').change();
+                }
+            }
+
+            function setDateFromAge(event) {
+                var approxAge = parseInt(event.target.value);
+                if (!isNaN(approxAge)) {
+                    var currentYear = new Date().getFullYear();
+                    var date = new Date();
+                    date.setMonth(0);
+                    date.setDate(1);
+                    date.setFullYear((currentYear - approxAge));
+
+                    $('#DOB').val(date.toISOString().slice(0,10));
+                }
+
+                var minTriggerConsentAge = @appSettings.GetMinTriggerConsentAge();
+                if(approxAge >= minTriggerConsentAge){
+                    if($('#ConsentTypeID').val() == "@((short)ConsentTypes.Inherited)"){
+                        $('#DOB').val("");
+                        event.target.value = "";
+                        displayNotification('alert', '', "<p>@Labels.TriggerConsentAgeError</p>");
+                    }
+                }
+
+                validateMinVeteranAge();
+            }
+
+            function setAgeFromDate() {
+                var date = new Date($('#DOB').val());
+
+                if (isNaN(date) == false) {
+
+                    var currAge = Math.floor((new Date() - new Date($('#DOB').val()).getTime()) / 3.15576e+10);
+
+                    $('#AproximativeAge').val(currAge);
+                }
+                else{
+                    $('#AproximativeAge').val("");
+                }
+
+                var minTriggerConsentAge = @appSettings.GetMinTriggerConsentAge();
+                if($('#AproximativeAge').val() >= minTriggerConsentAge){
+                    if($('#ConsentTypeID').val() == "@((short)ConsentTypes.Inherited)"){
+                        $('#DOB').val("");
+                        $('#AproximativeAge').val("");
+                        displayNotification('alert', '', "<p>@Labels.TriggerConsentAgeError</p>");
+                    }
+                }
+
+                validateMinVeteranAge();
+            }
+
+            $('input[name=DOBDateFirmYNbool]').on('switchChange.bootstrapSwitch', function (event, state) {
+
+                if (state) {
+                    $('#DOBFlag').show();
+                    $('#AgeFlag').hide()
+                }
+                else {
+                    $('#DOBFlag').hide();
+                    $('#AgeFlag').show();
+                }
+            });
+
+            $('input[name=InsertHousingHistory]').on('switchChange.bootstrapSwitch', function (event, state) {
+
+                if (state) {
+                    $('#housingDetails').show();
+                }
+                else {
+                    $('#housingDetails').hide();
+                }
+            });
+
+            $(function () {
+                if (veteransEdit.val() == 1)
+                    $("#veteransSite").removeClass("hide");
+
+                validateMinVeteranAge(true);
+
+                @{
+                    if (Model.DOBDateFirmYNbool)
+                    {
+                        @:$('#DOBFlag').show();
+                                                        @:$('#AgeFlag').hide();
+                                                    }
+                    else
+                    {
+                        @:$('#DOBFlag').hide();
+                                                        @:$('#AgeFlag').show();
+                                                    }
+                    if(Model.ClientID == null)
+                    {
+                        @:$('#Deceased').hide();
+                                                    }
+                }
+
+                $('#ddlClientStateType').ready(ShowHideDIV);
+
+                $('#ddlClientStateType').change(ShowHideDIV);
+                $('#AgeFlag').on('change', function(){setDateFromAge(event)});
+                $('#DOBFlag').on('change', function(){setAgeFromDate()});
+            });
+
+            var requiredIf = function () {
+                //var value = document.querySelector("#DOBDateFirmYNbool").getAttribute("value");
+                var value = $("#DOBDateFirmYNbool").bootstrapSwitch("state");
+
+                return value === false;
+            }
+
+            var housingRequiredIf = function () {
+                //var value = document.querySelector("#DOBDateFirmYNbool").getAttribute("value");
+                var value = $("#InsertHousingHistory").bootstrapSwitch("state");
+
+                return value === true;
+            }
+        </script>
+    );
+}

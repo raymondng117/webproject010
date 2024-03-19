@@ -1,0 +1,155 @@
+﻿@model CaseViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.Sessions + " - " + Model.PrimaryClientName;
+}
+
+<div class="displayView col-sm-offset-1 col-sm-11 mrgn-tp-lg">
+    <div class="row">
+
+        <div class="row">
+            @Html.HifisLabelFor(Labels.Goal, Labels.Goal, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="@Labels.Goal" name="@Labels.Goal"
+                       value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, Model.DesiredOutcomeTypeID))" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(Labels.CaseWorker.Replace(" ", "_"), Labels.CaseWorker, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="@Labels.CaseWorker.Replace(" ", "_")" name="@Labels.CaseWorker.Replace(" ", "_")"
+                       value="@Model.CaseWorkerLastName, @Model.CaseWorkerFirstName" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="OrganizationID" name="OrganizationID"
+                       value="@Model.OrganizationName" readonly style="width: 100%;" />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.CaseStateTypeID, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="CaseStateTypeID" name="CaseStateTypeID"
+                       value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CaseStateTypes, Culture, Model.CaseStateTypeID))" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(@Labels.Factors, @Labels.Factors, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <span>
+                    @for (var i = 0; i < Model.FactorNames.Count(); i++)
+                    {
+                        @Model.FactorNames[i]
+                        <br />
+                    }
+                </span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(@Labels.Family, @Labels.Family, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <span>
+                    @{List<ClientVitalsReadOnlyViewModel> clientsFamily = Model.Clients.Where(c => c.ClientID != Model.PrimaryClientID).ToList();}
+                    @if (clientsFamily.Count() == 0)
+                    {
+                        <input type="text" class="inputTextOnly" id="@Labels.Family" name="@Labels.Family"
+                               value="@Labels.NA" readonly />
+                    }
+                    @for (var i = 0; i < clientsFamily.Count(); i++)
+                    {
+                        @clientsFamily[i].ClientFullName
+                        <br />
+                    }
+                </span>
+            </div>
+        </div> 
+        
+        <div class="row">
+            @Html.HifisLabelFor("StartDate", @Labels.StartDate, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="StartDate" name="StartDate"
+                       value="@Html.DisplayFor(model => model.DateStart)" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor("TargetDate", @Labels.TargetDate, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="TargetDate" name="TargetDate"
+                       value="@(Model.TargetDate.HasValue ? Model.TargetDate.Value.ToString("yyyy-MM-dd") : Labels.NA)" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor("EndDate", @Labels.EndDate, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="EndDate" name="EndDate"
+                       value="@(Model.DateEnd.HasValue ? Model.DateEnd.Value.ToString("yyyy-MM-dd") : Labels.NA)" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor("TotalElapsedTime", @Labels.TotalElapsedTime, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="TotalElapsedTime" name="TotalElapsedTime"
+                       value="@(string.Format("{0}: {1} {2}", this.Model.Hours, this.Model.Minutes, @Labels.Hrs))" readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor("TotalExpendedTime", @Labels.TotalExpendedTime, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                <input type="text" class="inputTextOnly" id="TotalElapsedTime" name="TotalElapsedTime"
+                       value="@(string.Format("{0} {1}", this.Model.TotalElapsedTime, @Labels.Days))" readonly />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive" style="overflow:auto; width:100%;">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "filter": false }'>
+
+        <caption><strong>@Labels.Sessions</strong></caption>
+        <thead>
+            <tr>
+                <th>@Labels.Activity</th>
+                <th>@Labels.Description</th>
+                <th>@Labels.Date</th>
+                <th>@Labels.ExpendedTime</th>
+                <th>@Labels.ServiceProvider</th>
+                <th>@Labels.CaseWorker</th>
+                <th>@Labels.Responsibility</th>
+                <th>@Labels.AgencyInvolved</th>
+                <th>@Labels.ClientPresent</th>
+                <th>@Labels.FamilyPresent</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var session in Model.Sessions)
+            {
+                <tr>
+                    <td>@session.SessionActivityName</td>
+                    <td>@session.SessionDescription</td>
+                    <td>@Html.DisplayFor(model => session.SessionDate)</td>
+                    <td>@(session.Hours.HasValue ? session.Hours.Value : 0) @Labels.Hours, @(session.Minutes.HasValue ? session.Minutes.Value : 0) @Labels.Minutes</td>
+                    <td>@session.OrganizationName</td>
+                    <td>@session.CaseWorkerFullName</td>
+                    <td>@session.ResponsibilityTypeName</td>
+                    <td>@session.ReferralTypeName</td>
+                    <td>@(session.ClientPresent ? Labels.Yes : Labels.No)</td>
+                    <td>@(session.FamilyPresent ? Labels.Yes : Labels.No)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+    
+<br />
+@Html.ActionLink(Labels.Cancel, "Edit", "CaseManagement", new { id = Model.PrimaryClientID, caseID = Model.CaseID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })

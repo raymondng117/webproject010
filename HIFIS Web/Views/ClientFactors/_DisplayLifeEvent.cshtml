@@ -1,0 +1,101 @@
+﻿@model ClientLifeEventsViewModel
+
+<section id="Modal_DisplayLifeEvent" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_DisplayClientLifeEvent</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="col-sm-12">
+            <div class="displayView">
+
+                @Html.HiddenFor(model => model.ClientID)
+                @Html.HiddenFor(model => model.PersonID)
+                @Html.HiddenFor(model => model.PeopleLifeEventID)
+                @Html.HiddenFor(model => model.LegalFactor.IsLegalMandatory, new { id = "isLegalMandatory" })
+                @Html.HiddenFor(model => model.ProbationFactor.IsProbationMandatory, new { id = "isProbationMandatory" })
+                @Html.HiddenFor(model => model.GangFactor.IsGangMandatory, new { id = "isGangMandatory" })
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.LifeEventTypeID, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                     new SingleItemSelectList
+                                     {
+                                         ID = Model.LifeEventTypeID,
+                                         List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_LifeEventsTypes, Culture, Model.LifeEventTypeID)
+                                     })
+                </div>
+
+                <div class="row">
+                    @Html.HifisDisplayFor(model => model.DateStart, null, false, "DateOnly")
+                </div>
+
+                <div class="row">
+                    @Html.HifisDisplayFor(model => model.DateEnd, null, false, "DateOnly")
+                </div>
+
+                @{
+                    switch ((short)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID))
+                    {
+                        case ((byte)LifeEventTypes.LegalOther):
+                        case ((byte)LifeEventTypes.LegalCourt):
+                        case ((byte)LifeEventTypes.LegalPolice):
+                            <div id="divClientLegal">
+                                @Html.Partial("_DisplayClientLegal", Model)
+                            </div>
+                            break;
+                        case ((byte)LifeEventTypes.LegalParole):
+                        case ((byte)LifeEventTypes.LegalProbation):
+                            <div id="divClientProbation">
+                                @Html.Partial("_DisplayClientLegal", Model)
+                                @Html.Partial("_DisplayClientProbation", Model)
+                            </div>
+                            break;
+                        case ((byte)LifeEventTypes.LegalBail):
+                            <div id="divClientBail">
+                                @Html.Partial("_DisplayClientLegal", Model)
+                                @Html.Partial("_DisplayClientBail", Model)
+                            </div>
+                            break;
+
+                        case ((byte)LifeEventTypes.Gang):
+                            <div id="divClientGang">
+                                @Html.Partial("_DisplayClientGang", Model)
+                            </div>
+                            break;
+                        default:
+
+                            break;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-md">
+            <button id="newPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+
+    </div>
+</section>
+
+<script>
+
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Model_DisplayLifeEvent');
+
+    $(function () { $("#excelParamForm").hifisValidation(); });
+
+    $("#excelGetBtn").click(function () {
+
+        if ($("#excelParamForm").valid()) {
+            $("#excelParamForm").submit();
+        }
+    });
+
+</script>
+
+

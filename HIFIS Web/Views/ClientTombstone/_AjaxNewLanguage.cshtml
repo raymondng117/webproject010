@@ -1,0 +1,63 @@
+﻿@model PeopleLanguageViewModel
+
+<section id="Modal_NewLanguage" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.NewLanguage</h2>
+    </header>
+    <div class="modal-body" style="overflow: hidden;">
+        <form id="addLanguageForm" class="form-horizontal">
+            <div class="row">
+                @Html.Partial("_Language", Model)
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="col-xs-12">
+            <button type="submit" id="addLanguageButton" class="saveButton">@Labels.Save</button>
+            <button id="newLanguageCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#addLanguageForm").hifisValidation();
+        $('input[id=PersonID]').val($('#HiddenPersonID').val());
+    });
+   
+
+    $("#addLanguageButton").click(function () {
+
+        if ($("#addLanguageForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/ClientTombstone/AjaxAddClientVitalsLanguage")",
+                type: "POST",
+                data: $("#addLanguageForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#languagesTable').DataTable().ajax.reload();
+                    $("#newLanguageCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>
+
+

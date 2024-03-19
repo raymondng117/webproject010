@@ -1,0 +1,80 @@
+﻿@model DiversionViewModel
+@{
+    if (Model.IsAnonymous)
+    {
+        ViewBag.ViewTitle = Labels.EditAnonymousDiversion;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.EditDiversion;
+    }
+
+    ViewBag.LayoutView = LayoutPage.Client;
+    TempData["culture"] = Culture;  //this is use for contributing factors
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("Edit", "Diversion", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.PrimaryClientID)
+
+        @Html.Partial("_Diversion")
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "ClientList", "Diversion", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", @role = "button" })
+                @*@Html.ActionLink(Labels.Cancel, "CancelDiversion", "Diversion", new { diversionID = Model.DiversionID, clientid = Model.PrimaryClientID, returnurl = Model.returnUrl }
+                    , new { @class = "cancelButton", @role = "button", @id = "clxButton" })*@
+            </div>
+        </div>
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+
+
+@using (Html.BeginScriptContext())
+{
+
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+
+
+    @*/*-----------------------------
+      Cancel button
+     -----------------------------*/
+    $("#clxButton").on("click", function (e) {
+        console.log("FD - clxButton clicked!");
+
+        console.log("FD - $('#ddlDivStatus').val() --> " + $('#ddlDivStatus').val());
+        console.log("FD - '@DiversionStatusTypes.Abandoned' --> " + '@DiversionStatusTypes.Abandoned')
+
+
+
+        if ($('#ddlDivStatus').val() != 6)
+        {
+
+            if (confirm('@Labels.DiversionClxMsg'))
+            {
+                console.log('FD - sets status to Abandoned');
+            }
+            else
+            {
+                console.log('FD - Cancel the Cancel button');
+                e.preventDefault();
+            }
+        }
+    });*@
+
+
+
+
+</script>
+);
+}

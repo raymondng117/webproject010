@@ -1,0 +1,19 @@
+﻿@model ClientRisksViewModel
+    
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals)) 
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ClientID)       
+@Html.HiddenFor(model => model.RiskOfHomelessnessID)
+   
+<div>
+    @Html.HifisEditorFor(model => model.AtRiskStatusTypeID, CachedTableTypes.HIFIS_AtRiskstatusTypes, new { @class = "max_width_90" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateOfChange)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorkerList as SelectList)
+</div>    

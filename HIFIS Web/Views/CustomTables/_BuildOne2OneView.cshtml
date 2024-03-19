@@ -1,0 +1,60 @@
+﻿@model CustomTableViewModel
+
+<div>
+    @if (Model.Records != null && (Model.Records.RecordsList != null && Model.Records.RecordsList.Count() > 0) && Model.Records.RecordsList.FirstOrDefault().RecordData.Count() > 0)
+    {
+        //int index = 0;
+
+        foreach (CustomTableRecordListViewModel recordList in Model.Records.RecordsList)
+        {
+            foreach (var record in recordList.RecordData)
+            {
+
+                //Model.Fields = Model.Fields.OrderBy(f => f.Position).ToList();
+            
+                //record.Data = record.Data.OrderBy(d => d.CustomTableFieldID).ToList();
+
+                foreach (var recordData in record.Data)
+                {
+                    <div class="row">
+                        <div class="col-md-3">
+                            @Html.Label(recordData.FieldName, recordData.FieldName, new { @class = "autowidth" })
+                        </div>
+                        <div class="col-md-9">
+                            @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableFieldDataDisplay.cshtml"), recordData)
+                        </div>
+                    </div> 
+        
+                    //index++;
+                }
+            }
+        }
+        
+        if (RightsHelper.HasRight(UserRights.CustomTables_Records_Edit))
+        { 
+            <div class="mrgn-tp-md">
+                @Html.ActionLink(Labels.EditRecordsFor + " " + Model.DisplayName, "EditCustomTableRecord", "CustomTables", new { id = Model.Records.RecordsList.FirstOrDefault().RecordData.FirstOrDefault().CustomTableLinkID, clientID = Model.ClientID }, new { @class = "editButton", alt=Labels.EditRecordsFor + " " + Model.DisplayName, aria_label = Labels.EditRecordsFor + " " + Model.DisplayName, @role = "button" })
+                @*@Html.CustomTablesActionLink(Model.ReferenceID, ModuleTypes.ClientDetails, null, Labels.EditRecordsFor + " " + Model.DisplayName)*@
+            </div>
+        }
+    }
+    else
+    {
+        <div id="NoResultsDiv" class="row">
+            <section class="col-md-12">
+                <div class="well well-sm mrgn-tp-sm">
+                    <h5 class="mrgn-tp-0">
+                        @Labels.NoRecords
+                    </h5>
+                    @Labels.NoCustmTableRecords
+                </div>
+            </section>
+        </div>
+        
+        if (RightsHelper.HasRight(UserRights.CustomTables_Records_Add))
+        {
+            @Html.ActionLink(Labels.AddANewRecordFor + " " + Model.DisplayName, "NewCustomTableRecord", "CustomTables", new { id = Model.ReferenceID, CustomTableID = Model.CustomTableID, clientID = Model.ClientID }, new { @class = "addButton", alt=Labels.AddANewRecordFor + " " + Model.DisplayName, aria_label = Labels.AddANewRecordFor + " " + Model.DisplayName, @role = "button" })
+        }
+    }
+    
+</div>

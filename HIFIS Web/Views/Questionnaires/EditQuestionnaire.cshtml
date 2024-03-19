@@ -1,0 +1,123 @@
+﻿@model HIFIS.WEB.ViewModels.QuestionnaireViewModel
+@{
+    ViewBag.ViewTitle = Labels.EditQuestionnaire;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div class="panel panel-default mrgn-tp-md">
+	    <div class="panel-heading" role="tab" id="qDetails">
+		    <h4 class="panel-title">
+			    <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#questionDetails" aria-expanded="false" aria-controls="questionDetails">
+				    @Labels.Questionnaire
+				    <span class="caret pull-right mrgn-tp-sm"></span>
+			    </a>
+		    </h4>
+	    </div>
+	    <div id="questionDetails" class="panel-collapse collapse" role="tabpanel" aria-labelledby="qDetails">
+		    <div class="panel-body">
+			    @using (Html.BeginForm("EditQuestionnaire", "Questionnaires", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+                    <div>                        
+                        @Html.Partial("_EditQuestionnaire", Model)
+                    </div>
+        
+                    <div class="form-group">
+			            <div class="col-sm-offset-2 col-sm-10">
+				            <button type="submit" class="saveButton">@Labels.Save</button>
+			            </div>
+		            </div>        
+                }
+		    </div>
+	    </div>
+    </div>
+    
+    <div>
+    <h4>@Labels.Questions</h4>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>@Labels.Question</th>
+                        <th>@Labels.QuestionType</th>
+                        <th>@Labels.PossibleResponses</th>
+                        <th>@Labels.Active</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Questions.IsEmptyOrNull())
+                    {
+                        foreach (var question in Model.Questions)
+                        {
+                        <tr>
+                            <td>@question.QuestionNo</td>
+                            <td>@question.QuestionName</td>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_QuestionTypes, Culture, question.QuestionTypeID)</td>
+                            <td>
+                                @if (question.IsDropdown())
+                                {
+                                    foreach (var dropdown in question.DropdownValues)
+                                    {
+                                    <text>@dropdown.DDName</text>if (dropdown != question.DropdownValues.Last())
+                                                               { <text>, </text> }
+                                    }
+                                }
+                                else
+                                {
+                                    @question.QuestionTypeName
+                                }                        
+                            </td>                        
+                            <td class="align-text-center">@(question.ActiveYN ? Labels.Yes : Labels.No)</td>
+                            <td class="align-text-center">
+
+                                @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Edit))
+                                {
+                                    @Html.ActionLink(Labels.EditQuestion, "EditQuestion", "Questionnaires", new { id = question.QuestionID }, new { @class = "editButton", alt=Labels.EditQuestion, aria_label = Labels.EditQuestion, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Questionnaire_DropDowns_Edit))
+                                {
+                                    @((question.QuestionTypeID == (byte)QuestionTypes.DropdownSingle || question.QuestionTypeID == (byte)QuestionTypes.DropdownMultiple) ?
+                                   Html.ActionLink(Labels.EditDropdown, "EditDropdowns", "Questionnaires", new { id = question.QuestionID }, new { @class = "editButton", alt=Labels.EditDropdown, aria_label = Labels.EditDropdown, @role = "button" }) : null)
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Delete))
+                                {
+                                    if (question.QuestionAnswered)
+                                    {
+                                        <span class="noText btn btn-default btn-sm" disabled="disabled" title="" data-toggle="tooltip" data-placement="top" data-trigger="hover" data-original-title="&nbsp;@Labels.msgRecordHasDependencies"><span class="glyphicon glyphicon-trash"></span></span>
+                                    }
+                                    else
+                                    {
+                                        @Html.ActionLink(Labels.DeleteQuestion, "DeleteQuestion", "Questionnaires", new { questionid = question.QuestionID }, new { @class = "noText deleteButton", alt=Labels.DeleteQuestion, aria_label = Labels.DeleteQuestion, @role = "button" })
+                                    }
+                                }
+                            </td>
+                        </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <p>
+        @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Edit))
+        { 
+            @Html.ActionLink(Labels.AddQuestion, "AddQuestion", "Questionnaires", new { id = Model.QuestionnaireID }, new { @class = "addButton", alt=Labels.AddQuestion, aria_label = Labels.AddQuestion, @role = "button" })
+        }
+        
+        @Html.ActionLink(Labels.Cancel, "List", "Questionnaires", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </p>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

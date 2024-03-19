@@ -1,0 +1,22 @@
+﻿@model EncampmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.NewEncampment;
+}
+
+<div>
+    @using (Html.BeginForm("NewEncampment", "Outreach", FormMethod.Post, new { @class = "form-horizontal", id = "newEncampmentForm" }))
+    {
+        @Html.Partial("_BaseHiddenFor")
+        @Html.Partial("_Encampment", Model)
+        @Html.Partial("_OutreachAddress", Model.Address, "Address.")
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Back, "EncampmentList", "Outreach", new { }, new { @class = "backButton  ", title = Labels.Back, @role = "button" })
+                </div>
+            </div>
+        </div>
+    }
+</div>

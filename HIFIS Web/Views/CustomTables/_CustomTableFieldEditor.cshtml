@@ -1,0 +1,217 @@
+﻿@using System.Data
+@using System.Web.Mvc.Html
+@using HIFIS.CONTRACTS.WCFContracts.DataContracts
+@model CustomTableFieldViewModel
+
+
+@if (Model.Data == null)
+{
+    Model.Data = new CustomTableFieldDataViewModel
+    {
+        CustomTableFieldID = Model.CustomFieldID,
+        FieldTypeID = (CustomTableFieldTypes)Model.FieldTypeID
+    };
+}
+
+@Html.HiddenFor(model => model.CustomFieldID)
+@Html.HiddenFor(model => model.CustomTableID)
+@Html.HiddenFor(model => model.FieldTypeID)
+@Html.HiddenFor(model => model.Data.FieldTypeID)
+@Html.HiddenFor(model => model.Data.CustomTableFieldID)
+@Html.HiddenFor(model => model.Data.CustomTableLinkID)
+@Html.HiddenFor(model => model.NameE)
+@Html.HiddenFor(model => model.NameF)
+@Html.HiddenFor(model => model.DisplayName)
+@Html.HiddenFor(model => model.Maximum)
+@Html.HiddenFor(model => model.Minimum)
+@Html.HiddenFor(model => model.IsMandatory)
+@Html.HiddenFor(model => model.XCoordinate)
+@Html.HiddenFor(model => model.YCoordinate)
+@Html.HiddenFor(model => model.Position)
+
+@{
+    Authentication authentication = (Authentication)ViewData["Authentication"];
+}
+
+@switch ((CustomTableFieldTypes)Model.FieldTypeID)
+{
+    case CustomTableFieldTypes.Attachments:
+
+        if (Model.Data.AttachmentDisplay != null)
+        {
+            <strong>@Labels.Current: </strong>
+            @Html.DisplayFor(model => model.Data.AttachmentDisplay.DocumentName);
+            @Html.CTEditorFor(model => model.Data.AttachmentValue, Model.IsMandatory, "File");
+            @Html.HiddenFor(model => model.Data.DocumentID)
+        }
+        else
+        {
+            @Html.CTEditorFor(model => model.Data.AttachmentValue, Model.IsMandatory, "File");
+        }
+        break;
+
+    case CustomTableFieldTypes.Date:
+        @Html.CTEditorFor(model => model.Data.DateValue, Model.IsMandatory)
+        break;
+
+    case CustomTableFieldTypes.Date_Time:
+        @Html.CTEditorFor(model => model.Data.DateValue, Model.IsMandatory)<span>&nbsp;</span>
+        @Html.CTEditorFor(model => model.Data.TimeValue, Model.IsMandatory, "Text", new { realtype = "time" })
+        break;
+
+    case CustomTableFieldTypes.Decimal:
+        @Html.CTEditorFor(model => model.Data.DecimalValue, Model.IsMandatory)
+        break;
+
+    case CustomTableFieldTypes.Currency:
+
+        @Html.CTEditorFor(model => model.Data.DecimalValue, Model.IsMandatory, "Money", new { @class = "money", min = "0" })
+        
+        
+        break;
+
+    case CustomTableFieldTypes.DropDownList:
+        @Html.CTEditorFor(model => model.Data.NumericValue,
+             Model.DropdownValuesSelectList ?? new SelectList(new List<SelectListItem> { new SelectListItem { Value = null, Text = " " }, new SelectListItem { Value = null, Text = " " } }, "Value", "Text", null),
+             Model.IsMandatory,
+             null,
+             new { onchange = "otherVisibility(this, '" + "otherBox_" + Model.CustomFieldID + "')" },
+             false,
+             null,
+             Model.IsOtherEnabled)
+        if (Model.IsOtherEnabled)
+        {
+            <div id='otherBox_@Model.CustomFieldID' class='form-group col-sm-9 row pddng-tp-md' style='display:none;'>
+                <label for='otherBox_@Model.CustomFieldID' class='control-label'>@Labels.SpecifyOther:</label>
+                @*/*-- Other textbox should be labeled as mandatory if "other" is selected from dropdown options, therefore second argument below is TRUE --*/*@
+                @Html.CTEditorFor(model => model.Data.TextValue, true, null, new { disabled = "disabled", @class = "" })
+                @{
+                    var tempOtherDropDownValue = -1;
+                    if (Model.Data.NumericValue.HasValue)
+                    {
+                        tempOtherDropDownValue = (int)Model.Data.NumericValue;
+                    }
+                }
+                @using (Html.BeginScriptContext())
+                {
+                    Html.AddScriptBlock(
+@<script type="text/javascript">
+                            $(function() {
+                               if (@tempOtherDropDownValue != -2) {
+                                   $("#otherBox_@Model.CustomFieldID *").prop("disabled", true);
+                                   $("#otherBox_@Model.CustomFieldID *").parent().hide();
+                               } else {
+                                   $("#otherBox_@Model.CustomFieldID *").prop("disabled", false);
+                                $("#otherBox_@Model.CustomFieldID *").parent().show();
+                            }
+                            });
+</script>
+);
+                }
+            </div>
+        }
+        @*
+
+                /*
+                * Removed when rolling back serializable changes
+                * for SQL sessions
+                */
+
+                 @Html.CTEditorFor(model => model.Data.NumericValue,
+            new SelectList(
+                 Model.DropdownValuesSelectList
+                     .Select(i => new SelectListItem { Value = i.value, Text = i.text }).ToList()
+                 ?? new List<SelectListItem> {
+                         new SelectListItem { Value = null, Text = " " },
+                     new SelectListItem { Value = null, Text = " " } }, "Value", "Text", null))*@
+        break;
+
+    case CustomTableFieldTypes.MultiSelect:
+        @Html.CTListBoxFor(model => model.Data.MultiSelectValue,
+        Model.DropdownValuesSelectList ?? new SelectList(new List<SelectListItem> { new SelectListItem { Value = null, Text = " " } },
+        "Value", "Text", null), Model.IsMandatory,
+        null, true, false, null, true)
+
+        @*
+
+                /*
+                * Removed when rolling back serializable changes
+                * for SQL sessions
+                */
+
+                @Html.CTListBoxFor(model => model.Data.MultiSelectValue,
+            new SelectList(
+                 Model.DropdownValuesSelectList
+                 .Select(i => new SelectListItem { Value = i.value, Text = i.text }).ToList()
+                 ?? new List<SelectListItem> {
+                     new SelectListItem { Value = null, Text = " " } },
+                     "Value", "Text", null), null, true, false, null, true)*@
+        break;
+
+
+    case CustomTableFieldTypes.Numeric:
+        @Html.CTTextBoxFor(model => model.Data.NumericValue, Model.IsMandatory, new { type = "number" })
+        break;
+
+    case CustomTableFieldTypes.Telephone:
+        @Html.CTTextBoxFor(model => model.Data.TextValue, Model.IsMandatory, new { type = "tel" })
+        break;
+
+    case CustomTableFieldTypes.TextAreaBox:
+        @Html.CTEditorFor(model => model.Data.TextValue, Model.IsMandatory, "TextArea")
+        break;
+
+    case CustomTableFieldTypes.TextBox:
+        @Html.CTEditorFor(model => model.Data.TextValue, Model.IsMandatory)
+        break;
+
+    case CustomTableFieldTypes.Time:
+        @Html.CTEditorFor(model => model.Data.TimeValue, Model.IsMandatory, "Text", new { realtype = "time" })
+        break;
+
+    case CustomTableFieldTypes.YesNo:
+        @Html.CTEditorFor(model => model.Data.YNValue, Model.IsMandatory, "YesNo")
+        break;
+
+    case CustomTableFieldTypes.CountriesDropDown:
+        @Html.CTEditorFor(model => model.Data.NumericValue, CachedTableTypes.HIFIS_CountryTypes, Model.IsMandatory, null, true)
+        break;
+
+    case CustomTableFieldTypes.HIFISRolesDropDown:
+        @Html.CTEditorFor(model => model.Data.NumericValue, CachedTableTypes.HIFIS_PeopleRoleTypes, Model.IsMandatory, null, true)
+        break;
+
+    case CustomTableFieldTypes.LocationsDropDown:
+        @Html.CTEditorFor(model => model.Data.NumericValue, Utilities.ConvertToSelectListWithoutEncryption((List<ListItem>
+            )ViewData["PlaceList"], Model.Data.NumericValue),
+            Model.IsMandatory, null, null, true)
+        break;
+
+    case CustomTableFieldTypes.LookupTablesDropDown:
+        CachedTableTypes tableType;
+        var success = Enum.TryParse(Model.LookupTableName, out tableType);
+        if (success)
+        {
+            @Html.CTEditorFor(model => model.Data.NumericValue, tableType, Model.IsMandatory, null, true)
+        }
+
+        break;
+
+    case CustomTableFieldTypes.ServiceProvidersDropDown:
+        @Html.CTEditorFor(model => model.Data.NumericValue, Utilities.ConvertToSelectListWithoutEncryption((List<ListItem>)ViewData["OrgList"], Model.Data.NumericValue),
+                            Model.IsMandatory, null, null, true)
+        break;
+
+    case CustomTableFieldTypes.ClientsDropDown:
+        @Html.HiddenFor(model => model.Data.NumericValue);
+        ViewData["AutoCompleteSelectID"] = ViewData["InputNamePrependString"] + "[" + ViewData["HiddenInputIndex"] + "]";
+        @Html.CTAutocompleteFor(m => m.Data.TextValue, "~/ClientTombstone/AjaxGetClientList", Model.IsMandatory, Model.Data.DisplayName == null ? null : Model.Data.DisplayName
+       , new AutocompleteViewModelOptions() { ExcludeLabel = true, HiddenValue = true, HiddenID = ViewData["AutoCompleteSelectID"].ToString(), SelectClientFieldType = SelectClientFieldTypes.ClientID })
+        break;
+
+    case CustomTableFieldTypes.PeopleDropDown:
+        @Html.HiddenFor(model => model.Data.NumericValue);
+        ViewData["AutoCompleteSelectID"] = ViewData["InputNamePrependString"] + "[" + ViewData["HiddenInputIndex"] + "]";
+        @Html.CTAutocompleteFor(m => m.Data.TextValue, "~/PeopleTombstone/AjaxGetPList", Model.IsMandatory, Model.Data.DisplayName == null ? null : Model.Data.DisplayName, new AutocompleteViewModelOptions() { ExcludeLabel = true, HiddenValue = true, HiddenID = ViewData["AutoCompleteSelectID"].ToString(), SelectClientFieldType = SelectClientFieldTypes.PersonID })
+        break;
+}

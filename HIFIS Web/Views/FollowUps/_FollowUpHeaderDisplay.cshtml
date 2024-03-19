@@ -1,0 +1,62 @@
+﻿@model FollowUpViewModel
+<div>
+    <div class="row">
+        <div class="col-sm-12">
+            @Html.HifisLabelFor(model => model.DateOfCheck, new { @class = "autowidth" })
+            @Html.Partial("DisplayTemplates/DateTime", Model.DateOfCheck)
+        </div>
+    </div>
+    @if (Model.MonthsElapsed != null)
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                @Html.HifisDisplayFor(model => model.MonthsElapsed)
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-sm-12">
+            @Html.HifisDisplayFor(model => model.OrganizationName)
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            @Html.HifisDisplayFor(model => model.CaseWorkerName)
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            @Html.HifisLabelFor(model => model.ServiceTypeID, new { @class = "autowidth" })
+
+            @if (Model.ServiceTypeID == null)
+            {
+
+                @Labels.HousingHistory
+            }
+            else
+            {
+                @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.ServiceTypeID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServiceTypes, ViewBag.CurrentCulture, Model.ServiceTypeID)
+                                            })
+            }
+        </div>
+    </div>
+    @*@if (Model.ServiceTypeID == (short)ServiceTypes.HousingSubsidy)*@
+    @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ServiceTypes, Model.ServiceTypeID) == (short)ServiceTypes.HousingSubsidy)
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                <label class="autowidth">@Labels.Subsidy</label>
+                <span>@ViewBag.subsidy</span>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-sm-12">
+            @Html.HifisDisplayFor(model => model.Comments)
+        </div>
+    </div>
+</div>

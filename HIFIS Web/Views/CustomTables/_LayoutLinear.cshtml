@@ -1,0 +1,49 @@
+﻿ @model List<CustomTableFieldViewModel>
+
+<div class="mrgn-tp-md">
+
+    @if (!Model.IsEmptyOrNull())
+    {
+        var clientSideArrayIndex = 0;
+        //var orderedModel = Model.OrderBy(model => model.Position).ToList();
+        foreach (var thisOrderedModel in Model.OrderBy(model => model.Position).ToList())
+        {
+            <div class="mrgn-tp-md">
+                @switch (thisOrderedModel.FieldTypeID)
+                {
+                    case (short)CustomTableFieldTypes.Header1:
+                        <h1 class="col-sm-12">@thisOrderedModel.DisplayName</h1>
+                        break;
+                    case (short)CustomTableFieldTypes.Header2:
+                        <h2 class="col-sm-12">@thisOrderedModel.DisplayName</h2>
+                        break;
+                    case (short)CustomTableFieldTypes.Header3:
+                        <h3 class="col-sm-12">@thisOrderedModel.DisplayName</h3>
+                        break;
+                    case (short)CustomTableFieldTypes.Description:
+                        <span class="col-sm-12">@Html.Raw(thisOrderedModel.DisplayName)</span>
+                        break;
+                    case (short)CustomTableFieldTypes.LineBreak:
+                        <br />
+                        break;
+                    case (short)CustomTableFieldTypes.HorizontalRule:
+                        <hr />
+                        break;
+                    default:
+                        <div class="row">
+                            <label for="CustomTable_Fields[@(clientSideArrayIndex)]_Data_TextValue" class="control-label col-sm-3">@thisOrderedModel.DisplayName</label>
+                            <div class="col-sm-9">
+                                @*@Html.Partial("_CustomTableFieldEditor", thisOrderedModel, (ViewData["inputNamePrependString"] as string ?? String.Empty) + "[" + clientSideArrayIndex + "].", true)*@
+                                @{
+                                    ViewData["HiddenInputIndex"] = clientSideArrayIndex;
+                                }
+                                @Html.Partial("_CustomTableFieldEditor", thisOrderedModel, ViewData["InputNamePrependString"] + "[" + ViewData["HiddenInputIndex"] + "].", true)
+                            </div>
+                        </div>
+                        clientSideArrayIndex++;
+                        break;
+                }
+            </div>
+        }
+    }
+</div>

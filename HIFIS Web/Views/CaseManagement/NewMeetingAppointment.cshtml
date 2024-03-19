@@ -1,0 +1,31 @@
+﻿@model SessionAppointmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseSessionAppNew;
+    
+}     
+    
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewMeetingAppointment", "CaseManagement",
+                FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.CaseID)
+        @Html.HiddenFor(model => model.SessionID)
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.DesiredOutcomeTypeID)
+        @Html.HiddenFor(model => model.DesiredOutcomeTypeName)
+    
+        @Html.Partial("~/Views/Appointment/_Appointments.cshtml", Model.Appointment, "Appointment.")
+        
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		        <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "EditMeeting", "CaseManagement", new { sessionID = Model.SessionID, caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID, goalID = Model.DesiredOutcomeTypeID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })                                                                                  
+	        </div>
+        </div> 
+        <br />
+    }
+</div>

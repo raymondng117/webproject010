@@ -1,0 +1,82 @@
+﻿@model ProgramServiceProviderViewModel
+@{
+  ViewBag.ViewTitle = Labels.NewServiceProvider;
+  
+  ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+@using (Html.BeginScriptContext())
+{
+
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            @{
+                if(!(TempData["error"] == null)) {
+                    char message = Char.Parse(TempData["error"].ToString());
+                    switch (message)
+                    {
+                        case 'd':
+                            <text>displayNotification('error', null, '@Labels.DuplicateEntry');</text>
+                            break;
+                        case 't':
+                            <text>displayNotification('error', null, '@Labels.StartDateError');</text>
+                            break;
+                        case 'f':
+                            <text>displayNotification('error', null, '@Labels.FundsError');</text>
+                            break;
+                        case 'b':
+                            <text>displayNotification('error', null, '@Labels.BedsError');</text>
+                            break;
+                        case 'e':
+                            <text>displayNotification('error', null, '@Labels.EndDateError');</text>
+                            break;
+                        case 's':
+                            <text>displayNotification('error', null, '@Labels.StartEndDateError');</text>
+                            break;
+                        default:
+                            break;
+                    }
+            }
+           }
+</script>
+
+);
+}
+
+@using (Html.BeginForm("NewServiceProvider", "Programs", FormMethod.Post, new { @class = "form-horizontal" }))
+{    
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.ProgramID)
+    @Html.HiddenFor(m => m.ProgramServiceProviderID)
+
+    <div>
+        @Html.HifisListBoxFor(model => model.OrganizationIDs, Utilities.ConvertToSelectList(Model.OrgList))
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.DateStart)
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.DateEnd)
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.MaxFundingPerPeriod, "Money", new { @class = "money wdth-strct-150 stay-required" })
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.MaxBedsPerPeriod)
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.TimeUnitTypeID, CachedTableTypes.HIFIS_TimeUnitTypes, new { @class = "stay-required" })
+    </div>
+    <div>
+        @Html.HifisEditorFor(m => m.Rate, "Money", new { @class = "money wdth-strct-150 stay-required" })
+    </div>
+    <div>
+        @Html.Partial("Plugins/_TinyMCEScript")
+        @Html.HifisTextAreaFor(m => m.Comments, new { @class = "mceEditor_Messaging" })
+    </div>
+    <div class="form-group">
+	    <div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "Display", "Programs", new { @programID = Model.ProgramID }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	    </div>
+    </div>  
+}

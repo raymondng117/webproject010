@@ -1,0 +1,99 @@
+﻿@model EducationViewModel
+
+<div class="mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientEducationLevelID)
+    @Html.HiddenFor(model => model.ClientID)
+
+    @*<div class="row">
+        <div class="col-sm-offset-2 mrgn-bttm-md">
+            @if (RightsHelper.HasRight(UserRights.Places_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Place_Add))
+            {
+                @Html.Partial("_OnTheFlyButton",
+                    new OnTheFlyButtonViewModel()
+                    {
+                        ButtonName = Labels.NewSchool,
+                        Title = Labels.NewSchool,
+                        ActionName = "AddPlace",
+                        ControllerName = "Places",
+                        PartialName = "~/Views/Places/_Place.cshtml",
+                        CallBackFunction = "OnTheFlyCallBackNewPlace",
+                        ViewModel = new PlaceViewModel()
+                    })
+            }
+        </div>
+    </div>*@
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.PlaceID, ViewBag.schoolList as SelectList)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.EducationLevelID, CachedTableTypes.HIFIS_EducationLevelTypes, Culture)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.Completed, "YesNo")
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.DateStart)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.DateEnd)
+    </div>
+
+    <div class="row">
+        @Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize" })
+    </div>
+
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     function OnTheFlyCallBackNewPlace(objectID, formData) {
+		         $("#PlaceID").append($("<option />").val(objectID["id"]).text(formData["PlaceName"]));
+		         $("#PlaceID").val(objectID["id"]).trigger('change');
+		     }
+
+            //for javascript validation before postback
+            function checkCompleted() {
+                if ($('#Completed').bootstrapSwitch('state') == true) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            //to toggle validation with the switch
+            $('input[name=Completed]').on('switchChange.bootstrapSwitch', function (event, state) {
+                if (state) {
+                    $('#DateEnd').parent('.input-group').siblings(".glyphicon-star").removeClass("hide").addClass("show");
+                }
+                else {
+                    $('#DateEnd').parent('.input-group').siblings(".glyphicon-star").removeClass("show").addClass("hide");
+                }
+            });
+
+            $(function () {
+
+                //to display validation on pageload
+                if ($('#Completed').bootstrapSwitch('state') == true)
+                    $('#DateEnd').parent('.input-group').siblings(".glyphicon-star").addClass("show");
+                if ($('#Completed').bootstrapSwitch('state') == false)
+                    $('#DateEnd').parent('.input-group').siblings(".glyphicon-star").addClass("hide");
+            });
+
+        </script>
+    );
+}

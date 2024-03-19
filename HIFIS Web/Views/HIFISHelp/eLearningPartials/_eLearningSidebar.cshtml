@@ -1,0 +1,74 @@
+﻿@model BaseELearningIndexModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    bool isMod = ViewBag.IsModule;
+}
+@Html.ActionLink(Labels.HIFISHelp_TOC, "TrainingTOC", "HIFISHelp", new { }, new { @class="btn btn-default wdth-100", alt=Labels.HIFISHelp_TOC, aria_label = Labels.HIFISHelp_TOC })
+<table class="wb-tables table help-table" data-wb-tables='{ "ordering" : false, "info": false, "filter": false, "paging": false }'>
+    <thead>                
+        <tr>
+            <th></th>
+        </tr>                          
+    </thead>
+    <tbody>                
+        @foreach(var pl in Model.TrainingPlaylists)
+        {
+            <tr class="help-sidebar">
+                <td>
+                    <strong>                        
+                        @Html.ActionLink(lang == english ? pl.NameE : pl.NameF, "TrainingIndex", "HIFISHelp", new { id = pl.PlaylistID }, new {alt=lang == english ? pl.NameE : pl.NameF, aria_label = lang == english ? pl.NameE : pl.NameF })
+                    </strong>
+                </td>
+            </tr>  
+                    
+            foreach(var md in pl.PlaylistModules.OrderBy(md => md.ModSequence))
+            {
+                <tr class="info">
+                    @if (isMod)
+                    {
+                        var holder = Html.SidebarCurrentTopic(md.ModuleID.ToString());              
+                        <td class="@{ var classes = holder == md.ModuleID ? "help-active" : ""; <text>@classes</text>}">
+                            @Html.ActionLink(lang == english ? md.NameE : md.NameF, "TrainingModule", "HIFISHelp", new { id = md.ModuleID, playlistId = pl.PlaylistID }, new { alt=lang == english ? md.NameE : md.NameF, aria_label = lang == english ? md.NameE : md.NameF}) 
+                        </td>
+                     
+                    }
+                    else 
+                    { 
+                        <td>
+                            @Html.ActionLink(lang == english ? md.NameE : md.NameF, "TrainingModule", "HIFISHelp", new { id = md.ModuleID, playlistId = pl.PlaylistID }, new { alt=lang == english ? md.NameE : md.NameF, aria_label = lang == english ? md.NameE : md.NameF }) 
+                        </td>
+                    }             
+                </tr>
+                       
+                foreach(var tp in md.ModuleTopics.OrderBy(tp => tp.Sequence))
+                {
+                    var holder = Html.SidebarCurrentTopic(tp.TopicID.ToString());
+                    if (holder == tp.TopicID && !isMod)
+                    {                                                
+                        <tr>
+                            <td class="help-active">
+                                @if (tp.IsSubTopicYN)
+                                {                                                                         
+                                    @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = pl.PlaylistID }, new { @class = "pddng-lft-lg", alt=lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF })   
+                                }
+                                else
+                                { 
+                                    @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = pl.PlaylistID }, new { @class = "pddng-lft-md", alt=lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF }) 
+                                }
+                            </td>
+                        </tr> 
+                    }
+                    else if (!tp.IsSubTopicYN)
+                    {
+                        <tr class="@Html.HideOtherModuleTopics(tp.ModuleID, tp.TopicID, isMod)">
+                            <td class="">                                                                         
+                                @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = pl.PlaylistID }, new { @class="pddng-lft-md", alt=lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF }) 
+                            </td>
+                        </tr> 
+                    }                                                     
+                }                                                 
+            }                   
+        }
+    </tbody>
+</table>

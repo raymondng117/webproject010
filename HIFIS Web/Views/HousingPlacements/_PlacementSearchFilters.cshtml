@@ -1,0 +1,103 @@
+﻿@model PlacementSearchFilterViewModel
+
+<form id="placementFilterForm" class="form-horizontal">
+    <div>
+
+        <div>
+            @Html.HiddenFor(model => model.FrontDesk)
+        </div>
+
+        @if(Model.ClientID.IsEmptyOrNull())
+        { 
+            <div>
+                @* Setting the autocompleteVM option SelectClientType to Other to avoid doing attestation/consent checks on filter parameter *@
+                @Html.HifisAutocompleteFor(
+                    model => model.ClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , null
+                    , new AutocompleteViewModelOptions
+                    {
+                        HiddenValue = true
+                        , SelectClientFieldType = SelectClientFieldTypes.Other
+                        , AllowClear = true
+                        , Placeholder = Labels.SearchForAClient
+                    })
+            </div>
+        }
+        else
+        {
+             @Html.HiddenFor(model => model.ClientID)
+        }
+
+        <div>
+            @Html.HifisAutocompleteFor(
+                model => model.CaseWorkerID
+                , Url.Content("~/PeopleTombstone/AjaxGetCaseworkerList")
+                , null
+                , new AutocompleteViewModelOptions
+                {
+                    MaxResultsToReturn = 50
+                    , HiddenValue = true
+                    , SelectClientFieldType = SelectClientFieldTypes.Other
+                    , AllowClear = true
+                    , Placeholder = Labels.SearchForCaseworker
+                })
+        </div>
+        @* Status Type ID *@
+        <div>
+            @Html.HifisListBoxFor(model => model.PSs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PlacementStatusTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.FromDate)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ToDate)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.PTD, "YesNo")
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.PMD, "YesNo")
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.UTD, "YesNo")
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.UF, "YesNo")
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-11">
+                <button type="button" id="filterListButton" class="filterButton pull-right">@Labels.ApplyFilters</button>
+            </div>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $("#filterListButton").click(function () {
+                if ($("#placementFilterForm").valid()) {
+                    var btn = $(this);
+
+                    $('#placementsTable').DataTable().ajax.url('@Url.Content("~/HousingPlacements/GetPlacementsJson/?")' + $("#placementFilterForm").serialize() + '').load(null, true);
+
+                    btn.attr("disabled", true);
+
+                    $('#placementsTable').on('xhr.dt', function () {
+                        btn.attr("disabled", false);
+                        $('#filter-panel').trigger('close.wb-overlay');
+                    });
+                }
+            });
+
+        </script>);
+}

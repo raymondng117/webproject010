@@ -1,0 +1,24 @@
+﻿@model ClientHealthViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditHealth;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>    
+    @using (Html.BeginForm("EditHealth", "Health", new { id = Model.ClientID, healthIssueID = Model.HealthIssueID }, FormMethod.Post, new { @class = "form-horizontal" }))
+    {  
+        @Html.Partial("_ClientHealth", Model) 
+        
+        <div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" }) 
+			</div>
+		</div>  
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

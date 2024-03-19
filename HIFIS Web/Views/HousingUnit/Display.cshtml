@@ -1,0 +1,370 @@
+﻿@model HousingUnitViewModel
+
+@{
+    ViewBag.LayoutView = LayoutPage.SecNav;
+
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayHousingUnit;
+    
+}
+
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Address" role="tab" data-toggle="tab">@Labels.Address</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Photos" role="tab" data-toggle="tab">@Labels.Photos</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Maintenance" role="tab" data-toggle="tab">@Labels.Maintenance</a>
+	</li>
+    @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+    {
+        <li>
+            <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+            </a>
+        </li>
+    }
+
+
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="Details">
+				<div class="displayView">
+                
+					<div class="row">
+
+						@Html.HifisLabelFor(model => model.HouseTypeID, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+									new SingleItemSelectList 
+									{
+										ID = Model.HouseTypeID,
+										List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseTypes, ViewBag.CurrentCulture, Model.HouseTypeID)
+									})
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.StatusTypeID, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+									new SingleItemSelectList 
+									{
+										ID = Model.StatusTypeID,
+										List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseStatusTypes, ViewBag.CurrentCulture, Model.StatusTypeID)
+									})
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.StatusDate, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.StatusDate)
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.OccupanyStatus, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+									new SingleItemSelectList 
+									{
+										ID = Model.OccupanyStatus,
+										List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_OccupancyStatusTypes, ViewBag.CurrentCulture, Model.OccupanyStatus)
+									})
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.DateOfOccupancy, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.DateOfOccupancy)
+					</div>
+
+					<div class="row">
+                        @Html.HifisLabelFor(model => model.OccupancyComment, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.OccupancyComment)
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.LandlordPersonID, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+									new SingleItemSelectList 
+									{
+										ID = Model.LandlordPersonID,
+										List = ViewBag.landlordList as SelectList
+									})
+					</div> 
+					 
+					<div class="row">
+						@Html.HifisLabelFor(model => model.OrganizationID, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+									new SingleItemSelectList 
+									{
+										ID = Model.OrganizationID,
+										List = ViewBag.orgList as SelectList
+									})
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.Attributes, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+										new MultipleItemSelectList 
+										{
+											IDs = Model.Attributes.Select(a => a.ToString()).ToList(),
+											List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseAttributeTypes, Culture, Model.Attributes.Select(a => a.ToString()).ToList())
+										})
+					</div>
+			   
+					<div class="row">
+						@Html.HifisLabelFor(model => model.IsShareable, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsShareable)
+					</div>
+
+					@*<div>
+						@Html.HifisLabelFor(model => model.IsInPlacementInventory, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsInPlacementInventory)
+					</div>*@
+					
+					<div class="row">
+						@Html.HifisLabelFor(model => model.AreaSqFt, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.AreaSqFt) @Labels.Sqft
+					@*</div>
+				  
+					<div>*@    
+						<label class="autowidth">&nbsp;</label> @Html.DisplayFor(model => model.AreaSqM) @Labels.M2
+					</div>      
+					
+					<div class="row">
+						@Html.HifisLabelFor(model => model.YearOfBuilt, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.YearOfBuilt)
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.NoOfBedrooms, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.NoOfBedrooms)
+					</div>
+				 
+					<div class="row">
+						@Html.HifisLabelFor(model => model.NoOfFloors, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.NoOfFloors)
+					</div>
+				 
+					<div class="row">
+						@Html.HifisLabelFor(model => model.Floor, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Floor)
+					</div>
+
+					<div class="row">
+						@Html.HifisLabelFor(model => model.Rent, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Rent) /@Labels.Month   
+					</div>
+
+					<div id="active" class="row">
+						@Html.HifisLabelFor(model => model.ActiveYN, new { @class = "autowidth" })
+						@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ActiveYN)
+					</div>
+
+					<div class="row">
+                        @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Comments)
+					</div>
+                    <div class="row">
+						<div class="btn-group">
+							<div class="col-sm-3">
+								@if (RightsHelper.HasRight(UserRights.HousingUnits_Edit, Model.OrganizationID))
+								{ 
+									@Html.ActionLink(Labels.Edit, "Edit", new { id = Model.HouseID, returnAction = "Display" }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+								}
+							</div>
+						</div>
+                    </div>
+
+				</div>
+			</div>
+			<div class="tab-pane" id="Address">
+				<div class="displayView">
+                    <div class="row">
+                        @Html.HifisLabelFor(model => model.Address.Building, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.Address.Building)
+                    </div>
+
+					<div class="row">
+						<div class="col-sm-3">
+							@Html.HifisLabelFor("Address", Labels.Address, new { @class = "autowidth" })
+						</div>
+                        <div class="col-sm-9 autowidth">
+                            @((Model.Address.Unit == null ? "" : Model.Address.Unit + " " ) + Model.Address.AddressLn1 + " " + Model.Address.AddressLn2)
+                        </div>
+					</div>
+                    <div class="row">
+                        @Html.HifisLabelFor(model => model.Address.CountryID, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.Address.Country)
+                    </div>
+					<div class="row">
+                        @Html.HifisLabelFor(model => model.Address.ProvinceID, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.Address.Province)
+					</div>
+					<div class="row">
+                        @Html.HifisLabelFor(model => model.Address.CityID, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.Address.City)
+					</div>
+					<div class="row">
+                        @Html.HifisLabelFor(model => model.Address.PostalCode, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.Address.PostalCode)
+					</div>
+					<div class="row">
+			            @Html.HifisLabelFor(model => model.Address.GeoIDs, new { @class = "autowidth" })
+			            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+							            new MultipleItemSelectList 
+                                        {
+                                            IDs = Model.Address.GeoIDs.Select(a => a.ToString()).ToList(),
+								            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture)
+                                        })
+					</div>
+                    <div class="row">
+						<div class="btn-group">
+							<div class="col-sm-3">
+								@if (RightsHelper.HasRight(UserRights.HousingUnits_Edit, Model.OrganizationID))
+								{
+									@Html.ActionLink(Labels.Edit, "Edit", new { id = Model.HouseID, returnAction = "Display" }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button"})
+								}
+							</div>
+						</div>
+                    </div>
+				</div>
+			</div>
+			<div class="tab-pane" id="Photos">
+				<div id="photos">
+					@if (Model.Photos.Count != 0)
+					{
+						<table class="wb-tables table table-striped" data-wb-tables='{ "info": false, "paging": false, "filter": false }'>
+							<thead>
+							<tr>
+								<th class="align-text-center">@Labels.Thumbnail</th>
+								<th class="align-text-center">@Labels.Photo</th>
+								<th class="align-text-center">@Labels.Date</th>
+							</tr>
+							</thead>
+							<tbody>	
+								@foreach (HousePhotoViewModel photo in Model.Photos)
+								{
+								    <tr>                                
+										<td class="align-text-center">
+											<div class="wet-boew-lightbox">
+												<img alt="@photo.Comments" data-photo-id="@photo.HousePhotoID" src="@Url.Content("~/HousingUnit/GetPhoto/")@photo.HousePhotoID" style="max-width:100px; max-height:100px;"/><br />
+												<a class="wb-lbx lbx-modal" id="@(photo.HousePhotoID)link" title="@photo.Comments" href="@Url.Content("~/HousingUnit/GetDisplayPhoto/")@photo.HousePhotoID"></a>
+											</div>
+										</td>
+										<td class="align-text-center"><a class="wb-lbx lbx-modal " title="@photo.Comments" href="@Url.Content("~/HousingUnit/GetDisplayPhoto/")@photo.HousePhotoID">@photo.Comments</a></td>
+										<td class="align-text-center">@Html.DisplayFor(m => photo.PhotoDate)</td>
+								    </tr> 	
+                                 } 
+							</tbody>  			 
+						</table>
+					}
+					else
+					{
+						<strong>@Labels.NoRecords</strong>
+					} 
+                    @if (RightsHelper.HasRight(UserRights.HousingUnits_Photo_Upload, Model.OrganizationID))
+				    {
+                        <div>
+					        @Html.ActionLink(Labels.Photo, "UploadPhoto", "HousingUnit", new { id = Model.HouseID }, new { @class = "addButton mrgn-tp-md", id = "NewPhoto", alt=Labels.Photo, aria_label = Labels.Photo, @role = "button" }) 
+                        </div>
+				    }
+													  
+				</div>
+			</div>
+			<div class="tab-pane" id="Maintenance">
+				    @if (!Model.MaintenanceWork.IsEmptyOrNull())
+				    {
+					    decimal? x = 0.0m;                
+					    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "filter": false }'>
+						    <thead>
+							    <tr>
+								    <th>@Labels.MaintenanceWork</th>
+								    <th>@Labels.Description</th>
+								    <th>@Labels.ScheduledDate</th>
+								    <th>@Labels.Contractor</th>
+								    <th>@Labels.ActualCost</th>
+								    <th>@Labels.Action</th>
+							    </tr>
+						    </thead>
+						    <tbody>
+							    @foreach (HousingMaintenanceViewModel item in Model.MaintenanceWork)
+							    {
+								    if (item.ActualCost != null)
+								    {
+									    x += item.ActualCost;
+								    }
+								    <tr>
+									    <td class="align-text-center">@item.MaintenanceTypeName</td>
+									    <td class="align-text-center">@item.Description</td>
+									    <td class="align-text-center">@Html.DisplayFor(m => item.ScheduledFrom)</td>
+									    <td class="align-text-center">@item.ContractorPersonName</td>
+									    <td class="align-text-center">@{if (item.ActualCost != null)
+																	    {<text>$</text>}@item.ActualCost}</td>
+									    <td class="align-text-center wdth-10">
+
+										    @if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Edit, Model.OrganizationID))
+										    {
+											    @Html.ActionLink(Labels.Edit, "EditMaintenance", "HousingUnit", new { id = item.HouseMaintenanceID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+										    }
+												
+										    @if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Delete, Model.OrganizationID))
+										    {
+											    @Html.ActionLink(Labels.Delete, "DeleteMaintenance", new { id = item.HouseMaintenanceID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+										    }
+												
+									    </td>
+								    </tr>
+							    }  
+						    </tbody>    
+					    </table>
+                    if (x != 0.0m)
+                    {
+					    <span class="align-right mrgn-rght-xl"><strong>@Labels.Total: $@x</strong></span>
+                    }
+				    }
+				    else
+				    {
+					    <strong>@Labels.NoRecords</strong>
+				    }
+
+				    @if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Add, Model.OrganizationID))
+				    {
+                        <div>
+					        @Html.ActionLink(Labels.AddMaintenanceWork, "NewMaintenance", "HousingUnit", new { id = Model.HouseID }, new { @class = "addButton mrgn-tp-md", alt=Labels.AddMaintenanceWork, aria_label = Labels.AddMaintenanceWork, @role = "button" })
+                        </div>
+				    }
+			</div>
+
+            @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+            {
+                <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                    @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                </div>
+            }
+
+		</div>	
+	</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+
+         // dont ask...
+         $('img').hover(function (e) {
+             $(this).css('cursor', 'pointer');
+         }, function (e) {
+             $(this).css('cursor', 'default');
+         });
+         $('img').click(function (e) {
+             $('#' + $(this).attr('data-photo-id') + 'link')[0].click();
+         });
+    </script>
+);
+}

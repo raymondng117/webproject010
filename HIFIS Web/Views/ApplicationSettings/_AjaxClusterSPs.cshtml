@@ -1,0 +1,27 @@
+﻿
+@model ClusterViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.ClusterSPList</h2>
+	</header>
+	<div class="modal-body">
+        <form id="newItemForm" class="form-horizontal">
+		    @Html.Partial("_ClusterSPList", Model)
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+		<button id="newItemCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');        
+    
+</script>
+
+

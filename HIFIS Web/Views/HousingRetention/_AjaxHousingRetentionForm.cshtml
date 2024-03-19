@@ -1,0 +1,75 @@
+﻿@model HousingRetentionViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        @if (!string.IsNullOrEmpty(Model.ServiceID))
+        {
+            <h2 class="modal-title">@Labels.EditHousingRetention</h2>
+        }
+        else
+        {
+            <h2 class="modal-title">@Labels.AddHousingRetention</h2>
+        }
+    </header>
+    <div class="modal-body">
+        @using (Html.BeginForm("New", "HousingRetention", FormMethod.Post, new {@class = "form-horizontal", id = "houseRetentionForm"}))
+        {
+            @Html.AntiForgeryToken()
+            @Html.Partial("_BaseHiddenFor")
+            @Html.HiddenFor(model => model.OrganizationID)
+            @Html.HiddenFor(model => model.HouseRetentionID) @*This is basically a housing placement id for now*@
+            @Html.HiddenFor(model => model.ServiceID)
+            @Html.HiddenFor(model => model.ClientHouseID)
+            @Html.HiddenFor(model => model.OrganizationID)
+            @Html.HiddenFor(model => model.PrimaryClientID)
+            <div>
+                @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.DateStart)
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseworkersList as SelectList)
+            </div>
+            <div>
+                @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.ProgramList as SelectList)
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.FirstFollowUpDate)
+            </div>
+        }
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        @if (!string.IsNullOrEmpty(Model.ServiceID))
+        {
+            <button type="submit" id="editSaveBtn" class="saveButton">@Labels.Save</button>
+        }
+        else
+        {
+            <button type="submit" id="newSaveBtn" class="saveButton">@Labels.Save</button>
+        }
+        <button id="newCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+
+<script type="text/javascript">
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#houseRetentionForm").hifisValidation();
+    });
+
+    $("#newSaveBtn").click(function() {
+        if ($("#houseRetentionForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $("#houseRetentionForm").submit();
+        }
+    });
+
+</script>

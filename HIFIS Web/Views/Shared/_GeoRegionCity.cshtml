@@ -1,0 +1,109 @@
+﻿@model GeoRegionFilterViewModel
+@{
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+}
+
+@Html.HiddenFor(m => m.FilterType)
+
+@Html.HifisEditorFor(m => m.GeoRegionID, CachedTableTypes.HIFIS_GeoRegionTypes, new { id = "ddGeo" }, false)
+
+@Html.HifisEditorFor(m => m.CityID, ViewBag.Cities as SelectList, null, new { id = "ddCity" }, false)
+
+
+<script> 
+
+    @*var defaultGeoRegionID = '@Model.GeoRegionID';*@
+
+    function UpdateDropdowns() {
+        $("#ddGeo").trigger('change');
+    }
+
+    function UpdateDropdownValues(dropdown, values) {
+        dropdown.options.length = 0; // clear out existing items
+
+        for (var i = 0; i < values.length; i++)
+            dropdown.options.add(new Option(values[i].Text, values[i].Value));
+
+        $(dropdown).trigger('change');
+        doSelect2Init();
+    }
+
+    function PopulateReferalList() {
+        @{switch(Model.FilterType)
+        {
+            case 1:
+                <text>
+                    $.ajax({
+                        url: "@Url.Content("~/Master/AjaxGetReferalFromList")",
+                        type: "POST",
+                        data: { "GeoID": $('#ddGeo').val(), "CityID": $('#ddCity').val() }
+                    }).done(function (data) {
+                        if (data.Success) {
+                            UpdateDropdownValues(document.getElementById('ddFrom'), data.Result);
+                            $("#filterCloseBtn").click(); //Close the modal window on success
+                        }
+                    });
+                </text>
+                break;
+            case 2:
+                <text>
+                    $.ajax({
+                        url: "@Url.Content("~/Master/AjaxGetReferalToList")",
+                        type: "POST",
+                        data: { "GeoID": $('#ddGeo').val(), "CityID": $('#ddCity').val() }
+                    }).done(function (data) {
+                        if (data.Success) {
+                            UpdateDropdownValues(document.getElementById('ddTo'), data.Result);
+                            $("#filterCloseBtn").click(); //Close the modal window on success
+                        }
+                    });
+        </text>
+                break;
+            case 3:
+                <text>
+                    $.ajax({
+                        url: "@Url.Content("~/Master/AjaxGetLocationList")",
+                        type: "POST",
+                        data: { "GeoID": $('#ddGeo').val(), "CityID": $('#ddCity').val() }
+                    }).done(function (data) {
+                        if (data.Success) {
+                            UpdateDropdownValues(document.getElementById('ddLocation'), data.Result);
+                            $("#filterCloseBtn").click(); //Close the modal window on success
+                        }
+                    });
+                </text>
+                break;
+        }
+    }
+    }
+
+
+    function PopulateCity() {
+        $.ajax({
+            url: "@Url.Content("~/Master/AjaxGetGeoCityList")",
+            type: "POST",
+            data: { "GeoID": $('#ddGeo').val() }
+        }).done(function (data) {
+            if (data.Success) {
+                UpdateDropdownValues(document.getElementById('ddCity'), data.Result);
+            }
+        });
+    }
+
+    function PopulateDDFunction() {
+        PopulateCity();
+        PopulateReferalList();
+    }
+
+    //Onload
+    $(document).ready(function () {
+        PopulateCity();
+
+        $("#ddGeo").on("select2:select", PopulateCity);
+        $("#filterButton").on('click', PopulateReferalList);       
+    });
+    
+</script>
+ 
+
+ 

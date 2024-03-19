@@ -1,0 +1,31 @@
+﻿@model HousePhotoViewModel
+           
+@Html.Partial("_ValidationSummaryOuter")
+
+@{
+    ViewBag.LayoutView = LayoutPage.SecNav;
+    ViewBag.ViewTitle = Labels.UploadPhoto;
+}
+
+<div>
+    @using (Html.BeginForm("UploadPhoto", "HousingUnit", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+    {
+       
+        @Html.AntiForgeryToken()
+         @Html.HiddenFor(model => model.HouseID)
+
+        <div>
+            @Html.HifisTextBoxFor(model => model.UploadFile, new { @class="wdth-strct-450", type = "file" }) 
+        </div>
+        <div>
+            @Html.HifisTextBoxFor(model => model.Comments, new { @class="wdth-strct-450" }) 
+        </div>
+        
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				 <button type="submit" class="saveButton">@Labels.Upload</button>
+                @Html.ActionLink(Labels.Cancel, "Edit", "HousingUnit", new { id = WebHelper.EncryptID(Model.HouseID) }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>  
+    }
+</div>

@@ -1,0 +1,44 @@
+﻿@model CommentViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="mrgn-tp-md">
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.CommentsID)
+    @Html.HiddenFor(m => m.CommentTypeID)
+    @Html.HiddenFor(m => m.ClientID)
+    @Html.HiddenFor(m => m.ParentCommentID)
+    @Html.HiddenFor(m => m.OrganizationID)
+    @Html.HiddenFor(m => m.EditableYN)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Subject, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.Subject, null, null, true, null)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing())
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-md-3 control-label" })
+            <div class="col-sm-9">
+                @Html.HifisEditorFor(model => model.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.ShareYN)
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CommentBody, new { @class = "col-md-3 control-label" })
+        <div class="col-sm-9">
+            @Html.HifisTextAreaFor(model => model.CommentBody, new { @class = "largeCommentBox max_width_90" }, true)
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,85 @@
+﻿@model ClientWatchConcernsViewModel
+
+<section id="Modal_AddConcern" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_AddClientWatchConcern</h2>
+    </header>
+
+    <div class="modal-body">
+        <div>
+            @using (Html.BeginForm("AddWatchConcern", "ClientFactors", FormMethod.Post, new { @class = "form-horizontal", id = "watchConcernSaveForm" }))
+            {
+                @Html.Partial("_WatchConcern", Model)
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-md">
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" id="watchConcernSaveBtn" class="saveButton  ">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_AddConcern');
+
+    $(function () {
+        $("#watchConcernSaveForm").hifisValidation();
+
+    });
+
+
+    $("#watchConcernSaveBtn").click(function () {
+
+        if ($("#watchConcernSaveForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/ClientFactors/AddWatchConcern")",
+                type: "POST",
+                data: $('#watchConcernSaveForm').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success);
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#concernsTable').DataTable().ajax.reload();
+                    getROVitals("@Model.ClientID"); //Needed to refresh "Client Alerts"
+
+                    //(function () {
+                    //    $('select[id=ClientIDs]').select2("val", "");
+                    //    $('select[id=ClientIDs]').empty();
+                    //    $('input[type=checkbox]').each(function () {
+                    //        if ($(this).attr('data-val') == 'False') {
+                    //            $(this).removeAttr('checked');
+                    //        }
+                    //    })
+                    //  });
+
+                } else {
+                    defaultNotify(data.Success);
+                }
+            });
+        }
+    });
+
+</script>
+
+
+
+
+

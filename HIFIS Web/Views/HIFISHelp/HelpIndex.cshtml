@@ -1,0 +1,261 @@
+﻿@model  Help_IndexModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISHelpCenter + (ViewBag.CategoryName != null ? " - " + ViewBag.CategoryName : "");
+    bool printModheader = false;
+}
+
+@Html.Partial("Plugins/_ActiveAccordion")
+@Html.Hidden("RedirectModuleID", (int?)ViewBag.BrowseRedirect)
+@Html.Partial("Common/_TopArea")  
+<div class="row">
+    <div class="col-sm-4">         
+        <table class="wb-tables table help-table" data-wb-tables='{ "ordering" : false, "info": false, "filter": false, "paging": false}'>
+            <thead>                
+                <tr>
+                    <th>@Labels.HifisHelp_SelectCat</th>
+                </tr>             
+            </thead>
+            <tbody>  
+                <tr>
+                    <td class="@{var holder = ViewBag.Category == HIFISHelp_CategoryTypes.All ? "help-active" : ""; <text>@holder</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_All, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.All }, new { alt=Labels.HifisHelp_All, aria_label = Labels.HifisHelp_All })</>
+                    </td>
+                </tr>              
+                <tr>
+                    <td class="@{var holder2 = ViewBag.Category == HIFISHelp_CategoryTypes.Administration ? "help-active" : ""; <text>@holder2</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_Administration, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.Administration }, new { alt = Labels.HifisHelp_Administration, aria_label = Labels.HifisHelp_Administration })</>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="@{var holder3 = ViewBag.Category == HIFISHelp_CategoryTypes.ClientInfo ? "help-active" : ""; <text>@holder3</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_ClientInfo, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.ClientInfo }, new { alt = Labels.HifisHelp_ClientInfo, aria_label = Labels.HifisHelp_ClientInfo })
+                    </td>
+                </tr>
+                <tr>
+                    <td class="@{var holder4 = ViewBag.Category == HIFISHelp_CategoryTypes.Common ? "help-active" : ""; <text>@holder4</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_CommonElements, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.Common }, new { alt = Labels.HifisHelp_CommonElements, aria_label = Labels.HifisHelp_CommonElements })
+                    </td>
+                </tr>
+                <tr>
+                    <td class="@{var holder5 = ViewBag.Category == HIFISHelp_CategoryTypes.FrontDesk ? "help-active" : ""; <text>@holder5</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_FrontDesk, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.FrontDesk }, new { alt = Labels.HifisHelp_FrontDesk, aria_label = Labels.HifisHelp_FrontDesk })
+                    </td>
+                </tr>
+                <tr>
+                    <td class="@{var holder6 = ViewBag.Category == HIFISHelp_CategoryTypes.InternalCommunications ? "help-active" : ""; <text>@holder6</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_InternalCommunications, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.InternalCommunications }, new { alt = Labels.HifisHelp_InternalCommunications, aria_label = Labels.HifisHelp_InternalCommunications })
+                    </td>
+                </tr>  
+                <tr>
+                    <td class="@{var holder7 = ViewBag.Category == HIFISHelp_CategoryTypes.PeopleInfo ? "help-active" : ""; <text>@holder7</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_PeopleInfo, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.PeopleInfo }, new { alt = Labels.HifisHelp_PeopleInfo, aria_label = Labels.HifisHelp_PeopleInfo })
+                    </td>
+                </tr>             
+                <tr>
+                    <td class="@{var holder8 = ViewBag.Category == HIFISHelp_CategoryTypes.Reports ? "help-active" : ""; <text>@holder8</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_Reports, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.Reports }, new { alt = Labels.HifisHelp_Reports, aria_label = Labels.HifisHelp_Reports })
+                    </td>
+                </tr>
+                <tr>
+                    <td class="@{var holder9 = ViewBag.Category == HIFISHelp_CategoryTypes.Support ? "help-active" : ""; <text>@holder9</text> }">
+                        @Html.ActionLink(Labels.HifisHelp_Support, "HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.Support }, new { alt = Labels.HifisHelp_Support, aria_label = Labels.HifisHelp_Support })
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="clearfix"></div>
+        <div class="mrgn-tp-sm">
+            @Html.Partial("HelpPartials/_HelpIndex_Search", new Help_SearchResultsModel { })
+        </div>
+        <div class="mrgn-tp-sm">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span class="inline-block">
+                            @Labels.HifisHelp_Searched
+                        </span>
+                        <span class="clearfix"></span>
+                    </h3>                            
+                </div>
+                <div class="panel-body">
+                    @if (Model.RecentlySearched != null)
+                    {
+                        foreach (var item in Model.RecentlySearched)
+                        {                     
+                            <p>@Html.ActionLink(item.HelpTopicName, "HelpTopic", "HIFISHelp", new { id = item.HelpTopicID }, new { alt = item.HelpTopicName, aria_label = item.HelpTopicName })</p>
+                        }
+                    }    
+                </div>               
+            </div>
+        </div>
+        <hr class="mrgn-bttm-sm mrgn-tp-sm"/>
+        @if (!Model.HelpModules.IsEmptyOrNull())
+        { 
+            @Html.ActionLink(ViewBag.EnablePrint ? Labels.HifisHelp_MultiPrintDisable : Labels.HifisHelp_MultiPrintEnable, "HelpIndex", "HIFISHelp", new { enablePrint = ViewBag.EnablePrint ? false : true, category = ViewBag.Category }, new { @class = "printButton mrgn-tp-sm", alt = ViewBag.EnablePrint ? Labels.HifisHelp_MultiPrintDisable : Labels.HifisHelp_MultiPrintEnable, aria_label = ViewBag.EnablePrint ? Labels.HifisHelp_MultiPrintDisable : Labels.HifisHelp_MultiPrintEnable, @role = "button" })     
+        }       
+    </div>
+    <div class="col-sm-8">
+        <div class="panel-group" id="accordion">
+            @using (Html.BeginForm("HelpPrint", "HIFISHelp", FormMethod.Post))
+            {
+
+                if (ViewBag.EnablePrint)
+                {
+                   <p class="form-control-static">
+                        @{ object printit = new { @class = "YesAndNo", data_on_text = Labels.Yes, data_off_text = Labels.No, id = "printyesno" }; }
+                        <span class="form-control"> @Html.Label(Labels.HifisHelp_PrintMod, new { style = "vertical-align:middle;" }) @Html.CheckBoxFor(m => printModheader, printit)</span>
+                    </p>
+                    <p>
+                        <strong>@Labels.HifisHelp_MultiPrintMsg</strong>
+                    </p>
+                }
+
+                switch ((HIFISHelp_CategoryTypes?)ViewBag.Category)
+                {
+                    case HIFISHelp_CategoryTypes.FrontDesk:
+                            <p>@Labels.FrontDeskText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.Administration:
+                            <p>@Labels.AdminText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.All:
+                            <p>@Labels.AllText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.ClientInfo:
+                            <p>@Labels.ClientInfoText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.PeopleInfo:
+                            <p>@Labels.PeopleInfoText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.Reports:
+                            <p>@Labels.ReportsText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.Common:
+                            <p>@Labels.CommonText</p>
+                        break;
+                    case HIFISHelp_CategoryTypes.InternalCommunications:
+                            <p>@Labels.InternalCommunicationsText</p>
+                        break;
+                    default:
+                        <p>
+                            @Labels.HIFISHelpWelcome
+                        </p>
+                        <p>
+                            @Labels.HIFISHelpP1
+                        </p>
+                        <p>  
+                            @Labels.HIFISHelpP2 <span class="btn btn-sm glyphicon glyphicon glyphicon-info-sign disabled"></span> @Labels.HIFISHelpP3
+                        </p> 
+                        <p>
+                            @Labels.HIFISHelpP4 <span class="btn btn-sm glyphicon glyphicon glyphicon-question-sign disabled"></span> @Labels.HIFISHelpP5 <i class="glyphicon glyphicon glyphicon-question-sign"></i> @Labels.HIFISHelpP6
+                        </p>   
+                        <p> 
+                            @Labels.HIFISHelpP7
+                        </p>
+             <p> 
+                            @Labels.HIFISHelpP8
+                        </p>
+                        <p>
+                            @Labels.HIFISHelpP9 @Html.ActionLink(@Labels.HIFIS4TrainingCentre,"TrainingIndex", "HIFISHelp", new { alt = Labels.HIFIS4TrainingCentre, aria_label = Labels.HIFIS4TrainingCentre }) @Labels.HIFISHelpP10
+                        </p>
+                        break;
+                }
+
+                if (!Model.HelpModules.IsEmptyOrNull())
+                {
+                    for (int i = 0; i < Model.HelpModules.Count; i++)
+                    { 
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#@(Model.HelpModules[i].HelpModuleID)">
+                                <div class="row"> 
+                                    <div class="col-md-6">
+                                        @(lang == english ? Model.HelpModules[i].NameE : Model.HelpModules[i].NameF)
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="pull-right">
+                                            @if (Model.HelpModules[i].ModuleTopics.Count >= 1)
+                                            { 
+                                                @Model.HelpModules[i].ModuleTopics.Count @: @Labels.HifisHelp_NoOfTopics
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div id="@(Model.HelpModules[i].HelpModuleID)" class="panel-collapse collapse">
+                            <div class="mrgn-sm-md mrgn-lft-sm">
+                                @Html.Raw((lang == english ? Model.HelpModules[i].ModuleDescriptionE : Model.HelpModules[i].ModuleDescriptionF))  
+                            </div>
+                            <div class="mrgn-lft-sm mrgn-rght-sm mrgn-bttm-md">
+                                <div class="table-responsive">
+                                    <table class="wb-tables table table-striped" data-wb-tables='{ "ordering" : false,  "paging" : false,  "searching" : false, "info": false }'>
+                                       <thead class="hide">
+                                            <tr>
+                                                @if (ViewBag.EnablePrint)
+                                                {
+                                                   <th></th> 
+                                                }
+                                                <th></th>
+                                                <th></th>                                    
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var top in Model.HelpModules[i].ModuleTopics)
+                                            {
+                                                if (top.HelpModuleID == Model.HelpModules[i].HelpModuleID)
+                                                {    
+                                                    <tr>
+                                                        @if (ViewBag.EnablePrint)
+                                                        {
+                                                            <td class="col-md-2">
+                                                                @Html.CheckBox("pTopic", new { name = "pTopic", value = top.HelpTopicID })
+                                                            </td>
+                                                        }
+                                                        <td class="@(ViewBag.PrintTopics == null || false ? "col-md-6" : "col-md-4")"> 
+                                                            @(lang == english ? top.NameE : top.NameF)
+                                                        </td>
+                                                        <td class="@(ViewBag.PrintTopics == null || false ? "col-md-6" : "col-md-4")"> 
+                                                            <div class="pull-right">
+                                                                @Html.ActionLink(Labels.HifisHelp_ViewTopic, "HelpTopic", "HIFISHelp", new { id = top.HelpTopicID }, new { @class = "searchButton", alt=Labels.HifisHelp_ViewTopic, aria_label = Labels.HifisHelp_ViewTopic, @role = "button" })
+                                                            </div>                                                
+                                                        </td>                                        
+                                                    </tr>
+                                                }
+                                            } 
+                                        </tbody>                      
+                                    </table>
+                                </div> 
+                            </div>            
+                        </div>            
+                    </div>
+                    }
+                    if (ViewBag.EnablePrint)
+                    { 
+                        <button type="submit" class="printButton mrgn-tp-sm">@Labels.HifisHelp_Print</button> 
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     $(function () {
+		         var id = $('#RedirectModuleID').val();
+
+		         if (id != null && id != "") {
+		             $('#' + id).addClass('in');
+		             $('#' + id).parent().removeClass('panel-default');
+		             $('#' + id).parent().addClass('panel-info');
+		             $(document).scrollTop($('#' + id).offset().top);
+		         }
+		     });
+        </script>
+);
+}       

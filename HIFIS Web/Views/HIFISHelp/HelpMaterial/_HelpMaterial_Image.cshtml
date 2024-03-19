@@ -1,0 +1,114 @@
+﻿@model HelpMaterialImageModel
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ContentTypeID)
+@Html.HiddenFor(model => model.HelpMaterialID)
+@Html.HiddenFor(model => model.HelpImageID_English)
+@Html.HiddenFor(model => model.HelpImageID_French)
+@if (ViewBag.isTopic)
+{ 
+    @Html.HiddenFor(model => model.HelpTopicID)
+    <div class="row">
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            { 
+                @Html.Label(Labels.HifisHelp_LayoutOrder) @:&nbsp
+                @Html.Partial("Common/_HelpMandatory")
+            }
+            else
+            {
+                @Html.Label(Labels.HifisHelp_LayoutOrder)<text>:</text> 
+            }
+        </div>
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            {
+                @Html.TextBoxFor(model => model.LayoutOrder)
+            }
+            else
+            {
+                @Html.HiddenFor(model => model.LayoutOrder)
+                @Model.LayoutOrder
+            }           
+        </div>
+        <div class="col-sm-3">            
+            @Html.Label(Labels.HifisHelp_ApplyStyle) 
+        </div>
+        <div class="col-sm-3">
+            @Html.DropDownListFor(model => model.MaterialStyleID, ViewBag.StylesList as SelectList)    
+        </div>
+    </div>         
+}
+<div class="row">
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_MaterialNameE) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.MaterialNameE) 
+    </div>
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_MaterialNameF) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.MaterialNameF) 
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6"> 
+        @if (ViewBag.isEdit == true)
+        {       
+            @Html.HiddenFor(model => model.ImageEnglish.HelpImageID)                
+            @Html.Label(Labels.HifisHelp_UploadImage)  @Html.Partial("Common/_HelpMandatory")
+            <br />
+            @Html.TextBoxFor(model => model.ImageEnglish.UploadedImage, new { type = "file" }) 
+        }
+        else
+        {                  
+            @Html.Label(Labels.HifisHelp_UploadImage)  @Html.Partial("Common/_HelpMandatory")
+            <br />
+            @Html.TextBoxFor(model => model.ImageEnglish.UploadedImage, new { type = "file" })
+        }
+    </div>
+    <div class="col-sm-6"> 
+        @if (ViewBag.isEdit == true)
+        {       
+            @Html.HiddenFor(model => model.ImageFrench.HelpImageID)                
+            @Html.Label(Labels.HifisHelp_UploadImage)  @Html.Partial("Common/_HelpMandatory")
+            <br />
+            @Html.TextBoxFor(model => model.ImageFrench.UploadedImage, new { type = "file" }) 
+        }
+        else
+        {                  
+            @Html.Label(Labels.HifisHelp_UploadImage)  @Html.Partial("Common/_HelpMandatory")
+            <br />
+            @Html.TextBoxFor(model => model.ImageFrench.UploadedImage, new { type = "file" })
+        }
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_HoverTitleE) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.ImageEnglish.NameE) 
+    </div>
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_HoverTitleF) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.ImageEnglish.NameF) 
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_AltTextE) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.ImageEnglish.DescriptionE) 
+    </div>
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_AltTextF) @Html.Partial("Common/_HelpMandatory")
+    </div>
+    <div class="col-sm-3"> 
+        @Html.TextBoxFor(model => model.ImageEnglish.DescriptionF) 
+    </div>
+</div>

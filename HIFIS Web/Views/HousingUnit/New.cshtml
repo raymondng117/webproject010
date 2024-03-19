@@ -1,0 +1,73 @@
+﻿@model HousingUnitViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@{
+    ViewBag.LayoutView = LayoutPage.SecNav;
+    ViewBag.ViewTitle = Labels.NewUnit; 
+}
+
+<div>
+    @using (Html.BeginForm("New", "HousingUnit", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        <ul class="nav nav-tabs" role="tablist">
+		    <li class="active">
+			    <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details @Html.Partial("_MandatoryTab")</a>
+		    </li>
+		    <li>
+			    <a class="tabButton" href="#Address" role="tab" data-toggle="tab">@Labels.Address @Html.Partial("_MandatoryTab")</a>
+		    </li>
+	    </ul>
+        
+    <!-- Tab panes -->
+	<div class="panel panel-default border-top-fix-tabs">
+		<div class="panel-body">
+			<div class="tab-content">
+				<div class="tab-pane active" id="Details">
+                    <div id="HousingUnitForm">@Html.Partial("_HousingUnit")</div>
+                </div>
+				<div class="tab-pane" id="Address">
+                    <div>
+                        <span id="AddressFormFields">@Html.Partial("_AddressSearch", Model.Address, "Address.")</span></div>
+				</div>
+			</div>	
+		</div>
+	</div>
+                
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+                @*@if (Model.ClientID == null || Model.ClientID == string.Empty)
+                { 
+	                if (RightsHelper.HasRight(UserRights.People_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Person_Add))
+                    {
+                        @Html.Partial("_OnTheFlyButton",
+                            new OnTheFlyButtonViewModel()
+                            {
+                                ButtonName = Labels.NewPerson,
+                                Title = Labels.NewPerson,
+                                ActionName = "NewVitals",
+                                ControllerName = "PeopleTombstone",
+                                PartialName = "~/Views/PeopleTombstone/_PeopleVitals.cshtml",
+                                CallBackFunction = "OnTheFlyCallBackNewPerson",
+                                ViewModel = new PeopleVitalsViewModel()
+                            }
+                        )
+                    }
+                }*@
+
+                @*Commented on the fly button in preference of opening in new tab*@
+				<button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "List", "HousingUnit", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                @Html.ActionLink(Labels.NewPerson, "NewVitals", "PeopleTombstone", null, new { @class = "addButton", alt=Labels.NewPerson, aria_label = Labels.NewPerson, @role = "button" })
+			</div>
+		</div>  
+    }
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+        </script>
+    );
+}

@@ -1,0 +1,138 @@
+﻿@model DiversionListViewModel
+@{
+    ViewBag.ViewTitle = ViewBag.ViewTitle = Labels.hdrClient + " - " + Labels.viewTitle_DiversionList;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    string diversionListUrl = Url.Content("~/Diversion/GetDiversionListJson/?FrontDesk=False&ClientID=" + ViewBag.ClientID);
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="table-responsive">
+    <table id="diversionsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                { "width": "15%", "data": "serviceProvider", "orderable": false, "type": "string", "name" : "serviceProvider"},
+                                                                { "width": "10%", "data": "diversiondate", "orderable": true, "type": "string", "name": "DiversionDateTime"},
+                                                                { "width": "20%", "data": "reasonservice", "orderable": false, "type": "string"},
+                                                                { "width": "20%", "data": "destination", "orderable": false, "type": "string"},
+                                                                { "width": "10%", "data": "caseworker", "orderable": true, "type": "string", "name": "caseworker"},                                                       
+                                                                { "width": "23%", "data": "status", "orderable": true, "type": "string", "name" : "status"},
+                                                                { "width": "12%", "data": "actions", "orderable": false, "type": "string"}
+                                                            ],
+                                                            "order": [ [1, "asc"] ],
+                                                            "serverSide": true,
+                                                            "processing": true,
+                                                            "bFilter" : false,
+                                                            "ajax": "@diversionListUrl" }'>
+        <thead>
+            <tr>
+                <th>@Labels.Organization</th>
+                <th>@Labels.DiversionDateTime</th>
+                <th>@Labels.ReasonForService</th>
+                <th>@Labels.DiversionExpectedDestination</th>
+                <th>@Labels.CaseWorker</th>
+                <th>@Labels.Status</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody />
+    </table>
+</div>
+
+<!-- Overlay Panel -->
+<section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.FilterOptions</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Partial("_DiversionSearchFilters", new DiversionSearchFilterViewModel() { FrontDesk = true })
+    </div>
+</section>
+
+<div class="mrgn-tp-md">
+    @if (RightsHelper.HasRight(UserRights.Diversion_Add))
+    {
+        @Html.ActionLink(Labels.NewDiversion, "New", "Diversion", new { id = Model.ReadOnlyVitals.ClientID, returnurl = "ClientList" }, new { @class = "addButton mrgn-rght-xs", @role = "button" })
+    }
+
+    @if (RightsHelper.HasRight(UserRights.Diversion_WorkFlow_Add))
+    {
+        @Html.ActionLink(Labels.Add + ' ' + Labels.DiversionWorkFlow, "DiversionWorkFlow", "Diversion", new { clientid = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", @role = "button" })
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript">
+
+                             $('.wb-tables').on('draw.dt', function () {
+                                 init_hifis();
+                                 $(".wb-lbx").trigger("wb-init.wb-lbx");
+                             })
+
+                             //open the filter panel
+                             $('#openFilters').on('click', function () {
+                                 if ($("#filter-panel").hasClass('open'))
+                                     $('#filter-panel').trigger('close.wb-overlay');
+                                 else {
+                                     reinitSelect2($('#CGs'));
+                                     reinitSelect2($('#CCs'));
+                                 }
+
+                                 $('#filter-panel').trigger('open.wb-overlay');
+                             });
+
+                             //open the past target table
+                             $("#openPastTarget").on('mfpOpen', function () {
+                                 $('#pastTargetTable').DataTable().columns.adjust();
+                             });
+
+                             //when the filter panel opens reinit select2s
+                             $(document).on('open.wb-overlay', function (event) {
+                                 doSelect2Init();
+                             });
+
+                             //close filter panel
+                             $('#closeFilters').on('click', function () {
+                                 $("#filter-panel").trigger("close.wb-overlay");
+                             });
+
+                             //reapplies container class to the large select2 drop downs
+                             function reinitSelect2(selector) {
+                                 selector.select2('destroy');
+                                 select2InitFunctions.push(function () {
+                                     selector.select2(
+                                         {
+                                             allowClear: true,
+                                             placeholder: $("#DropdownPlaceholder").val(),
+                                             dropdownAutoWidth: true,
+                                             containerCssClass: "custom-select2-container"
+                                         });
+                                 });
+                                 doSelect2Init();
+                             }
+
+
+                             // Functions for pre-defined filters based on 'urgent' diversions
+                             function filterPastFollowUpDate() {
+                                 resetFilterForm();
+                                 $('#PFD').bootstrapSwitch('state', true);
+                                 $('#filterListButton').trigger('click');
+                             }
+
+                            function filterUpcomingFollowUpDate() {
+                                resetFilterForm();
+                                $('#UFD').bootstrapSwitch('state', true);
+                                $('#filterListButton').trigger('click');
+                            }
+
+                             // Clear the filter form before applying preset filters
+                             function resetFilterForm() {
+                                 $('#diversionFilterForm[type!="hidden"]').trigger("reset");
+                                 $('#diversionFilterForm').find('select').val([]).trigger('change').trigger('select2:unselect');
+                             }
+
+
+</script>
+);
+}

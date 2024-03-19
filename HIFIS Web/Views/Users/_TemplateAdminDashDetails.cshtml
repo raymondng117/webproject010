@@ -1,0 +1,20 @@
+﻿@model TemplateRightsViewModel
+
+<hr />
+
+@Html.Label("Current Template: ")
+
+<strong>@Model.Name</strong>
+<br />
+<br />
+
+@Html.ActionLink(Labels.ViewTemplate, "EditUserTemplate", "Users", new { id = Model.TemplateRightsID }, new { target = "_blank", @class="newWindow", alt=Labels.ViewTemplate, aria_label = Labels.ViewTemplate, @role = "button" })
+
+@Html.Button("name", Labels.UnLinkTemplateFromOrg, HtmlButtonType.Button, null, new { id = "UnLinkButton", @class = "cancelButton", @role = "button" })
+
+@Html.Button("name", "Copy Rights and Un-Link", HtmlButtonType.Button, null, new { id = "UnLinkAndCopyButton", @class = "cloneButton", @role = "button" })
+
+
+<script type="text/javascript">
+    init_hifis();
+</script>

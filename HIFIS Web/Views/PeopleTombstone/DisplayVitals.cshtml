@@ -1,0 +1,228 @@
+﻿@model PeopleVitalsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PeopleDisplayVitals;
+
+    ViewBag.LayoutView = LayoutPage.People;
+}
+
+
+
+
+<ul class="nav nav-tabs" role="tablist">
+    @if (RightsHelper.HasRight(UserRights.People_Vitals))
+    {
+        <li class="active">
+            <a class="tabButton" href="#Vitals" role="tab" data-toggle="tab">@Labels.Vitals</a>
+        </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.People_ContactInfo_List))
+    {
+        <li>
+            <a class="tabButton" href="#ContactInfo" role="tab" data-toggle="tab">@Labels.ContactInfo</a>
+        </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.People_Language_List))
+    {
+        <li>
+            <a class="tabButton" href="#Languages" role="tab" data-toggle="tab">@Labels.Languages</a>
+        </li>
+     }
+    @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+    {
+        <li>
+            <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+            </a>
+        </li>
+    }
+
+</ul>
+
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+
+            <!-- Tab Pane #1: Vitals -->
+            <div class="tab-pane active" id="Vitals">
+                <div class=" displayView">
+
+                    <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.LastName, new { @class = "col-md-4 " })
+                        @Html.DisplayFor(model => model.LastName)
+                    </div>
+
+                    <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.FirstName, new { @class = "col-md-4 " })
+                        @Html.DisplayFor(model => model.FirstName)
+                    </div>
+
+                    <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.MiddleName, new { @class = "col-md-4 " })
+                        @Html.DisplayFor(model => model.MiddleName)
+                    </div>
+
+                    <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.GenderID, new { @class = "col-md-4 " })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.GenderID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture, Model.GenderID)
+                        })
+                    </div>
+
+                     <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.Aka1, new { @class = "col-md-4 " })
+                        @Html.DisplayFor(model => model.Aka1)
+                    </div>
+
+                     <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.Aka2, new { @class = "col-md-4 " })
+                        @Html.DisplayFor(model => model.Aka2)
+                    </div>
+
+                     <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.DOBDateFirmYNbool, new { @class = "col-md-4 " })
+                        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.DOBDateFirmYNbool)
+                    </div>
+
+                     <div class="col-md-12">
+                        <span id="DOBFlag">
+                            @Html.HifisLabelFor(model => model.DOB, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.DOB)
+                        </span>
+                    </div>
+
+                     <div class="col-md-12">
+                        <span id="AgeFlag">
+                            @Html.HifisLabelFor(model => model.AproximativeAge, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AproximativeAge)
+                        </span>
+                    </div>
+
+                     <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.SelectedRoles, new { @class = "col-md-4 " })
+                        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                            new MultipleItemSelectList
+                            {
+                                IDs = Model.SelectedRoles.Select(l => l.ToString()).ToList(),
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, Culture, Model.SelectedRoles.Select(l => l.ToString()).ToList())
+                            })
+                    </div>
+
+                     <div class="col-md-12">
+                        @Html.HifisLabelFor(model => model.ActiveYN, new { @class = "col-md-4 " })
+                        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ActiveYN)
+                    </div>
+
+                     <div class="col-md-12">
+                        @if(RightsHelper.HasRight(UserRights.People_Vitals_Edit)){
+                            @Html.ActionLink(Labels.Edit, "UpdateVitals", new { controller = "PeopleTombstone", id = Model.PersonID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+                        
+                        @if (!Model.ReadOnlyVitals.HasPicture && RightsHelper.HasRight(UserRights.People_ProfilePicture_Add))
+                        {
+                            <a href="@Url.Content("~/Documents/PeopleProfilePicture?id=" + Model.ReadOnlyVitals.PersonID)" aria-controls="Modal_AddProfilePic" class="wb-lbx lbx-modal addButton" role="button">@Labels.AddProfilePicture</a>
+                        }
+                        else if (Model.ReadOnlyVitals.HasPicture && RightsHelper.HasRight(UserRights.People_ProfilePicture_Add))
+                        {
+                            <a href="@Url.Content("~/Documents/PeopleProfilePicture?id=" + Model.ReadOnlyVitals.PersonID)" aria-controls="Modal_AddProfilePic" class="wb-lbx lbx-modal editButton" role="button">@Labels.EditProfilePicture</a>
+                        }
+                        @*<a href="@Url.Content("~/Documents/NewprofilePic?id=" + Model.PersonID)" aria-controls="Modal_AddDistinguishingFeature" class="wb-lbx lbx-modal editButton" role="button">@Labels.EditProfilePicture</a>*@
+
+                    </div>
+                </div>
+
+                <div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+            </div>
+            
+            <!-- Tab Pane #2: Contact Info -->
+            <div class="tab-pane" id="ContactInfo" style="padding: 10px;">
+
+                @if (RightsHelper.HasRight(UserRights.People_ContactInfo_Add))
+                {
+                    <h4 class="mrgn-tp-sm">@Labels.NewContactInfo</h4>
+
+                    using (Html.BeginForm("AdditionalContactInfo", "PeopleTombstone", FormMethod.Post, new { @class = "form-horizontal", id = "contactForm" }))
+                    {
+                        @Html.Hidden("PersonID", Model.ReadOnlyVitals.PersonID as object)
+
+                        <div>
+                            @Html.Partial("_DigitalContact", new DigitalContactViewModel { PersonID = Model.ReadOnlyVitals.PersonID })
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-offset-5 col-sm-7">
+                                <button class="addButton" type="submit">@Labels.Add</button>
+                            </div>
+                        </div>
+                    }
+                }  
+
+                <h4>@Labels.Contact</h4>
+                @if (RightsHelper.HasRight(UserRights.People_ContactInfo_List))
+                {
+                    <table id="digitalContactTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                                    { "width": "30%", "data": "ContactType"},
+                                                                                                    { "width": "25%", "data": "Value"},
+                                                                                                    { "width": "20%", "data": "Extension"},
+                                                                                                    { "width": "25%", "data": "Action"}
+                                                                                                ],
+                                                                                                "order": [ [0, "desc"] ],
+                                                                                                "ajax": "@Url.Content("~/ClientTombstone/ContactListJson?id=" + Model.PersonID +"&pID=True")"                         
+                                                                                            }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.ContactType</th>
+                                <th class="align-text-center">@Labels.Value</th>
+                                <th class="align-text-center">@Labels.Extension</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                }
+            </div>
+            
+
+            <!-- Tab Pane #3: Languages -->
+            <div class="tab-pane" id="Languages" style="padding: 10px;">
+                <div>
+                    @if (RightsHelper.HasRight(UserRights.People_Language_List))
+                    {
+                        @Html.Partial("_LanguagesList", Model)
+                    }
+
+                </div>
+            </div>
+
+            <!-- Custom Tables -->
+            @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+            {
+                <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                    @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                </div>
+            }
+
+
+
+
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(document).on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+
+        </script>
+);
+}

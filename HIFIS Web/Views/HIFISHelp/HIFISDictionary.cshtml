@@ -1,0 +1,47 @@
+﻿@model List<Help_HIFISDictionaryModel> 
+@{
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISFieldDict;
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+}
+
+@Html.Partial("Common/_TopArea")
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>  
+            <thead>
+                <tr>
+                    <th>@Labels.HifisHelp_FieldName</th>
+                    <th>@Labels.HifisHelp_HelpDesc</th>
+                    <th>@Labels.HifisHelp_Action</th> @* Restrict visability of field by right *@
+                </tr> 
+            </thead>
+            <tbody>
+                @foreach (var lbl in Model)
+                {
+                <tr>
+                    <td class="vertical-align-top col-xs-2">
+                        <strong>@(lang == english ? lbl.LabelNameE : lbl.LabelNameF)</strong>
+                        @if (lbl.IsCustom){ <strong>(*)</strong> }
+                    </td>
+                    <td class="col-xs-8">
+                        @(lang == english ? lbl.LabelDescriptionE : lbl.LabelDescriptionF)              
+                    </td>
+                    <td class="col-xs-2 text-center"> @* Restrict visability of field by right *@                        
+                        @Html.ActionLink(Labels.HifisHelp_Edit, "EditDictionary", "HIFISHelp", new { id = lbl.ID, isCustom = lbl.IsCustom }, new { @class = "wb-lbx editButton noText", alt=Labels.HifisHelp_Edit, aria_label = Labels.HifisHelp_Edit, @role = "button" })
+                        @if (lbl.IsCustom)
+                        {
+                            @Html.ActionLink(Labels.HifisHelp_DeleteCustom, "DeleteCustomDictionary", "HIFISHelp", new { id = lbl.ID }, new { @class = "deleteButton noText", alt=Labels.HifisHelp_DeleteCustom, aria_label = Labels.HifisHelp_DeleteCustom, @role = "button" })
+                            @*@Html.ActionLink(Labels.HifisHelp_DeleteCustom, "DeleteCustomDictionary", "HIFISHelp", new { labelKey = lbl.LabelKey }, new { @class = "deleteButton noText" })*@ 
+                        }                              
+                    </td> 
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div> 
+    <div>
+        <strong>@Labels.HifisHelp_DictMsg</strong>
+    </div>
+</div>

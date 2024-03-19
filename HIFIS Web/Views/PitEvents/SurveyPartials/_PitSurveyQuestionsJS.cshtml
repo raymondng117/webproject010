@@ -1,0 +1,1043 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            var isLive = @(ViewBag.isCreateLive != null ? "true" : "false");
+            var completedQuestionsPercentage = 0;
+
+            var maxAgeYears = @(ViewBag.AgeValueMax != null ? ViewBag.AgeValueMax  : 0);
+
+            var debugging = true;
+             DebugLog('Debugging is turned on!');
+
+             function DebugLog(message) {
+                 if (debugging) {
+                     console.log('DEBUG: ' + message);
+                 }
+             }
+
+             function EnableDisableSurveyQuestions(qList) {
+                 DebugLog("EnableDisableSurveyQuestions...");
+                 for (var i = 0; i < qList.length ; i++)
+                 {
+                     var qElementID = $("#SurveyQuestion_" + qList[i].QuestionID); // DOM Element Id of question
+                     var qTypeId = qList[i].QuestionTypeID;
+
+                     if(qElementID.val())
+                     {
+                         if (qTypeId =='6') //ApplyDDActions if it has a value and is SSL
+                         {
+                             var prevPickListID = qElementID.attr('prev'); // should be null as it is the first time page loads
+                             var newPickListID = qElementID.val();
+                             var dropdownList = $.parseJSON(qElementID.attr('dropdownlist'));
+                             GetAndApplyDropdownAction(prevPickListID, newPickListID, dropdownList);
+                         }
+                         else // not an SSL
+                             qElementID.removeAttr('disabled');
+
+                         if(qTypeId =='11') //Country
+                             onChange(qElementID);
+
+                         if(qTypeId =='20') //Reserve
+                             onChange(qElementID);
+
+                     }
+
+                 }
+
+                 // Reinitialize the equal-hight plug-in to properly format questions.
+                 $( ".wb-eqht" ).trigger( "wb-init.wb-eqht" );
+             }
+
+             function DetectSurvey() {
+                 DebugLog("DetectSurvey...");
+                 SurveyScreenedInStatus(!($("#PitScreenedIN").val().toLowerCase() === "false"));
+             }
+
+             function SurveyScreenedInStatus(screenedIn)
+             {
+                 DebugLog("SurveyScreenedInStatus...");
+                 DebugLog("ChangeSurveyStatus -> " + screenedIn);
+                 $("#PitScreenedIN").val(screenedIn);
+
+                 $('#screening_NoticePanel').hide(); // Default unless screened in!
+
+                 //$('#screening_NoticePanel').hide(); // Possibly connect this noticepanel to the isLive bool so it doesn't apply to data entry
+
+                 if (screenedIn) {
+                     $("#coreQuestions, #cohQuestions, #localQuestions").removeClass("disabledbutton");
+                 }
+                 else
+                 {
+                     if (isLive)
+                         $('#screening_NoticePanel').show();
+
+                     $("#coreQuestions, #cohQuestions, #localQuestions").addClass("disabledbutton");
+                 }
+
+                 DebugLog("Raising resize event...");
+                 var ua = window.navigator.userAgent;
+                 var isIE = /MSIE|Trident/.test(ua);
+
+                 if (isIE) {
+                     var evt = window.document.createEvent('UIEvents');
+                        evt.initUIEvent('resize', true, false, window, 0);
+                       window.dispatchEvent(evt);
+                 }//resize event in IE
+                 else {
+                     window.dispatchEvent(new Event('resize'));
+                 }//resize event in all other browsers except IE
+
+                 if (isLive) {
+                     var survey = new SurveyModel();
+                     survey.PitScreenedIN = screenedIn;
+                     if (!screenedIn) survey.IsComplete = true;
+                     $.ajax({
+                         url: "@Url.Content("~/PitEvents/SaveSurveyAttr")",
+                         type: 'POST',
+                         async: true,
+                         dataType: "json",
+                         contentType: "application/json",
+                         data: JSON.stringify(survey)
+                     });
+                 }
+             }
+
+            //updates the max values and query string (used for validation by the modal) for questions 6,7,10 & 14 to perform validation against the age entered by the user
+            function updateAgeMaxVals(guid, paramMaxAgeYears){
+                        var qElementID = $("input[guid='"+ guid +"']")[0].id;
+                         var qIDStr = qElementID.substr(qElementID.indexOf('_')+1); //get q6 question ID
+                         var qElement = $("a[href*='"+qIDStr+"']"); //gets q6 element
+                         var qHref = qElement.attr('href'); //get href
+                        var oldString = qHref.substring(qHref.indexOf('max'));
+                        var maxAgeDays = paramMaxAgeYears * 366; //convert to days
+                         var newStr = "max=" + maxAgeDays;
+                         var newHref = qHref.replace(oldString, newStr);
+                         qElement.attr("href", newHref);
+                        $("input[guid='"+ guid +"']")[0].max = maxAgeDays;
+                        $("input[guid='"+ guid +"']").valid();
+
+            }
+             function onChange (qElement)
+             {
+                 console.time('onChange...');
+                 DebugLog('onChange(' + qElement.id + ')');
+                 //DebugLog('onChange.caller: ' + onChange.caller);
+
+                 var qguid = qElement.attr('guid');
+
+                 DebugLog("GUID: " + qguid);
+                 var qid = qElement.attr('id').replace(/SurveyQuestion_/, '');
+                 var qtype = qElement.attr('questiontype');
+                 var pitQuestionAnswerID = qElement.attr('ansid');
+                 var qaction = qElement.attr('questionaction');
+                 var affectedqList = $.parseJSON(qElement.attr('affectedquestionsids'));
+
+                 DebugLog("...qaction: " + qaction);
+                 DebugLog("...affectedqList: " + affectedqList);
+                 DebugLog("...affectedqList.length: " + affectedqList.length);
+                 if (qaction != null && qaction != "" && affectedqList != null && affectedqList.length != 0)
+                 {
+                     if(($.trim(qElement.val())).length){ // valid input
+                         ApplyQuestionAction(qaction, affectedqList);
+                     }
+                     else{
+                         qaction = '2'; // empty question
+                         ApplyQuestionAction(qaction, affectedqList);
+                     }
+                 }
+                 var newDropdownID;
+                 var prevDropdownID;
+                 var dropdownList;
+
+                 DebugLog("...qtype: " + qtype);
+                 switch (qtype) {
+                 case '2': //YN
+                 case '3': //NumericValue
+                 case '4': //TextValue
+                 case '5': //Date
+                 case '21': //Number of Days
+                 case '16': // Children/Dependent - or FamilyMember
+                     break;
+                 case '22': //Number of Years
+                     DebugLog("...qElement.val: " + qElement.val());
+                     if (qElement.val() > 1800){
+                         var val = new Date().getUTCFullYear() - qElement.val();
+                         qElement.val(val);
+
+                         var parentQuestionID = qElement.attr('parentquestionid');
+                         DebugLog("...parentQuestionID: " + parentQuestionID);
+                         if (parentQuestionID) {
+                             var parentValue = $('#SurveyQuestion_' + parentQuestionID).val();
+
+                             DebugLog("...parentValue: " + parentValue);
+                             if (!parentValue) // if its undefined it means we are paging in which case use this
+                                 parentValue = $('#SQ_' + parentQuestionID).val();
+
+                             DebugLog("...parentValue: " + parentValue);
+                             if (parentValue && parentValue != 0){
+                                 var newVal = parentValue - qElement.val();
+                                 DebugLog("...newVal: " + newVal);
+                                 qElement.val(newVal);
+                             }
+                         }
+                     }
+
+                     break;
+                 case '6': //SingleSelection
+                     newDropdownID = qElement.val();
+                     prevDropdownID = qElement.attr('prev');
+                     qElement.attr('prev', newDropdownID);
+
+                     if (newDropdownID == prevDropdownID)
+                         return 0; // No need to do anything if no change was made
+                     dropdownList = $.parseJSON(qElement.attr('dropdownlist'));
+                     GetAndApplyDropdownAction(prevDropdownID, newDropdownID, dropdownList);
+                     break;
+                 case '7': //DropdownMultiple
+                 case '15': // DropdownMultipleAddition
+                     var newDropdownIDs = qElement.val();
+
+                     var prevDropdownIDs = new Array();
+                     var prev = qElement.attr('prev');
+                         if (prev) prevDropdownIDs = prev.split(",");
+
+                     qElement.attr('prev', newDropdownIDs);
+
+                     if (!newDropdownIDs) newDropdownIDs = new Array();
+                     if (!prevDropdownIDs) prevDropdownIDs = new Array();
+
+                     if (newDropdownIDs.length == prevDropdownIDs.length)
+                         return 0; // No need to do anything if no change was made
+
+                     // Since the multiselect event is triggered per selection,
+                     // there will be either a single new dropdown (added selection)
+                     // or single prev dropdown (removed selection)
+                     newDropdownID = newDropdownIDs.filter(function(x) { return !prevDropdownIDs.filter(function(y) {return x == y;})[0]; })[0];
+                     prevDropdownID = prevDropdownIDs.filter(function(x) { return !newDropdownIDs.filter(function(y) {return x == y;})[0]; })[0]; //var newDropdownID = newDropdownIDs.filter(x => !prevDropdownIDs.includes(x))[0];
+                     //var prevDropdownID = prevDropdownIDs.filter(x => !newDropdownIDs.includes(x))[0];
+                     dropdownList = $.parseJSON(qElement.attr('dropdownlist')); // We can pass both to this function because we know one will be null.
+                     GetAndApplyDropdownAction(prevDropdownID, newDropdownID, dropdownList);
+
+                     break;
+
+
+                    case '11': //Country
+                        var province_qid = qElement.attr('province_question_id');
+                        if(province_qid)
+                        {
+                            if(qElement.val() <=2 ){
+                                PopulateProvince(province_qid,  qElement.val());
+                                $("#SurveyQuestion_"+ province_qid).removeAttr('disabled');
+                             //   $("#SurveyQuestion_"+ province_qid).closest(".form-group").hide();
+                            }else{
+                                //$("#SurveyQuestion_"+ province_qid).parents(".form-group").hide();
+                                $("#SurveyQuestion_"+ province_qid).closest(".form-group").hide();
+                                $("#SurveyQuestion_"+ province_qid).val([]);
+                                $("#SurveyQuestion_"+ province_qid).attr('disabled', 'disabled');
+                                $("#SurveyQuestion_"+ province_qid).trigger('change');
+
+                                $('.pitlabel_B h4:contains(City)').closest(".form-group").hide();
+                                $('.pitlabel_B h4:contains(Province)').closest(".form-group").hide();
+                                $('.pitlabel_B h4:contains(State)').closest(".form-group").hide();
+                            }
+                        }
+                        break;
+                    case '12': //Province
+                        var city_qid = qElement.attr('city_question_id');
+                        if(city_qid)
+                        {
+                            if(qElement.val()){
+                                PopulateCity(city_qid, qElement.val());
+                                $("#SurveyQuestion_"+ city_qid).removeAttr('disabled');
+                            }
+                            else{
+                                //$("#SurveyQuestion_"+ city_qid).parents(".form-group").hide();
+                                $("#SurveyQuestion_"+ city_qid).closest(".form-group").hide();
+                                $("#SurveyQuestion_"+ city_qid).val([]);
+                                $("#SurveyQuestion_"+ city_qid).attr('disabled', 'disabled')
+                                $("#SurveyQuestion_"+ city_qid).trigger('change');
+                            }
+                        }
+                        break;
+                    case '13': //Community
+                    case '19': // City
+                        break;
+                    case '20': //AllReservesCities
+                        break;
+                }
+
+                 // Do some interquestion validation
+                 switch (qguid) {
+                    case '47b141a7-c709-4ff0-8fd6-eacd8417be8a':
+                         // If the age value has been adjusted, update the max value for the age related questions (scroll and edit view)
+                        maxAgeYears = $("input[guid='47b141a7-c709-4ff0-8fd6-eacd8417be8a']")[0].value;
+                        //guids for questions 6,7,10, & 14
+                        var inputsToUpdateForAge = ['2aaa0491-d9c4-4fbc-83d0-f1090ad7cbc9', '5ad090b9-86ad-4906-8876-813d65a2cc1a', '6d4e5a2d-e162-4822-9b86-6305be37118d', 'c313d7eb-e575-43e0-86cf-ab07511cd552'];
+                        // These lines will do nothing on paging view, only apply to scrolling and live
+                        try {
+                            if (maxAgeYears == ''){
+                                $("input[guid='35deda28-72ff-4f95-a290-678bde00f7e4']")[0].max = '120' //update q3 max val
+                                let maxValInDays = 120 * 366; //convert to days
+                                //loop to update the questions with the max value in days
+                                for (let ageIndex=0; ageIndex < inputsToUpdateForAge.length; ageIndex++){
+                                      $("input[guid='"+ inputsToUpdateForAge[ageIndex]+"']")[0].max = maxValInDays;
+                                }
+                            }
+                            else{
+                                //update the modal query string for questions 6,7,10, & 14
+                                 for (let ageIndex=0; ageIndex < inputsToUpdateForAge.length;ageIndex++){
+                                     updateAgeMaxVals(inputsToUpdateForAge[ageIndex], maxAgeYears);
+                                }
+                                $("input[guid='35deda28-72ff-4f95-a290-678bde00f7e4']")[0].max = maxAgeYears; //update q3 max val
+                            }
+                            $("input[guid='35deda28-72ff-4f95-a290-678bde00f7e4']").valid();
+                        } catch(error) {}
+                        break;
+                    //if q2 dropdown selection is changed
+                    case 'de37f489-94a0-4835-a105-01000428ce8e':
+                        try {
+                            if ( $("input[guid='47b141a7-c709-4ff0-8fd6-eacd8417be8a']")[0].value ==''){
+                                //guids for questions 6,7,10
+                                var inputsToUpdateForAge = ['2aaa0491-d9c4-4fbc-83d0-f1090ad7cbc9', '5ad090b9-86ad-4906-8876-813d65a2cc1a', '6d4e5a2d-e162-4822-9b86-6305be37118d', 'c313d7eb-e575-43e0-86cf-ab07511cd552'];
+                                let maxValInDays = 120 * 366; //convert to days
+                                //update the modal query string with the default max age value of 120
+                                     for (let ageIndex=0; ageIndex < inputsToUpdateForAge.length; ageIndex++){
+                                     updateAgeMaxVals(inputsToUpdateForAge[ageIndex], 120); //update modal queryStr
+                                     }
+                                $("input[guid='35deda28-72ff-4f95-a290-678bde00f7e4']")[0].max = '120'; //update q3 max
+                                $("input[guid='35deda28-72ff-4f95-a290-678bde00f7e4']").valid();
+                                break;
+                            }
+                        } catch (error){}
+                         break;
+                    //if q3 age value is changed
+                     case '35deda28-72ff-4f95-a290-678bde00f7e4':
+                         $("input[guid='" + qguid + "']").valid();
+                         break;
+                     case 'fdfdf73c-2644-4005-a54b-5e7bbf94c47d':
+                         DebugLog('Validating CORE Q4...');
+                         try {
+                            DebugLog('Value: ' + $("input[guid='fdfdf73c-2644-4005-a54b-5e7bbf94c47d']")[0].value);
+                            $("input[guid='" + qguid + "']").valid();
+                         } catch(error) {}
+                         //$("input[guid='51d4d6b0-8b76-499a-85d5-3c2fce6b11b3']").valid();
+                         break;
+                     case 'Screening Question - Location':
+                             break;
+                     case 'Screening Question - Place to stay':
+                             break;
+                 }
+
+                 //$("input[guid='" + qguid + "']").valid();
+
+                 updateProgressBar();
+                 SaveQuestion(qid, qtype, pitQuestionAnswerID);
+
+                 console.timeEnd("onChange...");
+
+                 return 0;
+             }
+
+             // Get & apply new dropdown action and undo the previous dropdowns action
+             function GetAndApplyDropdownAction(prevDropdownID, newDropdownID, dropdownList) {
+
+                 console.time("GetAndApplyDropdownAction");
+                 DebugLog("GetAndApplyDropdownAction(" + prevDropdownID + ', ' + newDropdownID + ',' + dropdownList + ')');
+                 //DebugLog("GetAndApplyDropdownAction.caller: " + GetAndApplyDropdownAction.caller);
+
+                 DebugLog("...prevDropdownID: "+ prevDropdownID);
+                 DebugLog("...newDropdownID: "+ newDropdownID);
+                 DebugLog("...dropdownList: "+ dropdownList);
+
+                 // If no change then do nothing
+                 if (newDropdownID == prevDropdownID || dropdownList == null || dropdownList.constructor != Array) {
+                     return 0;
+                 }
+
+                 // Get previous Dropdown action
+                 //var prevDropDownAction = DropdownList.find(dd => dd.ID === prevDropdownID);
+                 var prevDropDownAction = dropdownList.filter(function(dd) {return dd.ID === prevDropdownID; })[0];
+                 DebugLog("...prevDropDownAction: "+ prevDropDownAction);
+                 if (prevDropDownAction){
+                     DebugLog("...prevDropDownAction.ActionType: "+ prevDropDownAction.ActionType);
+                     // Undo its action
+                     switch(prevDropDownAction.ActionType) {
+                     case 1: // Enable Question
+                     case 2: // Disable Question
+                         prevDropDownAction.ActionType = 5; // Set Action to Clear and Restore
+                         break;
+                     case 3: // Start Survey
+                         prevDropDownAction.ActionType = 4; // Set Action to End Survey
+                         break;
+                     case 4: // End Survey
+                         // No Action
+                         break;
+                     }
+                     ApplyDropdownAction(prevDropDownAction);//-------------------------------------
+                 }
+
+                 // Apply the new Dropdown action
+                 //var newDropDownAction = DropdownList.find(dd => dd.ID === newDropdownID);
+                 var newDropDownAction = dropdownList.filter(function(dd) {return dd.ID === newDropdownID; })[0];
+                 if (newDropDownAction)
+                 {
+                     if (newDropDownAction.ActionType == 3 || newDropDownAction.ActionType == 4)
+                         newDropDownAction.AffectedQuestionList.push("");
+
+                     ApplyDropdownAction(newDropDownAction, newDropdownID);
+                 }
+
+                 console.timeEnd("GetAndApplyDropdownAction");
+             }
+
+             function ApplyDropdownAction(DropdownAction, newDropdownID)//-----------------------------------------
+             {
+                 console.time("ApplyDropdownAction");
+                 DebugLog('ApplyDropdownAction(' + DropdownAction + ')');
+                 //DebugLog('ApplyDropdownAction.caller: ' + ApplyDropdownAction.caller);
+
+                 DebugLog("...DropdownAction: "+ DropdownAction);
+                 if (DropdownAction && DropdownAction.AffectedQuestionList) {
+                     for (var i = 0; i < DropdownAction.AffectedQuestionList.length; i++) {
+                         var QuestionID = DropdownAction.AffectedQuestionList[i];
+                         var SurveyQuestion = $("#SurveyQuestion_" + QuestionID);
+                         var qtype = SurveyQuestion.attr("questiontype");
+
+                         DebugLog("...QuestionID: "+ QuestionID);
+                         DebugLog("...SurveyQuestion: "+ SurveyQuestion);
+                         DebugLog("...qtype: "+ qtype);
+
+                         DebugLog("...DropdownAction.ActionType: "+ DropdownAction.ActionType);
+                         switch (DropdownAction.ActionType) {
+                             case 1: //Enable Question
+                                 // GUID for Q14 - Conflict with: Other 75a43e89-4f30-4958-af99-030894f820d1
+                                 // GUID for Q14 - Experienced Abuse by: Other 52431302-335c-4577-bb2c-8ffe1f70c346
+                                 // GUID for Q14 - Experienced discrimination by: Other 8abb94cb-1aa9-4b8f-8fae-41a81476446a
+                                 // GUID for Q14 - Other: Other 6d15bdfc-6180-483f-9c33-72c71f5b2c0b
+                                 // GUID for Q15 - Other: Other 958ddd25-2038-429a-9934-74cae3b0348e
+                                 if (
+                                     SurveyQuestion.attr("guid") == "75a43e89-4f30-4958-af99-030894f820d1" ||
+                                     SurveyQuestion.attr("guid") == "52431302-335c-4577-bb2c-8ffe1f70c346" ||
+                                     SurveyQuestion.attr("guid") == "8abb94cb-1aa9-4b8f-8fae-41a81476446a" ||
+                                     SurveyQuestion.attr("guid") == "6d15bdfc-6180-483f-9c33-72c71f5b2c0b" ||
+                                     SurveyQuestion.attr("guid") == "958ddd25-2038-429a-9934-74cae3b0348e"
+                                     )
+                                 {
+                                     // Show the custom dialogue and store a new lookup
+                                     // Call CreateDropDownForAddOtherSpecify(string questionID, string rollupID)
+                                     $("a[triggeredby='" + newDropdownID + "'")[0].click();
+                                     break;
+                                 }
+
+                                 DebugLog("ApplyDropdownAction... case 1: Enabling questions...");
+                                 SurveyQuestion.parents(".form-group").show();
+                                 SurveyQuestion.removeAttr('disabled');
+                                 SurveyQuestion.removeClass("disabledbutton");
+
+                                 DebugLog("...case1...qtype: "+ qtype);
+                                 switch (qtype) {
+                                 case '21': // Number Of Days Field
+                                     $("#SurveyQuestionD_"+ QuestionID).parents(".form-group").show();
+                                     $("#SurveyQuestionD_"+ QuestionID).removeClass("disabledbutton");
+                                     break;
+                                 case '22': // Number of Years Field
+                                     $("#SurveyQuestionY_"+ QuestionID).parents(".form-group").show();
+                                     $("#SurveyQuestionY_"+ QuestionID).removeClass("disabledbutton");
+                                     break;
+                                 }
+                                 break;
+                             case 2: //Disable Question
+                                 DebugLog("ApplyDropdownAction... case 2: Disabling questions...");
+                                 SurveyQuestion.attr('prev', SurveyQuestion.val());
+                                 SurveyQuestion.val([]);
+                                 SurveyQuestion.attr('disabled', 'disabled');
+                                 //SurveyQuestion.parents(".form-group").hide();
+
+                                 //hides the Province filter dropdown, city dropdown and label for community/reserve name in Q8
+                                 if (SurveyQuestion.attr("guid") == "1b4ce307-5dd9-46c0-bf6d-0614c594d089"){
+                                     $('div#form-group_' + QuestionID).hide();
+                                 }
+                                 else {
+                                     SurveyQuestion.closest(".form-group").hide();
+                                 }
+                                 if (qtype == '11' || qtype == '3') {
+                                     $('div#form-group_' + QuestionID).hide();
+                                     var provinceQuestionID = SurveyQuestion.attr('province_question_id');
+                                     $('div#form-group_' + provinceQuestionID).hide();
+                                     var cityQuestionID = $("#SurveyQuestion_" + provinceQuestionID).attr('city_question_id');
+                                     $('div#form-group_' + cityQuestionID).hide();
+                                 }
+
+                                 if (qtype == '7'){//---
+                                    // var questionid = ['y8ytF5Teg779', 'Ly0mL8u49U7w', '7qyRF5VQVm7A','mI0RL8vJpE87','a6Dqv5iPkx89','O8X3YGZx788k','8lD3vg0EYH8N'];
+                                     var questionid = ['y8ytF5Teg779', 'Ly0mL8u49U7w','a6Dqv5iPkx89','O8X3YGZx788k','8lD3vg0EYH8N'];
+                                     questionid.forEach(function(item) {
+                                         $('div#form-group_'+item).hide()
+                                     });
+                                 }//----
+
+                                 if (qtype == '4'){
+                                     $('div#form-group_' + QuestionID).hide();
+                                 }
+
+                                 //for input with link next to it eg: noOfDays, NoOfYears, Family
+                                 DebugLog("...case2...qtype: "+ qtype);
+                                 switch (qtype) {
+                                 case '16':// if it's a FamilyMember Question Empty the session
+                                     for (var fm = $('[id^=F_M]').length-1; fm >= 0; fm--) {
+                                         $('[id^=F_M]')[fm].click();
+                                     }
+
+                                     $("#SurveyFMQuestion_" + QuestionID).empty();
+                                     SurveyQuestion.addClass("disabledbutton");
+                                     //SurveyQuestion.parents(".form-group").hide();
+                                     SurveyQuestion.closest(".form-group").hide();
+                                     break;
+                                 case '21':  // Number Of Days Field
+                                     $("#SurveyQuestionD_"+ QuestionID).addClass("disabledbutton");
+                                     //$("#SurveyQuestionD_"+ QuestionID).parents(".form-group").hide();
+                                     $("#SurveyQuestionD_"+ QuestionID).closest(".form-group").hide();
+                                     break;
+                                 case '22': // Number of Years Field
+                                     $("#SurveyQuestionY_"+ QuestionID).addClass("disabledbutton");
+                                     //$("#SurveyQuestionY_"+ QuestionID).parents(".form-group").hide();
+                                     $("#SurveyQuestionY_"+ QuestionID).closest(".form-group").hide();
+                                     break;
+
+                                 }
+                                 break;
+                             case 3: //Start Survey
+                                 DebugLog("ApplyDropdownAction... case 3: Start survey...");
+                                 SurveyScreenedInStatus(true);
+
+                                 // This is just quickly done to clean things up when the unsure status is chosen
+                                 DebugLog("Enabling child questions for unsure screening");
+                                 SurveyQuestion.parents(".form-group").show();
+                                 SurveyQuestion.removeAttr('disabled');
+                                 SurveyQuestion.removeClass("disabledbutton");
+
+                                 break;
+                             case 4: //End Survey
+                                 DebugLog("ApplyDropdownAction... case 4: End survey...");
+                                 SurveyScreenedInStatus(false);
+
+                                 // This is just quickly done to clean things up when the unsure status is chosen
+                                 DebugLog("Disabling child questions for unsure screening");
+                                 SurveyQuestion.attr('prev', SurveyQuestion.val());
+                                 SurveyQuestion.val([]);
+                                 SurveyQuestion.removeAttr("selected");
+                                 SurveyQuestion.val(null).trigger('change.select2');
+                                 if(SurveyQuestion.attr('initiallyenabled') == 'False'){
+                                     SurveyQuestion.attr('disabled', 'disabled');
+                                     //SurveyQuestion.parents(".form-group").hide();
+                                     SurveyQuestion.closest(".form-group").hide();
+
+                                     //hides the probably location in screening questions
+                                     if (qtype == '4'){
+                                         $('div#form-group_' + QuestionID).hide();
+                                     }
+                                 }
+                                 DebugLog("Finished disabling child questions for unsure screening");
+                                 break;
+                             case 5: // Clear+Restore to initial state - Undoing Enable/disable effect on this question
+                                 DebugLog("ApplyDropdownAction... case 5: Restore initial state...");
+                                 SurveyQuestion.attr('prev', SurveyQuestion.val());
+                                 SurveyQuestion.val([]);
+                                 SurveyQuestion.removeAttr("selected");
+                                 SurveyQuestion.val(null).trigger('change.select2');
+
+                                 if (qtype == '16') {
+                                     for (var fm = $('[id^=F_M]').length-1; fm >= 0; fm--) {
+                                         $('[id^=F_M]')[fm].click();
+                                     }
+                                     $("#SurveyFMQuestion_" + QuestionID).empty();// if it's a FamilyMember Question Empty the session
+                                 }
+
+                                 if(SurveyQuestion.attr('initiallyenabled') == 'False'){
+                                     SurveyQuestion.attr('disabled', 'disabled');
+                                     //SurveyQuestion.parents(".form-group").hide();
+                                     SurveyQuestion.closest(".form-group").hide();
+                                     if (qtype == '4') {
+                                         $('div#form-group_' + QuestionID).hide();
+                                     }
+                                     if (qtype == '20') {
+                                         $('#ReserveProvinceList').val(null).trigger('change:select2');
+                                         $('div#form-group_' + QuestionID).hide();
+                                         
+                                     }//empties and hides the Community/Reserve Province dropdown
+
+
+                                     //for input with link next to it eg: noOfDays, NoOfYears, Family------------------------
+                                     if($.inArray(qtype, ['16', '21', '22'])>=0){
+                                         SurveyQuestion.addClass("disabledbutton");
+                                        // SurveyQuestion.parents(".form-group").hide();
+                                         SurveyQuestion.closest(".form-group").hide();
+                                     }
+
+                                     //hides the probably location in screening questions
+                                     if (qtype == '4'){
+                                         $('div#form-group_' + QuestionID).hide();
+                                     }
+
+                                     //hides the labels for hidden COH Questions
+                                     if (qtype == '3'){
+                                         $('div#form-group_' + QuestionID).hide();
+                                     }
+
+
+                                     /*stops the 'days' field from being disabled and hidden if deleting values
+                                     entered in days textbox while any 'yes' option is selected from the dropdown of question 6
+                                     */
+                                     if ((SurveyQuestion.attr("guid") =="2aaa0491-d9c4-4fbc-83d0-f1090ad7cbc9" || SurveyQuestion.attr("guid") == "b8d8464c-5a8b-4d12-bda5-1d24f7fa4d7c") && qtype == '21'){
+
+                                         var selectedDropDownText = $("[guid=b8d8464c-5a8b-4d12-bda5-1d24f7fa4d7c] :selected").text();
+                                         if ( selectedDropDownText.indexOf('Yes') >=0 ||  selectedDropDownText.indexOf('Oui') >=0 ){
+                                             SurveyQuestion.parents(".form-group").show();
+                                             SurveyQuestion.removeAttr('disabled');
+                                             SurveyQuestion.removeClass("disabledbutton");
+                                             $("#SurveyQuestionD_"+ QuestionID).parents(".form-group").show();
+                                             $("#SurveyQuestionD_"+ QuestionID).removeClass("disabledbutton");
+                                         }
+                                     }
+                                 } else {
+                                    SurveyQuestion.parents(".form-group").show();
+                                     SurveyQuestion.removeAttr('disabled');
+                                     SurveyQuestion.removeClass("disabledbutton");
+
+                                     DebugLog("...else...qtype: "+ qtype);
+                                     switch (qtype) {
+                                     case '21': // Number Of Days Field
+                                         $("#SurveyQuestionD_"+ QuestionID).parents(".form-group").show();
+                                         $("#SurveyQuestionD_"+ QuestionID).removeClass("disabledbutton");
+                                         break;
+                                     case '22': // Number of Years Field
+                                         $("#SurveyQuestionY_"+ QuestionID).parents(".form-group").show();
+                                         $("#SurveyQuestionY_"+ QuestionID).removeClass("disabledbutton");
+                                         break;
+                                     case '7': // ------
+                                         var questionid = ['y8ytF5Teg779', 'Ly0mL8u49U7w','a6Dqv5iPkx89','O8X3YGZx788k','8lD3vg0EYH8N'];
+                                         questionid.forEach(function(item) {
+                                             $('div#form-group_'+item).show()
+                                         });
+                                     }//------
+                                 }
+                                 break;
+                             // End Switch
+                         }
+                     }
+                 }
+                 console.timeEnd("ApplyDropdownAction");
+             }
+
+            function ApplyQuestionAction(qaction, affectedqList) {
+
+                 console.time("ApplyQuestionAction");
+                 DebugLog('ApplyQuestionAction(' + qaction + ',' + affectedqList + ')');
+                 //DebugLog('ApplyQuestionAction.caller: ' + ApplyQuestionAction.caller);
+
+                 console.time("Applying Question Action");
+                 DebugLog("...qaction: "+ qaction);
+                 DebugLog("...affectedqList: "+ affectedqList);
+
+                 for (var i = 0; i < affectedqList.length; i++) {
+                     var affectedQuestionID = affectedqList[i];
+                     var affectedQuestion = $("#SurveyQuestion_"+affectedQuestionID);
+
+                     // Only apply to single select dropdowns
+                     if (affectedQuestion.attr('questiontype') == '6') {
+                         switch (qaction) {
+                         case '1': // Set Question as Answered
+                             var DropdownList = $.parseJSON(affectedQuestion.attr('dropdownlist'));
+
+                             if (DropdownList == null || DropdownList.constructor != Array)
+                                 break;
+
+                             //var AnsweredDropdown = DropdownList.find(dd => dd.AnsweredBehaviourYN);
+                             var AnsweredDropdown = DropdownList.filter(function(dd) {return dd.AnsweredBehaviourYN; })[0];
+
+                             if( AnsweredDropdown != null && AnsweredDropdown.ID != null){
+                                 affectedQuestion.val(AnsweredDropdown.ID).change();
+                                 //DebugLog("Set "+ affectedQuestionID + " to Answered");
+                                 return;
+                             }
+
+                             break;
+                         case '2': // Empty Question
+                             //DebugLog("Empty Question " + affectedQuestionID);
+                             affectedQuestion.val([]).change();
+                             break;
+                         }
+                     }
+                }
+
+                console.timeEnd("ApplyQuestionAction");
+             }
+
+             function SaveQuestion(questionID, questionType, pitQuestionAnswerID)
+             {
+                 console.time("SaveQuestion");
+                 DebugLog("SaveQuestion...");
+                 if (isLive) {
+                     var request = new QuestionAnswerModel(questionID, questionType, pitQuestionAnswerID);
+                     var isComplete = (completedQuestionsPercentage == 100);
+                     var pageNo = parseInt($('#currentPageNumber').html());
+                     @Html.Partial("_Ajax", new AjaxViewModel() {
+					    Async = true,
+					    Url = "'" + Url.Content("~/PitEvents/SaveSurveyQuestionAnswer") + "'",
+					    Data = "JSON.stringify({ vm: request, isCompleteSurvey: isComplete, pageNo: pageNo })",
+					    ContentType = "application/json",
+					    LoaderGif = false,
+					    ShowValidationSummary = false })
+                 }
+
+                 console.timeEnd("SaveQuestion");
+             }
+
+             function QuestionAnswerModel(questionID, questionType, pitQuestionAnswerID)
+             {
+                 console.time("QuestionAnswerModel");
+                 DebugLog("QuestionAnswerModel...");
+                 var self = this;
+                 self.QuestionID = questionID;
+                 DebugLog("save sID=" + new SurveyModel().PitSurveyID);
+                 self.PitSurveyID = new SurveyModel().PitSurveyID;
+                 self.PitQuestionAnswerID = pitQuestionAnswerID;
+                 self.QuestionCategoryTypeID = questionType;
+                 var ans = ($('#SurveyQuestion_'+questionID).val());
+                 switch (questionType) {
+                 case '2':
+                     self.YNValue = $('#SurveyQuestion_'+questionID+ ' #QuestionAnswer_YNValue').val();
+                     break;
+                 case '3':  // Numeric
+                 case '21': // Number of Days
+                 case '22': // Number of Years
+                     self.NumericValue = ans;
+                     break;
+                 case '4': // Text
+                     self.TextValue = ans;
+                     break;
+                 case '5': // Date
+                     self.DateValue = ans;
+                     break;
+                 case '6': // SingleSelect Dropdown
+                     self.SingleDropdownValue = ans;
+                     break;
+                 case '11': // Country
+                     self.CountryID = ans;
+                     break;
+                 case '12': // Province
+                     self.ProvinceID = ans;
+                     break;
+                 case '13': // Community
+                 case '19': // City
+                 case '20': // Reserve
+                     self.CityID = ans;
+                     break;
+                 case '7':  // DropdownMultiple
+                 case '15': // DropdownMultipleAddition
+                     self.MultipleDropdownValue = ans;
+                     break;
+                 case '16':// if it's a FamilyMember Question Empty the session
+                     self.FamilyMemberList = ans;
+                     break;
+                 }
+                 //DebugLog(self);
+                 console.timeEnd("QuestionAnswerModel");
+             }
+
+             function updateProgressBar()
+             {
+                 console.time("updateProgressBar");
+                 DebugLog("updateProgressBar...");
+                 if (isLive){
+
+                     var totalOfQuestions = $("#SurveyQuestions_FormPortion :input[id*='Question_']")
+                         .filter(function (){
+                             return $("#"+this.id).parents('[id^=form-group_]').css("display") != 'none';
+                         }).length;
+
+                     var completedQuestionsQty = $("#SurveyQuestions_FormPortion :input[id*='Question_']")
+                         .filter(function (){
+                             return this.value != undefined && this.value != null  && this.value != "";
+                         }).length;
+
+
+                     completedQuestionsPercentage = parseInt((completedQuestionsQty / totalOfQuestions) * 100);
+
+                     var scrTotal = $("#scrQuestions :input[id*='Question_']")
+                         .filter(function (){
+                             return $("#"+this.id).parents('[id^=form-group_]').css("display") != 'none';
+                         }).length;
+
+                     var scrAns = $("#scrQuestions :input[id*='Question_']")
+                         .filter(function (){
+                             return this.value != undefined && this.value != null  && this.value != "";
+                         }).length;
+
+                     //if they answer all screening questions
+                     if ((scrTotal == scrAns)  && ($("#PitScreenedIN").val() == "false" || $("#PitScreenedIN").val() == "False"))
+                         completedQuestionsPercentage = 100;
+
+                     $("#IsComplete").val((completedQuestionsPercentage == 100));
+
+                     $("#questionnaireProgress").val(completedQuestionsPercentage);
+                     $("#progressValue").text(completedQuestionsPercentage);
+
+                 }
+                 console.timeEnd("updateProgressBar");
+             }
+
+             function UpdateDropdownValues(dropdown, values, noBlank) {
+                 DebugLog("UpdateDropdownValues...");
+                 dropdown.options.length = 0; // clear out existing items
+
+                 for (var i = 0; i < values.length; i++)
+                     dropdown.options.add(new Option(values[i].Text, values[i].Value));
+
+                 if($('#'+dropdown.id).attr('prev') != ""){
+                     $('#'+dropdown.id).val($('#'+dropdown.id).attr('prev'));
+                     $('#'+dropdown.id).attr('prev',"");
+                     DebugLog(dropdown.id);
+                     $('#'+dropdown.id).trigger('change');
+                 } else {
+                     if (!noBlank) $('#'+dropdown.id).val([]);
+                 }
+
+                 if (!noBlank) $(dropdown).trigger('change');
+
+                if(values.length != 1){
+                    $(dropdown).parents(".form-group").show();
+                    $(dropdown).removeAttr('disabled');
+                }
+                else
+                    $(dropdown).parents(".form-group").hide();
+            }
+            //change the provinces label if country selected is United States and hide City form group
+             function UpdateProvinceLabel(selectedCountryID){
+                 let provinceLabel = "@Html.Raw(Labels.Province)";
+                 let prevProvinceVal = 'State';
+                 $('.pitlabel_B h4:contains(City)').closest(".form-group").hide();
+                if (selectedCountryID == 2){
+                    provinceLabel = "@Html.Raw(Labels.State)";
+                    prevProvinceVal = 'Province';
+                }
+                 $('.pitlabel_B h4:contains('+ prevProvinceVal +')').text(provinceLabel);
+            }
+            function PopulateProvince(province_qid, selectedCountryID) {
+                DebugLog("PopulateProvince...");
+
+                var ProvinceElementID = "SurveyQuestion_" + province_qid;
+                @Html.Partial("_Ajax", new AjaxViewModel()
+           {
+               Async = false,
+               Url = "'" + Url.Content("~/PitEvents/AjaxGetProvinceListPaging") + "'",
+               Data = "{ CountryID: selectedCountryID}",
+               OnSuccess = @"UpdateDropdownValues(document.getElementById(ProvinceElementID), data, false);",
+               OnComplete = @"UpdateProvinceLabel(selectedCountryID);"
+            });
+            }
+            //Checks city list for values before populating drop down
+            function CheckCityValues(cityID, data){
+
+                if (data.length > 1){
+                    UpdateDropdownValues(cityID, data, false);
+                }
+                else {
+                    $('h4:contains(City)').closest(".form-group").hide();
+                }
+            }
+             function PopulateCity(city_qid, selectedProvinceID)
+             {
+                 DebugLog("PopulateProvince...");
+                 var CityElementID = "SurveyQuestion_" + city_qid;
+                 @Html.Partial("_Ajax", new AjaxViewModel()
+            {
+                Async = false,
+                Url = "'" + Url.Content("~/PitEvents/AjaxGetCityListPaging") + "'",
+                Data = "{ ProvinceID: selectedProvinceID}",
+                OnSuccess = @"CheckCityValues(document.getElementById(CityElementID), data);"
+            });
+             }
+
+             function PopulateReserveCity(city_qid, selectedProvinceID)
+             {
+                 DebugLog("PopulateReserveCity...");
+                 var CityElementID = "SurveyQuestion_" + city_qid;
+                 @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+				    Async = false,
+				    Url = "'" + Url.Content("~/PitEvents/AjaxGetReserveCityList") + "'",
+				    Data = "{ ProvinceID: selectedProvinceID}",
+				    OnSuccess = @"UpdateDropdownValues(document.getElementById(CityElementID), data, false);"
+                });
+             }
+
+             function SetFamilyQuestionAsAnswered()
+             {
+                 DebugLog("SetFamilyQuestionAsAnswered...");
+                 var qaction = $("[questiontype=16]").attr('questionaction');
+                 var affectedqList = $.parseJSON($("[questiontype=16]").attr('affectedquestionsids'));
+                 ApplyQuestionAction(qaction, affectedqList);
+             }
+
+             function EmptyFMQuestionAnswer()
+             {
+                 DebugLog("EmptyFMQuestionAnswer...");
+                 var qaction = $("[questiontype=16]").attr('questionaction');
+                 if (qaction == '1') // Set Question as Answered
+                     qaction = '2'; // reverse it to empty
+                 var affectedqList = $.parseJSON($("[questiontype=16]").attr('affectedquestionsids'));
+                 ApplyQuestionAction(qaction, affectedqList);
+             }
+
+             //DOM ready
+             $(document).ready(function()
+             {
+                 console.time("Ready...");
+                 DebugLog("$(document).ready...");
+                 $( ".wb-eqht" ).trigger( "wb-init.wb-eqht" );
+
+
+                 $( '.NextorPrevSurveyPageBtn' ).click( function (e )
+                 {
+                     e.preventDefault();
+                     updateProgressBar();
+                     var surveyQuestions = $("#SurveyQuestions_FormPortion :input[id*='Question_']");
+
+                     for (var z = surveyQuestions.length-1; z >= 0 ; z-- )
+                     {
+                         var qid = surveyQuestions[z].getAttribute('id').replace(/SurveyQuestion_/, '');
+                         var qtype = surveyQuestions[z].getAttribute('questiontype');
+                         var pitQuestionAnswerID = surveyQuestions[z].getAttribute('ansid');
+
+                         var request = new QuestionAnswerModel(qid, qtype, pitQuestionAnswerID);
+                         var isComplete = (completedQuestionsPercentage == 100);
+                         var pageNo = parseInt($('#currentPageNumber').html());
+                         @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+						    Async = false,
+						    Url = "'" + Url.Content("~/PitEvents/SaveSurveyQuestionAnswer") + "'",
+						    Data = "JSON.stringify({ vm: request, isCompleteSurvey: isComplete, pageNo: pageNo })",
+						    ContentType = "application/json",
+						    LoaderGif = false,
+						    ShowValidationSummary = false
+                        })
+                     }
+                     window.location.href =  $(this).attr('href');
+                 } );
+
+                 $('#Survey_FormPortion :input').change(function () {
+                     var qid = $('[pit-fam-button="true"]').attr('id').replace(/SurveyQuestion_/, '');
+                     $('[pit-fam-button="true"]').attr('href', "@Url.Content("~/PitEvents/CreateFamilyMember")?questionID=" + qid
+                         + '&shiftID=' + $('#ShiftID').val()
+                         + '&surveyNo=' + $('#SurveyNo').val());
+                 });
+
+                 $("[id^='SurveyQuestion_']").on('change switchChange.bootstrapSwitch', function () {
+                     onChange($(this));
+                 });
+
+                 // For date picker not firing change event
+                 $('[id^=datePicker]').on('dp.change', function(e) {
+                     var dpid = $(this).attr('id');
+                     if ($('#' + dpid).children('[id^=SurveyQuestion_]').val()) {
+                         var qid = $('#' + dpid).children('[id^=SurveyQuestion_]').attr('id').replace(/SurveyQuestion_/, '');
+                         var qElement = $('#SurveyQuestion_' + qid);
+                         onChange(qElement);
+                     }
+                 });
+
+                 //// Before change event of a SingleSelect / xSelect / xSelect+
+                 //$('[id^=SurveyQuestion_]').on('focus select2:selecting select2:unselecting', function (evt) {
+                 //    //save value before change in attr previ
+                 //    var prv = $(this).val();
+                 //    $(this).attr('prev', prv);
+                 //});
+
+                 $("[id^='SurveyFMQuestion_']").on("click","[id^='F_M_']" ,(function () { // onDelete FamilyMember
+                     var fmid = $(this).attr('id').replace(/F_M_/, '');
+                     var qid = $(this).attr('qid');
+                     $.ajax({
+                         url: "@Url.Content("~/PitEvents/DeleteFamilyMember")",
+                         type: "POST",
+                         data: {
+                             "questionID": qid,
+                             "familyMemberID": fmid
+                         }
+                     }).done(function(data) {
+                         if (!data || !data.length) EmptyFMQuestionAnswer();
+                         $("#SurveyFMQuestion_" + qid).html(data); // render the FamilyMemberAnswerList
+
+                         // If it is  a live survey ajax save FMs
+                         var pitQuestionAnswerID = $("#SurveyQuestion_" + qid).attr('ansid');
+                         var qType = $('#SurveyQuestion_' + qid).attr('questiontype');
+
+                         if (pitQuestionAnswerID)
+                             SaveQuestion(qid, qType, pitQuestionAnswerID);
+                     });
+                 }));
+
+                 $('.disabledbutton').click(function(e) {
+                     e.preventDefault();
+                 });
+
+                 $("#ReserveProvinceList").on('change', function () {
+                     var reserveCityID = "SurveyQuestion_" + $(this).attr('reservecityid');
+                     var selectedProvinceID = $(this).val();
+                     if (!selectedProvinceID)
+                         return;
+
+                     @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Async = false,
+                   Url = "'" + Url.Content("~/PitEvents/AjaxGetReserveCityList") + "'",
+                   Data = "{ ProvinceID: selectedProvinceID}",
+                   OnSuccess = @"UpdateDropdownValues(document.getElementById(reserveCityID), data, true);"
+               });
+                 });
+
+                 @*if (document.getElementById("ReserveProvinceList") != null)
+                {
+
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                       Async = false,
+                       Url = "'" + Url.Content("~/PitEvents/AjaxGetProvinceListPaging") + "'",
+                       Data = "{ CountryID: 1}",
+                       OnSuccess = @"UpdateDropdownValues(document.getElementById('ReserveProvinceList'), data, false);"
+                    });
+
+                    if ($("#ReserveProvinceList").parents(".form-group").eq(0).siblings().css('display') !== 'block')
+                    {
+                        $("#ReserveProvinceList").parents(".form-group").eq(1).hide()
+                    }
+                }*@
+                 console.timeEnd("Ready...");
+             });
+
+</script>);
+}
+
+<style>
+    .pitsurveylivelabel {
+        text-align: left;
+        max-width: 100%;
+    }
+
+    #SurveyQuestions_FormPortion .form-group .form-group {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    #SurveyQuestions_FormPortion .addValueButton {
+        height: 42px !important;
+        line-height: 1.5;
+    }
+
+    #SurveyQuestions_FormPortion textarea,
+    #SurveyQuestions_FormPortion input[type='number'] {
+        max-width: 510px;
+    }
+</style>

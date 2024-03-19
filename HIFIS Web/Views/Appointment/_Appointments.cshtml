@@ -1,0 +1,72 @@
+﻿@model AppointmentViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model) 
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.AppointmentID)
+@Html.HiddenFor(m => m.OrganizationID)
+
+<div>
+    @Html.HifisEditorFor(model => model.AppointmentTypeID, CachedTableTypes.HIFIS_AppointmentTypes)
+</div>
+
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.PlaceID, ViewBag.placeList as SelectList, null, new { id = "ddLocation" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", @Labels.LocationFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.GeoFilter.GeoRegionID, FilterType = (short)GeoFilterTypes.Either })))
+
+    </div>
+}
+else
+{
+    <div>
+        @Html.HifisEditorFor(model => model.PlaceID, ViewBag.placeList as SelectList, null, new { id = "ddLocation" }, false)
+    </div>
+}
+
+
+<div>
+    @Html.HifisEditorFor(model => model.Description, "TextArea",  new { @class = "commentBoxSize" })
+</div>
+
+<div>
+    @Html.HifisAutocompleteFor(
+        model => model.PersonID
+        , Url.Content("~/PeopleTombstone/AjaxGetPList")
+        , Model.PersonName
+        , new AutocompleteViewModelOptions()
+        {
+            Placeholder = Labels.SearchForAClient
+            , HiddenValue = true
+            , SelectClientFieldType = SelectClientFieldTypes.Other
+        })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.FollowedThroughYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.StartDateTime, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.EndDateTime, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Comments, "TextArea", new { @class = "commentBoxSize" })    
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            //$(function () {
+            //    $('#StartDateTime').change(function () { if(this.value > $('#EndDateTime').val()) $('#EndDateTime').val(this.value); });
+            //});
+        </script>
+    );
+}

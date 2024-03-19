@@ -1,0 +1,46 @@
+﻿@model PeopleDocumentAttachmentViewModel
+
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<section id="Modal_NewSubsidy" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.EditProfilePicture</h2>
+    </header>
+    <div class="modal-body">
+
+        @using (Html.BeginForm("UpdatePeopleDocumentAttachment", "Documents", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data", id="newProfilePicForm"}))
+        {
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ClientDocAttachmentID)
+            @Html.HiddenFor(model => model.ClientDocumentID)
+            @Html.HiddenFor(model => model.PersonID)
+
+            <div>
+                @Html.HifisTextBoxFor(model => model.UploadFile, new { @class = "wdth-strct-250", type = "file", accept = "image/*" })
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-primary">@Labels.Save</button>
+                    <button id="profileCloseBtn" class="btn btn-default popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+                    </div>
+            </div>
+        }
+
+    </div>
+
+
+</section>
+
+<script>
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#newProfilPicForm").hifisValidation();
+    });
+
+</script>

@@ -1,0 +1,72 @@
+﻿@model ClientVitalsViewModel
+
+@Html.HiddenFor(model => model.ClientID)
+
+<div>
+    @if (RightsHelper.HasRight(UserRights.Client_ContactInfo_Add))
+    {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+    }        
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Client_ContactInfo_List))
+        {
+            <table id="digitalContactTable" class="wb-tables table table-striped table-hover" 
+                   data-wb-tables='{ "columns": [
+                                            { "width": "30%", "data": "ContactType"},
+                                            { "width": "25%", "data": "Value"},
+                                            { "width": "20%", "data": "Extension"},
+                                            { "width": "25%", "data": "Action"}
+                                        ],
+                                        "order": [ [0, "desc"] ],
+                                        "ajax": "@Url.Content("~/ClientTombstone/ContactListJson?id=" + Model.ClientID)"                         
+                                    }'>
+                <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.ContactType</th>
+                        <th class="align-text-center">@Labels.Value</th>
+                        <th class="align-text-center">@Labels.Extension</th>
+                        <th class="align-text-center">@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-sm-12">
+	                <div class="alert exception-panel">
+	                    <div class="mrgn-bttm-sm align-center">                                   
+	    	                <h3 class="panel-title">@Labels.UserRightsException</h3>
+	                    </div>
+	                    <div>
+	    	                <p>@Labels.RightsCommentsWarning</p>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>                   
+        }
+    </div>     
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+       
+        @<script type="text/javascript">
+             function defaultSaved() {
+
+                 displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                 var table = $('#languagesTable');
+                 table.DataTable().ajax.reload();
+             }
+
+            function defaultFailed() {
+                displayNotification("error", "", "<p>@Labels.FailedToSave</p>");
+                var table = $('#languagesTable');
+                table.DataTable().ajax.reload();
+             }
+    </script>
+    );
+}

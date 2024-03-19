@@ -1,0 +1,162 @@
+﻿@model ConflictListViewModel         
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_ConflictList;
+
+    int j = 1;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@* TODO: Why is this even here? - JdV *@
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+    Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values *@
+@Html.Partial("_DateFilterList", Model.DateFilter)
+<div class="clearfix"></div>
+<br />
+
+<div>
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Client</th>
+                    <th>@Labels.Counterpart</th>
+                    <th>@Labels.DateStart</th>
+                    <th>@Labels.DateEnd</th>
+                    <th>@Labels.Intensity</th>
+                    <th>@Labels.ConflictType</th>
+                    <th>@Labels.Location</th>
+                    <th>@Labels.Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Conflicts != null && Model.Conflicts.Count > 0)
+                {
+                    foreach (ConflictViewModel item in Model.Conflicts)
+                    {
+                        <tr>
+                            <td class="col-sm-2">
+                                @Html.ActionLink(item.FirstPersonName, "DisplayVitals", new { controller = "ClientTombstone", id = item.FirstClientID }, new { alt = item.FirstPersonName, aria_label = item.FirstPersonName})
+                                <br />
+                                (@if(item.FirstIsVictimYN)
+                                {
+                                    @Labels.Victim
+                                }else{
+                                    @Labels.Aggressor
+                                })
+                            </td>
+                            <td class="col-sm-2">@item.SecondPersonName
+                                 <br />
+                                (@if(item.SecondIsVictimYN)
+                                {
+                                    @Labels.Victim
+                                }else{
+                                    @Labels.Aggressor
+                                })
+                            </td>
+                            <td class="col-sm-1 text-center">@Html.DisplayFor(ModelItem => item.DateStart)</td>
+                            <td class="col-sm-1 text-center">@if(item.DateEnd.HasValue)
+                                {
+                                    @Html.DisplayFor(ModelItem => item.DateEnd)
+                                }</td>
+                            <td class="col-sm-1">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_IntensityTypes, Culture, item.IntensityTypeID)</td>
+                            <td class="col-sm-2">
+                                @if (item.ConflictTypeIDs != null)
+                                {
+                                    if (item.ConflictTypeIDs.Count() > 1)
+                                    {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" role="button" style="text-align:left;"> 
+                                                    @item.ConflictTypeIDs.Count() @Labels.ConflictTypes 
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var ct in item.ConflictTypeIDs)
+                                                    {
+                                                        <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConflictTypes, Culture, ct)</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        j++;
+                                    }
+                                    else
+                                    {
+                                        foreach (var ct in item.ConflictTypeIDs)
+                                        {
+                                            @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConflictTypes, Culture, ct)
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td class="col-sm-2">
+                                @if (item.LocationTypeIDs != null)
+                                {
+                                    if (item.LocationTypeIDs.Count() > 1)
+                                    {
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" role="button" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                                    @item.LocationTypeIDs.Count() @Labels.Locations 
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @foreach (var lt in item.LocationTypeIDs)
+                                                    {                            
+                                                        <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_LocationTypes, Culture, lt)</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        j++;
+                                    }
+                                    else
+                                    {
+                                        foreach (var lt in item.LocationTypeIDs)
+                                        {
+                                            @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_LocationTypes, Culture, lt)
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td class="col-sm-1 text-center">
+                            
+                                @if (RightsHelper.HasRight(UserRights.Conflicts_Display))
+                                { 
+	                                @Html.ActionLink(Labels.Display, "Display", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+                            
+                                @if (RightsHelper.HasRight(UserRights.Conflicts_Edit))
+                                { 
+	                                @Html.ActionLink(Labels.Edit, "Edit", "Conflicts", new { id = item.FirstClientID, conflictID = item.ConflictID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Conflicts_Add))
+        { 
+	        @Html.ActionLink(Labels.NewConflict, "New", null, new { @class = "addButton", alt=Labels.NewConflict, aria_lable = Labels.NewConflict, @role = "button" })
+        }
+
+        @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+        {                        
+            <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "Conflicts", DataSetName = "List" }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls="Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+        }
+    </div>
+</div>

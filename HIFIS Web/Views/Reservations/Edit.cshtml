@@ -1,0 +1,54 @@
+﻿@model ReservationViewModel          
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditReservation;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>     
+    @using (Html.BeginForm("Edit", "Reservations", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ReservationID)  
+
+        <div>
+            @Html.HifisAutocompleteFor(
+                m => m.PrimaryClientID
+                , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                , Model.ReadOnlyVitals.ClientFullName
+                , new AutocompleteViewModelOptions()
+                {
+                    OnSelect = "getEditROVitalsOnSelect();"
+                    , Placeholder = Labels.SearchForAClient
+                    , HiddenValue = true
+                })    
+        </div>  
+             
+        @Html.Partial("_Reservation")
+        
+        <div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "ClientList", "Reservations", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>        
+    }
+</div>
+
+<div> @Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            function getEditROVitalsOnSelect() {
+                getROVitals($('#PrimaryClientID').val());
+                GetFamilyList($('#PrimaryClientID').val());
+            }
+
+        </script>
+);
+}

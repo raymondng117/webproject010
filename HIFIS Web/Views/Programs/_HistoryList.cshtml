@@ -1,0 +1,34 @@
+﻿
+
+@{
+    string programHistoryUrl = Url.Content("~/Programs/HistoryJson/" + ViewBag.programID);
+}
+
+<div id="programFixedCosts" style="padding: 20px;">
+    <div class="table-responsive">
+        <table id="historyTable" class="wb-tables table table-striped table-hover" 
+               data-wb-tables='{ "columns": [
+                                { "data": "clientName", "orderable": true, "type": "string", "name" : "Client"},
+                                { "data": "serviceType", "orderable": true, "type": "string", "name" : "Service"},
+                                { "data": "spName", "orderable": true, "type": "string", "name" : "Organization"},
+                                { "data": "dateStart", "orderable": true, "type": "string", "name" : "DateStart"},
+                                { "data": "dateEnd", "orderable": true, "type": "string", "name" : "DateEnd"}
+                            ],
+                            "order": [ [3, "desc"] ],
+                            "serverSide": true,
+                            "processing": true,
+                            "ajax": "@programHistoryUrl"  }'>
+            <thead>
+                <tr>
+                    <th class="align-text-center">@Labels.ClientName</th>
+                    <th class="align-text-center">@Labels.Service</th>
+                    <th class="align-text-center">@Labels.ServiceProvider</th>
+                    <th class="align-text-center">@Labels.DateStart</th>
+                    <th class="align-text-center">@Labels.DateEnd</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+    

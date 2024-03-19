@@ -1,0 +1,178 @@
+﻿@model IncomeViewModel     
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayIncome;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IncomeTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="IncomeTypeID" name="IncomeTypeID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_IncomeTypes, Culture, Model.IncomeTypeID))"
+                   readonly />
+        </div>
+    </div>
+
+    @*@if (Model.IncomeTypeID == (short)IncomeTypes.EmploymentCasual || Model.IncomeTypeID == (short)IncomeTypes.EmploymentFull || Model.IncomeTypeID == (short)IncomeTypes.EmploymentPart)*@
+    @if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_IncomeTypes, Model.IncomeTypeID) == (short)IncomeTypes.EmploymentCasual)
+        || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_IncomeTypes, Model.IncomeTypeID) == (short)IncomeTypes.EmploymentFull)
+        || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_IncomeTypes, Model.IncomeTypeID) == (short)IncomeTypes.EmploymentPart))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmploymentTypeID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                <input type="text" class="inputTextOnly" id="EmploymentTypeID" name="EmploymentTypeID"
+                       value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_EmploymentTypes, Culture, Model.EmploymentTypeID))"
+                       readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmployerTypeID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                <input type="text" class="inputTextOnly" id="EmployerTypeID" name="EmployerTypeID"
+                       value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_EmployerTypes, Culture, Model.EmployerTypeID))"
+                       readonly />
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmployerName, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                <input type="text" class="inputTextOnly" id="EmployerName" name="EmployerName"
+                       value="@Html.DisplayFor(model => model.EmployerName)" readonly />
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FrequencyTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="FrequencyTypeID" name="FrequencyTypeID"
+                   value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PayFrequencyTypes, Culture, Model.FrequencyTypeID))"
+                   readonly />
+        </div>
+    </div>
+
+
+    @{
+        switch (Model.FrequencyTypeID)
+        {
+            case (short)PayFrequencyTypes.Bi_Weekly:
+                <div class="row">
+                    @Html.HifisLabelFor("BiWeeklywage", Labels.BiWeeklywage, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="BiWeeklywage" name="BiWeeklywage"
+                               value="&nbsp;" readonly />
+                    </div>
+                </div>
+                break;
+
+            case (short)PayFrequencyTypes.Hourly:
+                <div class="row">
+                    @Html.HifisLabelFor("Hourlywage", Labels.Hourlywage, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Hourlywage" name="Hourlywage"
+                               value="@Html.DisplayFor(model => model.PayAmount, new { @class = "money" })" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor("Hourspermonth", Labels.Hourspermonth, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Hourspermonth" name="Hourspermonth"
+                               value="@Html.DisplayFor(model => model.HoursDays)" readonly />
+                    </div>
+                </div>
+                break;
+
+            case (short)PayFrequencyTypes.Daily:
+                <div class="row">
+                    @Html.HifisLabelFor("Dailywage", Labels.Dailywage, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Dailywage" name="Dailywage"
+                               value="@Html.DisplayFor(model => model.PayAmount, new { @class = "money" })" readonly />
+                    </div>
+                </div>
+                <div class="row">
+                    @Html.HifisLabelFor("Dayspermonth", Labels.Dayspermonth, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Dayspermonth" name="Dayspermonth"
+                               value="@Html.DisplayFor(model => model.HoursDays)" readonly />
+                    </div>
+                </div>
+                break;
+
+            case (short)PayFrequencyTypes.Monthly:
+                <div class="row">
+                    @Html.HifisLabelFor("Monthlywage", Labels.Monthlywage, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Monthlywage" name="Monthlywage"
+                               value="@Html.DisplayFor(model => model.PayAmount, new { @class = "money" })" readonly />
+                    </div>
+                </div>
+                break;
+
+            case (short)PayFrequencyTypes.Weekly:
+                <div class="row">
+                    @Html.HifisLabelFor("Weeklywage", Labels.Weeklywage, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Weeklywage" name="Weeklywage"
+                               value="@Html.DisplayFor(model => model.PayAmount, new { @class = "money" })" readonly />
+                    </div>
+                </div>
+                break;
+
+            case (short)PayFrequencyTypes.Yearly:
+                <div class="row">
+                    @Html.HifisLabelFor("Yearlywage", Labels.Yearlywage, new { @class = "col-xs-4 control-label" })
+                    <div class="col-xs-8">
+                        <input type="text" class="inputTextOnly" id="Yearlywage" name="Yearlywage"
+                               value="@Html.DisplayFor(model => model.PayAmount, new { @class = "money" })" readonly />
+                    </div>
+                </div>
+                break;
+        }
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IncomeDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="IncomeDateStart" name="IncomeDateStart"
+                   value="@Html.DisplayFor(model => model.IncomeDateStart)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IncomeDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="IncomeDateEnd" name="IncomeDateEnd"
+                   value="@Html.DisplayFor(model => model.IncomeDateEnd)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.IsPrimaryYN, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            <input type="text" class="inputTextOnly" id="IsPrimaryYN" name="IsPrimaryYN"
+                   value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsPrimaryYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")"
+                   readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="btn-group">
+                @if (RightsHelper.HasRight(UserRights.Financials_Income_Edit))
+                {
+                    @Html.ActionLink(Labels.Edit, "EditIncome", "Financials", new { id = Model.ReadOnlyVitals.ClientID, incomeID = Model.IncomeID }, new { @class = "editButton mrgn-rght-sm", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                }
+                @Html.ActionLink(Labels.Cancel, "Display", "Financials", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

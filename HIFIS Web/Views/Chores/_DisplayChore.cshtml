@@ -1,0 +1,62 @@
+﻿@model ChoreViewModel
+
+<div class="displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.StayPeriodInfo.StayID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.StayPeriodInfo.StayID,
+                            List = ViewBag.stayPeriodsList as SelectList 
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ChoreTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.ChoreTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ChoreTypes, Culture, Model.ChoreTypeID)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateStart)
+
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateEnd)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth" })
+    </div>
+
+    <div>
+        @Html.EditorFor(model => model.Description, "TinyMCE_Print")
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Hours, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Hours)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Minutes, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.Minutes)
+    </div>
+        
+    <div class="mrgn-tp-md mrgn-bttm-md">
+        @if (RightsHelper.HasRight(UserRights.Chores_Edit, Model.OrganizationID))
+        { 
+            @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ReadOnlyVitals.ClientID, choreID = Model.ChoreID }, new { @class = "editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+        }  
+        @Html.ActionLink(Labels.Cancel, "ClientList", "Chores", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+    </div>  
+
+</div>

@@ -1,0 +1,27 @@
+﻿@model HousingUnitViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.HousingDetails;
+
+    if (Request.IsAjaxRequest())
+    {
+        <script src="@Url.Content("~/Content/wet-boew/js/dependencies/easytabs-min.js")" type="text/javascript"></script>
+
+        using (Html.BeginScriptContext())
+        {
+            Html.AddScriptBlock(
+		        @<script type="text/javascript">
+                    $(function () {
+                        pe.fn.tabbedinterface._exec($('.wet-boew-tabbedinterface'));
+                        setTimeout(function () { $('#cboxLoadedContent').height('auto'); }, 300); @*cheating cus wet adds a specified height in js*@
+                    });
+                </script>);
+        }
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+}
+
+@Html.Partial("_HousingVitals", new HousingUnitVitalsWrapper(Model))

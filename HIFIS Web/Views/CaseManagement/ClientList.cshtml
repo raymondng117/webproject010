@@ -1,0 +1,205 @@
+﻿@model CaseListViewModel   
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseManagementClientList;
+}
+
+<div id="radio" class="btn-group mrgn-bttm-md">
+    @{ string classlink1 = (ViewBag.filterType == (short)CaseSearchType.Open ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.Open, "ClientList", new { filterType = (short)CaseSearchType.Open }, new { @class = classlink1, alt=Labels.Open, aria_label = Labels.Open, @role = "button" })
+
+    @{ string classlink2 = (ViewBag.filterType == (short)CaseSearchType.Closed ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.Closed, "ClientList", new { filterType = (short)CaseSearchType.Closed }, new { @class = classlink2, alt=Labels.Closed, aria_label = Labels.Closed, @role = "button" })
+
+    @{ string classlink3 = (ViewBag.filterType == 0 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.All, "ClientList", new { filterType = 0 }, new { @class = classlink3, alt=Labels.All, aria_label=Labels.All, @role = "button" })
+    <div class="clearfix"></div>
+</div>
+
+<div class="mrgn-tp-md mrgn-bttm-md">
+    @if (!Model.CasesPastTargetDate.IsEmptyOrNull())
+    {
+        <a class="displayButton wb-lbx" href="#casesPastTargetDate">
+            @Labels.PastTargetDate (@Model.CasesPastTargetDate.Count())
+        </a>
+        <section id="casesPastTargetDate" class="mfp-hide modal-dialog modal-content overlay-def width-50-percent">
+            <header class="modal-header">
+                <h2 class="modal-title">@Labels.PastTargetDate</h2>
+            </header>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.ClientFullName</th>
+                                <th>@Labels.CaseWorker</th>
+                                <th>@Labels.Goal</th>
+                                <th>@Labels.Status</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (CaseViewModel item in Model.CasesPastTargetDate)
+                            {
+                                <tr>
+                                    <td>
+                                        <p>
+                                            @if (RightsHelper.HasRight(UserRights.Client_Vitals_Display))
+                                            {
+                                                @Html.ActionLink(item.PrimaryClientName, "DisplayVitals", "ClientTombstone", new { id = item.PrimaryClientID }, new { alt = item.PrimaryClientName, aria_label = item.PrimaryClientName, @role = "button"})
+                                            }
+                                            else
+                                            {
+                                                @item.PrimaryClientName
+                                            }
+                                        </p>
+                                    </td>
+                                    <td>@item.CaseWorkerLastName, @item.CaseWorkerFirstName</td>
+                                    <td class="col-xs-2">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, item.DesiredOutcomeTypeID)</td>
+                                    <td>
+                                        <p>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CaseStateTypes, Culture, item.CaseStateTypeID)</p>
+                                        @Labels.TargetDate: @Html.DisplayFor(model => item.TargetDate)
+                                    </td>
+                                    <td>
+                                        @if (RightsHelper.HasRight(UserRights.CaseManagement_Display, item.OrganizationID))
+                                        {
+                                            @Html.ActionLink(Labels.Display, "Display", "CaseManagement", new { id = item.PrimaryClientID, caseID = item.CaseID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </section>
+    }
+</div>
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                @*<th>@Labels.Family</th>*@
+                <th>@Labels.CaseWorker</th>
+                <th>@Labels.ServiceProvider</th>
+                <th>@Labels.Goal</th>
+                <th>@Labels.Status</th> 
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int i = 0;}
+            @foreach (CaseViewModel item in Model.Cases)
+            {
+                i++;
+                <tr>
+                    @*<td class="col-xs-2">
+                        @{List<ClientVitalsReadOnlyViewModel> clientsFamily = item.Clients.Where(c => c.ClientID != item.PrimaryClientID).ToList();}
+                        @if (clientsFamily.Count > 1)
+                        {
+                            <div class="panel-default">
+                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#colone@(i)" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                        @clientsFamily.Count @Labels.FamilyMembers 
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </div>
+                                <div id="colone@(i)" class="panel-collapse collapse">
+                                    <ul class="pddng-lft-md">
+                                        @foreach (var client in clientsFamily)
+                                        {                            
+                                            <li>@Html.ActionLink(client.ClientFullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, null)</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            foreach (var client in clientsFamily)
+                            {                            
+                                    @Html.ActionLink(client.ClientFullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, null)
+                            }
+                        }
+                    </td>*@
+                    <td class="col-xs-2">@item.CaseWorkerLastName, @item.CaseWorkerFirstName</td>
+                    <td class="col-xs-2">@item.OrganizationName</td>
+                    <td class="col-xs-2">@item.DesiredOutcomeTypeName</td>
+                    <td class="col-xs-2">
+                        <p>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CaseStateTypes, Culture, item.CaseStateTypeID)</p>
+                        @Labels.TargetDate<text>:</text>
+                        @if (item.TargetDate.HasValue)
+                        {
+                            @Html.DisplayFor(model => item.TargetDate)
+                        }
+                        else
+                        {
+                            @Labels.NA
+                        }
+
+   
+                        @*@if (item.CaseStateTypeID == (short)CaseStateType.Open && item.TargetDate.HasValue)*@
+                        @if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_CaseStateTypes, item.CaseStateTypeID) == (short)CaseStateType.Open) && item.TargetDate.HasValue)
+                        {
+                            <br />
+                            if (item.TargetDate >= DateTime.Now && item.TargetDate <= DateTime.Now.AddDays(14))
+                            {
+                                <span class="fa fa-exclamation-triangle" style="color:goldenrod;"> @Labels.UpcomingTargetDate!</span>
+
+                            }
+                            else if (item.TargetDate <= DateTime.Now)
+                            {
+                                <span class="fa fa-exclamation-triangle" style="color:darkred;"> @Labels.PastTargetDate!</span>
+                            }
+                        }
+                        </td>
+                    <td class="text-center col-xs-1">
+
+                        @if (RightsHelper.HasRight(UserRights.CaseManagement_Display, item.OrganizationID))
+                        { 
+                            @Html.ActionLink(Labels.Display, "Display", "CaseManagement", new { id = item.PrimaryClientID, caseID = item.CaseID }, new { @class = "displayButton noText", title=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                        }
+                    
+                        @if (RightsHelper.HasRight(UserRights.CaseManagement_Edit, item.OrganizationID))
+                        { 
+                            @Html.ActionLink(Labels.Edit, "Edit", "CaseManagement", new { id = item.PrimaryClientID, caseID = item.CaseID }, new { @class = "editButton noText", title=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="mrgn-tp-md">
+
+    @if (RightsHelper.HasRight(UserRights.CaseManagement_Add))
+    { 
+        @Html.ActionLink(Labels.NewCase, "New", "CaseManagement", new { id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewCase, aria_label = Labels.NewCase, @role = "button" })
+    }
+
+    @if (RightsHelper.HasRight(UserRights.CaseManagement_Add))
+    {
+        if (Model.Cases != null && Model.Cases.Count > 1) { 
+            @Html.ActionLink(Labels.MultiGoalSession, "NewMultiGoalMeeting", "CaseManagement", new { id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.MultiGoalSession, aria_label = Labels.MultiGoalSession, @role = "button" })
+        }
+        else
+        {
+            @Html.ActionLink(Labels.MultiGoalSession, "NewMultiGoalMeeting", "CaseManagement", new { id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "addButton disabled", alt=Labels.MultiGoalSession, aria_label = Labels.MultiGoalSession, @role = "button" })
+        }
+    }
+
+    @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+    {                        
+        <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName="CaseManagement", DataSetName = "ClientList", ClientID = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls="Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+    }
+        
+</div>

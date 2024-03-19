@@ -1,0 +1,51 @@
+﻿@model HIFIS.WEB.ViewModels.QuestionnaireViewModel    
+@{
+    ViewBag.ViewTitle = Labels.ViewQuestionnaire + " - " + Model.Name;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <div>
+        <div class="container">
+            <div style="display: table-row-group; vertical-align: middle; border-color: inherit;">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <b>@Labels.Name:</b>
+                    </div>
+                    <div class="col-lg-6">
+                        @Html.DisplayFor(m => m.Name)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <b>@Labels.Status:</b>
+                    </div>
+                    <div class="col-lg-6">
+                        @(Model.ActiveYN ? Labels.ActiveYN : Labels.Inactive)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        @Html.Partial("_AllQuestions", Model.Questions)
+    </div>
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Questionnaire_Edit))
+        { 
+            @Html.ActionLink(Labels.EditQuestionnaire, "EditQuestionnaire", new { questionnaireID = Model.QuestionnaireID }, new { @class = "editButton", alt=Labels.EditQuestionnaire, aria_label = Labels.EditQuestionnaire, @role = "button" })
+        }
+        
+        @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Add))
+        { 
+            @Html.ActionLink(Labels.AddQuestion, "AddQuestion", new { questionnaireID = Model.QuestionnaireID }, new { @class = "addButton", alt=Labels.AddQuestion, aria_label = Labels.AddQuestion, @role = "button" })
+        }
+            
+        @Html.ActionLink(Labels.ViewAllQuestionnaires, "List", null, new { @class = "replyButton", alt=Labels.ViewAllQuestionnaires, aria_label = Labels.ViewAllQuestionnaires, @role = "button" })
+    </div>    
+</div>

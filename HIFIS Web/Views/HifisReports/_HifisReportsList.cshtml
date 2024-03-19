@@ -1,0 +1,338 @@
+﻿@model List<CrFileInfo>
+
+<div class="table-responsive">
+    <table class="wb-tables table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.ReportName</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.Description</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.Version</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.DateCreated</th>
+                <th class="sorting" tabindex="0" aria-controls="repslist" rowspan="1" colspan="1" aria-label="Report Name: activate for ascending sort" style="width: 0px;">@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                for (int i = 0; i < Model.Count(); i++)
+                {
+                    var disableButtonsForNewReports = (Model[i].VersionNumber == 0 ? " disabled " : " ");
+                    var cLabelNewUpdInfo = (Model[i].UpdateAvailable ? (Model[i].ReportID == "0" ? @Labels.ReportNewAvailable : Labels.ReportUpdateAvailable) : @Labels.ReportViewInfo);
+                    var cVersionFromUpd = Model[i].DBVersion.ToString() + "." + Model[i].VersionNumber.ToString().PadLeft(2, '0');
+                    var cModeliFileName = CultureHelper.CurrentNameSplit(Model[i].FileName, ViewBag.CurrentCulture);
+                    var cModeliNextUpdateFileName = (Model[i].UpdateAvailable ? CultureHelper.CurrentNameSplit(Model[i].NextUpdate.FileName, ViewBag.CurrentCulture) : "");
+                    var cModeliDescription = CultureHelper.CurrentNameSplit(Model[i].Description, ViewBag.CurrentCulture);
+
+
+                    <tr>
+                        <td class="col-xs-3">
+                            @cModeliFileName
+
+                            @*<div id="desc+@Model[i].ReportID" title="@Model[i].Description" style="width: 140px; display:inline-block; overflow:hidden; text-overflow: ellipsis; white-space: nowrap">
+                                @Model[i].FileName
+                            </div>*@
+                        </td>
+                        <td class="col-xs-4">
+                            @Html.Raw(cModeliDescription)
+                        </td>
+                        @if (Model[i].VersionNumber == 0)
+                        {
+                            <td class="col-xs-1" title="@Labels.ReportAvailableNew">
+                                @Labels.New <span class="glyphicon glyphicon-exclamation-sign"  aria-hidden="true"></span>
+                            </td>
+                        }
+                        else
+                        {
+                            if (Model[i].UpdateAvailable)
+                            {
+                                <td class="col-xs-1" title="@Labels.ReportAvailableUpdate">
+                                    @(cVersionFromUpd) <span class="glyphicon glyphicon-exclamation-sign"  aria-hidden="true"></span>
+                                </td>
+                            }
+                                else
+                                {
+                                <td class="col-xs-1">
+                                    @(cVersionFromUpd)
+                                </td>
+                            }
+
+                        }
+
+                        <td class="col-xs-2">
+                            @Model[i].DateCreated
+                        </td>
+
+                        <td id="tdActions" class="align-text-left">
+                            @if (RightsHelper.HasRight(UserRights.ReportManager_Generate))
+                            {
+                                @Html.ActionLink(Labels.RunReport, "Generate", "HifisReports", new { id = Model[i].ReportID }, new { @class = "noText" + disableButtonsForNewReports + "playButton", alt = Labels.RunReport, aria_label = Labels.RunReport, @role = "button" })
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.ReportManager_Edit))
+                            {
+                                @Html.ActionLink(Labels.Edit, "Edit", "HifisReports", new { id = Model[i].ReportID }, new { @class = "noText" + disableButtonsForNewReports + "editButton", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.ReportManager_Download))
+                            {
+                                @Html.ActionLink(Labels.Download, "Download", "HifisReports", new { id = Model[i].ReportID }, new { @class = "noText" + disableButtonsForNewReports + "downloadButton", alt = Labels.Download, aria_label = Labels.Download, @role = "button" })
+                            }
+
+                            @switch (Model[i].UpdateAvailable)
+                            {
+                                case true:
+                                    var cVersionToUpd = Model[i].NextUpdate.DBVersion.ToString() + "." + Model[i].NextUpdate.VersionNumber.ToString().PadLeft(2, '0');
+                                    var cTitleUpd = cLabelNewUpdInfo + ": " + (Model[i].ReportID == "0" ? cModeliNextUpdateFileName : cModeliFileName) + " " + (Model[i].ReportID == "0" ? "v" + cVersionToUpd : "v" + cVersionFromUpd + " to " + "v" + cVersionToUpd);
+                                                                      
+                                    if (Model[i].ReportID == "0") // New Report, available at marketplace
+                                    {
+                                        if (RightsHelper.HasRight(UserRights.Report_Manager_NewReport))
+                                        {
+                                            <a id="openNew" href="#mid-screen-@i" class="overlay-lnk checkrepupdate noText" aria-label="@Labels.ReportNewAvailable.ToString()" role="button">@(cLabelNewUpdInfo) </a>
+                                        }
+                                        else
+                                        {
+                                            <a id="openNew" href="#mid-screen-@i" class="overlay-lnk checkrepupdate noText disabled" aria-label="@Labels.ReportNewAvailable.ToString()" role="button">@(cLabelNewUpdInfo) </a>
+                                        }
+                                    }
+                                    else // Report Update, available at marketplace
+                                    {
+                                        if (RightsHelper.HasRight(UserRights.Report_Manager_Update))
+                                        {
+                                            <a id="openUpdates" href="#mid-screen-@i" class="overlay-lnk checkrepupdate noText" aria-label="@Labels.ReportUpdateAvailable.ToString()" role="button">@(cLabelNewUpdInfo)</a>
+                                        }
+                                        else
+                                        {
+                                            <a id="openUpdates" href="#mid-screen-@i" class="overlay-lnk checkrepupdate noText disabled" aria-label="@Labels.ReportUpdateAvailable.ToString()" role="button">@(cLabelNewUpdInfo)</a>
+                                        }
+                                    }
+                                    //  }
+                                    break;
+                                case false: // No update available at marketplace. View just "Report Info" when click
+                                    var cTitleCur = cLabelNewUpdInfo + ": " + cModeliFileName;
+
+                                    if (RightsHelper.HasRight(UserRights.ReportManager_Display))
+                                    {
+                                        <a id="openInfo" href="#mid-screen-@i" class="overlay-lnk displayButton noText" aria-label="@Labels.Display.ToString()" role="button">@(Labels.Display)</a>
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-body">
+    @if (Model != null)
+    {
+        for (int i = 0; i < Model.Count(); i++)
+        {
+            var disableButtonsForNewReports = (Model[i].VersionNumber == 0 ? " disabled " : " ");
+            var cLabelNewUpdInfo = (Model[i].UpdateAvailable ? (Model[i].ReportID == "0" ? @Labels.ReportNewAvailable : Labels.ReportUpdateAvailable) : @Labels.ReportViewInfo);
+            var cVersionFromUpd = Model[i].DBVersion.ToString() + "." + Model[i].VersionNumber.ToString().PadLeft(2, '0');
+            var cModeliFileName = CultureHelper.CurrentNameSplit(Model[i].FileName, ViewBag.CurrentCulture);
+            var cModeliNextUpdateFileName = (Model[i].UpdateAvailable ? CultureHelper.CurrentNameSplit(Model[i].NextUpdate.FileName, ViewBag.CurrentCulture) : "");
+            var cModeliDescription = CultureHelper.CurrentNameSplit(Model[i].Description, ViewBag.CurrentCulture);
+            var cModeliReleaseNotes = CultureHelper.CurrentNameSplit(Model[i].ReleaseNotes, ViewBag.CurrentCulture);
+            var cModeliNextUpdateReleaseNotes = (Model[i].UpdateAvailable ? CultureHelper.CurrentNameSplit(Model[i].NextUpdate.ReleaseNotes, ViewBag.CurrentCulture) : "");
+
+
+            switch (Model[i].UpdateAvailable)
+            {
+                case true:
+                    var cVersionToUpd = Model[i].NextUpdate.DBVersion.ToString() + "." + Model[i].NextUpdate.VersionNumber.ToString().PadLeft(2, '0');
+                    var cTitleUpd = cLabelNewUpdInfo + ": " + (Model[i].ReportID == "0" ? cModeliNextUpdateFileName : cModeliFileName)
+                                + " " + (Model[i].ReportID == "0" ? "v" + cVersionToUpd : "v" + cVersionFromUpd + " to " + "v" + cVersionToUpd);
+
+                    if (Model[i].ReportID == "0") // New Report, available at marketplace
+                    {
+                            <section style="height: 55%; width: auto" id="mid-screen-@i" class="wb-overlay modal-content overlay-def wb-popup-mid">
+                                <header class="modal-header">
+                                    <h2 class="modal-title" style="text-align:center">@(cTitleUpd)</h2>
+                                </header>
+                                <div class="modal-body">
+                                    <div id="repupdlist-@i" class="container <wb-tables table table-striped table-hover" data-wb-tables='{ "info": false "ordering": false}'>
+                                        <div style="display: table-header-group; vertical-align: middle; border-color: inherit;">
+                                            <div class="row">
+                                                <div class="col-lg-12" style="text-align:center; border-top: solid 1px #000; border-bottom: solid 1px #000;" colspan="3">@(cModeliNextUpdateFileName)</div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-4">@Labels.Name</div>
+                                                <div class="col-lg-4">@Labels.Version</div>
+                                                <div class="col-lg-4">@Labels.DateCreated</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: table-row-group; vertical-align: middle; border-color: inherit;">
+                                            <div class="row">
+                                                <div class="col-lg-4">
+                                                    <div>
+                                                        @cModeliNextUpdateFileName
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div>
+                                                        @cVersionToUpd
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div>
+                                                        @Model[i].NextUpdate.DateCreated
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="" style="text-align:left; font-weight:bold" colspan="3">@(Labels.ReleaseNotes):</div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="" style="text-align:left; vertical-align:top" colspan="3">@(cModeliNextUpdateReleaseNotes)</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: table-footer-group; vertical-align: middle; border-color: inherit;">
+                                            @*nothing for now!!!*@
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer" style="position:center">
+                                    @if (RightsHelper.HasRight(UserRights.Report_Manager_NewReport))
+                                    {
+                                        @Html.ActionLink(Labels.ReportNewAvailable, "InsertFromResources", "HifisReports", new { guid = Html.Encode(Model[i].NextUpdate.ReportGUID) }, new { @class = "downloadrepmarket", alt = Labels.ReportNewAvailable, aria_label = Labels.ReportNewAvailable })
+                                    }
+
+                                    <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal">@Labels.Close</button>
+                                </div>
+                            </section>
+                        }
+                        else // Report Update, available at marketplace
+                        {
+                            <section id="mid-screen-@i" style="height:55%; width:auto" class="wb-overlay modal-content overlay-def wb-popup-mid">
+                                <header class="modal-header">
+                                    <h2 class="modal-title" style="text-align:center">@(cTitleUpd)</h2>
+                                </header>
+                                <div class="modal-body">
+                                    <table id="repupdlist-@i" class="table table-striped table-hover" data-wb-tables='{ "info": false "ordering": false}'>
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:center; border-top: solid 1px #000; border-bottom: solid 1px #000; border-right: solid 1px #000;" colspan="2">@(cModeliFileName)</th>
+                                                <th style="text-align:center; border-top: solid 1px #000; border-bottom: solid 1px #000;" colspan="2">@(cModeliNextUpdateFileName)</th>
+                                            </tr>
+                                            <tr>
+                                                <th>@Labels.Version</th>
+                                                <th style="border-right: solid 1px #000;">@Labels.DateCreated</th>
+                                                <th>@Labels.Version</th>
+                                                <th>@Labels.DateCreated</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="col-xs-3">
+                                                    <div>
+                                                        @cVersionFromUpd
+                                                    </div>
+                                                </td>
+                                                <td class="col-xs-3" style="border-right: solid 1px #000">
+                                                    <div>
+                                                        @Model[i].DateCreated
+                                                    </div>
+                                                </td>
+                                                <td class="col-xs-3">
+                                                    <div>
+                                                        @cVersionToUpd
+                                                    </div>
+                                                </td>
+                                                <td class="col-xs-3">
+                                                    <div>
+                                                        @Model[i].NextUpdate.DateCreated
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align:left; border-right:solid 1px #000; font-weight:bold;" colspan="2">@(Labels.ReleaseNotes):</td>
+                                                <td style="text-align:left; font-weight:bold" colspan="2">@(Labels.ReleaseNotes):</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align:left; border-right:solid 1px #000; vertical-align:top" colspan="2">@(cModeliReleaseNotes)</td>
+                                                <td style="text-align:left; vertical-align:top" colspan="2">@(cModeliNextUpdateReleaseNotes)</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            @*nothing for now!!!*@
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="modal-footer" style="position:center">
+                                    @if (RightsHelper.HasRight(UserRights.Report_Manager_Update))
+                                    {
+                                        @Html.ActionLink(Labels.ReportUpdateAvailable, "UpdateFromResources", "HifisReports", new { id = Model[i].ReportID }, new { @class = "downloadrepmarket", alt = Labels.ReportUpdateAvailable, aria_label = Labels.ReportUpdateAvailable })
+                                    }
+                                    <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal">@Labels.Close</button>
+                                    </div>
+                            </section>
+                        }
+                    break;
+                case false: // No update available at marketplace. View just "Report Info" when click
+                    var cTitleCur = cLabelNewUpdInfo + ": " + cModeliFileName;
+                    <section style="height: 50%; width: 50%" id="mid-screen-@i" class="wb-overlay modal-content overlay-def wb-popup-mid">
+                        <header class="modal-header">
+                            <h2 class="modal-title" style="text-align:center;">@(cTitleCur)</h2>
+                        </header>
+                        <h3 style="text-align:center; font-size:14px;">@(cModeliFileName)</h3>
+                        <table id="repupdlist-@i" class="table table-striped table-hover" data-wb-tables='{ "info": false "ordering": false}'>
+                            <thead>
+                                <tr>
+                                    <th style="border-bottom: 1px solid #000; border-top: 1px solid #000">@Labels.Version</th>
+                                    <th style="border-bottom: 1px solid #000; border-top: 1px solid #000">@Labels.DateCreated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="col-xs-3">
+                                        <div>
+                                            @cVersionFromUpd
+                                        </div>
+                                    </td>
+                                    <td class="col-xs-3">
+                                        <div>
+                                            @Model[i].DateCreated
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left; font-weight:bold" colspan="2">@(Labels.ReleaseNotes):</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left; vertical-align:top" colspan="2">@(cModeliReleaseNotes)</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                @*nothing for now!!!*@
+                            </tfoot>
+                        </table>
+                        <div class="modal-footer" style="position:center">
+                            @Html.ActionLink(Labels.ReportViewInfo, "ReportInfo", "HifisReports", new { id = Model[i].ReportID }, new { @class = "noText updatefromnhis", alt=Labels.ReportViewInfo, aria_label = Labels.ReportViewInfo })
+                            <button type="button" class="cancelButton modalCloseButton no-print" data-dismiss="modal">@Labels.Close</button>
+                        </div>
+                    </section>
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(".modalCloseButton").on("click", function () {
+                $(".wb-overlay").trigger("close.wb-overlay");
+            });
+        </script>
+        );
+}

@@ -1,0 +1,167 @@
+﻿@model ReservationListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientReservationList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+    
+    int i = 0;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+  
+
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        @{ string classlink1 = (ViewBag.filterType == (short)ReservationStatusTypes.Pending ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Pending, "List", new { filterType = (short)ReservationStatusTypes.Pending }, new { @class = classlink1, alt=Labels.Pending, aria_label = Labels.Pending, @role = "button" })
+
+        @{ string classlink2 = (ViewBag.filterType == (short)ReservationStatusTypes.Arrived ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Arrived, "List", new { filterType = (short)ReservationStatusTypes.Arrived }, new { @class = classlink2, alt=Labels.Arrived, aria_label = Labels.Arrived, @role = "button" })
+
+        @{ string classlink3 = (ViewBag.filterType == (short)ReservationStatusTypes.NoShow ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.NoShow, "List", new { filterType = (short)ReservationStatusTypes.NoShow }, new { @class = classlink3, alt=Labels.NoShow, aria_label = Labels.NoShow, @role = "button" })
+
+        @{ string classlink4 = (ViewBag.filterType == (short)ReservationStatusTypes.Canceled ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Canceled, "List", new { filterType = (short)ReservationStatusTypes.Canceled }, new { @class = classlink4, alt=Labels.Canceled, aria_label = Labels.Canceled, @role = "button" })
+
+        @{ string classlink5 = (ViewBag.filterType == 0 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.All, "List", new { filterType = 0 }, new { @class = classlink5, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+
+        <div class="clearfix"></div>
+    </div>
+    <div>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.ReservationFor</th>
+                        <th>@Labels.Family</th>
+                        <th>@Labels.Date</th>
+                        <th>@Labels.ServiceProviders</th>
+                        <th>@Labels.RequestedBy</th>
+                        <th>@Labels.Status</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ReservationViewModel item in Model.Reservations)
+                    {
+                        i++;            
+                        <tr>
+                            <td class="col-xs-2">
+                                @Html.ActionLink((item.PrimaryClientLastName + ", " + item.PrimaryClientFirstName), "DisplayVitals", "ClientTombstone", new { id = item.PrimaryClientID }, new { alt = (item.PrimaryClientLastName + ", " + item.PrimaryClientFirstName), aria_label = (item.PrimaryClientLastName + ", " + item.PrimaryClientFirstName) })                        
+                            </td>
+                            <td class="col-xs-2">
+                                @if (item.ClientsFamily.Count > 1)
+                                {
+                                    <div class="panel-default">
+                                        <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#colone@(i)"  class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                                @item.ClientsFamily.Count @Labels.FamilyMembers 
+                                                <span class="caret pull-right mrgn-tp-sm"></span>
+                                            </a>
+                                        </div>
+                                        <div id="colone@(i)" class="panel-collapse collapse">
+                                            <ul class="pddng-lft-md">
+                                                @foreach (var client in item.ClientsFamily)
+                                                {                            
+                                                    <li>
+                                                        @Html.ActionLink(client.ClientFullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, new { alt = client.ClientFullName, aria_label = client.ClientFullName })
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    foreach (var client in item.ClientsFamily)
+                                    {                            
+                                        @Html.ActionLink(client.ClientFullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, new { alt = client.ClientFullName, aria_label = client.ClientFullName })
+                                    }
+                                }
+                            </td>
+                            <td class="col-xs-1">@Html.DisplayFor(model => item.DateOfReservation)</td>
+                            <td class="col-xs-2">@item.OrganizationName</td>
+                            <td class="col-xs-2">@item.RequestingAgencyTypeName</td>
+                            <td class="col-xs-1">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReservationStatusTypes, Culture, item.StatusTypeID)</td>
+                            <td class="text-center col-xs-2">     
+                                <div class="align-inline-block">
+                                    @if (RightsHelper.HasRight(UserRights.Stays_BookIn, item.OrganizationID))
+                                    { 
+                                        @Html.ActionLink(Labels.BookIn, "BookInRedirect", "Reservations", new { reservationID = item.ReservationID }, new { @class = "addButton noText mrgn-tp-xs", alt=Labels.BookIn, aria_label = Labels.BookIn, @role = "button" })
+                                    }
+                        
+                                    @if (RightsHelper.HasRight(UserRights.Reservations_Display))
+                                    { 
+                                        @Html.ActionLink(Labels.Display, "Display", "Reservations", new { id = Model.ReadOnlyVitals.ClientID, reservationID = item.ReservationID }, new { @class = "displayButton noText mrgn-tp-xs", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                    }
+                        
+                                    @if (RightsHelper.HasRight(UserRights.Reservations_Edit))
+                                    { 
+                                        @Html.ActionLink(Labels.Edit, "Edit", "Reservations", new { id = Model.ReadOnlyVitals.ClientID, reservationID = item.ReservationID }, new { @class = "editButton noText mrgn-tp-xs", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+                        
+                                    @if (RightsHelper.HasRight(UserRights.Reservations_Delete))
+                                    { 
+                                        @Html.ActionLink(Labels.Delete, "Delete", "Reservations", new { reservationID = item.ReservationID }, new { @class = "deleteButton noText mrgn-tp-xs", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                    }
+
+                                    @*<span class="align-inline">
+                                        @if (RightsHelper.HasRight(UserRights.Reservations_Clone))
+                                        { 
+                                            @Html.Partial("_OnTheFlyButton", new OnTheFlyButtonViewModel()
+                                            {
+                                                ButtonName = Labels.Clone,
+                                                ButtonStyle = "cloneButton noText mrgn-tp-xs",
+                                                Title = Labels.Clone,
+                                                ActionName = "Clone",
+                                                ControllerName = "Reservations",
+                                                PartialName = "~/Views/Reservations/_Clone.cshtml",
+                                                CallBackFunction = "OnTheFlyCallBack",
+                                                ViewModel = new ReservationCloneViewModel {
+                                                    PrimaryClientID = item.PrimaryClientID,
+                                                    ReservationID = item.ReservationID,
+                                                }
+                                            })
+                                        }
+                                    </span>*@ 
+                                </div>
+                            </td>
+                        </tr>
+                    }                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Reservations_Delete))
+        { 
+            @Html.ActionLink(Labels.NewReservation, "New", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewReservation, aria_label = Labels.NewReservation, @role = "button" })       
+        }
+        
+    </div>
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             function OnTheFlyCallBack(objectID, formData) {
+                 location.reload();
+             }
+
+        </script>
+    );
+}

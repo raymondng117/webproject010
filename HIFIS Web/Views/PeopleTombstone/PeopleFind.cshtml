@@ -1,0 +1,54 @@
+﻿@model PeopleFindViewModel 
+
+@Html.Partial("_PeopleVitalsRO", new PeopleVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class=" form-color-white ">
+    @using (Html.BeginForm("PeopleFind", "PeopleTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => Model.PersonID) 
+        @Html.HiddenFor(model => Model.CurrentPersonID)
+        @Html.HiddenFor(model => Model.GroupID)
+        @Html.HiddenFor(model => Model.FamilyHeadID) 
+   
+        <div class="form-group">
+		    <div class="col-sm-offset-2 col-sm-10">
+			    @Html.TextBoxFor(model => model.SearchString) <input id="btnSave" type="submit" value="@Labels.LayoutSearchLabel"/>	
+		    </div>
+	    </div> 
+
+        if (Model.ResultList != null && Model.ResultList.Count() > 0)
+        {
+            <table class="wdth-100" id="resultset">
+                <caption class="color-accent" title="@Labels.viewTitle_ClientEmergencyContact" >
+                </caption>
+                <thead>
+                    <tr>
+                        <th>@Labels.ContactName</th>
+                        <th>@Labels.DOB</th>
+                        <th>@Labels.Gender</th>
+                        <th>@Labels.Aka1</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.ResultList.Count(); i++)
+                    {                
+                        <tr>
+                            <td>@Html.DisplayFor(model => model.ResultList[i].FullName) </td>
+                            <td>@Html.DisplayFor(model => Model.ResultList[i].DOB)</td>
+                            <td>@Html.DisplayTextFor(model => Model.ResultList[i].Gender)</td>
+                            <td>@Html.DisplayFor(model => Model.ResultList[i].Aka1)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }    
+        
+    <div>
+        @Html.ActionLink(Labels.Cancel, "DisplayFamily", "PeopleTombstone", new { id = Model.CurrentPersonID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })   
+    </div>
+</div>

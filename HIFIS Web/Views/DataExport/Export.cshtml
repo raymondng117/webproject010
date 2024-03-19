@@ -1,0 +1,440 @@
+﻿@using HIFIS.CONTRACTS.WCFContracts.DataContracts
+@model DataExportHubViewModel
+@{
+
+    ViewBag.ViewTitle = Labels.DataExport;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    DataExportInfoViewModel exportDataInfo = null;
+    if (Model.ExportDataStatus != ExportDataStatus.NoData)
+    {
+        exportDataInfo = Model.exportHistory.Where(item => item.ExportType == DataExportTypes.DataGeneration).OrderByDescending(item => item.Date).FirstOrDefault();
+    }
+}
+
+<section id="exportErrorModel" class="wb-overlay modal-content overlay-def wb-popup-mid overlay-bg">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.Error</h2>
+    </header>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        <button class="btn btn-primary pull-left overlay-close" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<div class="row mrgn-bttm-sm">
+	<div class="col-md-6">
+		@Html.HifisLabelFor(model => model.SiteID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-sm" })
+        @(!Model.SiteID.IsEmptyOrNull() ? @Html.DisplayFor(model => model.SiteID).ToString() : Labels.Unregistered)
+	</div>
+	<div class="col-md-6">
+		@Html.HifisLabelFor(model => model.AutoExportYN, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-sm" })
+		@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.AutoExportYN)
+	</div>
+	<div id="exportProgressSection" class="col-md-12 mrgn-tp-sm mrgn-bttm-sm" style="display: none;">
+		<label class="autowidth mrgn-bttm-sm mrgn-rght-md">@Labels.ExportProgress</label>
+		<progress id="fileProgressBar" value="0" max="100" style="margin-bottom: -6px !important; height: 25px; "></progress>
+		<span id="fileProgress">0%</span>
+	</div>
+</div>
+
+@if (!Model.IsAdminEmailSet)
+{
+    <div class="row mrgn-tp-sm">
+        <div class="col-md-12 col-lg-12">
+            <div class="alert alert-warning alert-danger mrgn-bttm-0">
+                <h4>@Labels.AdminEmailNotSet</h4>
+                <p class="mrgn-bttm-0" style="margin-left:20px;">@Labels.msgAdminEmailAutoExport</p>
+                <p class="mrgn-bttm-0" style="margin-left:20px;">
+                    @Html.Raw(String.Format(Labels.msgExportSetAdminEmail, !String.IsNullOrEmpty(Model.AdminId) ? Html.ActionLink(Labels.UserProfile, "AdminUserDashboard", "Users", new { id = Model.AdminId }, new { @class = "", alt=Labels.UserProfile, aria_label = Labels.UserProfile }).ToString() : Labels.UserProfile ))
+                </p>
+            </div>
+        </div>
+    </div>
+    <hr />
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="mrgn-bttm-xs alert @(Model.ExportDataStatus == ExportDataStatus.Ready ? "alert-info" : "alert-warning")">
+            <h4>@Labels.ExportPreparationPanelHeader</h4>
+            <div style="margin-left:20px;">
+
+                @{
+                    switch (Model.ExportDataStatus)
+                    {
+                        case ExportDataStatus.Ready:
+                            <p>
+                                @Html.HifisLabelFor("Status", Labels.Status) @Labels.Ready
+                            </p>
+                            <p>
+                                @String.Format(Labels.msgExportReady,
+                                (!exportDataInfo.User.IsEmptyOrNull() ? exportDataInfo.User : Labels.AutoExport),
+                                DateHelper.DateTimeFormater(exportDataInfo.Date))
+                            </p>
+                            break;
+                        case ExportDataStatus.OutOfDate:
+                            <p>
+                                @Html.HifisLabelFor("Status", Labels.Status) @Labels.OutOfDate
+                            </p>
+                            <p>
+                                @String.Format(Labels.msgExportReady,
+                                (!exportDataInfo.User.IsEmptyOrNull() ? exportDataInfo.User : Labels.AutoExport),
+                                DateHelper.DateTimeFormater(exportDataInfo.Date))
+                            </p>
+                            break;
+                        case ExportDataStatus.NoData:
+                            <p>
+                                @Html.HifisLabelFor("Status", Labels.Status) @Labels.GenerationRequired
+                            </p>
+                            <p>
+                                @Labels.msgExportNotReady
+                            </p>
+                            break;
+                        case ExportDataStatus.Failed:
+                            <p>
+                                @Html.HifisLabelFor("Status", Labels.Status) <span class="text-danger">@Labels.Failed</span> 
+                            </p>
+                            <p>
+                                @Labels.msgExportNotReady
+                            </p>
+                            break;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mrgn-tp-md mrgn-lft-xs">
+    <div class="form-group col-md-3">
+        @Html.ActionLink(Labels.GenerateNewExport, "GenerateExport", "DataExport", null, new { id="generateExportBtn", @class = "manageButton" + (Model.ExportInProgress ? " disabled" : ""), role = "button", alt=Labels.GenerateNewExport, aria_label = Labels.GenerateNewExport })
+    </div>
+    <div class="form-group col-md-4">
+        @Html.ActionLink(Labels.PreviewAndSendExport, "PreviewExport", "DataExport", null, new { id = "sendExportBtn", @class = "customTablesButton" + (Model.ExportDataStatus != ExportDataStatus.Ready || Model.ExportInProgress ?  " disabled" : ""), role = "button", alt=Labels.PreviewAndSendExport, aria_label = Labels.PreviewAndSendExport})
+    </div>
+</div>
+
+<hr class="mrgn-bttm-0 mrgn-tp-md"/>
+
+<div class="row mrgn-lft-xs mrgn-rght-xs">
+	<h4 class="">@Labels.ExportHistory</h4>
+
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a class="tabButton" href="#exportsSent" role="tab" data-toggle="tab">@Labels.ExportsSent</a></li>
+        <li><a class="tabButton" href="#exportsGenerated" role="tab" data-toggle="tab">@Labels.ExportsGenerated</a></li>
+    </ul>
+
+    <div class="panel panel-default border-top-fix-tabs">
+        <div class="panel-body">
+            <div class="tab-content">
+                <div class="tab-pane active" id="exportsSent">
+	                <div class="table-responsive">
+		                <table id="exportSentTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "bFilter": false, "order" : [[ 0, "desc"]] }'>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.Date</th>
+                                    <th>@Labels.User</th>
+                                    <th>@Labels.AutoExport</th>
+                                    <th>@Labels.Type</th>
+                                    <th>@Labels.Duration</th>
+                                    <th>@Labels.FileSize</th>
+                                    <th>@Labels.Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var exp in Model.exportHistory.Where(exp => exp.ExportType != DataExportTypes.DataGeneration).OrderByDescending(exp => exp.Date))
+                                {
+                                    <tr>
+                                        <td>@DateHelper.DateTimeFormater(exp.Date)</td>
+                                        <td>@(exp.User.IsEmptyOrNull() ? Labels.None : exp.User)</td>
+                                        <td>@Html.Partial("DisplayViewTemplates/_YesNoDisplay", exp.AutoExport)</td>
+                                        <td>@(exp.ExportType == DataExportTypes.Production ? Labels.Production : Labels.Test)</td>
+                                        <td>@exp.Duration.Value.ToString(@"hh\:mm\:ss")</td>
+                                        <td>@Utilities.ByteSize(exp.Size ?? 0)</td>
+                                        <td>
+                                            @{
+                                                if (exp.Success == true)
+                                                {
+                                                    @Labels.Success
+                                                }
+                                                else
+                                                {
+                                                    if (!String.IsNullOrEmpty(exp.Error))
+                                                    {
+                                                        @*<a href="#exportErrorModel" aria-controls="centred-popup-modal" class="wb-lbx lbx-modal" role="button" onclick="errorModel(event)">*@
+                                                        <a href="#exportErrorModel" aria-controls="mid-screen-bg" class="overlay-lnk" role="button" onclick="errorModel(event)">
+                                                            @Labels.Failed
+                                                            <div class="hidden">
+                                                                <div>@Labels.LastExportProgress: 
+                                                                    @{
+                                                                        switch (exp.LastExportProgress)
+                                                                        {
+                                                                            case ExportStatus.InitializingExportProcess:
+                                                                                @Labels.ExportProg_InitializingExportProcess
+                                                                                break;
+                                                                            case ExportStatus.RetrievingClientData:
+                                                                                @Labels.ExportProg_RetrievingClientData
+                                                                                break;
+                                                                            case ExportStatus.RetrievingOrganizationData:
+                                                                                @Labels.ExportProg_RetrievingOrganizationData
+                                                                                break;
+                                                                            case ExportStatus.RetrievingCustomLookupData:
+                                                                                @Labels.ExportProg_RetrievingCustomLookupData
+                                                                                break;
+                                                                            case ExportStatus.RetrievingBedCountHistory:
+                                                                                @Labels.ExportProg_RetrievingBedCountHistoryData
+                                                                                break;
+                                                                            case ExportStatus.HashingClientIDs:
+                                                                                @Labels.ExportProg_HashingClientIDs
+                                                                                break;
+                                                                            case ExportStatus.FinalizingExportData:
+                                                                                @Labels.ExportProg_FinalizingExportData
+                                                                                break;
+                                                                            case ExportStatus.SerializingObject:
+                                                                                @Labels.ExportProg_Serialize
+                                                                                break;
+                                                                            case ExportStatus.CompressingData:
+                                                                                @Labels.ExportProg_Compressing
+                                                                                break;
+                                                                            case ExportStatus.EncryptingData:
+                                                                                @Labels.ExportProg_Encrypting
+                                                                                break;
+                                                                            case ExportStatus.UploadingExportFile:
+                                                                                @Labels.ExportProg_Uploading
+                                                                                break;
+                                                                            case ExportStatus.Complete:
+                                                                                @Labels.Sent
+                                                                                break;
+                                                                            case ExportStatus.StartingGenerationOfExportData:
+                                                                                @Labels.ExportProg_StartingGenerationOfExportData
+                                                                                break;
+                                                                            case ExportStatus.DeletingExistingData:
+                                                                                @Labels.ExportProg_DeletingExistingData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingOrganizationData:
+                                                                                @Labels.ExportProg_GeneratingOrganizationData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingClientData:
+                                                                                @Labels.ExportProg_GeneratingClientData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingStayData:
+                                                                                @Labels.ExportProg_GeneratingStayData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingTurnawayData:
+                                                                                @Labels.ExportProg_GeneratingTurnawayData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingIndicatorData:
+                                                                                @Labels.ExportProg_GeneratingIndicatorData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingBedCountHistoryData:
+                                                                                @Labels.ExportProg_GeneratingBedCountHistoryData
+                                                                                break;
+                                                                            default:
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                                <hr class="pddng-0 mrgn-md" />
+                                                                <div>@exp.Error</div>
+                                                            </div>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        @Labels.Failed
+                                                    }
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+		                </table>
+	                </div>
+                </div>
+                <div class="tab-pane" id="exportsGenerated">
+	                <div class="table-responsive">
+		                <table id="exportsGeneratedTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "bFilter": false, "order" : [[ 0, "desc"]] }'>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.Date</th>
+                                    <th>@Labels.User</th>
+                                    <th>@Labels.AutoExport</th>
+                                    @*<th>@Labels.Type</th>*@
+                                    <th>@Labels.Duration</th>
+                                    <th>@Labels.TotalRecords</th>
+                                    <th>@Labels.Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var exp in Model.exportHistory.Where(exp => exp.ExportType == DataExportTypes.DataGeneration).OrderByDescending(exp => exp.Date))
+                                {
+                                    <tr>
+                                        <td>@DateHelper.DateTimeFormater(exp.Date)</td>
+                                        <td>@(exp.User.IsEmptyOrNull() ? Labels.None : exp.User)</td>
+                                        <td>@Html.Partial("DisplayViewTemplates/_YesNoDisplay", exp.AutoExport)</td>
+                                        @*<td>@(exp.ExportType == DataExportTypes.DataGeneration ? Labels.DataExport : Labels.Test)</td>*@
+                                        <td>@exp.Duration.Value.ToString(@"hh\:mm\:ss")</td>
+                                        <td>@(exp.Size ?? 0)</td>
+                                        <td>
+                                            @{
+                                                if (exp.Success == true)
+                                                {
+                                                    @Labels.Success
+                                                }
+                                                else
+                                                {
+                                                    if (!String.IsNullOrEmpty(exp.Error))
+                                                    {
+                                                        @*<a href="#exportErrorModel" aria-controls="centred-popup-modal" class="wb-lbx lbx-modal" role="button" onclick="errorModel(event)">*@
+                                                        <a href="#exportErrorModel" aria-controls="mid-screen-bg" class="overlay-lnk" role="button" onclick="errorModel(event)">
+                                                            @Labels.Failed
+                                                            <div class="hidden">
+                                                                <div>@Labels.LastExportProgress: 
+                                                                    @{
+                                                                        switch (exp.LastExportProgress)
+                                                                        {
+                                                                            case ExportStatus.InitializingExportProcess:
+                                                                                @Labels.ExportProg_InitializingExportProcess
+                                                                                break;
+                                                                            case ExportStatus.RetrievingClientData:
+                                                                                @Labels.ExportProg_RetrievingClientData
+                                                                                break;
+                                                                            case ExportStatus.RetrievingOrganizationData:
+                                                                                @Labels.ExportProg_RetrievingOrganizationData
+                                                                                break;
+                                                                            case ExportStatus.RetrievingBedCountHistory:
+                                                                                @Labels.ExportProg_RetrievingBedCountHistoryData
+                                                                                break;
+                                                                            case ExportStatus.RetrievingCustomLookupData:
+                                                                                @Labels.ExportProg_RetrievingCustomLookupData
+                                                                                break;
+                                                                            case ExportStatus.HashingClientIDs:
+                                                                                @Labels.ExportProg_HashingClientIDs
+                                                                                break;
+                                                                            case ExportStatus.FinalizingExportData:
+                                                                                @Labels.ExportProg_FinalizingExportData
+                                                                                break;
+                                                                            case ExportStatus.SerializingObject:
+                                                                                @Labels.ExportProg_Serialize
+                                                                                break;
+                                                                            case ExportStatus.CompressingData:
+                                                                                @Labels.ExportProg_Compressing
+                                                                                break;
+                                                                            case ExportStatus.EncryptingData:
+                                                                                @Labels.ExportProg_Encrypting
+                                                                                break;
+                                                                            case ExportStatus.UploadingExportFile:
+                                                                                @Labels.ExportProg_Uploading
+                                                                                break;
+                                                                            case ExportStatus.Complete:
+                                                                                @Labels.Sent
+                                                                                break;
+                                                                            case ExportStatus.StartingGenerationOfExportData:
+                                                                                @Labels.ExportProg_StartingGenerationOfExportData
+                                                                                break;
+                                                                            case ExportStatus.DeletingExistingData:
+                                                                                @Labels.ExportProg_DeletingExistingData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingOrganizationData:
+                                                                                @Labels.ExportProg_GeneratingOrganizationData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingClientData:
+                                                                                @Labels.ExportProg_GeneratingClientData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingStayData:
+                                                                                @Labels.ExportProg_GeneratingStayData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingTurnawayData:
+                                                                                @Labels.ExportProg_GeneratingTurnawayData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingIndicatorData:
+                                                                                @Labels.ExportProg_GeneratingIndicatorData
+                                                                                break;
+                                                                            case ExportStatus.GeneratingBedCountHistoryData:
+                                                                                @Labels.ExportProg_GeneratingBedCountHistoryData
+                                                                                break;
+                                                                            default:
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                                <hr class="pddng-0 mrgn-md" />
+                                                                <div>@exp.Error</div>
+                                                            </div>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        @Labels.Failed
+                                                    }
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+		                </table>
+	                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+            function errorModel(event) { // This function is invoked when "Failed" link is clicked in export History table
+                if (document.readyState) {
+                    let error = event.currentTarget.getElementsByTagName("div")[0];
+                    let modelBody = document.getElementById("exportErrorModel").getElementsByClassName("modal-body")[0];
+                    modelBody.innerHTML = error.innerHTML;
+                }
+            }
+
+			$(document).ready(function () {
+				function updateProgress(data) {
+					//console.log(data);
+					if (data.progress == -2) { //Error
+						$('#exportProgressSection').show();
+						$('#fileProgressBar').hide();
+						$('#fileProgress').html(data.label);
+					} else if (data.progress >= 0) {
+						$('#exportProgressSection').show();
+						$('#fileProgressBar').show();
+						$('#fileProgressBar').val(data.progress);
+						$('#fileProgress').html(data.label);
+					}
+				}
+
+				function updateProgressAjax() {
+					$.ajax({
+						url: '@Url.Content("~/DataExport/GetDataExportProgress")',
+						type: "POST",
+						success: function (data) {
+						    updateProgress(data.Result);
+						    if (window.exportPrgressPreviousState != -1 && data.Result.progress == -1 && window.exportPrgressPreviousState != null) {
+						        setTimeout(function(){
+						            window.location.reload(true); // Refreshes the page when export process is completed (Building, Sending)
+						        }, 3000)
+						    }
+						    if (data.Result.progress != -1) {
+						        $('#generateExportBtn').addClass("disabled");
+						        $('#sendExportBtn').addClass("disabled");
+						    }
+						    window.exportPrgressPreviousState = data.Result.progress
+						},
+						complete: function () { setTimeout(updateProgressAjax, 1500); }
+					});
+				}
+				setTimeout(updateProgressAjax, 100);
+			});
+		</script>
+);
+}

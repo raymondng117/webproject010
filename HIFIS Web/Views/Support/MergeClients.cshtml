@@ -1,0 +1,433 @@
+﻿@model MergeClientViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientMerge;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    ViewBag.AvoidAttestation = true;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<section id="noticePanel" class="alert alert-info" style=" display:none;">
+    <header class="alert-heading">
+        <h3 class="alert-title">@Labels.Notice</h3>
+    </header>
+    <div class="alert-body">
+        <p>@Labels.MergeConflicts</p>
+    </div>
+</section>
+
+<section id="errorPanel" class="alert alert-warning" style="display:none;">
+    <header class="alert-heading">
+        <h3 class="alert-title">@Labels.Warning</h3>
+    </header>
+</section>
+    <div class="row">
+    @using (Html.BeginForm("MergeClients", "Support", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="row" style="padding-bottom:10px;">
+            <div class="col-sm-10 col-sm-offset-1 hid">
+                <div class="row">
+                    <div class="col-sm-4 col-sm-offset-4 text-center">
+				    <button id="mergeButton" type="submit" class="forwardButton">@Labels.Merge</button>          
+                    @Html.ActionLink(Labels.Cancel, "ClientSearchProxy", "ClientTombstone", new { id = Model.ToClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-6">
+                @Html.HifisAutocompleteFor(
+                    model => model.FromClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.FromClientName
+                    , new AutocompleteViewModelOptions
+                    {
+                        OnSelect = "fromClientOnSelect();"
+                    })
+            </div>   
+        
+            <div class="col-sm-6">
+                @Html.HifisAutocompleteFor(
+                    model => model.ToClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                    , Model.ToClientName
+                    , new AutocompleteViewModelOptions
+                    {
+                        OnSelect = "toClientOnSelect();"
+                    })
+            </div>
+        </div>
+        }
+    </div>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div style="overflow:hidden;">
+            <div style="overflow:hidden; max-height:600px; width:auto;">
+
+                <div id="loaderDiv" style="margin-left:45%; display:none;">
+                    <img src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" class="loading_circle" alt="loading" />
+                    <p>
+                        @Labels.Loading
+                    </p>
+                </div>
+
+                <div id="NoResultsDiv" class="row">
+                    <section class="col-md-12">
+                        <div class="well well-sm">
+                            <h5 class="mrgn-tp-0">
+                                @Labels.MergeFrom
+                            </h5>
+                            @Labels.SelectClient
+                        </div>
+                    </section>
+                </div>
+
+                <div id="innerListWrapper">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div style="overflow:hidden;">
+            <div style="overflow:hidden; max-height:600px; width:auto;">
+
+                <div id="loaderDiv2" style="margin-left:45%; display:none;">
+                    <img src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" class="loading_circle" alt="loading" />
+                    <p>
+                        @Labels.Loading
+                    </p>
+                </div>
+
+                <div id="NoResultsDiv2" class="row">
+                    <section class="col-md-12">
+                        <div class="well well-sm">
+                            <h5 class="mrgn-tp-0">
+                                @Labels.MergeTo
+                            </h5>
+                            @Labels.SelectClient
+                        </div>
+                    </section>
+                </div>
+
+                <div id="innerListWrapper2">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+    var familyConflict = false;
+    var bookinConflict = false;
+    var stayConflict = false;
+
+    // Validate the from client selection
+    function fromClientOnSelect() {
+        var currentClientID = $('#FromClientID').val();
+
+        //check that they did not choose the same client in both options
+        if (currentClientID === $('#ToClientID').val()) {
+            clientError('FromClientID', currentClientID);
+            $('#innerListWrapper').hide("slow");
+            $('#NoResultsDiv').show('slow');
+
+        //don't let the anonymous client be selected
+        } else if (currentClientID == 'g7XJya6H9E78') {
+            anonError('FromClientID', currentClientID);
+            $('#innerListWrapper').hide("slow");
+            $('#NoResultsDiv').show('slow');
+        } else {
+            if ($('#ToClientID').val() != "") {
+                $('#mergeButton').hide();
+                handleAlerts($('#ToClientID').val(), $('#FromClientID').val());
+            }
+            // Get basic info about the selected client
+            $.ajax({
+                url: "@Url.Action("GetVitalsJson", "Support")",
+                type: "POST",
+                data: { "clientID": currentClientID },
+                beforeSend: function () { $('#loaderDiv').show('slow'); $('#innerListWrapper').hide('slow'); $('#NoResultsDiv').hide('slow'); },
+            }).done(function (data) {
+                var Details = '<section class="panel panel-danger">' + buildVitalsDisplay('@Labels.MergeFrom', data[0]);
+                $('#loaderDiv').hide('slow');
+                $('#innerListWrapper').html(Details).show("slow");
+            }).fail(function () {
+                $('#NoResultsDiv').show('slow');
+            }).always(function () {
+                $('#NoResultsDiv').hide('slow');
+            });
+        }
+    }
+
+    // reset values on unselect
+    $('#FromClientID').on('change', function (e) {
+        if ($('#FromClientID').val() == "") {
+            $('#innerListWrapper').hide("slow");
+            $('#NoResultsDiv').show('slow');
+        }
+    });
+
+    // Validate the to client selection
+    function toClientOnSelect() {
+        var currentClientID = $('#ToClientID').val();
+
+        //check that they did not choose the same client in both options
+        if (currentClientID === $('#FromClientID').val()) {
+            clientError('ToClientID', currentClientID);
+            $('#innerListWrapper2').hide("slow");
+            $('#NoResultsDiv2').show('slow');
+
+            //don't let the anonymous client be selected
+        } else if (currentClientID == 'g7XJya6H9E78') {
+            anonError('ToClientID', currentClientID);
+            $('#innerListWrapper2').hide("slow");
+            $('#NoResultsDiv2').show('slow');
+        }
+        else {
+            if ($('#FromClientID').val() != "") {
+                $('#mergeButton').hide();
+                handleAlerts($('#ToClientID').val(), $('#FromClientID').val());
+            }
+            // Get basic info about the selected client
+            $.ajax({
+                url: "@Url.Action("GetVitalsJson", "Support")",
+                type: "POST",
+                data: { "clientID": currentClientID },
+                beforeSend: function () { $('#loaderDiv2').show('slow'); $('#innerListWrapper2').hide('slow'); $('#NoResultsDiv2').hide('slow'); },
+            }).done(function (data) {
+                var Details = '<section class="panel panel-success">' + buildVitalsDisplay('@Labels.MergeTo', data[0]);
+                $('#loaderDiv2').hide('slow');
+                $('#innerListWrapper2').html(Details).show("slow");
+            }).fail(function () {
+                $('#NoResultsDiv2').show('slow');
+            }).always(function () {
+                $('#NoResultsDiv2').hide('slow');
+            });
+        }
+    }
+
+    // reset values on unselect
+    $('#ToClientID').on('change', function (e) {
+        if ($('#ToClientID').val() == "") {
+            $('#innerListWrapper2').hide("slow");
+            $('#NoResultsDiv2').show('slow');
+        }
+    });
+
+    // manage alerts on selected clients
+    function handleAlerts(toID, fromID) {
+        $('#noticePanel').show('slow');
+
+        // Removes any extra clients from the select list
+        if ($('#ToClientID').children('option').length > 1) {
+            $("#ToClientID").val($("#ToClientID option:first").remove);
+            $("#ToClientID").val($("#ToClientID option:first").val());
+        }
+        if ($('#FromClientID').children('option').length > 1) {
+            $("#FromClientID").val($("#FromClientID option:first").remove);
+            $("#FromClientID").val($("#FromClientID option:first").val());
+        }
+
+        // check for any type of conflict
+        getBookinConflicts(toID, fromID);
+        getStayHistoryConflicts(toID, fromID);
+        getFamilyConflicts(toID, fromID);
+
+        $(document).ajaxStop(anyConflicts);
+    };
+
+    // Display error panel if any conflicts are found
+    function anyConflicts() {
+        // Block merge on bookin / family conflict
+        if (bookinConflict || familyConflict) {
+            $('#errorPanel').show('slow');
+        }
+        // allow merge but notify on stay history conflict
+        else if(stayConflict){
+            $('#errorPanel').show('slow');
+            $('#mergeButton').show();
+        }
+        // allow merge on no conflicts
+        else {
+            $('#errorPanel').hide('slow');
+            $('#mergeButton').show();
+        }
+    }
+
+    // checks if there will be any issues merging based on family status
+    function getFamilyConflicts(toid, fromid) {
+        $.ajax({
+            url: "@Url.Action("GetFamilyConflicts", "Support")",
+            type: "POST",
+            data: { "toClientID": toid, "fromClientID": fromid }
+        }).done(function (data) {
+            $('#familyConflictAlert').remove();
+            if (data === true) {
+                $('#errorPanel').append('<div id="familyConflictAlert"><div class="alert-body"><p>@Labels.ActiveFamilyConflict</p></div></div>');
+                $('#familyConflictAlert').append(buildFamilyConflictInfo(data));
+                familyConflict = true;
+            }
+            else {
+                familyConflict = false;
+            }
+        });
+    };
+
+    // builds the family error panel
+    function buildFamilyConflictInfo(results) {
+        var string = "";
+        string += '<div><a href="@Url.Content("~/ClientTombstone/ClientFamily/?id=")' + $('#FromClientID').val() + '">' + $('#FromClientID').text() + ' ' + "@Labels.Family" + '</a></div>' +
+            '<div><a href="@Url.Content("~/ClientTombstone/ClientFamily/?id=")' + $('#ToClientID').val() + '">' + $('#ToClientID').text() + ' ' + "@Labels.Family" + '</a></div>';
+        @*string += "<div><a href="@Url.Content("~/ClientTombstone/DisplayFamily") + "/?id=" + $('#FromClientID').val() + "'>" + $('#FromClientID').text() + " " + @Labels.LeaveFamily + "</a></div>"
+                     + "<div><a href="@Url.Content("~/ClientTombstone/DisplayFamily") + "/?id=" + $('#ToClientID').val() + "'>" + $('#ToClientID').text() + " " + @Labels.LeaveFamily + "</a></div>";    *@
+
+        return string;
+    }
+
+    // checks for stay history conflicts
+    function getStayHistoryConflicts(toid, fromid) {
+        $.ajax({
+            url: "@Url.Action("GetStayHistoryConflicts", "Support")",
+            type: "POST",
+            data: { "toClientID": toid, "fromClientID": fromid }
+        }).done(function (data) {
+            $('#stayHistoryConflictAlert').remove();
+            if (data.toClientDates.length > 0) {
+                $('#errorPanel').append('<div id="stayHistoryConflictAlert"><div class="alert-body"><p>@Labels.OverlappingStayWarning</p></div></div>');
+                $('#stayHistoryConflictAlert').append(buildStayConflictInfo(data));
+                stayConflict = true;
+            }
+            else {
+                stayConflict = false;
+            }
+        });
+    };
+
+    // builds the stay conflict info panel
+    function buildStayConflictInfo(results) {
+        var string = '<table class="wb-tables table"><tr><th>#</th><th>@Labels.DateStart</th><th>@Labels.DateEnd</th><th>@Labels.Organization</th><th>@Labels.Client</th></tr>';
+        var i;
+        var j;
+        for (i = 0, j = 0; i < results.toClientDates.length; i += 2, j++) {
+            string += '<tbody><tr><td>' + (j + 1) + '</td><td>' + results.toClientDates[i] + '</td><td>' + results.toClientDates[i + 1] + '</td><td>' + results.toClientSPs[j] + '</td><td>' + results.toClientName + '</td></tr>' +
+                      '<tr><td>' + (j + 1) + '</td><td>' + results.fromClientDates[i] + '</td><td>' + results.fromClientDates[i + 1] + '</td><td>' + results.fromClientSPs[j] + '</td><td>' + results.fromClientName + '</td></tr></tbody>';
+        }
+        string += '</table>';
+        return string;
+    }
+
+    // check for active stay conflicts
+    function getBookinConflicts(toid, fromid) {
+        $.ajax({
+            url: "@Url.Action("GetBookinConflicts", "Support")",
+            type: "POST",
+            data: { "toClientID": toid, "fromClientID": fromid }
+        }).done(function (data) {
+            $('#bookInConflictAlert').remove();
+            if (data === true) {
+                $('#errorPanel').append('<div id="bookInConflictAlert"><div class="alert-body"><p>@Labels.BookInConflict</p></div></div>');
+                bookinConflict = true;
+            }
+            else {
+                bookinConflict = false;
+            }
+        }).always(function () {
+        });
+    }
+
+    // show error for choosing the same client
+    function clientError(name, id) {
+        displayNotification('error', '', "<p>@Labels.MergeSameClientsError</p>");
+                 $("#" + name + " option[value=" + id + "]").prop("selected", false).parent().trigger("change");
+                 $("#" + name + " option[value=" + id + "]").remove();
+                 $('#noticePanel').hide('slow');
+                 $('#errorPanel').hide('slow');
+                 $('#mergeButton').show();
+             }
+
+            // show errro for choosing Anon client
+            function anonError(name,id) {
+                displayNotification('error', '', "<p>@Labels.ClientMergeAnonError</p>");
+                $("#" + name + " option[value=" + id + "]").prop("selected", false).parent().trigger("change");
+                $("#" + name + " option[value=" + id + "]").remove();
+                $('#noticePanel').hide('slow');
+                $('#errorPanel').hide('slow');
+                $('#mergeButton').show();
+            }
+
+            // build client info display areas
+             function buildVitalsDisplay(title, results) {
+                 return '<header class="panel-heading">' +
+                                '<h3 class="panel-title" style="text-align:center;">' + title + ": " + results.lastName + ', ' + results.firstName + ' ' + results.middleName + '</h3>' +
+                            '</header>' +
+                            '<table class="table">' +
+
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.HifisRecordID</th>' +
+                           '<td style="text-align:left;">' + results.hifisrecordid + '</td>' +
+                       '</tr>' +
+
+
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.FileNumber</th>' +
+                           '<td style="text-align:left;">' + results.filenumber + '</td>' +
+                       '</tr>' +
+
+
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.Gender</th>' +
+                           '<td style="text-align:left;">' + results.gender + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.DOB</th>' +
+                           '<td style="text-align:left;">' + results.dob + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.Disability</th>' +
+                           '<td style="text-align:left;">' + results.disability + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.MedicAlert</th>' +
+                           '<td style="text-align:left;">' + results.medicAlert + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.VeteranStatus</th>' +
+                           '<td style="text-align:left;">' + results.veteran + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.AboriginalStatus</th>' +
+                           '<td style="text-align:left;">' + results.aboriginal + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.CitizenshipType</th>' +
+                           '<td style="text-align:left;">' + results.citizen + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.GeoRegion</th>' +
+                           '<td style="text-align:left;">' + results.georegion + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.ClientStateType</th>' +
+                           '<td style="text-align:left;">' + results.state + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.IsStealth</th>' +
+                           '<td style="text-align:left;">' + results.stealth + '</td>' +
+                       '</tr>' +
+                       '<tr>' +
+                           '<th style="text-align:right;">@Labels.Aka12</th>' +
+                           '<td style="text-align:left;">' + results.alias1 + '/' + results.alias2 + '</td>' +
+                       '</tr>' +
+                   '</table></section>';
+    }
+    </script>
+    );
+}

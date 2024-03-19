@@ -1,0 +1,24 @@
+﻿@model ClusterViewModel
+@{
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+}
+
+<ul class="pddng-lft-md">
+    @foreach (string sp in Model.ClusterSPsList)
+    {
+        <li>@sp</li>
+    }
+</ul>
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 

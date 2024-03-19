@@ -1,0 +1,82 @@
+﻿@model List<HIFISGlossaryModel> 
+@{
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISGlossary;
+    ViewBag.LayoutView = LayoutPage.Help;
+}
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.AntiForgeryToken()
+<ol class="breadcrumb mrgn-tp-sm">
+    <li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+    <li>@Labels.HifisHelp_HIFISGlossary</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+<div class="table-responsive"><table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>   
+    <thead>
+        <tr>
+            <th>@Labels.HifisHelp_TermE</th> 
+            <th>@Labels.HifisHelp_TermF</th>
+            <th class="text-center">@Labels.HifisHelp_DefinitionE</th>
+            <th class="text-center">@Labels.HifisHelp_DefinitionF</th>
+            <th class="text-center">@Labels.HifisHelp_Action</th>
+        </tr> 
+    </thead>
+    <tbody>
+        @foreach (var term in Model)
+        {
+        <tr>
+            <td class="col-sm-1 vertical-align-top"><strong>@term.WordE</strong></td>
+            <td class="col-sm-1 vertical-align-top"><strong>@term.WordF</strong></td>
+            <td class="col-sm-4">@term.DefinitionE</td>                      
+            <td class="col-sm-4">@term.DefinitionF</td>  
+            <td class="text-center col-sm-2">
+                @Html.ActionLink(Labels.HifisHelp_Edit, "EditGlossary", "HIFISHelp", new { id = term.HelpGlossaryID }, new { @class = "wb-lbx editButton noText", alt=Labels.HifisHelp_Edit, aria_label = Labels.HifisHelp_Edit, @role = "button" })
+                @if (!term.WordReferenced)
+                {
+                    @Html.ActionLink(Labels.HifisHelp_Delete, "DeleteGlossary", "HIFISHelp", new { id = term.HelpGlossaryID }, new { @class = "deleteButton noText", alt=Labels.HifisHelp_Delete, aria_label = Labels.HifisHelp_Delete, @role = "button" })
+                }
+            </td>
+        </tr>
+        }
+    </tbody>
+</table></div>
+<div class="wb-lbx">
+    @Html.ActionLink(Labels.HifisHelp_GlossaryNewTerm, "NewGlossary", "HIFISHelp", null, new { @class = "addButton", alt=Labels.HifisHelp_GlossaryNewTerm, aria_label = Labels.HifisHelp_GlossaryNewTerm, @role = "button" }) 
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            function wordAlreadyExists(word) {
+                alert("@Labels.HifisHelp_WordAlreadyExists" + ": " + word + ".");
+            }
+
+            function clearTextField(field) {
+                field.val("");
+            }    
+
+            function onBlurE() {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/HIFISHelp/AjaxFindWordByLanguage") + "'",
+                    Data = "{ word: $('#WordE').val(), lang: 'e' }",
+                    OnSuccess = "wordAlreadyExists(word = $('#WordE').val()); clearTextField(field = $('#WordE'))",
+                    //OnFailure = "",
+                    LoaderGif = false,                    
+                });
+            } 
+
+            function onBlurF() {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/HIFISHelp/AjaxFindWordByLanguage") + "'",
+                    Data = "{ word: $('#WordF').val(), lang: 'f' }",
+                    OnSuccess = "wordAlreadyExists(word = $('#WordF').val()); clearTextField(field = $('#WordF'))",
+                    //OnFailure = "",
+                    LoaderGif = false,   
+                });  
+            } 
+        </script>
+    );
+}

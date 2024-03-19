@@ -1,0 +1,43 @@
+﻿@model ClientListHealthViewModel
+
+<div>
+    <div>
+         <div class="table-responsive">
+                    <table id="dietsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{  "columns": [
+                                                                                                                                { "width": "25%" , "data": "Category" },
+                                                                                                                                { "width": "25%" , "data": "Food" },
+                                                                                                                                { "width": "15%" , "data": "Active" },
+                                                                                                                                { "width": "15%" , "data": "Avoided" },
+                                                                                                                                { "width": "20%" , "data": "Action", "bSortable": false }
+                                                                                                                                ],
+                                                                                                                                "order": [ [0, "desc" ] ],
+                                                                                                                                "ajax": "@Url.Content("~/Diet/GetDietListJson?id=" + Model.ReadOnlyVitals.ClientID)"
+                                                                                                                                }'>
+
+                        <thead>
+                            <tr>
+                                <th>@Labels.DietCategory</th>
+                                <th>@Labels.FoodItem</th>
+                                <th>@Labels.Active</th>
+                                <th>@Labels.IsAvoidedYN</th>
+                                <th class="print-none">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Diet_Add))
+        {
+            <a href="@Url.Content("~/Diet/GetNewDietForm?id=" + Model.ReadOnlyVitals.ClientID)" aria-controls="Modal_AddDiet" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewItem</a>
+
+            
+        }
+
+    </div>
+</div>

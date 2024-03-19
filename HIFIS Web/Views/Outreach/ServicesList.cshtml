@@ -1,0 +1,312 @@
+﻿@model OutreachViewModel
+@{
+    ViewBag.ViewTitle = Labels.Outreach;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    string ajaxUrl = Url.Content("~/Outreach/OutreachServicesJson/");
+
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<p>
+    <a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+    <button id="ToggleViewButton" style="display: none;" onclick="ToggleMapView()">@Labels.MapView</button>
+</p>
+
+<div id="MapView">
+    @*<div>
+            <span class="legendLabel">@Labels.Available:</span><div class="legendBox availableStandard">&nbsp;</div> / <div class="legendBox availableMap">&nbsp;</div>
+            <span class="legendLabel">@Labels.Shareable:</span><div class="legendBox shareable">&nbsp;</div>
+            <span class="legendLabel">@Labels.Secured:</span><div class="legendBox secured">&nbsp;</div>
+            <span class="legendLabel">@Labels.Occupied:</span><div class="legendBox occupied">&nbsp;</div><br />
+            <span class="legendLabel">@Labels.TemporarilyUnavailable:</span><div class="legendBox tempUnavailable">&nbsp;</div>
+        </div>*@
+    <div>
+        @* Canvas draws to full size of parent div but places where it ends so size must be set. *@
+        <div id="MapContainer" style="height:598px; width:848px;">
+            <span id="noMapPins" style="display: none;">@Labels.NoMapPins</span>
+        </div>
+    </div>
+</div>
+
+<div id="StandardView" class="row">
+    <section class="col-md-12">
+        <div>
+            <div class="clearfix"></div><br />
+            <div class="table-responsive">
+                <table id="servicesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                    { "width": "20%", "data": "client", "orderable": false, "type": "string"},
+                                                                    { "width": "20%", "data": "type", "orderable": false, "type": "string"},
+                                                                    { "width": "20%", "data": "date", "orderable": false, "type": "string"},
+                                                                    { "width": "25%", "data": "geoRegion", "orderable": false, "type": "string"},
+                                                                    { "width": "15%", "data": "actions", "orderable": false, "type": "string"}
+                                                                ],
+                                                                "order": [ [0, "desc"] ],
+                                                                "serverSide": true,
+                                                                "processing": true,
+                                                                "bFilter" : false,
+                                                                "ajax": "@ajaxUrl"}'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.NameActivityClient</th>
+                            <th>@Labels.ServicesOffered</th>
+                            <th>@Labels.Date</th>
+                            <th>@Labels.GeoRegion</th>
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="clearfix"></div>
+
+<!-- Overlay Panel -->
+<section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.FilterOptions</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Partial("_ServicesFilter", new OutreachFilterViewModel())
+    </div>
+</section>
+
+<link href="@Url.Content("~/Content/Stylesheets/HifisModules/HousingUnitSearch.css")" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=EnableMap" async defer></script>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            //Calls init hifis every time a new page is drawn
+            $('#servicesTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+
+            //Open the filters panel
+            $('#openFilters').on('click', function () {
+                if ($("#filter-panel").hasClass('open'))
+                    $('#filter-panel').trigger('close.wb-overlay');
+                else
+                    $('#filter-panel').trigger('open.wb-overlay');
+            });
+
+            //Close the filters panel
+            $('#closeFilters').on('click', function () {
+                $("#filter-panel").trigger("close.wb-overlay");
+            });
+
+            //When the filters panel opens, re-init the select2s
+            $(document).on('open.wb-overlay', function (event) {
+                doSelect2Init();
+            });
+
+            //rebuild the select2s in the filter overlay
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                select2InitFunctions.push(function () {
+                    selector.select2(
+                    {
+                        allowClear: true,
+                        placeholder: $("#DropdownPlaceholder").val(),
+                        dropdownAutoWidth: true,
+                        containerCssClass: "custom-select2-container"
+                    });
+                });
+                doSelect2Init();
+            }
+
+            ///
+            /// Map things
+            ///
+            var pinInfoBox;
+            var map;
+            var mapView = $('#MapView');
+            //var svgTemplate = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="25"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml">{htmlContent}</div></foreignObject></svg>';
+
+            function EnableMap() {
+                $('#ToggleViewButton').show();
+            }
+
+            //When MapView/StandardView button is clicked
+            function ToggleMapView(){
+
+                if (mapView.is(':visible')) {
+                    mapView.hide();
+                    $('#StandardView').show();
+                    $('#ToggleViewButton').html("@Labels.MapView");
+                }
+                else {
+                    $.ajax({
+                        url: "@Url.Action("GetServiceMapPins", "Outreach")",
+                        type: "POST",
+                        data: $("#serviceListSearchFilterForm").serialize()
+                    }).done(function (data) {
+
+                        if (map !== undefined) {
+                            map.dispose();
+                        }
+
+                        $('#StandardView').hide();
+                        mapView.show();
+                        $('#ToggleViewButton').html("@Labels.StandardView");
+
+                        if(data.count > 0){
+                            $('#noMapPins').hide();
+                            buildMap(data);
+                        }
+                        else{
+                            $('#noMapPins').show();
+                        }
+
+                    }).fail(function () {
+                        alert('@Labels.MapViewNotAvailable');
+                        return;
+                    });
+                }
+            }
+
+            function buildMap(data){
+                var boundBox = Microsoft.Maps.LocationRect.fromEdges(data.maxLat, data.minLong, data.minLat, data.maxLong);
+                map = new Microsoft.Maps.Map('#MapContainer', {
+                    credentials:'@ViewBag.Key',
+                    enableSearchLogo: false,
+                    //center: new Microsoft.Maps.Location(data.centerLat, data.centerLong),
+                    bounds: boundBox,
+                });
+
+                var obj = eval(data);
+                var pinLayer = new Microsoft.Maps.Layer();
+                for (var i = 0; i < obj.count; ++i)
+                {
+                    var typeColour = 'orangered';
+
+                    //switch (obj.data[i].encampmentLocationTypeID) {
+                    //    case 1:
+                    //        typeColour = 'orangered';
+                    //        break;
+                    //    case 2:
+                    //        typeColour = 'rebeccapurple';
+                    //        break;
+                    //    default:
+                    //    typeColour = 'slategrey'
+                    //}
+
+
+                    var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(obj.data[i].latitude, obj.data[i].longitude), {
+                        draggable: false,
+                        visible: true,
+                        color: typeColour,
+                    });
+                    pin.Title = obj.data[i].encampmentID;
+                    Microsoft.Maps.Events.addHandler(pin, 'click', dinfo);
+                    pinLayer.add(pin);
+                }
+
+                map.layers.insert(pinLayer);
+
+                var infoLayer = new Microsoft.Maps.Layer();
+
+                pinInfoBox = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(0, 0), { visible: false });
+                pinInfoBox.setMap(map);
+            }
+
+            function dinfo(e){
+
+                var infoContent;
+
+                $.ajax({
+                    url: "@Url.Action("GetServicePinInfo", "Outreach")",
+                    type: "POST",
+                    data: { "encampmentID": e.target.Title }
+                }).done(function (data) {
+
+                    infoContent = '<div class="infoBoxHeader" style="width:300px;"> ' +
+                                  '<p><span class="color-accent"><strong>' + data.name + '</strong></span>' +
+                                  '<a class="glyphicon glyphicon-remove align-right" href="javascript:void(0)" onClick="hideInfobox()"></a></p><hr style="margin:0;"/>' +
+                                  ' <table class="wdth-100"><tbody> ' +
+                                                      ' <tr><th>@Labels.ServiceType</th><td>' + data.encampmentLocationTypeName + '</td></tr>' +
+                                                      @*' <tr><th>@Labels.Description</th><td>' + data.description + '</td></tr> ' +*@
+                                                      @*' <tr><th>@Labels.IsActiveYN</th><td>' + data.isActive+ '</td></tr> ' +*@
+                                                      ' </tbody></table>' + data.buttons;
+
+                    map.setView({ center: e.location});
+                    pinInfoBox.setOptions({ visible: true, offset: new Microsoft.Maps.Point(0, 0), htmlContent: infoContent});
+                    pinInfoBox.setLocation(e.target.getLocation());
+                    $('.wb-lbx').trigger("wb-init.wb-lbx");
+                });
+            }
+
+            function updateMap() {
+                $.ajax({
+                    url: "@Url.Action("GetServiceMapPins", "Outreach")",
+                    type: "POST",
+                    data: $("#encSearchFilterForm").serialize()
+                }).done(function (data) {
+
+                    if (map !== undefined) {
+                        map.dispose();
+                    }
+
+                    if(data.count > 0){
+                        $('#noMapPins').hide();
+                        buildMap(data);
+                    }
+                    else{
+                        $('#noMapPins').show();
+                    }
+
+                }).fail(function () {
+                    alert('@Labels.MapViewNotAvailable');
+                    return;
+            });
+            }
+
+            function hideInfobox(e) {
+                pinInfoBox.setOptions({ visible: false });
+            }
+
+            @*Map testing with new version
+
+
+                function EnableMap() {
+                console.log("mrasdag");
+
+                var mapView = $('#MapView');
+
+                $('#StandardView').hide();
+                mapView.show();
+                $('#ToggleViewButton').html("@Labels.StandardView");
+                //Load the map.
+
+                map = new Microsoft.Maps.Map('#MapContainer', {
+                    credentials:'@ViewBag.Key',
+                    enableSearchLogo: false,
+                });
+
+            var customHtml = '<div style="border:solid 2px;background-color:LightBlue;padding:2px;"><img src="' + '@Url.Content("~/Content/images/Icons/iconOrange.png")' + '" class="pinIcon" style="cursor:pointer;" /></div>';
+
+            //Create custom Pushpin using an SVG string.
+                var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(45.421530,-75.697193), {
+                //icon: '@Url.Content("~/Content/images/Icons/iconOrange.png")'
+                color: 'purple'
+            });
+
+            Microsoft.Maps.Events.addHandler(pin, 'click', doTheThing);
+            //Add the pushpin to the map.
+            map.entities.push(pin);
+            }
+
+            function doTheThing(e){
+                alert(e.point.x);
+            }*@
+</script>
+);
+}

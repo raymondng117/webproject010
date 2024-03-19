@@ -1,0 +1,62 @@
+﻿@model DiversionViewModel
+
+@{ 
+
+    string ajaxUrl = "";
+
+    if (Model.vmGoodService.GoodsActivitiesID != null)
+    {
+        ajaxUrl = Url.Content(String.Format("~/GoodsAndServices/GoodsListJson?clientID={0}&serviceID={1}&goodActivityID={2}&orgID={3}&isServiceRestricted={4}",
+                        new object[] { Model.PrimaryClientID,
+                        Model.vmGoodService.ServiceID,
+                        Model.vmGoodService.GoodsActivitiesID,
+                        Model.vmGoodService.OrganizationID,
+                        Model.vmGoodService.IsGoodsServiceRestricted}));
+    }
+    else
+    {
+        ajaxUrl = "";
+    }
+}
+
+<div class="table-responsive">
+    <table id="goodsTable" class="wb-tables table table-striped table-hover" 
+           data-wb-tables='{ "columns": [
+                                       { "width": "20%", "data": "goodName" },
+                                       { "width": "14%", "data": "noOfUnits" },
+                                       { "width": "16%", "data": "unitCost" },
+                                       { "width": "16%", "data": "unitPrice" },
+                                       { "width": "18%", "data": "measureName" },
+                                       { "width": "16%", "data": "actions" }
+		                        ], 
+                            "order": [ [0, "asc" ] ], 
+                            "processing": true,
+                            "bDestroy": true,
+                            "ajax": "@ajaxUrl"}'>
+        <thead>
+            <tr>
+                <th>@Labels.Good</th>
+                <th>@Labels.Quantity</th>
+                <th>@Labels.UnitCost</th>
+                <th>@Labels.UnitPrice</th>
+                <th>@Labels.UnitOfMeasure</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<p>
+    @if (!ViewBag.IsGoodsServiceRestricted || RightsHelper.HasRight(UserRights.Barred_Override))
+    {
+        if (RightsHelper.HasRight(UserRights.Goods_Add, Model.OrganizationID))
+        {
+            @Html.ActionLink(Labels.AddNewGood, "NewDiversionGoods", "Diversion", new { returnTo = "List", clientID = Model.ReadOnlyVitals.ClientID
+                                                                                        , serviceID = Model.vmGoodService.ServiceID 
+                                                                                        ,diversionID = Model.DiversionID},
+                                                                new { @class = "wb-lbx lbx-modal addButton", id = "addGoodBtn", @role = "button" })
+        }
+    }
+</p>
+
+

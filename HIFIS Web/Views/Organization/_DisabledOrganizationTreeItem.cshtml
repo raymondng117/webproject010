@@ -1,0 +1,25 @@
+﻿@model MandatoryViewModel
+
+@if (Model.IsForcedDisabledYN && (Model.ForcedOrgID != ViewBag.OrgID))
+{ 
+    <li data-orgMandatory-id="@Model.OrganizationMandatoryID" data-jstree='{ "icon" : "glyphicon glyphicon-ban-circle"}' class="text-danger">
+        @Html.ActionLink(Model.OrganizationName + " [" + Labels.ForcedBy + " " + @Model.ForcedOrgName + "]", "UpdateMandatory", "Organization", new { id = Model.OrganizationMandatoryID }, new { @class = "jstree-clicked forced-opacity", alt=Model.OrganizationName + " [" + Labels.ForcedBy + " " + @Model.ForcedOrgName + "]", aria_label=Model.OrganizationName + " [" + Labels.ForcedBy + " " + @Model.ForcedOrgName + "]" })
+    </li>
+}
+else
+{
+    if (Model.DisabledYN)
+    {
+        <li data-orgMandatory-id="@Model.OrganizationMandatoryID" data-class-type="forcedDisabled" data-jstree='{ "icon" : "glyphicon glyphicon-ban-circle"}' class="text-danger">
+            @Html.ActionLink(Model.OrganizationName, "UpdateMandatory", "Organization", new { id = Model.OrganizationMandatoryID}, new { @class = "jstree-clicked", alt=Model.OrganizationName, aria_label = Model.OrganizationName, @role = "button" })
+            <img class="loaderImg hide hght-strct-15 mrgn-0" src="~/Content/images/Loaders/loader-20.gif" alt="@Labels.Loading" />        
+        </li>
+    }
+    else
+    {
+        <li data-orgMandatory-id="@Model.OrganizationMandatoryID" data-class-type="forcedDisabled" data-jstree='{ "icon" : "glyphicon glyphicon-ban-circle"}' class="text-danger">
+            @Html.ActionLink(Model.OrganizationName, "UpdateMandatory", "Organization", new { id = Model.OrganizationMandatoryID}, new { alt = Model.OrganizationName, aria_label = Model.OrganizationName, @role = "button"})
+            <img class="loaderImg hide hght-strct-15 mrgn-0" src="~/Content/images/Loaders/loader-20.gif" alt="@Labels.Loading" />        
+        </li>
+    }
+}

@@ -1,0 +1,295 @@
+﻿@model CoordinatedAccessViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CoordinatedAccessSummary;
+
+    string ajaxUrl = Url.Content(String.Format("~/ClientTombstone/ClientActivityLogJson?clientID={0}",
+                                    new object[] { Model.ClientID }));
+}
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#ClientInformation" role="tab" data-toggle="tab">@Labels.ClientInformation</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#HousingHistory" role="tab" data-toggle="tab">@Labels.HousingHistory</a>
+    </li>
+    <li>
+        <a class="tabButton" href="#ServicePlanning" role="tab" data-toggle="tab">@Labels.ServicePlanning</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+
+            <!-- Tab Pane #1: Client Information -->
+            <div class="tab-pane active" id="ClientInformation" style="padding: 10px;">
+                <div>
+                    <div class="displayView">
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.CurrentAge, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.CurrentAge)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.GenderType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.GenderType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.HouseholdName, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.HouseholdName)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AboriginalIndicator, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AboriginalIndicator)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.VeteranState, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.VeteranState)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.ClientStateType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.ClientStateType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.CitizenshipType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.CitizenshipType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.DateClientCreated, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.DateClientCreated)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.GeoRegionType, new { @class = "col-md-4 " })
+
+                            @if (Model.GeoRegionType != null)
+                            {
+                                @Html.DisplayFor(model => model.GeoRegionType)
+                            }
+                            else
+                            {
+                                @Labels.Unknown_txt
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- Tab Pane #2: Housing History -->
+            <div class="tab-pane" id="HousingHistory" style="padding: 10px;">
+                <div>
+                    <div class="displayView">
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.HousingType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.HousingType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.CurrentEpisodeDays, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.CurrentEpisodeDays)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.LifetimeHomelessDays, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.LifetimeHomelessDays)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.HomelessIn365Days, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.HomelessIn365Days)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.HomelessIn1095Days, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.HomelessIn1095Days)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.TotalUnshelteredInLifetimeDays, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.TotalUnshelteredInLifetimeDays)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.PercentageHousingHistoryIn30Days, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.PercentageHousingHistoryIn30Days)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.FirstEpisodeYN, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.FirstEpisodeYN)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.RecentEpisodeYN, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.RecentEpisodeYN)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.NewClientYN, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.NewClientYN)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.PreviousPlacementYN, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.PreviousPlacementYN)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.RecentlyActiveYN, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.RecentlyActiveYN)
+                        </div>
+                        @*<div class="col-md-12">
+                                @Html.HifisLabelFor(model => model.LatestCity, new { @class = "col-md-4 " })
+                                @Html.DisplayFor(model => model.LatestCity)
+                            </div>*@
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.SearchStartedDate, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.SearchStartedDate)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.HousingSecuredDate, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.HousingSecuredDate)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.ExpectedMoveInDate, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.ExpectedMoveInDate)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab Pane #3: Service Planning -->
+            <div class="tab-pane" id="ServicePlanning" style="padding: 10px;">
+                <div>
+                    <div class="displayView">
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.SinceLastActivityDays, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.SinceLastActivityDays)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.RecentInteractionModuleType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.RecentInteractionModuleType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.RecentInteractionDateTime, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.RecentInteractionDateTime)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AcuityTriageStartDateTime, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AcuityTriageStartDateTime)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AcuityTriageScore, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AcuityTriageScore)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AcuityTriageType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AcuityTriageType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AcuityFullAssessmentStartDateTime, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AcuityFullAssessmentStartDateTime)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AcuityFullAssessmentScore, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AcuityFullAssessmentScore)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.AcuityFullAssessmentType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.AcuityFullAssessmentType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.TriMorbidity, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.TriMorbidity)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.BarredModuleType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.BarredModuleType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.IncomeType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.IncomeType)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.IncomeMonthlyAmount, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.IncomeMonthlyAmount)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.IncomeStartDate, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.IncomeStartDate)
+                        </div>
+                        <div class="col-md-12">
+                            @Html.HifisLabelFor(model => model.IdentificationType, new { @class = "col-md-4 " })
+                            @Html.DisplayFor(model => model.IdentificationType)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr />
+<h2 class="h3">@Labels.viewTitle_ClientActivityLog</h2>
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        <div class="btn-group" role="group" id="filterBtnGroup">
+            <button type="button" class="btn btn-primary btn-sm" id="show30Days">@Labels.messages30d</button>
+            <button type="button" class="btn btn-default btn-sm" id="show6Months">@Labels.messages6m</button>
+            <button type="button" class="btn btn-default btn-sm last-btn-group-element" id="showAll">@Labels.All</button>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="table-responsive">
+        <table id="logsTable" class="wb-tables table table-striped table-hover"
+               data-wb-tables='{ "columns": [
+                                               {"width": "20%", "data": "userName" },
+                                               {"width": "20%", "data": "orgName" },
+                                               {"width": "20%", "data": "moduleName" },
+                                               {"width": "20%", "data": "message" },
+                                               {"width": "20%", "data": "timeStamp" }
+                                            ],
+                                "info": false,
+                                "processing": true,
+                                "order": [[4, "desc"]],
+                                "ajax": "@ajaxUrl"}'>
+            <thead>
+                <tr>
+                    <th>@Labels.User</th>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.ModuleType</th>
+                    <th>@Labels.Description</th>
+                    <th>@Labels.Date</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+                    var baseAjaxUrl = '@ajaxUrl';
+
+                    $('#show30Days').on('click', function () {
+                        $('#logsTable').DataTable().ajax.url(baseAjaxUrl + '&filterType=1').load(null, false);
+                        markSelectedButton($(this));
+                    });
+                    $('#show6Months').on('click', function () {
+                        $('#logsTable').DataTable().ajax.url(baseAjaxUrl + '&filterType=2').load(null, false);
+                        markSelectedButton($(this));
+                    });
+                    $('#showAll').on('click', function () {
+                        $('#logsTable').DataTable().ajax.url(baseAjaxUrl + '&filterType=3').load(null, false);
+                        markSelectedButton($(this));
+                    });
+
+                    function markSelectedButton(selectedButton) {
+                        $("#filterBtnGroup").children().each(function () {
+                            if (this.id === selectedButton.attr('id')) {
+                                $(this).removeClass('btn-default');
+                                $(this).addClass('btn-primary');
+                                $(this).blur();
+                            } else {
+                                $(this).removeClass('btn-primary');
+                                $(this).addClass('btn-default');
+                            }
+                        });
+                    }
+
+</script>
+);
+}

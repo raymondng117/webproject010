@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.ViewTitle = Labels.HousingContinuum_List;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div class="table-responsive">
+    <table id="continuumTable" class="wb-tables table table-striped table-hover"
+            data-wb-tables='{
+                "ajax": "@Url.Action("GetContinuumListJSON", "Continuum")",
+                "columns": [
+                    { "data": "name" },
+                    { "data": "categories" },
+                    { "data": "actions" }
+                ]
+            }'>
+        <thead>
+            <tr>
+                <th>@Labels.HousingContinuum_Name</th>
+                <th>@Labels.HousingContinuum_ContinuumCategories</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="mrgn-tp-md">
+
+    @*@if (RightsHelper.HasRight(UserRights.FoodBanks_Edit))*@
+    @*{*@
+        <a href="@Url.Content("~/Continuum/GetAddContinuumForm")" aria-controls="Modal_AddContinuum" class="wb-lbx lbx-modal addButton" role="button">@Labels.HousingContinuum_New</a>
+    @*}*@    
+
+    <a href="javascript:expandHousingTypes();" class="expandButton" role="button">@Labels.HousingContinuum_ExpandCollapseCategories</a>
+
+</div>
+
+@* Quick way for users to expand and collapse hidden values to keep the data table small *@
+<script>
+    function expandHousingTypes() {
+        $(".expandableSummary").click();
+    }
+</script>

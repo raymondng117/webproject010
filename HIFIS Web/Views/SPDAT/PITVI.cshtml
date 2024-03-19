@@ -1,0 +1,42 @@
+﻿@model PITVIIntakeViewModel
+@{
+    ViewBag.ViewTitle = Labels.ThirdPartyToolsNew + " " + Model.IntakeTypeName + " " + Labels.ThirdPartyToolsIntake;
+
+    ViewBag.LayoutView = LayoutPage.Client;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Hidden("FormSubmitted", "false")
+
+<div class="row" hidden>
+    @*@using (Html.BeginForm("NewVitals", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+    {
+        @Html.Partial("_PITVVIClientVitals", new ClientVitalsViewModel { })//Model)
+    }*@
+</div>
+
+@using (Html.BeginForm("PITVI", "SPDAT", FormMethod.Post, new { @class = "form-horizontal", id = "SPDATIntakeForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div id="Intake_FormPortion">
+            @Html.Partial("_PITVISPDATIntake", Model)
+        </div>
+    </div>
+    <div class="row">
+        <div id="Question_FormPortion">
+            @Html.Partial("_PITVIQuestionList", Model)
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="saveButton no-print">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "PitSurveysList", "PitEvents", new { }, new { @class = "cancelButton no-print", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+}
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@*@Html.Partial("_SPDATProgressPanel")*@

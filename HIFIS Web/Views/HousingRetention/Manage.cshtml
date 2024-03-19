@@ -1,0 +1,170 @@
+﻿@model HousingPlacementViewModel
+@{
+    ViewBag.HideSubsidyActions = false;
+
+    string status = null;
+    if (Model.PlacementStatus == PlacementStatusTypes.FollowUpsCompleted || Model.PlacementStatus == PlacementStatusTypes.Failed)
+    {
+        ViewBag.HideSubsidyActions = true;
+        status = " - " + "<span class='text-success'>" + Labels.FollowUpsCompleted + "</span>";
+    }
+
+    ViewBag.ViewTitle = Labels.viewTitle_HousingRetentionDetails + status;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@Html.HiddenFor(model => model.PrimaryClientID)
+@Html.Partial("_HousingRetentionDetails", Model)
+
+
+<div class="clearfix"></div>
+<br />
+
+<ul class="nav nav-tabs" role="tablist">
+    
+    @if (RightsHelper.HasRight(UserRights.Followup_List))
+    {
+        <li class="active">
+            <a class="tabButton" href="#followUpsTab" role="tab" data-toggle="tab">@Labels.FollowUps</a>
+        </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_List))
+    {
+        <li>
+            <a class="tabButton" href="#subsidiesTab" role="tab" data-toggle="tab">@Labels.Subsidies</a>
+        </li>
+    }   
+    <li>
+        <a class="tabButton" href="#HPDocuments" role="tab" data-toggle="tab">@Labels.Documents</a>
+    </li>
+</ul>
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+
+            @if (RightsHelper.HasRight(UserRights.Followup_List))
+            {
+                <div class="tab-pane active" id="followUpsTab">
+                    @Html.Partial("~/Views/FollowUps/_FollowUpList.cshtml", new ClientHousingViewModel()
+               {
+                   ClientID = Model.ReadOnlyVitals.ClientID,
+                   ClientHouseID = Model.ClientHouseID,
+                   HousePlacementID = Model.HousePlacementID,
+                   HousePlacementServiceID = WebHelper.EncryptID(Model.ServiceID),
+                   HousePlacementFollowUpCompleted = Model.PlacementStatus == PlacementStatusTypes.FollowUpsCompleted ? true : false,
+                   HasActiveHousingRetention = true
+               
+               })
+        </div>
+            }
+            <div class="tab-pane" id="HPDocuments">
+
+                <div class="table-responsive">
+                    <table id="documentsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{  "columns": [
+                                                                                { "width": "30%", "data": "document"},
+                                                                                { "width": "30%", "data": "description"},
+                                                                                { "width": "20%", "data": "date"},
+                                                                                { "width": "20%" , "data": "action", "name" : "documentAction", "visible" : true }
+                                                                            ],
+                                                                            "order": [ [0, "desc"] ],
+                                                                            "ajax": "@Url.Content("~/Documents/DocumentListJson?documentTypeID=" + (short)DocumentTypes.HousingPlacement + "&clientID=" + Model.PrimaryClientID + "&referenceID=" + WebHelper.DecryptID(Model.HousePlacementID))"                         
+                                                                        }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.DocumentName</th>
+                                <th class="align-text-center">@Labels.Description</th>
+                                <th class="align-text-center">@Labels.DateCreated</th>
+                                <th class="align-text-center">@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="align-text-center"></tbody>
+                    </table>
+
+                </div>
+                @if (RightsHelper.HasRight(UserRights.Documents_Add, Model.OrganizationID))
+                {
+                    <a href="@Url.Content("~/HousingPlacements/GetNewDocumentForm?referenceID=" + Model.HousePlacementID + "&clientID=" + Model.PrimaryClient.ClientID + "&personID=" + Model.PrimaryClient.PersonID)" aria-controls="Modal_NewItem" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewDocument</a>
+                }
+            </div>
+            @if (RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_List))
+            {
+                <div class="tab-pane" id="subsidiesTab">
+
+                    <div class="table-responsive">
+                        <table id="subsidiesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{  "columns": [
+                                                                                                                { "width": "22%" , "data": "program" },
+                                                                                                                { "width": "20%" , "data": "serviceProvider" },
+                                                                                                                { "width": "10%" , "data": "amount" },
+                                                                                                                { "width": "15%" , "data": "startDate" },
+                                                                                                                { "width": "15%" , "data": "endDate" },
+                                                                                                                { "width": "18%" , "data": "action", "name" : "subsidyAction", "visible" : true }
+                                                                                                            ],
+                                                                                                            "order": [ [3, "desc" ] ],
+                                                                                                            "ajax": "@Url.Content("~/HousingPlacements/GetSubsidiesJson?clientHouseID=" + Model.ClientHouseID)"
+                                                                                                        }'>
+                            <thead>
+                                <tr>
+                                    <th class="align-text-center">@Labels.ProgramName</th>
+                                    <th class="align-text-center">@Labels.ServiceProvider</th>
+                                    <th class="align-text-center">@Labels.Amount</th>
+                                    <th class="align-text-center">@Labels.DateStart</th>
+                                    <th class="align-text-center">@Labels.DateEnd</th>
+                                    <th class="align-text-center">@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                    </div>
+                    @if (RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_Add) && (!ViewBag.HideSubsidyActions || RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_Edit_Closed_Retentions)))
+                    {
+                        @Html.ActionLink(Labels.NewSubsidy, "GetNewSubsidyForm", "HousingUnit", new { clientHouseID = Model.ClientHouseID }, new { @class = "wb-lbx lbx-modal addButton",alt=Labels.NewSubsidy, aria_label = Labels.NewSubsidy, @role = "button" })
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mrgn-bttm-md mrgn-tp-md">
+    @Html.ActionLink(Labels.BackToRetentionList, "ClientList", new { id = Model.PrimaryClient.ClientID }, new { @class = "prevButton", @id = "backToClientList",alt=Labels.BackToRetentionList, aria_label = Labels.BackToRetentionList, @role = "button" })
+    @if (RightsHelper.HasRight(UserRights.HousingRetention_Edit, Model.OrganizationID))
+    {
+        @Html.ActionLink(Labels.EditRetentionDetails, "Edit", "HousingRetention", new { id = Model.PrimaryClient.ClientID, retentionId = Model.HousePlacementID }, new { @class = "editButton", alt=Labels.EditRetentionDetails, aria_label = Labels.EditRetentionDetails, @role = "button" })
+    }
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            //resizes the data table columns when you switch tabs, hidden tables break tab width.
+            $(document).ready(function () {
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    if (jQuery().DataTable) {
+                        $('.dataTable').DataTable().columns.adjust();
+                    }
+                });
+            });
+
+            var hideSubsidyActions = "@ViewBag.HideSubsidyActions";
+            var canEditSubsidies = "@RightsHelper.HasRight(UserRights.HousingUnits_Subsidy_Edit_Closed_Retentions)";
+           
+            //on unit list redraw reinit hifis scripts and reinit lightboxes
+            $('#subsidiesTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+
+                if (hideSubsidyActions == "True" && canEditSubsidies == "False") {
+                    var table = $(this).DataTable();
+                    table.column("subsidyAction:name").visible(false);
+                }
+            });
+        </script>);
+}

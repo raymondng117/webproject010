@@ -1,0 +1,757 @@
+﻿@model DiversionViewModel
+
+@{ //Html.Partial("_BaseHiddenFor", (BaseViewModel)Model);
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.HiddenFor(model => model.DiversionID)
+
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.vmGoodService.ServiceID, new { id = "ServiceIDgs" })
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.NumOfAdults)
+@Html.HiddenFor(model => model.NumOfChildren)
+@Html.HiddenFor(model => model.IsClient)
+@Html.HiddenFor(model => model.returnUrl)
+
+
+<div class="row" id="IsAnonymousSection">
+    @Html.HifisEditorFor(model => model.IsAnonymous, templateName: "YesNo")
+</div>
+
+<div class="row" id="AnonymousFields_Section">
+    @if (ViewBag.EnabledPresumedIndigenousIndicator == true)
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.PresumedAboriginalYN, "YesNo")
+        </div>
+    }
+    @if (ViewBag.EnabledObservedDisabilityIndicator == true)
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.ObservedDisability, "YesNo")
+        </div>
+    }
+
+    <div>
+        @Html.HifisEditorFor(model => model.AgeCategoryTypeID, CachedTableTypes.HIFIS_AgeCategoryTypes, false, new { id = "ddlAgeCat" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.GenderTypeID, CachedTableTypes.HIFIS_GenderTypes, new { id = "ddlGender" })
+    </div>
+    <hr style="width:48%;margin-left: auto;">
+</div>
+
+<div id="clientsection">
+
+    <div class="row" id="primaryclientsection">
+        @Html.HifisAutocompleteFor(
+            model => model.PrimaryClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.ReadOnlyVitals.ClientFullName
+            , new AutocompleteViewModelOptions
+            {
+                OnSelect = "GetClientInfo();"
+                ,
+                HiddenValue = true
+            }
+            , new { @class = "clientdisable" }
+            )
+    </div>
+
+    <div class="row" id="familyInputs">
+        @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList)
+    </div>
+</div>
+
+<div class="row">
+
+    @Html.HifisEditorFor(model => model.DiversionDateTime, "DateAndTime")
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+</div>
+
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+    </div>
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+    </div>
+}
+else
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+    </div>
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+    </div>
+}
+
+<div id="HousedSafelyLN_section">
+    <div class="row">
+        @Html.HifisEditorFor(model => model.HousedSafelyLastNightYN, "YesNo")
+    </div>
+
+
+    @if (RightsHelper.HasRight(UserRights.Client_Housing_Add))
+    {
+        <div id="housingDetails">
+
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-3">
+
+                    @Html.ActionLink(Labels.AddHousingHistory, "HousingHistoryNew", "Diversion", new { id = "" }, new { @class = "wb-lbx lbx-modal addButton", title = @Labels.HousingHistory, id = "bntAddHousing", @role = "button" })
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+@if (RightsHelper.HasRight(UserRights.Client_Contacts_Details))
+{
+    <div id="contact_section" hidden>
+
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+                <h4>
+                    @Labels.viewTitle_ClientEmergencyContactSearchFound
+                </h4>
+                @Html.Partial("_ContactTable")
+            </div>
+        </div>
+
+    </div>
+}
+
+@*Add Contributin Factors*@
+@if (RightsHelper.HasRight(UserRights.ClientFactors_Contributing_List))
+{
+    <div id="contFactors_section" hidden>
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+                <h4>
+                    @Labels.ClientContributingFactors
+                </h4>
+                @Html.Partial("_ContributingFactorsTable")
+            </div>
+        </div>
+
+    </div>
+}
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorker as SelectList)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.Minutes)
+</div>
+
+@if (Model.DiversionID == null)
+{
+    <div class="row mrgn-bttm-sm">
+
+        @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.ProgramList as SelectList)
+    </div>
+}
+else
+{
+    <div class="row mrgn-bttm-md">
+        <div class="row">
+            @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "control-label col-sm-3" })
+            <div class="col-sm-9">
+                @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                    new MultipleItemSelectList
+                    {
+                        IDs = Model.AssociatedProgramIDs,
+                        List = ViewBag.ProgramList as SelectList
+                    })
+            </div>
+        </div>
+
+    </div>
+}
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.FinancialAssistanceProvidedYN, "YesNo")
+</div>
+
+@*Add HL is a link towards Housing History page, but it's intended to add "Housing Lost Prevention*@
+@if (RightsHelper.HasRight(UserRights.Client_Housing_List) && RightsHelper.HasRight(UserRights.HousingRetention_Add))
+{
+    <div class="row mrgn-bttm-md" id="hlpLink">
+        <div class="col-sm-offset-3 col-sm-9">
+            @Html.ActionLink(Labels.AddHousingRetention, "ClientHousingHistory", "ClientTombstone", new { id = "" }, new { @class = "nextButton no-print", id = "clientHHBtn", @role = "button", target = "_blank" })
+        </div>
+    </div>
+}
+
+@*Add Income is a link in the standard form  unlike the workflow*@
+@if (RightsHelper.HasRight(UserRights.Financials_Income_Add))
+{
+    <div class="row mrgn-bttm-md" id="income_section">
+        <div class="col-sm-offset-3 col-sm-9">
+
+            @Html.ActionLink(Labels.AddNewIncome, "Display", "Financials", new { id = "" }, new { @class = "nextButton no-print", id = "clientAddIncBtn", @role = "button", target = "_blank" })
+        </div>
+    </div>
+}
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ExpectedDestinationTypeID, CachedTableTypes.HIFIS_DiversionDestinationTypes)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.DiversionNextSteps, "TextArea", new { @style = "width:520px;min-height: 75px;" })
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ScheduledFollowUpDate)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.DiversionStory, "TextArea", new { @class = "commentBoxSize" })
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.Comments, "TextArea", new { @class = "commentBoxSize" })
+</div>
+
+
+@if (RightsHelper.HasRight(UserRights.Goods_Services_Client_List))
+{
+    <div id="goodsservices_section" hidden>
+
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+                @Html.Partial("_GoodsServices")
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.DiversionStatusTypeID, CachedTableTypes.HIFIS_DiversionStatusTypes, new { id = "ddlDivStatus" })
+</div>
+
+<div id="family-attestation-result"></div>
+<div id="ClientsFamilyIDs-attestation-result"></div>
+
+
+@using (Html.BeginScriptContext())
+{
+
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            $(document).ready(function ()
+            {
+
+                //GetClientInfo();
+                var bIsAnonymous = $("#IsAnonymous").bootstrapSwitch("state");
+
+                //check if we are dealing with a new or existing Diversion
+                var diversionid = $('#DiversionID').val();
+                var isExistingDiversion = (diversionid != "" && diversionid != null);
+
+                console.log("FD - ShowClientInfo $(document).ready  : Anonymous = " + bIsAnonymous + " DivID : " + diversionid);
+                ShowClientInfo(bIsAnonymous, isExistingDiversion);
+
+
+                });
+
+            function ShowClientInfo(bIsAnonymous, bisExistingDiversion) {
+
+                var isfrontdesk = '@ViewBag.FrontDesk';
+
+                var clientID = $('#PrimaryClientID').val();
+
+                if (bIsAnonymous)
+                {
+                    console.log("FD - bIsAnonymous TRUE");
+                    $('#clientsection').hide();
+
+                    if (isClientFound(clientID))
+                    {
+
+                        if (bisExistingDiversion == false)
+                        {
+                            console.log("FD - Clears Client info");
+                            var select = document.getElementById('PrimaryClientID');
+                            select.options.length = 0;
+
+                            var select = document.getElementById('ClientsFamilyIDs');
+                            select.options.length = 0;
+
+                            getROVitals('');
+
+                            $('#contact_section').hide();
+                            $('#contFactors_section').hide();
+
+                        }
+                        else
+                        {
+                            $('#IsAnonymousSection').hide();  //anonymous is hidden for Edit-anonymous
+
+                        }
+
+                    }
+
+                    ShowHousing(false);
+                    ShowHHLink(false);
+                    ShowIncome(false);
+                    ShowAnonymousfields(true);
+                    $('#IsClient').val(false);
+                }
+                else
+                {
+                    $('#clientsection').show();
+                    //770015 removed this logic
+                    //var bIsHoused = $("#HousedSafelyLastNightYN").bootstrapSwitch("state");
+                    //ShowHousing(bIsHoused);
+                    ShowHousing(true);
+                    ShowHHLink(true);
+                    var bIsFinAssProv = $("#FinancialAssistanceProvidedYN").bootstrapSwitch("state");
+                    ShowIncome(bIsFinAssProv);
+                    ShowAnonymousfields(false);
+                    $('#IsClient').val(true);
+
+                    //called from client page
+                    if (isfrontdesk == "False")
+                    {
+                        $('#primaryclientsection').hide();
+                        $('#IsAnonymousSection').hide();
+                        $('#contact_section').show();
+                        $('#contFactors_section').show();
+                    }
+
+
+                    if (bisExistingDiversion)
+                    {
+                        $('#contact_section').show();
+                        $('#contFactors_section').show();
+                        $('#goodsservices_section').show();
+
+                        disableElements("clientdisable",true);
+
+                        $('#IsAnonymousSection').hide();
+
+                    }
+                    else
+                    {
+                        if (isClientFound(clientID) && !(isfrontdesk))
+                        {
+                            ShowContactSection(clientID);
+                            ShowContributingFactorsSection(clientID);
+                        }
+                    }
+                }
+            }
+
+        function disableElements(classname, value)
+        {
+            console.log("FD - disableElements : " + value);
+            //disabled form elements are not submitted to post request.
+            var inputs = document.getElementsByClassName(classname);
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].disabled = value;
+            }
+
+        }
+
+
+            function ShowContactSection(clientID)
+            {
+
+                //check table status for info
+                if ($.fn.dataTable.isDataTable('#contactsTable'))
+                {
+                    console.log("FD - contactsTable - isDataTable TRUE, changing Ajax only");
+                    $('#contactsTable').DataTable().ajax.url('@Url.Content("~/Diversion/ContactListJson?")' + 'clientID=' + clientID).load(null, false);
+                }
+                else
+                {
+                    console.log("FD - contactsTable - isDataTable FALSE - destroy and create");
+                    var ctable = $('#contactsTable');
+
+                    ctable.DataTable().clear().destroy();
+
+                    ctable.dataTable({
+                        "columns": [
+                            { "width": "20%", "data": "name" },
+                            { "width": "15%", "data": "relationship" },
+                            { "width": "15%", "data": "phone" },
+                            { "width": "20%", "data": "email" },
+                            { "width": "15%", "data": "actions" }
+                        ],
+                        "info": false,
+                        "processing": true,
+                        "bFilter": false,
+                        "bSearch": false,
+                        "bDestroy": true,
+                        "ajax": '@Url.Content("~/Diversion/ContactListJson?")' + 'clientID=' + clientID
+                    });
+                }
+
+                //ctable.DataTable().draw();
+
+                //button
+                $("#addDivContact").attr("href", "@Url.Content("~/Diversion/NewContact?clientID=")" + clientID); // sets the client url to the right client id
+                //finally show section
+                $('#contact_section').show();
+
+            }
+
+
+            function ShowContributingFactorsSection(clientID)
+            {
+                //check table status for info
+                if ($.fn.dataTable.isDataTable('#contributingTable')) {
+                    console.log("FD contributingTable - isDataTable TRUE, changing Ajax only");
+                    $('#contributingTable').DataTable().ajax.url('@Url.Content("~/ClientFactors/ContributingListJson?")' + 'clientID=' + clientID).load(null, false);
+
+                }
+                else {
+                    console.log("FD - contributingTable - isDataTable FALSE - destroy and create");
+                    var ctable = $('#contributingTable');
+
+                    ctable.DataTable().clear().destroy();
+                    ctable.DataTable({
+                        "columns": [
+                            { "width": "50%", "data": "cont" },
+                            { "width": "15%", "data": "start" },
+                            { "width": "15%", "data": "end" },
+                            { "width": "20%", "data": "action" }
+                        ],
+                        "order": [[0, "asc"]],
+                        "info": false,
+                        "processing": true,
+                        "bFilter": false,
+                        "bSearch": false,
+                        "bDestroy": true,
+                        "ajax": '@Url.Content("~/ClientFactors/ContributingListJson?")' + 'clientID=' + clientID
+                    });
+                }
+
+                //button
+                $("#addContFactors").attr("href", "@Url.Content("~/ClientFactors/AddContributingFactor?id=")" + clientID); // sets the client url to the right client id
+
+                $('#contFactors_section').show();
+
+            }
+
+
+
+
+            function GetClientInfo()
+                {
+                    var id = $('#PrimaryClientID').val();
+                    if (isClientFound(id))
+                        {
+                            getROVitals(id);
+                            GetFamilyList(id);
+                            ShowClientInfo(false,false);
+                        }
+                }
+
+            function PopulateFamilyList(data)
+            {
+                console.log(data);
+                var select = document.getElementById('ClientsFamilyIDs');
+                var familyBox = $('#ClientsFamilyIDs');
+
+                select.options.length = 0; // clear out existing items
+
+                if(data.length < 1)
+                    {
+                        $('#familyInputs').hide();
+                        $('#SelectAllFamilyButton').hide();
+                        familyBox.prop('disabled', true);
+                        familyBox.trigger('change');
+                        return;
+                    }
+
+                for (var i = 0; i < data.length; i++)
+                    {
+                        var d = data[i];
+                        select.options.add(new Option(d.Text, d.Value))
+                    }
+
+                $('#familyInputs').show();
+                $('#SelectAllFamilyButton').show();
+                familyBox.prop('disabled',false);
+                familyBox.trigger('change');
+            }
+
+        function GetFamilyList(id)
+        {
+            @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                        Data = "{clientID: id}",
+                        OnSuccess = "PopulateFamilyList(data);",
+                    });
+        }
+
+
+        function SelectAllClients()
+            {
+            var familyInput = $('#ClientsFamilyIDs');
+
+            familyInput.children('option').each(function (index, element) {
+                if (element.value != "") {
+                    element.selected = true;
+                }
+            });
+
+        familyInput.trigger('change');
+    }
+
+    //[Is Anonymous] state change
+    $('input[name=IsAnonymous]').on('switchChange.bootstrapSwitch', function (event, state) {
+         ShowClientInfo(state,false);
+     });
+
+    //[Housed Safely Last Night] state change
+    /*  item 770015 removed this logic
+    $('input[name=HousedSafelyLastNightYN]').on('switchChange.bootstrapSwitch', function (event, state) {
+
+        ShowHousing(state);
+    });
+    */
+
+    $('input[name=FinancialAssistanceProvidedYN]').on('switchChange.bootstrapSwitch', function (event, state) {
+        ShowIncome(state);
+    });
+
+    function ShowHHLink(bShow) {
+
+        var id = $('#PrimaryClientID').val();
+
+        if (bShow && isClientFound(id)) {
+            $('#hlpLink').show();
+            $("#clientHHBtn").attr("href", "@Url.Content("~/ClientTombstone/ClientHousingHistory?id=")" + id); // sets the client url to the right client id
+        }
+        else {
+            $('#hlpLink').hide();
+        }
+
+    }
+
+    function ShowIncome(bShow) {
+
+        var id = $('#PrimaryClientID').val();
+
+        if (bShow && isClientFound(id)) {
+            $('#income_section').show();
+            $("#clientAddIncBtn").attr("href", "@Url.Content("~/Financials/Display?id=")" + id); // sets the client url to the right client id
+        }
+        else {
+            $('#income_section').hide();
+        }
+
+    }
+    function ShowAnonymousfields(bShow) {
+        //console.log("FD - ShowAnonymousfields : " + bShow);
+        if (bShow) {
+            $('#AnonymousFields_Section').show();
+            reinitSelect2($('#ddlAgeCat'));
+            reinitSelect2($('#ddlGender'));
+        }
+        else {
+            $('#AnonymousFields_Section').hide();
+        }
+
+    }
+
+    function isClientFound(id)
+    {
+        return (id != "" && id != null)
+    }
+
+
+    function ShowHousing(bIsHoused)
+    {
+
+        var clientid = $('#PrimaryClientID').val();
+
+        if (bIsHoused && isClientFound(clientid))
+        {
+            $('#housingDetails').show();
+            reinitSelect2($('#ddlHouseType'));
+            reinitSelect2($('#ddlCountry'));
+
+            //reload ajax
+            @*console.log("FD - reload HousingHistoryTable called for client " + clientid)
+            $('#HousingHistoryTable').DataTable().ajax.url('@Url.Content("~/Diversion/GetHousingHistoryList?")' + 'clientID=' + clientid + "&includeStay=true").load(null, false);
+            $('#HousingHistoryTable').DataTable().ajax.reload();*@
+
+            $("#bntAddHousing").attr("href", "@Url.Content("~/Diversion/HousingHistoryNew?id=")" + clientid); // sets the client url to the right client id
+        }
+        else
+        {
+            $('#housingDetails').hide();
+        }
+
+    }
+
+
+    var requiredIfStep = function (stepid) {
+        return true;
+
+    }
+
+    var requiredIf1 = function () {
+
+        var value = $("#IsAnonymous").bootstrapSwitch("state");
+        return value === false;
+
+    }
+
+
+    var requiredIf2 = function () {
+
+        var value = $("#IsAnonymous").bootstrapSwitch("state");
+        return value === true;
+    }
+
+    var housingRequiredIf = function () {
+        var value = $("#HousedSafelyLastNightYN").bootstrapSwitch("state");
+
+        return value === true;
+    }
+
+    //reinitializes select2 after modifying the options.
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+    };
+
+
+</script>
+);
+}
+
+<div id="family-attestation-result"></div>
+<div id="ClientsFamilyIDs-attestation-result"></div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+            function OnTheFlyCallBack(objectID, formData) {
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#PrimaryClientID").val(objectID);
+
+                getROVitals(objectID);
+            }
+
+
+            function autoCompleteCallBack() {
+                getROVitals($('#PrimaryClientID').val());
+                GetFamilyList($('#PrimaryClientID').val());
+            }
+
+            @if (appSettings.IsAttestationEnabled())
+            {
+                <text>
+            $('#ClientsFamilyIDs').on("select2:select", function (e) {
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                        {
+                            FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                            ID: e.params.data.id,
+                            InputName: 'ClientsFamilyIDs',
+                            Callback: ''
+                        },
+                    function (data) {
+                        $("#family-attestation-result").html(data);
+                    });
+            });
+
+            $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function () {
+
+                var id = $('#PrimaryClientID').val();
+
+                if (isClientFound(id))
+                {
+
+                var select = document.getElementById('ClientsFamilyIDs');
+
+                var familyArray = [];
+                for (var key in select.options) {
+                    if (select.options.hasOwnProperty(key)) {
+                        familyArray.push(select.options[key].value);
+                    }
+                }
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: ''
+                }
+
+                $.post('@Url.Action("FamilyAttestation", "Master")',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                    });
+
+                }
+            });
+            </text>
+            }
+            else if (appSettings.EnforceConsent())
+            {
+                <text>
+            $('#ClientsFamilyIDs').on("select2:select", function (e) {
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                        {
+                            FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                            ID: e.params.data.id,
+                            InputName: 'ClientsFamilyIDs',
+                            Callback: ''
+                        },
+                    function (data) {
+                        $("#family-attestation-result").html(data);
+                    });
+            });
+
+            $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function () {
+
+                var select = document.getElementById('ClientsFamilyIDs');
+
+                var familyArray = [];
+                for (var key in select.options) {
+                    if (select.options.hasOwnProperty(key)) {
+                        familyArray.push(select.options[key].value);
+                    }
+                }
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: ''
+                };
+
+                $.post('@Url.Action("FamilyConsent", "Master")',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                        });
+            });
+            </text>
+            }
+</script>
+);
+}
+

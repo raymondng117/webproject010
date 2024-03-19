@@ -1,0 +1,126 @@
+﻿@model ClientHIFISServiceViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewFoodBankService;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="clearfix"></div>
+
+<div>
+    @*This top form is used to add a new transaction using the last visits details*@
+    @using (Html.BeginForm("NewTransactionLastVisit", "FoodBanks", FormMethod.Post, new { @class = "form-horizontal" , id = "ClientLastVisitInfoForm" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("lastVisitTransactionID")
+        @Html.Hidden("lastVisitClientID")    
+    } 
+
+    @using (Html.BeginForm("NewTransaction", "FoodBanks", FormMethod.Post, new { @class = "form-horizontal" }))
+    {       
+        @Html.Partial("_HIFISService", Model); 
+
+        <div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+				<button id="submitButton" type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "List", "FoodBanks", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>      
+    }   
+    
+</div>
+@Html.Partial("_gsJS")
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+         
+            $(document).ready(function () {
+
+                $('#LastVisitInfo').hide();
+                $('#LastVisitInfoPanel').hide();
+                $('#ClientLastVisitInfoButton').hide();
+                //The Following JavaScript is used to insert new service using existing service
+                $('#ClientLastVisitInfoButton').click(function () {
+                    $("#ClientLastVisitInfoForm").submit();
+                });
+        
+            }); //$(document).ready(function () {
+        
+            function ajax(url, data, success) {
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    dataType: 'json',
+                    data: data,
+                    success: success,
+
+                    //If error is thrown, this displays any important info about why
+                    error: function (xhr, status, errorThrown) {
+                        //                alert('Status   ' + status
+                        //                    + "\n" + "Error Thrown:   " + errorThrown
+                        //                    + "\n\n\nResponse Text\n\n" + xhr.responseText);
+                    }
+                }); //$.ajax({
+            }
+
+
+
+        /*
+        *   The Following JavaScript is used to manage Client data:
+        *       -   ROVitals
+        *       -   Last visit info
+        *
+        **/
+        function callGetROVitals() {
+            //Call the ROVitals to display client info
+            getROVitals($('#ClientID').val());
+            
+
+            success = function (jsonResult) {
+                if (jsonResult.Result != null) {
+                    
+                    $('#ClientLastVisitInfoButton').show();
+
+                    //Used for lastVisit Form
+                    $("#lastVisitClientID").val($("#ClientID").val());
+                    var lastVisitTransactionID = $("#lastVisitTransactionID");
+                    lastVisitTransactionID.empty();
+                    lastVisitTransactionID.val(jsonResult.Result.Transaction.ServiceID);
+
+                    $('#LastVisitInfo').show();
+                    $('#LastVisitInfoPanel').show("slow");
+                    $("#NoLastVisitInfo").hide();
+
+                    var lastVisitServiceInfo = $("#LastVisitServiceInfo");
+                    lastVisitServiceInfo.empty();
+                    lastVisitServiceInfo.append($("<td></td>").html(jsonResult.Result.Transaction.OrganizationName));
+                    lastVisitServiceInfo.append($("<td></td>").html(jsonResult.Result.Transaction.ReasonForServiceTypeName));
+                    lastVisitServiceInfo.append($("<td></td>").html(jsonResult.Result.Transaction.DateStartString));
+                    lastVisitServiceInfo.append($("<td></td>").html(jsonResult.Result.Transaction.NumberOfPeople));
+
+
+                    $("#LastVisitFoodBanksTable").find("tr:gt(0)").remove();
+                    //A foreach loop where value contains the json object
+                    $.each(jsonResult.Result.FoodBanks, function () {
+                        var output = "<tr>";
+                        output += "<td>" + this.FoodBankItemDetail.NameE + "</td>";
+                        output += "<td>" + this.Quantity + "</td>";
+                        output += "<td>" + this.UnitCost + "</td>";
+                        $('#LastVisitFoodBanksTable tr:last').after(output);
+                    }); //$.each(jsonResult, function (key, value) {
+                } else {
+                    $('#ClientLastVisitInfoButton').hide();
+                    $('#LastVisitInfo').hide();
+                    $("#NoLastVisitInfo").show();
+                }
+            }
+            ajax("GetLastVisitInfo", { id: $('#ClientID').val() }, success);
+        }
+        </script>
+    );
+}
+

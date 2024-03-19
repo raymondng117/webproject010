@@ -1,0 +1,75 @@
+﻿@model AssetViewModel
+
+<section id="Modal_EditAsset" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditAsset</h2>
+    </header>
+
+    <div class="modal-body" style="overflow: hidden;">
+        <div id="EditAssetForm" class="row">
+            @using (Html.BeginForm("EditAsset", "Financials", new { id = Model.ClientID, assetID = Model.LiabilityOrAssetID }, FormMethod.Post, new { @class = "form-horizontal", id = "editAsset" }))
+            {
+                @Html.Partial("_Asset")
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-xs">
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="assetSaveBtn" class="saveButton  ">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_EditAsset');
+
+    $(function () {
+        $("#editAsset").hifisValidation();
+
+    });
+
+
+    $("#assetSaveBtn").click(function () {
+
+        if ($("#editAsset").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/Financials/EditAsset")",
+                type: "POST",
+                data: $('#editAsset').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success);
+                    updateTotals();
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#assetTable').DataTable().ajax.reload();
+
+                } else {
+                    defaultNotify(data.Success);
+                }
+            });
+        }
+    });
+
+</script>
+
+
+
+
+

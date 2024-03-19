@@ -1,0 +1,113 @@
+﻿@model IncomeViewModel
+
+<section id="Modal_AddIncome" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_AddIncome</h2>
+    </header>
+
+    <div class="modal-body" style="overflow: hidden;">
+        <div id="AddNewIncomeForm" class="row">
+            @using (Html.BeginForm("NewIncome", "Financials", FormMethod.Post, new { @class = "form-horizontal", id = "incomeForm" }))
+            {
+                @Html.Partial("_Income", Model)
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-xs">
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="incomeSaveBtn" class="saveButton">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_AddIncome');
+
+    $(function () {
+        $("#incomeForm").hifisValidation();
+
+    });
+
+
+    $("#incomeSaveBtn").click(function () {
+
+        var indigenousIndicatorID = $('#aboriginalIndicatorID').val();
+
+        var age = $('#approximativeAge').val();
+        var incomeTypeID = getLookupOrRollup('#ddlIncomeType');
+
+        if (@((byte)IncomeTypes.AboriginalBandCouncil) == incomeTypeID) {
+
+            if (!(indigenousIndicatorID == 2 || indigenousIndicatorID == 3 || indigenousIndicatorID == 4 || indigenousIndicatorID == 5)) {
+
+                displayNotification('error', '', "<p>@Labels.IndigenousIndicatorError</p>");
+            }
+            else {
+               AddNewIncomeRecords();
+            }
+        }
+        else if (@((byte)IncomeTypes.CanadaPensionPlan) == incomeTypeID ||
+            @((byte)IncomeTypes.OldAgeSecurity) == incomeTypeID ||
+            @((byte)IncomeTypes.GuaranteedIncomeSupplement) == incomeTypeID ||
+            @((byte)IncomeTypes.QuebecPensionPlan) == incomeTypeID)
+        {
+            if (age < 60) {
+
+                displayNotification('error', '', "<p>@Labels.SeniorBenefitsError</p>");
+            }
+
+            else {
+               AddNewIncomeRecords();
+            }
+        }
+        else {
+            AddNewIncomeRecords();
+        }
+    });
+    function AddNewIncomeRecords() {
+        $('#hoursdaysStar').next('span').remove();
+            if (valueRequired() && $("#HoursDays").val() == "") {
+                $('#hoursdaysStar').after('<span class="align-left field-validation-error" ><span  class="">@Labels.ValuePerMonthRequiredErrorMsg</span></span>');
+            }
+            if ($("#incomeForm").valid()) {
+                var btn = $(this);
+                btn.attr("disabled", true); //Disable the button so multiple request don't go through
+                $.ajax({
+
+                    url: "@Url.Content("~/Financials/NewIncome")",
+                    type: "POST",
+                    data: $('#incomeForm').serialize()
+
+                }).done(function (data) {
+                    btn.attr("disabled", false); //Enable the button incase there was an error
+
+                    if (data.Success) {
+                        defaultNotify(data.Success);
+                        updateTotals();
+                        $("#closeBtn").click(); //Close the modal window on success
+                        $('#incomeTable').DataTable().ajax.reload();
+
+                    } else {
+                        for (var i = 0; i < data.Result.ValidationMessages.length; i++) {
+                            if (data.Result.ValidationMessages[i] == "To record income from a band, the client must have a relevant indigenous status.")
+                              displayNotification('error', '', "<p>@Labels.IndigenousIndicatorError</p>");
+                            else if (data.Result.ValidationMessages[i] == "To record income from a senior's benefit , the client must be 60 years of age or older.")
+                                displayNotification('error', '', "<p>@Labels.SeniorBenefitsError</p>");
+                        }
+                    }
+                });
+            }
+    }
+
+</script>

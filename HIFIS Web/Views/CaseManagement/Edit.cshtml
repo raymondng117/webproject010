@@ -1,0 +1,345 @@
+﻿@model CaseViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.EditCaseManagement;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+		<a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Sessions" role="tab" data-toggle="tab">@Labels.Sessions</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Documents" role="tab" data-toggle="tab">@Labels.Documents</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#CaseComments" role="tab" data-toggle="tab">@Labels.CaseComments</a>
+	</li>
+    @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+    {
+        <li>
+            <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+            </a>
+        </li>
+    }
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+
+            <!-- Tab Pane #1: Details -->
+            <div class="tab-pane active mrgn-bttm-md" id="Details" style="padding: 10px;">
+                @using (Html.BeginForm("Edit", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, FormMethod.Post, new { @class = "form-horizontal row" }))
+                {
+                   
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(model => model.CaseID)
+                    @Html.HiddenFor(model => model.PrimaryClientID)
+                    @Html.Partial("_BaseHiddenFor")
+                    @Html.Partial("_CaseDetails")
+        
+                    <div class="clearfix"></div>
+                    <div class="form-group">
+	                    <div class="col-sm-offset-3 col-sm-9">
+		                    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                            @Html.ActionLink(Labels.Cancel, "ClientList", "CaseManagement", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" }) 
+	                    </div>
+                    </div>
+
+                    <br />
+                }
+            </div>
+
+            <!-- Tab Pane #2: Sessions -->
+            <div class="tab-pane" id="Sessions" style="padding: 10px;">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Activity</th>
+                                <th>@Labels.Date</th>
+                                <th>@Labels.CaseWorker</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+					        @if (Model.Sessions != null && Model.Sessions.Count > 0)
+					        {
+						        foreach (var item in Model.Sessions)
+						        {
+							        <tr>
+								        <td>@item.SessionActivityName</td>
+								        <td>@DateHelper.DateTimeFormaterENFR(item.SessionDate, Labels.CurrentCulture)</td>
+								        <td>@item.CaseWorkerFullName</td>
+								        <td class="align-text-center">
+									        @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Details, Model.OrganizationID))
+									        { 
+										        @Html.ActionLink(Labels.Display, "DisplayMeeting", "CaseManagement", new { id = item.SessionID, client = Model.PrimaryClientID, goal = Model.DesiredOutcomeTypeID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+									        }
+											
+									        @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Edit, Model.OrganizationID))
+									        { 
+										        @Html.ActionLink(Labels.Edit, "EditMeeting", "CaseManagement", new { sessionID = item.SessionID, caseID = item.CaseID, id = Model.PrimaryClientID, goalID = Model.DesiredOutcomeTypeID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+									        }
+											
+									        @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Delete, Model.OrganizationID))
+									        { 
+										        @Html.ActionLink(Labels.Delete, "DeleteMeeting", "CaseManagement", new { pSessionID = item.SessionID, id = Model.PrimaryClientID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+									        }                                                
+								        </td>
+							        </tr>
+						        }
+					        }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="clearfix"></div>
+
+				<div class="mrgn-tp-md">
+					@if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Add, Model.OrganizationID))
+					{ 
+						@Html.ActionLink(Labels.NewSession, "NewMeeting", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID, goalID = Model.DesiredOutcomeTypeID }, new { @class = "addButton", alt=Labels.NewSession, aria_label = Labels.NewSession, @role = "button" })
+					}	   
+					@if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Details, Model.OrganizationID))
+					{ 
+						@Html.ActionLink(Labels.ViewAllSessionDetails, "AllMeetingDetails", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, new { @class = "viewButton", alt=Labels.ViewAllSessionDetails, aria_label=Labels.ViewAllSessionDetails, @role = "button" })
+					}
+				</div>
+			</div>
+
+            <!-- Tab Pane #3: Documents -->
+            <div class="tab-pane" id="Documents" style="padding: 10px;">
+                <div class="row">
+                    <div class="col-sm-12">
+                        @if (!Model.CaseDocumentsDisplay.IsEmptyOrNull())
+                        {
+                            <div class="table-responsive">
+                                <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                                    <thead>
+                                        <tr>
+                                            <th>@Labels.ExistingAttachments</th>
+                                            <th>@Labels.Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!Model.CaseDocumentsDisplay.IsEmptyOrNull())
+                                        {
+                                            foreach (DocumentDisplayViewModel document in Model.CaseDocumentsDisplay)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @if (RightsHelper.HasRight(UserRights.Documents_Downlaod))
+                                                        {
+                                                            @Html.ActionLink(document.Name, "DownloadDocument", "Documents", new { id = WebHelper.DecryptID(document.DocumentID), ClientID = Model.PrimaryClientID }, new {alt = document.Name, aria_label = document.Name, @role = "button"})
+                                                        }
+                                                        else
+                                                        {
+                                                            @document.Name
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (RightsHelper.HasRight(UserRights.CaseManagement_Documents_Delete))
+                                                        {
+                                                            @Html.ActionLink(Labels.Delete, "DeleteCaseDocument", new { documentID = document.DocumentID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label= Labels.Delete, @role = "button" })
+                                                        }
+                                                    </td>
+
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.CaseManagement_Documents_Add, Model.OrganizationID))
+                        {
+                            using (Html.BeginForm("NewDocument", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+                            {
+                                @Html.Partial("_BaseHiddenFor")
+                                @Html.Partial("_CaseDocument", new CaseDocumentsViewModel { CaseID = Model.CaseID, ClientID = Model.PrimaryClientID })
+
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="col-sm-3"></div>
+                                        <div class="col-sm-9">
+                                            <button type="submit" class="saveButton">@Labels.Save</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Pane #4: Comments -->
+            <div class="tab-pane" id="CaseComments" style="padding: 10px;">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "order" : [[0, "desc"]] }'>
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Labels.Date
+                                </th>
+                                <th>
+                                    @Labels.User
+                                </th>
+                                <th>
+                                    @Labels.Subject
+                                </th>
+                                <th>
+                                    @Labels.Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.CaseComments != null && Model.CaseComments.Count > 0)
+                            {
+                                foreach (var item in Model.CaseComments)
+                                {
+                                    <tr>
+                                        <td>
+                                            @(item.CreatedDate.HasValue && item.CreatedDate.Value != default(DateTime) ? item.CreatedDate.Value.ToString("yyyy-MM-dd") : item.DateCreated.ToString("yyyy-MM-dd"))
+                                        </td>
+                                        <td>@item.UserName</td>
+                                        <td>@item.Subject</td>
+                                        <td class="text-center">
+
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Display, Model.OrganizationID))
+                                            { 
+                                                @Html.ActionLink(Labels.Display, "DisplayCaseComment", "CaseManagement", new { caseCommentID = item.CaseCommentID, caseID = item.CaseID, id = Model.PrimaryClientID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+                                            }
+
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Edit, Model.OrganizationID))
+                                            { 
+                                                @Html.ActionLink(Labels.Edit, "EditCaseComment", "CaseManagement", new { caseCommentID = item.CaseCommentID, caseID = item.CaseID, id = Model.PrimaryClientID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+                                            }
+
+                                            @if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Delete, Model.OrganizationID))
+                                            { 
+                                                @Html.ActionLink(Labels.Delete, "DeleteCaseComment", "CaseManagement", new { id = Model.PrimaryClientID, commentID = item.CommentsID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label=Labels.Delete, @role = "button" })
+                                            }
+
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="mrgn-tp-md mrgn-bttm-md">
+					@if (RightsHelper.HasRight(UserRights.CaseManagement_Comments_Add, Model.OrganizationID))
+					{ 
+						@Html.ActionLink(Labels.NewComment, "NewCaseComment", "CaseManagement", new { caseID = Model.CaseID, id = Model.PrimaryClientID }, new { @class = "addButton", alt=Labels.NewComment, aria_label = Labels.NewComment, @role = "button" })
+					}							
+				</div>
+			</div>
+            @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+            {
+                <!-- Tab Pane #5: Custom Tables -->
+                <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                    @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-sm-offset-1 col-sm-11 mrgn-tp-md">
+        @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+    </div>
+
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            function PopulateFamilyList(data)
+            {
+                var select = document.getElementById('ClientsFamilyIDs'); 
+                var familyBox = $('#ClientsFamilyIDs');
+
+                select.options.length = 0; // clear out existing items 
+
+                if(data.length < 1){ 
+                    $('#familyInputs').hide();
+                    $('#SelectAllFamilyButton').hide();
+                    familyBox.prop('disabled', true); 
+                    familyBox.trigger('change'); 
+                    return; 
+                }     
+
+                for(var i=0; i < data.length; i++) { 
+                    var d = data[i]; 
+                    select.options.add(new Option(d.Text, d.Value)) 
+                } 
+        
+                $('#familyInputs').show();
+                $('#SelectAllFamilyButton').show();
+                familyBox.prop('disabled',false);
+                familyBox.trigger('change');
+            }
+
+            function GetFamilyList(id)
+            {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                   Data = "{clientID: id}",
+                   OnSuccess = "PopulateFamilyList(data);",
+               });
+            }
+
+            function ClientSelectHandler(event, ui)
+            {
+                event.preventDefault();
+                $(this).val(ui.item.labelToInsert);
+                GetFamilyList(ui.item.value);
+                getROVitals(ui.item.value);
+            }
+
+             function SelectAllClients() {
+                var familyInput = $('#ClientsFamilyIDs');
+
+                familyInput.children('option').each(function (index, element) {
+                    if (element.value != "") {
+                        element.selected = true;
+                    }
+                });
+
+                familyInput.trigger('change');
+            }
+        </script>
+);
+
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $("#ShowCaseWorkerBtn").click(ShowAddCaseWorker);
+
+
+                            
+
+            function ShowAddCaseWorker(e) {
+                e.preventDefault();
+                $("#AddCaseWorker").show();
+                $(this).hide();
+            }
+    </script>
+);
+
+}
+

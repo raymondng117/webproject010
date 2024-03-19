@@ -1,0 +1,89 @@
+﻿@model List<BedViewModel>
+@{
+    ViewBag.ViewTitle = Labels.ManageBeds + ": " + ViewBag.RoomName;
+
+    if (ViewBag.IsAdminView)
+    {
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    } 
+}
+
+<style>
+    td {
+        text-align: right;
+    }
+</style>
+
+@Html.Partial("_ValidationSummaryOuter") 
+
+    
+<div>
+    @Html.Partial("_ShelterBedsTable", Model)
+</div>
+
+<div class="clearfix"></div>
+
+<div>
+    <table>
+        <tr>                                 
+            <td>
+                <div class="mrgn-rght-xs">
+	                @if (RightsHelper.HasRight(UserRights.ServiceProviders_Rooms_Beds_Add))
+                    { 
+                        @*@Html.Partial("_OnTheFlyButton",
+                            new OnTheFlyButtonViewModel()
+                            {
+                                ButtonName = Labels.AddBed,
+                                Title = Labels.NewBed,
+                                ActionName = "AjaxAddShelterBed",
+                                ControllerName = "Organization",
+                                PartialName = "~/Views/Organization/_ShelterBeds.cshtml",
+                                CallBackFunction = "OnTheFlyCallBack",
+                                ViewModel = new BedViewModel { 
+                                    RoomID = ViewBag.RoomID,
+                                    RoomName = ViewBag.RoomName,
+                                    ShelterName = ViewBag.ShelterName,
+                                    ShelterID = ViewBag.ShelterID
+                                }
+                            }
+                        )*@
+
+                        @Html.ActionLink(Labels.AddBeds, "ShelterAddMultipleBeds", "Organization", new { shelterID = ViewBag.ShelterID, roomName = ViewBag.RoomName, roomID = ViewBag.RoomID, shelterName = ViewBag.ShelterName }, new { @class = "addButton", alt=Labels.AddBeds, aria_label = Labels.AddBeds, @role = "button" })
+                    }
+                </div>
+            </td>
+            <td>
+                <div>
+                    @if (ViewBag.IsAdminView) {                            
+                        @Html.ActionLink(Labels.Back, "ShelterRoomsList", "Organization", new { id = ViewBag.ShelterID }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+                    }else {
+                        @Html.ActionLink(Labels.Back, "ShelterRoomsList", "Organization", new { id = ViewBag.ShelterID, isAdminView = false }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+                    }
+                </div>
+            </td>
+        </tr>       
+    </table>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            function OnTheFlyCallBack(objectID, formData) {
+                var table = $("#bedsTable");
+                table.DataTable().ajax.reload();
+            }
+            
+            // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+            $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                initButtons();
+                $(".editButton").parents("td").addClass("align-text-center");
+            });
+        </script>
+    );
+}

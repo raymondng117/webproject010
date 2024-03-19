@@ -1,0 +1,58 @@
+﻿@model HousingMaintenanceViewModel
+           
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.HouseID)
+@Html.HiddenFor(model => model.HouseMaintenanceID)
+<div>
+    @Html.HifisEditorFor(model => model.MaintenanceTypeID, CachedTableTypes.HIFIS_MaintenanceTypes, Culture)
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.Description) 
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ContractorPersonID, ViewBag.contractorList as SelectList)
+</div>
+
+@*TODO: redo add new contractor
+<div>
+    <label>&nbsp;</label>
+    @Html.TextBox("AddContractor", null, new { placeholder = Labels.Search })
+</div>*@
+
+<div>
+    @Html.HifisEditorFor(model => model.WorkCompleted, "YesNo") 
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Company) 
+</div>
+
+<div>
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class="wdth-strct-400 hght-strct-50" }) 
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ScheduledFrom)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ScheduledTo)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.EstimatedCost, "Money", new { @class = "money" })     
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ActualFrom)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ActualTo)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ActualCost, "Money", new { @class = "money" })    
+</div>

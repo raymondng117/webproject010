@@ -1,0 +1,158 @@
+﻿@model CaseListViewModel      
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CaseManagementList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    string fullCasesUrl = Url.Content("~/CaseManagement/GetCasesJson/");
+    string pastDateCasesUrl = Url.Content("~/CaseManagement/GetCasesJson/?PTD=true&CSs=" + ((int)CaseStateType.Open).ToString());
+    int i = 0;
+}
+
+<div class="mrgn-tp-md mrgn-bttm-md">
+    @if (ViewBag.PastTargetCount > 0)
+    {
+        <a id="openPastTarget" class="displayButton wb-lbx" href="#casesPastTargetDate">
+            @Labels.PastTargetDate (@ViewBag.PastTargetCount)
+        </a>
+        <section id="casesPastTargetDate" class="mfp-hide modal-dialog modal-content overlay-def width-50-percent">
+            <header class="modal-header">
+                <h2 class="modal-title">@Labels.PastTargetDate</h2>
+            </header>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table id="pastTargetTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                { "width": "25%", "data": "client", "orderable": true, "type": "string", "name" : "LastName"},
+                                                                                { "width": "13%", "data": "caseworker", "orderable": true, "type": "string", "name" : "CaseWorkerLastName"},
+                                                                                { "width": "12%", "data": "dateStart", "orderable": true, "type": "string", "name": "DateStart"},
+                                                                                { "width": "15%", "data": "goal", "orderable": false, "type": "string"},
+                                                                                { "width": "25%", "data": "status", "orderable": false, "type": "string"},
+                                                                                { "width": "10%", "data": "actions", "orderable": false, "type": "string"}
+                                                                            ],
+                                                                            "order": [ [2, "desc"] ],
+                                                                            "serverSide": true,
+                                                                            "processing": true,
+                                                                            "bFilter" : false,
+                                                                            "ajax": "@pastDateCasesUrl" }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.Client</th>
+                                <th>@Labels.CaseWorker</th>
+                                <th>@Labels.DateStart</th>
+                                <th>@Labels.Goal</th>
+                                <th>@Labels.Status</th>
+                                <th>@Labels.Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>                    
+                </div>
+            </div>
+        </section>
+    }
+</div>
+
+<p><a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+<div class="clearfix"></div>
+
+<div class="table-responsive">
+    <table id="casesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                { "width": "25%", "data": "client", "orderable": true, "type": "string", "name" : "LastName"},
+                                                                { "width": "13%", "data": "caseworker", "orderable": true, "type": "string", "name" : "CaseWorkerLastName"},
+                                                                { "width": "12%", "data": "dateStart", "orderable": true, "type": "string", "name": "DateStart"},
+                                                                { "width": "15%", "data": "goal", "orderable": false, "type": "string"},
+                                                                { "width": "25%", "data": "status", "orderable": false, "type": "string"},
+                                                                { "width": "10%", "data": "actions", "orderable": false, "type": "string"}
+                                                            ],
+                                                            "order": [ [2, "desc"] ],
+                                                            "serverSide": true,
+                                                            "processing": true,
+                                                            "bFilter" : false,
+                                                            "ajax": "@fullCasesUrl" }'>
+        <thead>
+            <tr>
+                <th>@Labels.Client</th>
+                <th>@Labels.CaseWorker</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.Goal</th>
+                <th>@Labels.Status</th>
+                <th>@Labels.Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Overlay Panel -->
+<section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.FilterOptions</h2>
+    </header>
+    <div class="modal-body">       
+        @Html.Partial("_CaseSearchFilters", new CaseSearchFilterViewModel() {  })        
+    </div>
+</section>
+
+<div class="clearfix"></div>
+<div class="mrgn-tp-md">
+
+    @if (RightsHelper.HasRight(UserRights.CaseManagement_Add))
+    {
+        @Html.ActionLink(Labels.NewCase, "New", "CaseManagement", null, new { @class = "addButton", alt=Labels.NewCase, aria_label=Labels.NewCase, @role = "button" })
+    }
+
+    @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+    {
+        <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "CaseManagement", DataSetName = "List" }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls = "Modal_Excel", alt=Labels.ExportToExcel, aria_label=Labels.ExportToExcel, @role = "button" })</span>
+    }
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+    //open the filter panel
+    $('#openFilters').on('click', function () {
+        if ($("#filter-panel").hasClass('open'))
+            $('#filter-panel').trigger('close.wb-overlay');
+        else {
+            reinitSelect2($('#CGs'));
+            reinitSelect2($('#CCs'));
+        }
+
+        $('#filter-panel').trigger('open.wb-overlay');
+    });
+
+    //open the past target table
+    $("#openPastTarget").on('mfpOpen', function () {
+        $('#pastTargetTable').DataTable().columns.adjust();
+    });
+    
+    //when the filter panel opens reinit select2s
+    $(document).on('open.wb-overlay', function (event) {
+        doSelect2Init();
+    });
+
+    //close filter panel
+    $('#closeFilters').on('click', function () {
+        $("#filter-panel").trigger("close.wb-overlay");
+    });
+
+    //reapplies container class to the large select2 drop downs
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        select2InitFunctions.push(function () {
+            selector.select2(
+            {
+                allowClear: true,
+                placeholder: $("#DropdownPlaceholder").val(),
+                dropdownAutoWidth: true,
+                containerCssClass: "custom-select2-container"
+            });
+        });
+        doSelect2Init();
+    }
+
+</script>);
+}

@@ -1,0 +1,249 @@
+﻿@model List<HelpModuleModel>
+@{
+    string lang = ViewBag.CurrentCulture;
+	string english = Constants.Eng;
+	ViewBag.LayoutView = LayoutPage.Help;
+	ViewBag.ViewTitle = Labels.HifisHelp_ModulesDev; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@Html.Partial("Plugins/_TinyMCEScript")
+@Html.Partial("Plugins/_TinyMCE-HelpAjaxFix")
+@Html.Partial("Plugins/_ActiveAccordion")
+
+<ol class="breadcrumb mrgn-tp-sm">
+	<li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+	<li>@Labels.HifisHelp_ModulesDev</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+<div id="radio" class="btn-group mrgn-bttm-md">
+    @{ string classlink1 = (ViewBag.Category == null ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_All, "CreateHelpModule", "HIFISHelp", new { }, new { @class = classlink1, alt=Labels.HifisHelp_All, aria_label = Labels.HifisHelp_All, @role = "button" })
+
+    @{ string classlink2 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.Administration ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_Administration, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.Administration }, new { @class = classlink2, alt=Labels.HifisHelp_Administration, aria_label = Labels.HifisHelp_Administration, @role = "button" })
+
+    @{ string classlink3 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.FrontDesk ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_FrontDesk, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.FrontDesk }, new { @class = classlink3, alt=Labels.HifisHelp_FrontDesk, aria_label = Labels.HifisHelp_FrontDesk, @role = "button" })
+
+    @{ string classlink4 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.InternalCommunications ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_InternalCommunications, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.InternalCommunications }, new { @class = classlink4, alt=Labels.HifisHelp_InternalCommunications, aria_label = Labels.HifisHelp_InternalCommunications, @role = "button" })
+
+    @{ string classlink5 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.Reports ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_Reports, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.Reports }, new { @class = classlink5, alt=Labels.HifisHelp_Reports, aria_label = Labels.HifisHelp_Reports, @role = "button" })
+
+    @{ string classlink6 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.ClientInfo ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_ClientInfo, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.ClientInfo }, new { @class = classlink6, alt=Labels.HifisHelp_ClientInfo, aria_label = Labels.HifisHelp_ClientInfo, @role = "button" })
+
+    @{ string classlink7 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.PeopleInfo ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_PeopleInfo, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.PeopleInfo }, new { @class = classlink7, alt=Labels.HifisHelp_PeopleInfo, aria_label = Labels.HifisHelp_PeopleInfo, @role = "button" })
+
+     @{ string classlink8 = (ViewBag.Category == (short)HIFISHelp_CategoryTypes.Common ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+    @Html.ActionLink(Labels.HifisHelp_CommonElements, "CreateHelpModule", "HIFISHelp", new { category = (short)HIFISHelp_CategoryTypes.Common }, new { @class = classlink8, alt=Labels.HifisHelp_CommonElements, aria_label = Labels.HifisHelp_CommonElements, @role = "button" })
+    <div class="clearfix"></div>
+</div>
+<div class="panel-group" id="accordion">
+	@for (int i = 0; i < Model.Count; i++)
+	{ 
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<a data-toggle="collapse" data-parent="#accordion" href="#@(Model[i].HelpModuleID)">
+					<div class="row"> 
+						<div class="col-md-4">
+							<strong>@(lang == english ? Model[i].NameE : Model[i].NameF)</strong>
+							<br />
+							@Labels.HifisHelp_Category: @Model[i].CategoryType / @Model[i].FriendlyName
+						</div>
+						<div class="col-md-4">
+							<div class="text-center">
+								@if (Model[i].ModuleTopics.Count >= 1)
+								{ 
+									@Model[i].ModuleTopics.Count @: @Labels.HifisHelp_NoOfTopics
+								}
+							</div>
+						</div>
+						<div class="col-md-4">
+							@Html.ActionLink(Labels.HifisHelp_ModuleEdit, "EditModule", "HIFISHelp", new { id = Model[i].HelpModuleID }, new { @class = "pull-right editButton editModuleButton", data_Id = Model[i].HelpModuleID, alt=Labels.HifisHelp_ModuleEdit, aria_label = Labels.HifisHelp_ModuleEdit, @role = "button" })
+						</div>
+					</div>
+				</a>
+			</div>
+			<div id="@(Model[i].HelpModuleID)" class="panel-collapse collapse">
+				<div class="mrgn-sm-md mrgn-lft-sm">
+					@Html.Raw((lang == english ? Model[i].ModuleDescriptionE : Model[i].ModuleDescriptionF))  
+				</div>
+				<div class="mrgn-lft-sm mrgn-rght-sm mrgn-bttm-md">
+					<div class="table-responsive"><table class="wb-tables table table-striped" data-wb-tables='{ "ordering" : false,  "paging" : false,  "searching" : false, "info": false }'>
+						<thead>
+							<tr>
+								<th class="text-center">@Labels.HifisHelp_TopicName</th> 
+								<th class="text-center">@Labels.HifisHelp_TopicRanking</th> 
+								<th class="text-center">@Labels.HifisHelp_Action</th>
+							</tr> 
+						</thead>
+						<tbody class="testClass">
+							@foreach (var top in Model[i].ModuleTopics)
+							{
+								if (top.HelpModuleID == Model[i].HelpModuleID)
+								{    
+									<tr>
+										<td class="col-md-4">
+											@(lang == english ? top.NameE : top.NameF)
+										</td>
+										<td class="col-md-2 text-center">
+											@Html.Partial("HelpPartials/_CreateHelpModule_TopicRank", new HelpTopicModel { HelpTopicID = top.HelpTopicID, RankOrder = top.RankOrder })                                                
+										</td>
+										<td class="col-md-6">
+											<div class="pull-right">
+												@Html.ActionLink(Labels.HifisHelp_DevelopTopic, "CreateHelpTopic", "HIFISHelp", new { id = top.HelpTopicID }, new { @class = "editButton", alt=Labels.HifisHelp_DevelopTopic, aria_label = Labels.HifisHelp_DevelopTopic, @role = "button" })                    
+												@Html.ActionLink(Labels.HifisHelp_ChangeTopicName, "EditTopic", "HIFISHelp", new { id = top.HelpTopicID }, new { @class = "wb-lbx editButton editTopicButton", alt=Labels.HifisHelp_ChangeTopicName, aria_label = Labels.HifisHelp_ChangeTopicName, @role = "button" }) 
+												@Html.ActionLink(Labels.HifisHelp_TopicDelete, "DeleteTopic", "HIFISHelp", new { id = top.HelpTopicID }, new { @class = "deleteButton", alt=Labels.HifisHelp_TopicDelete, aria_label = Labels.HifisHelp_TopicDelete, @role = "button" })  
+											</div>
+										</td>
+									</tr>
+								}
+							}  
+						</tbody>                      
+					</table></div>
+				</div> 
+				<div class="row mrgn-bttm-md mrgn-rght-sm"> 
+					<div class="col-md-12">
+						<div class="wb-lbx">
+							@Html.ActionLink(Labels.HifisHelp_TopicNew, "NewTopic", "HIFISHelp", new { id = Model[i].HelpModuleID }, new { @class = "pull-right addButton newTopicButton", alt=Labels.HifisHelp_TopicNew, aria_label =Labels.HifisHelp_TopicNew, @role = "button" }) 
+						</div>
+					</div>
+				</div>              
+			</div>            
+		</div>
+	}
+</div>
+
+<div id="newModButton">
+	@Html.ActionLink(Labels.HifisHelp_ModuleNew, "NewModule", "HIFISHelp", null, new { @class = "addButton newModuleButton", alt=Labels.HifisHelp_ModuleNew, aria_label = Labels.HifisHelp_ModuleNew })                
+</div> 
+@* Module Div *@
+<div id="moduleDiv">
+	<h5 id="newmod" class="mrgn-tp-sm">@Labels.HifisHelp_ModuleNew</h5>
+    <h5 id="editmod" class="mrgn-tp-sm">@Labels.HifisHelp_ModuleEdit</h5>  
+	<hr />
+
+	@using (Html.BeginForm("InsertOrUpdateModule", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+	{
+		@Html.AntiForgeryToken()
+        <div id="moduleUpdate">
+			@* This is the spot the HelpPartials/_CreateHelpModule will load into *@
+		</div>
+		  
+		<div class="mrgn-tp-md">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "CreateHelpModule", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>  			                
+	}
+</div>
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+	@<script type="text/javascript">
+		 function resetTinyMCE() {
+			var i, t = tinyMCE.editors;
+			for (i in t){
+				if (t.hasOwnProperty(i)){
+					t[i].remove();
+				}
+			}
+		 }         
+
+		 $(function () {
+			 $('#moduleDiv').hide();
+			 $('#topicDiv').hide();
+			 
+			 $('.rankOrder').on('select2:unselect', function (e) {
+			     updateRankOrder($(this),true);
+			 });
+
+			 $('.rankOrder').on('select2:select', function (e) {
+			     updateRankOrder($(this),false);
+			 });
+
+			 function updateRankOrder(element , isDeselect) {
+			     var thisHolder = element
+			     var topicId = element.attr('data-id');
+
+			     if (Boolean(isDeselect)) {
+			         var order = null;
+			     } else {
+			         var order = element.val();
+			     }
+			     
+
+
+		         $.ajax({
+		             url: '@Url.Content("~/HifisHelp/ChangeTopicRankAjax")',
+		             type: "GET",
+		             data: { topicid: topicId, rank: order, uniq_param: (new Date()).getTime() }
+		         }).done(function (data) {
+		             var elements = thisHolder.closest("tbody").find("select option:selected[value='" + order + "']");
+		             elements.each(function (index, element) {
+		                 if ($(element).parent().attr("data-id") !== topicId) {
+		                     $(element).removeAttr("selected").parent().trigger("change");
+		                 }
+		             });
+		             if (data.Success) { // i.e. there is no validation summary 
+		                 displayNotification('success', null, data.DataSavedMessage || '@Labels.DefaultDataSavedMessage');
+		             }
+		         });
+		     }
+			 //Edit Module
+			 $('.editModuleButton').click(function (e) {
+				e.preventDefault();
+				$('#topicDiv').hide();
+				$('#newModButton').hide();
+
+				resetTinyMCE();
+				var editDataID = $(this).attr('data-id')
+				$.ajax({
+					url: '@Url.Content("~/HifisHelp/EditModule")',
+					type: "GET",
+					data: { id: editDataID,  uniq_param : (new Date()).getTime() }
+				})
+				.done(function (partialViewResult) {
+					$('#moduleDiv').show();
+					$('#editmod').show();
+					$('#newmod').hide();
+
+					$("#moduleUpdate").html(partialViewResult);
+					$(function () {
+						initTinyMCE();
+						$(document).scrollTop($("#moduleUpdate").offset().top);
+					});                    
+				});
+			 });
+	
+			 //New Module
+			 $('.newModuleButton').click(function (e) {
+				e.preventDefault();
+				resetTinyMCE();
+				$.ajax({
+					url: '@Url.Content("~/HifisHelp/NewModule")',
+					type: "GET",
+					data: null,
+				})
+				.done(function (partialViewResult) {
+					$('#moduleDiv').show();
+					$('#editmod').hide();
+					$('#newmod').show();
+					$('#newModButton').hide();
+
+					$("#moduleUpdate").html(partialViewResult);
+					$(function () {
+						initTinyMCE();
+						$(document).scrollTop($("#moduleUpdate").offset().top);
+					});
+				});
+			 });		
+		 });
+		</script>
+	);
+}

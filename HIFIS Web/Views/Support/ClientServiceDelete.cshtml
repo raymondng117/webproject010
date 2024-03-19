@@ -1,0 +1,114 @@
+﻿@model AdminDeleteViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientServiceDelete;
+    ViewBag.LayoutView = LayoutPage.Client;    
+}
+
+
+<form id="clientServiceDeleteForm" class="form-horizontal">
+    @if (Model.ClientID == null)
+    {
+        <div>
+            @Html.HifisAutocompleteFor(
+                model => model.ClientID
+                , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                , null
+                , new AutocompleteViewModelOptions()
+                {
+                    OnSelect = "updateClientSideBar();"
+                })
+        </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.ClientID)
+    }
+
+    <div class="clearfix"></div>
+
+    <div id="ServiceDiv" style="display:none;">
+        @Html.HifisListBoxFor(model => model.ServiceTypeIDs, Enumerable.Empty<SelectListItem>(), new { @class = "fixedContainer", style = "width:250px;" })
+    </div>
+</form>
+<div class="clearfix"></div><br/>
+    <div class="table-responsive">
+        <table id="clientServicesTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                            { "width": "25", "data": "service"},
+                                                            { "width": "25%", "data": "serviceProvider"},
+                                                            { "width": "40%", "data": "dates"},
+                                                            { "width": "10%", "data": "actions"}
+                                                        ],
+                                                        "processing": true,
+                                                        "order": [ [2, "desc"] ]}'>
+            <thead>
+                <tr>
+                    <th>@Labels.Service</th>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.DateStart - @Labels.DateEnd</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            
+            $(document).on('clientServicesTable:row:removed', function () {
+                console.log('removed');
+                getClientServiceTypes($('#ClientID').val());
+            });
+            
+            //When client ID is selected go grab the things
+            //$('#ClientID').on('select2:select', function () {
+            //    $('#ServiceDiv').show();
+            //    doSelect2Init();
+            //    getROVitals($('#ClientID').val());
+            //    getClientServiceTypes($('#ClientID').val());
+            //});
+
+            function updateClientSideBar() {
+                $('#ServiceDiv').show();
+                doSelect2Init();
+                getROVitals($('#ClientID').val());
+                getClientServiceTypes($('#ClientID').val());
+            }
+
+            $('#ServiceTypeIDs').on('change', function () {
+                if($('#ServiceTypeIDs').val() !== null)
+                    $('#clientServicesTable').DataTable().ajax.url('@Url.Content("~/Support/ClientServiceRecordsJson/?")' + $("#clientServiceDeleteForm").serialize()).load(null, false);
+            })
+    
+            function getClientServiceTypes(id) {
+                $('#ServiceTypeIDs').empty();
+                $('#ServiceTypeIDs').trigger("change");
+                $('#clientServicesTable').DataTable().clear().draw();
+                //Populate drop down on client select
+                $.ajax({
+                    url: "@Url.Action("GetUsedServiceTypes", "Support")",
+                    type: "POST",
+                    data: { "clientID": id }
+                }).done(function (result) {
+                    $('#ServiceTypeIDs').append('<option value=""/>');
+                    $('#ServiceTypeIDs').append(makeOptions(result.data));
+                });
+            };
+
+            function makeOptions(res) {
+                var str = "";
+                if (res.length > 0) {
+                    for (i = 0; i < res.length; i++) {
+                        str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                    }
+                }
+                else {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+                return str;
+            };
+        </script>
+    );
+}

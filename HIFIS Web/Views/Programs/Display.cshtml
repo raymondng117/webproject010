@@ -1,0 +1,13 @@
+﻿@model ProgramViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ProgramDisplay;   
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.programID = Model.ProgramID;//TODO: Why is this done here - JdV
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Programs/_DisplayPrograms.cshtml"), ViewModel = Model })
+
+<div class="mrgn-tp-lg">
+    @Html.Partial("_BaseFooter", Model)
+</div>

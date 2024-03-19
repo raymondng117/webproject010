@@ -1,0 +1,311 @@
+﻿@model PitQuestionnaireViewModel
+@{
+	ViewBag.ViewTitle = Labels.PiTCountEventSettings;//Labels.EditQuestionnaire;
+	
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" role="tab" id="qDetails">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#questionDetails" aria-expanded="false" aria-controls="questionDetails">
+					@*@Labels.Questionnaire*@
+					@Labels.PitEventDetails
+					<span class="caret pull-right mrgn-tp-sm"></span>
+				</a>
+			</h4>
+		</div>
+		
+		<div id="questionDetails" class="panel-collapse collapse" role="tabpanel" aria-labelledby="qDetails">
+			<div class="panel-body">
+				@using (Html.BeginForm("EditPitQuestionnaire", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+				{
+					@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+					<div>                        
+						@Html.Partial("_EditPitQuestionnaire", Model)
+					</div>
+		
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<button type="submit" class="saveButton">@Labels.Save</button>
+						</div>
+					</div>        
+				}
+			</div>
+		</div>
+	</div>
+	
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" role="tab" id="scrQs">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#scrQuestions" aria-expanded="false" aria-controls="scrQuestions">
+					@Labels.ScreeningQuestions
+					<span class="caret pull-right mrgn-tp-sm"></span>
+				</a>
+			</h4>
+		</div>
+
+		<div id="scrQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="scrQs">
+			<div class="panel-body">
+				<div>
+					<div class="table-responsive">
+						<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "ordering": false }'>
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>@Labels.Question</th>
+									<th>@Labels.PitQuestionCategoryType</th>
+									<th>@Labels.QuestionType</th>
+									<th>@Labels.PossibleResponses</th>
+									<th>@Labels.Active</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (!Model.Questions.IsEmptyOrNull())
+								{
+									foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (int)PitQuestionCategories.Screening)
+														.OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+									{
+										<tr>
+											<td>@question.QuestionNo-@question.SequenceNo</td>
+											<td>@((ViewBag.CurrentCulture == Constants.Eng ? question.Question : question.QuestionF))</td>
+											<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionCategoryTypes, Culture, question.QuestionCategoryTypeID)</td>
+											<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, question.QuestionTypeID)</td>
+											<td>
+												@if (question.IsDropdown())
+												{
+													foreach (var dropdown in question.DropdownValues)
+													{
+													    <text>@((ViewBag.CurrentCulture == Constants.Eng ? dropdown.NameE: dropdown.NameF))</text>
+                                                        if (dropdown != question.DropdownValues.Last())
+                                                        { <text>, </text> }
+													}
+												}
+											</td>
+											<td class="align-text-center">@(question.ActiveYN ? Labels.Yes : Labels.No)</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" role="tab" id="coreQs">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#coreQuestions" aria-expanded="false" aria-controls="coreQuestions">
+					@Labels.CoreQuestions
+					<span class="caret pull-right mrgn-tp-sm"></span>
+				</a>
+			</h4>
+		</div>
+
+		<div id="coreQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="coreQs">
+			<div class="panel-body">
+				<div>                    
+					<div class="table-responsive">
+						<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "ordering": false }'>
+							<thead>
+								<tr>
+									<th>@Labels.No</th>
+									<th>@Labels.Question</th>
+									<th>@Labels.PitQuestionCategoryType</th>
+									<th>@Labels.QuestionType</th>
+									<th>@Labels.PossibleResponses</th>
+									<th>@Labels.Active</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (!Model.Questions.IsEmptyOrNull())
+								{
+									foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (int)PitQuestionCategories.Core
+													|| q.QuestionCategoryTypeID == (int)PitQuestionCategories.COHCoreRelated)
+													.OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+									{
+										<tr>
+											<td>@question.QuestionNo-@question.SequenceNo</td>
+                                            <td>@((ViewBag.CurrentCulture == Constants.Eng ? question.Question : question.QuestionF))</td>
+											<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionCategoryTypes, Culture, question.QuestionCategoryTypeID)</td>
+											<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, question.QuestionTypeID)</td>
+											<td>
+												@if (question.IsDropdown())
+                                                {
+                                                    foreach (var dropdown in question.DropdownValues)
+                                                    {
+                                                        <text>@((ViewBag.CurrentCulture == Constants.Eng ? dropdown.NameE : dropdown.NameF))</text>
+                                                        if (dropdown != question.DropdownValues.Last())
+                                                        { <text>, </text> }
+													}
+												}
+											</td>
+											<td class="align-text-center">@(question.ActiveYN ? Labels.Yes : Labels.No)</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" role="tab" id="cohQs">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#cohQuestions" aria-expanded="false" aria-controls="cohQuestions">
+					@Labels.COHQuestions
+					<span class="caret pull-right mrgn-tp-sm"></span>
+				</a>
+			</h4>
+		</div>
+
+		<div id="cohQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="cohQs">
+			<div class="panel-body">
+				<div class="table-responsive">
+					<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "ordering": false }'>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>@Labels.Question</th>
+								<th>@Labels.PitQuestionCategoryType</th>
+								<th>@Labels.QuestionType</th>
+								<th>@Labels.PossibleResponses</th>
+								<th>@Labels.Active</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (!Model.Questions.IsEmptyOrNull())
+							{
+								foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (int)PitQuestionCategories.COH)
+													.OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+								{
+									<tr>
+										<td>@question.QuestionNo-@question.SequenceNo</td>
+                                        <td>@((ViewBag.CurrentCulture == Constants.Eng ? question.Question : question.QuestionF))</td>
+										<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionCategoryTypes, Culture, question.QuestionCategoryTypeID)</td>
+										<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, question.QuestionTypeID)</td>
+										<td>
+											@if (question.IsDropdown())
+                                            {
+                                                foreach (var dropdown in question.DropdownValues)
+                                                {
+                                                    <text>@((ViewBag.CurrentCulture == Constants.Eng ? dropdown.NameE : dropdown.NameF))</text>
+                                                    if (dropdown != question.DropdownValues.Last())
+                                                    { <text>, </text> }
+												}
+											}
+										</td>
+										<td class="align-text-center">@(question.ActiveYN ? Labels.Yes : Labels.No)</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" role="tab" id="localQs">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#localQuestions" aria-expanded="false" aria-controls="localQuestions">
+					@Labels.LocalQuestions
+					<span class="caret pull-right mrgn-tp-sm"></span>
+				</a>
+			</h4>
+		</div>
+
+		<div id="localQuestions" class="panel-collapse collapse" role="tabpanel" aria-labelledby="localQs">
+			<div class="panel-body">
+				<div class="table-responsive">
+					<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "ordering": false }'>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>@Labels.Question</th>
+								<th>@Labels.PitQuestionCategoryType</th>
+								<th>@Labels.QuestionType</th>
+								<th>@Labels.PossibleResponses</th>
+								<th>@Labels.Active</th>
+								<th>@Labels.Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							@if (!Model.Questions.IsEmptyOrNull())
+							{
+								foreach (var question in Model.Questions.Where(q => q.QuestionCategoryTypeID == (int)PitQuestionCategories.Local)
+													.OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))
+								{
+									<tr>
+										<td>@question.QuestionNo-@question.SequenceNo</td>
+                                        <td>@((ViewBag.CurrentCulture == Constants.Eng ? question.Question : question.QuestionF))</td>
+										<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionCategoryTypes, Culture, question.QuestionCategoryTypeID)</td>
+										<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, question.QuestionTypeID)</td>
+										<td>
+											@if (question.IsDropdown())
+                                            {
+                                                foreach (var dropdown in question.DropdownValues)
+                                                {
+                                                    <text>@((ViewBag.CurrentCulture == Constants.Eng ? dropdown.NameE : dropdown.NameF))</text>
+                                                    if (dropdown != question.DropdownValues.Last())
+                                                    { <text>, </text> }
+												}
+											}
+										</td>
+										<td class="align-text-center">@(question.ActiveYN ? Labels.Yes : Labels.No)</td>
+										<td class="align-text-center">
+
+											@Html.ActionLink(Labels.EditPitQuestion, "EditPitQuestionnaireQuestion", "PitEvents", new { questionID = question.QuestionID }, new { @class = "editButton noText" + (Model.HasSurveys ? " disabled " : string.Empty), alt = Labels.EditPitQuestion, aria_label = Labels.EditPitQuestion, @role = "button" })
+											@((question.QuestionTypeID == (byte)PitQuestionTypes.DropdownSingle || question.QuestionTypeID == (byte)PitQuestionTypes.DropdownMultiple) ?
+							Html.ActionLink(Labels.EditDropdown, "EditPitDropdowns", "PitEvents", new { questionID = question.QuestionID }, new { alt = Labels.EditDropdown, aria_label = Labels.EditDropdown, @class = "editDDButton noText" + (Model.HasSurveys ? " disabled " : string.Empty), @role = "button" }) : null)
+											@Html.ActionLink(Labels.DeletePitQuestion, "DeletePitQuestion", "PitEvents", new { questionID = question.QuestionID }, new { alt=Labels.DeletePitQuestion, aria_label = Labels.DeletePitQuestion, @class = "deleteButton noText" + (Model.HasSurveys ? " disabled " : string.Empty), @role = "button" })
+										</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+
+	<div class="clearfix"></div>
+
+	<p>
+
+
+		@if (Model.HasSurveys)
+		{ 
+			@Html.ActionLink(Labels.SelectCOHQuestions, "SelectPitCOHQuestions", "PitEvents", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "addButton disabled", alt=Labels.SelectCOHQuestions, aria_label = Labels.SelectCOHQuestions, @role = "button" })
+
+			@Html.ActionLink(Labels.AddLocalQuestions, "CreatePitQuestionnaireQuestion", "PitEvents", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "addButton disabled", alt=Labels.AddLocalQuestions, aria_label = Labels.AddLocalQuestions, @role = "button" })
+		}
+		else
+		{
+			@Html.ActionLink(Labels.SelectCOHQuestions, "SelectPitCOHQuestions", "PitEvents", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "addButton", alt=Labels.SelectCOHQuestions, aria_label = Labels.SelectCOHQuestions, @role = "button" })
+
+			@Html.ActionLink(Labels.AddLocalQuestions, "CreatePitQuestionnaireQuestion", "PitEvents", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "addButton", alt=Labels.AddLocalQuestions, aria_label = Labels.AddLocalQuestions, @role = "button" })
+
+            @Html.ActionLink(Labels.AddFromPitMarket, "Market", "PitEvents", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "addButton", alt=Labels.AddFromPitMarket, aria_label = Labels.AddFromPitMarket, @role = "button" })
+
+        }
+	
+		@Html.ActionLink(Labels.Cancel, "PitQuestionnairesList", "PitEvents", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+	</p>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

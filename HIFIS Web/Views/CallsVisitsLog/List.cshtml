@@ -1,0 +1,75 @@
+﻿@model CallsVisitsLogListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CallsVisitsLogList;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view. *@
+@Html.Partial("_DateFilterList", Model.DateFilter)
+<div class="clearfix"></div>
+<br /> 
+
+<div class="table-responsive">
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ClientFullName</th>
+                    <th>@Labels.TypeofContact</th>
+                    <th>@Labels.Subject</th>
+                    <th>@Labels.NatureofContact</th>
+                    <th>@Labels.IncidentDateAndTime</th>
+                    <th>@Labels.OtherPartyName</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            @for (int i = 0; i < Model.ClientCallsVisitsLogs.Count; i++)
+            {
+                <tr>
+                    <td class="col-xs-2">@Model.ClientCallsVisitsLogs[i].ClientLastName, @Model.ClientCallsVisitsLogs[i].ClientFirstName</td>
+                    <td class="col-xs-1">@Model.ClientCallsVisitsLogs[i].ContactEventTypeName</td>
+                    <td class="col-xs-1">@Model.ClientCallsVisitsLogs[i].Subject</td>
+                    <td class="col-xs-1">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_NatureOfContactTypes, Culture, Model.ClientCallsVisitsLogs[i].NatureOfContactTypeID)</td>
+                    <td class="col-xs-1">@DateHelper.DateTimeFormaterENFR(Model.ClientCallsVisitsLogs[i].EventDateTime, Labels.CurrentCulture)</td>
+                    <td class="col-xs-2">@Model.ClientCallsVisitsLogs[i].OtherPartyName</td>
+                    <td class="text-center col-xs-2">
+                        @if (RightsHelper.HasRight(UserRights.CallsVisitslog_Display, Model.ClientCallsVisitsLogs[i].OrganizationID))
+                        { 
+                            @Html.ActionLink(Labels.Display, "Display", new { id = Model.ClientCallsVisitsLogs[i].ClientID, contactID = Model.ClientCallsVisitsLogs[i].ClientContactEventTypeID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label=Labels.Display, @role = "button" })
+                        }
+                    
+                        @if (RightsHelper.HasRight(UserRights.CallsVisitslog_Edit, Model.ClientCallsVisitsLogs[i].OrganizationID))
+                        { 
+                            @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ClientCallsVisitsLogs[i].ClientID, contactID = Model.ClientCallsVisitsLogs[i].ClientContactEventTypeID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+                        }                   
+                    </td>
+                </tr>
+            }
+        </table>
+    </div> 
+</div>
+
+<div class="clearfix"></div>
+
+<div class="mrgn-tp-md">
+
+    @if (RightsHelper.HasRight(UserRights.CallsVisitslog_Add))
+    { 
+        @Html.ActionLink(Labels.NewLog, "New", "CallsVisitsLog", null, new { @class = "addButton", alt=Labels.NewLog, aria_label=Labels.NewLog, @role = "button" })
+    }
+
+    @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+    {                        
+        <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName="CallsVisitsLog", DataSetName = "List" }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls="Modal_Excel", alt=Labels.ExportToExcel, aria_label=Labels.ExportToExcel, @role = "button" })</span>
+    }
+         
+</div>
+
+
+
+
+
+
+

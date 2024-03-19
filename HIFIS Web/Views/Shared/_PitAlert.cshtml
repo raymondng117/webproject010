@@ -1,0 +1,49 @@
+﻿
+<div id="dialog-inform-pitalert" class="modal mrgn-tp-20">
+  <div class="modal-dialog whiteBackground">
+    <div id="InformationModalContent" class="modal-content">
+      <div class="modal-header alert alert-warning">
+        <button type="button" id="modalXButton_PitAlert" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h2 class="modal-title">@Labels.Info</h2>
+      </div>
+      <div class="modal-body">
+        <p></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="modalCloseButton_PitAlert" class="btn btn-default modalCloseButton" data-dismiss="modal">@Labels.Close</button>       
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+        $(function () {
+            $("#dialog-inform-pitalert").appendTo("body");
+        });
+
+        $(document).on('click', '.alertInfo', function (e) {
+            e.preventDefault();
+            targetUrl = $(this).attr("href");
+            $.ajax({
+                type: 'POST',
+                url: targetUrl,
+                datatype: 'json',
+                success: function (data) {
+                    if (data.Success == false) {
+                        $(".modal-body").empty();
+                        $(".modal-body").append("<p>" + data.AlertMessage + "</p>");
+                        $("#dialog-inform-pitalert").modal('toggle');
+                    }
+                    else {
+                        window.location.assign(data.Url);
+                    }
+                }
+            });
+        });
+       </script>
+    );
+}

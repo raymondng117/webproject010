@@ -1,0 +1,194 @@
+﻿@model PITVIIntakeViewModel
+
+@{ 
+    bool hasSearchRight = (RightsHelper.HasRight(UserRights.Clients_Search) || RightsHelper.HasRight(UserRights.PiT_SearchClientsRW));
+}
+@Html.HiddenFor(model => model.IntakeID)
+@Html.HiddenFor(model => model.PITSurveyID)
+@Html.HiddenFor(model => model.IntakeTypeID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.ServiceTypeID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+@if (hasSearchRight)
+{
+    <div class="searchClient">
+        @* Dependign on where you get your user right from, we will use a different functino to process the client search (so we don't have to comprmise rights anywhere else...) *@
+        @Html.HifisAutocompleteFor(
+            model => model.PrimaryClientID
+            , (RightsHelper.HasRight(UserRights.Clients_Search) ? Url.Content("~/ClientTombstone/AjaxGetClientList") : Url.Content("~/SPDAT/AjaxGetClientList"))
+            , Model.PrimaryClientName
+            , new AutocompleteViewModelOptions
+            {
+                HiddenValue = true
+                //, HiddenID = "PrimaryClientID"
+            })
+
+        <div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">&nbsp;</label>
+                <div class="col-sm-8">
+                    <button id="ShowAddClientFields" type="button" class="addButton no-print">@Labels.AddNewClient</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="addClient" style="display: @((hasSearchRight) ? "none" : "");">
+    
+    @if (hasSearchRight)
+    {
+        <div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">&nbsp;</label>
+                <div class="col-sm-8">
+                    <button id="ShowSearchClientFields" type="button" class="searchButton no-print">@Labels.SearchClientPlaceholder</button>
+                </div>
+            </div>
+        </div>
+    }
+    
+    @Html.Partial("_PITVVIClientVitals", new ClientVitalsViewModel { })
+</div>
+
+<div>
+	@Html.HifisEditorFor(model => model.CaseworkerID, ViewBag.CaseWorker as SelectList)
+</div>
+
+<div>
+	@Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+</div>
+
+<div>
+	@{ Model.PreScreenPeriodTypeID = 8; }
+	@Html.HifisEditorFor(model => model.PreScreenPeriodTypeID, CachedTableTypes.HIFIS_SPDAT_PreScreenPeriodTypes, new { disabled1 = true })
+</div>
+
+@if (Model.IntakeTypeID == 6)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.PregnancyYN, "YesNo")
+    </div>
+}
+
+<div>
+	@Html.HifisEditorFor(model => model.ConsentYN, "YesNo")
+</div>
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(function () {
+                // Append button to search for existing VIs
+                $('select#PrimaryClientID').on('select2:select', function (e) {
+                    $('#existingAssessments').empty().remove();
+                    var clientid = $('#PrimaryClientID').val();
+                    $('#PrimaryClientID').parent().append('<a class="wb-lbx lbx-modal searchButton" href="@Url.Content("~/SPDAT/CheckExistingAssessments")?ClientID=' + clientid + '&surveyID=' + "@Model.PITSurveyID" + '" id="existingAssessments">@Labels.SearchForAssessments</a>');
+                    init_hifis();
+                    $(".wb-lbx").trigger("wb-init.wb-lbx");
+                });
+
+                // remove existing Assessments button
+                $('select#PrimaryClientID').on('select2:unselect', function (e) {
+                    $('#existingAssessments').empty().remove();
+                });
+
+                //$('.searchClient').on('click', '#existingAssessments', function () {
+                //    console.log('clickyclicky');
+                //});
+
+                // show the form to add a new client and clear the search client form
+                $('#ShowAddClientFields').on('click', function () {
+                    $('.searchClient').find('input, select').val(null).trigger('change').trigger('select2:unselect');
+                    $('.searchClient').hide();
+                    $('.addClient').show();
+                });
+
+                // show the form to search for a client and clear the add client form
+                $('#ShowSearchClientFields').on('click', function () {
+                    $('.addClient').find('input, select').not('#DOB, #AproximativeAge, [name="DOBDateFirmYNbool"], [name="DisabilityYN"]').val(null).trigger('change');
+                    $('.searchClient').show();
+                    $('.addClient').hide();
+                });
+            });
+
+            var veteransEdit = $("#veteransEdit");
+            veteransEdit.on("blur", function () {
+                var veteransSite = $("#veteransSite");
+                if (veteransEdit.val() == 1)
+                    veteransSite.removeClass("hide");
+                else
+                    veteransSite.addClass("hide");
+            });
+
+            function setDateFromAge() {
+                var approxAge = parseInt($('#AproximativeAge').val());
+                var currentYear = new Date().getFullYear();
+                var date = new Date();
+                date.setMonth(0);
+                date.setDate(1);
+                date.setFullYear((currentYear - approxAge));
+
+                $('#DOB').val(date.toISOString().slice(0, 10));
+            }
+
+            function setAgeFromDate() {
+                var date = new Date($('#DOB').val());
+
+                if (isNaN(date) == false) {
+
+                    var currAge = Math.floor((new Date() - new Date($('#DOB').val()).getTime()) / 3.15576e+10);
+
+                    $('#AproximativeAge').val(currAge);
+                }
+                else {
+                    $('#AproximativeAge').val("");
+                }
+            }
+
+            $('input[name=DOBDateFirmYNbool]').on('switchChange.bootstrapSwitch', function (event, state) {
+
+                if (state) {
+                    $('#DOBFlag').show();
+                    $('#AgeFlag').hide()
+                }
+                else {
+                    $('#DOBFlag').hide();
+                    $('#AgeFlag').show();
+                }
+            });
+
+            $(function () {
+                if (veteransEdit.val() == 1)
+                    $("#veteransSite").removeClass("hide");
+
+                @{
+					if (Model.DOBDateFirmYNbool)
+					{
+						@:$('#DOBFlag').show();
+                                                																		@:$('#AgeFlag').hide();
+                                                																	}
+					else
+					{
+						@:$('#DOBFlag').hide();
+                                                																		@:$('#AgeFlag').show();
+                                                																	}
+					if (Model.PrimaryClientID == null)
+					{
+						@:$('#Deceased').hide();
+                                                																	}
+				}
+
+                $('#AproximativeAge').change(setDateFromAge);
+                $('#DOB').change(setAgeFromDate);
+            });
+
+            var requiredIf = function () {
+                var value = $("#DOBDateFirmYNbool").bootstrapSwitch("state");
+                return value === false;
+            }
+		</script>
+	);
+}

@@ -1,0 +1,64 @@
+﻿@model BedViewModel
+@{
+    ViewBag.ViewTitle = Labels.AddMultipleBedsIn + ": " + Model.RoomName;
+    ViewBag.LayoutView = LayoutPage.SecNav;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("ShelterAddMultipleBeds", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+{    
+    @Html.AntiForgeryToken()
+    @Html.Partial("_BaseHiddenFor", Model)
+
+    @Html.HiddenFor(model => model.RoomID)
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.HiddenFor(model => model.ShelterName)
+    @Html.HiddenFor(model => model.RoomName)
+    @Html.HiddenFor(model => model.ID)
+
+    <div>
+        @Html.HifisEditorFor(model => model.Name)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.StartIndex)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.NumberOfBedsToAdd)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.BedTypeID, CachedTableTypes.HIFIS_BedTypes)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.BedStatusTypeID, CachedTableTypes.HIFIS_BedStatusTypes)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.OverflowYN, "YesNo")
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.MobileYN, "YesNo")
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.ActiveYN, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.EffectiveDate)
+    </div>
+
+    <div class="clearfix"></div>
+    
+    <div class="mrgn-bttn-md">
+	    <button type="submit" class="saveButton">@Labels.Save</button>
+        @Html.ActionLink(Labels.Cancel, "ShelterBedsList", "Organization", new { shelterID = Model.OrganizationID, roomID = Model.RoomID, roomName = Model.RoomName, shelterName = Model.ShelterName }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+}
+
+

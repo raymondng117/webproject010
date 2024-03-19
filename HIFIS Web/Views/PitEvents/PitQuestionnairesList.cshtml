@@ -1,0 +1,57 @@
+﻿@model List<PitQuestionnaireViewModel>
+@{
+	ViewBag.ViewTitle = Labels.PitQuestionnaires;
+
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div>
+	@*<p>
+		@Labels.PitQuestionnaires
+	</p>*@
+	<div>
+		<div class="table-responsive">
+			<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+				<thead>
+					<tr>
+						<th>@Labels.Province</th>
+						<th>@Labels.City</th>
+						<th>@Labels.StartDate</th>
+						<th>@Labels.Template</th>
+						<th>@Labels.ServiceProvider</th>
+						<th>@Labels.Active</th>
+						<th>@Labels.Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (!Model.IsEmptyOrNull())
+					{
+						foreach (var pitQuestionnaire in Model)
+						{
+							<tr>
+								<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ProvinceTypes, ViewBag.CurrentCulture, WebHelper.DecryptID(pitQuestionnaire.ProvinceID))</td>
+								<td>@pitQuestionnaire.CityName</td>                                                            
+								<td>@DateHelper.DateTimeFormaterENFR(pitQuestionnaire.EventStartDate.Value, Labels.CurrentCulture)</td>
+								<td>@pitQuestionnaire.PitTemplateName</td>
+								<td>@pitQuestionnaire.OwnerOrgName</td>
+								<td>@(pitQuestionnaire.ActiveYN ? Labels.Yes : Labels.No)</td>
+								<td class="align-text-center">
+									@Html.ActionLink(Labels.DataExport, "ExportPiTData", new { eventID = pitQuestionnaire.PitQuestionnaireID }, new { @class = "listButton noText", alt=Labels.DataExport, aria_label = Labels.DataExport, @role = "button" })
+									@Html.ActionLink(Labels.EditPitQuestionnaire, "EditPitQuestionnaire", new { PitQuestionnaireID = pitQuestionnaire.PitQuestionnaireID }, new { @class = "editButton noText", alt=Labels.EditPitQuestionnaire, aria_label = Labels.EditPitQuestionnaire, @role = "button" })
+									@Html.ActionLink(Labels.Delete, "DeletePitQuestionnaire", new { PitQuestionnaireID = pitQuestionnaire.PitQuestionnaireID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+								</td>   
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="clearfix"></div>
+		@*@if (!Model.IsEmptyOrNull())*@
+		@* { *@
+			<p>
+				@Html.ActionLink(Labels.CreatePitQuestionnaire, "CreatePitQuestionnaire", "PitEvents", null, new { @class = "addButton", alt=Labels.CreatePitQuestionnaire, aria_label = Labels.CreatePitQuestionnaire, @role = "button" })
+			</p>
+		@* } *@
+	</div>
+</div>

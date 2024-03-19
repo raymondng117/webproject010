@@ -1,0 +1,55 @@
+﻿<div id="dialog-confirm" class="modal mrgn-tp-20">
+    <div class="modal-dialog whiteBackground">
+        <div id="ConfirmDeleteModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <button type="button" id="modalXButton_Messages_ConfirmDelete" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h2 class="modal-title">@Labels.ttlDeleteConfirmation</h2>
+            </div>
+            <div class="modal-body">
+                <p>@Labels.DeleteConfirmation</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="modalCloseButton_Messages_ConfirmDelete" class="btn btn-default modalCloseButton" data-dismiss="modal">@Labels.Close</button>
+                <button type="button" id="mdlSaveButton" class="btn btn-primary">@Labels.Delete</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+                $("#dialog-confirm").appendTo("body");
+            });
+
+            var targetUrl;
+
+            //Had to do this so that click event works on dynamically created buttons
+            $(document).on('click', '.deleteMessageButton', function (e) {
+                e.preventDefault();
+
+                targetUrl = $(this).attr("href");
+
+                $("#dialog-confirm").modal('toggle');
+            });
+
+            $(document).on('click', "#mdlSaveButton", function () {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "targetUrl",
+                    OnSuccess = "redirectToList();",
+                    OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.DeleteFailure + "</p>\");",
+                    OnComplete = "$('#dialog-confirm').modal('toggle');",
+                    Type="POST"
+                });
+            });
+
+            function redirectToList() {
+                window.location.replace("@Url.Action("Delete")");
+            };
+        </script>);
+}

@@ -1,0 +1,26 @@
+﻿@model HousePhotoViewModel 
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Model.Comments</h2>
+	</header>
+	<div class="modal-body">
+        <img id="enlargedPhoto" class="full-width" alt="@Model.Comments" src="@Url.Content("~/HousingUnit/GetPhoto/")@Model.HousePhotoID" />
+        @* @Url.Content("~/HousingUnit/GetPhoto/")@Model.HousePhotoID *@
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+		<button id="" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');    
+    $('#Modal_NewItem').width($('#enlargedPhoto').width());
+
+</script>
+
+

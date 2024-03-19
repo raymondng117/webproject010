@@ -1,0 +1,40 @@
+﻿@model EncampmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.EditEncampment;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="clearfix"></div>
+
+<div>
+    @using (Html.BeginForm("EditEncampment", "Outreach", FormMethod.Post, new { @class = "form-horizontal", id = "editEncampmentForm" }))
+    {
+        @Html.Partial("_BaseHiddenFor", Model)
+        @Html.Partial("_Encampment", Model)
+        @Html.Partial("_OutreachAddress", Model.Address, "Address.")
+
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                    @if (ViewBag.ReturnView == "Manage")
+                    {
+                        @Html.ActionLink(Labels.Cancel, "ManageEncampment", "Outreach", new { encampmentID = Model.EncampmentID }, new { @class = "cancelButton", title = Labels.Cancel, @role = "button" })
+                    }
+                    else if (ViewBag.ReturnView == "Display")
+                    {
+                        @Html.ActionLink(Labels.Cancel, "DisplayEncampment", "Outreach", new { encampmentID = Model.EncampmentID }, new { @class = "cancelButton", title = Labels.Cancel, @role = "button" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "EncampmentList", "Outreach", new { }, new { @class = "cancelButton", title = Labels.Cancel, @role = "button" })
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", Model)</div>

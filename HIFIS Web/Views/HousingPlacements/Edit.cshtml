@@ -1,0 +1,220 @@
+﻿@model HousingPlacementViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditPlacement;
+    ViewBag.LayoutView = LayoutPage.Client;
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+
+
+@using (Html.BeginForm("Edit", "HousingPlacements", null, FormMethod.Post, new { @class = "form-horizontal" }))
+{
+
+    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.HousePlacementID)
+    @Html.HiddenFor(model => model.ServiceID)
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.HiddenFor(model => model.PrimaryClientID)
+    @Html.HiddenFor(model => model.PlacementStatus)
+    @Html.HiddenFor(model => model.HousingSecuredPlacementStatus)
+    @Html.HiddenFor(model => model.MovedInPlacementStatus)
+   
+
+
+
+    <div>
+        <div class="row">
+            @Html.HifisEditorFor(model => model.DateSearchStarted)
+        </div>
+        <div class="row">
+            @Html.HifisEditorFor(model => model.TargetDate)
+        </div>
+
+        @* We only want to use the following when the lookup table is modifiable *@
+        @*@if ((PlacementStatusTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) == PlacementStatusTypes.HousingSecured)*@
+        @if (Model.PlacementStatus == PlacementStatusTypes.HousingSecured)
+        {
+            <div class="row">
+                @Html.HifisEditorFor(model => model.DateHousingSecured)
+            </div>
+
+            <div class="row">
+                @Html.HifisEditorFor(model => model.DateExpectedMoveIn)
+            </div>
+
+        }
+        @* We only want to use the following when the lookup table is modifiable *@
+        @*@if ((PlacementStatusTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) == PlacementStatusTypes.MovedIn)*@
+        @if (Model.PlacementStatus == PlacementStatusTypes.MovedIn)
+        {
+            <div class="row">
+                @Html.HifisEditorFor(model => model.DateHousingSecured)
+            </div>
+            <div class="row">
+                @Html.HifisEditorFor(model => model.DateMovedIn)
+            </div>
+
+            <div class="row">
+                @Html.HifisEditorFor(model => model.NextScheduledFollowUp)
+            </div>
+        }
+
+        @* We only want to use the following when the lookup table is modifiable *@
+        @*@if (((PlacementStatusTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) != PlacementStatusTypes.MovedIn)
+            && ((PlacementStatusTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) != PlacementStatusTypes.FollowUpsCompleted)
+            && ((PlacementStatusTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PlacementStatusTypes, (short)Model.PlacementStatus) != PlacementStatusTypes.Failed))*@
+        @if (Model.PlacementStatus != PlacementStatusTypes.MovedIn && Model.PlacementStatus != PlacementStatusTypes.FollowUpsCompleted && Model.PlacementStatus != PlacementStatusTypes.Failed)
+        {
+            <div id="familyInputs">
+                <div class="row">
+                    @Html.HifisListBoxFor(model => model.ClientsFamilyClientIDs, ViewBag.clientFamilyList as SelectList)
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            @Html.Partial("DisplayViewTemplates/_DisplayStringList",
+                                        new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.AssociatedProgramIDs).ToString() })
+        </div>
+
+        <div class="row">
+            @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.caseWorkerList as SelectList)
+        </div>
+
+        <div class="row">
+            @Html.HifisListBoxFor(model => model.HTS, CachedTableTypes.HIFIS_HouseTypes)
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9" style="padding-left:10px;">
+                <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "Display", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.HousePlacementID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+
+    </div>
+}
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+<div id="family-attestation-result"></div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+           
+            //Onload
+            $(function () {
+               
+                @if ((ViewBag.clientFamilyList as SelectList).IsEmptyOrNull() || (ViewBag.clientFamilyList as SelectList).Count() == 0)
+                {
+                    @:$('#familyInputs').hide();
+                }
+
+
+            });
+
+    function SecuredRequiredIf() {
+        var status = $('#PlacementStatus').val();
+        if (status == 'HousingSecured' || status == 'MovedIn') {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function MovedInRequiredIf() {
+        var status = $('#PlacementStatus').val();
+        if (status == 'MovedIn') {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+            @if (appSettings.IsAttestationEnabled())
+            {
+                <text>
+               $('#ClientsFamilyClientIDs').on("select2:select", function (e) {
+                   $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                           {
+                               FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                               ID: e.params.data.id,
+                               InputName: 'ClientsFamilyClientIDs',
+                               Callback: ''
+                           },
+                       function (data) {
+                           $("#family-attestation-result").html(data);
+                       });
+               });
+
+                $('button[name="ClientsFamilyClientIDs_SelectAllBtn"]').on('click', function () {
+                    var select = document.getElementById('ClientsFamilyClientIDs');
+
+                    var familyArray = [];
+                    for (var key in select.options) {
+                        if (select.options.hasOwnProperty(key)) {
+                            familyArray.push(select.options[key].value);
+                        }
+                    }
+
+                    var postData = {
+                        FamilyMembers: familyArray,
+                        InputName: 'ClientsFamilyClientIDs',
+                        Callback: ''
+                    };
+
+                    $.post('@Url.Action("FamilyAttestation", "Master")',
+                            $.param(postData, true),
+                            function (data) {
+                                $("#family-attestation-result").html(data);
+                            });
+                });
+                </text>
+
+            }else if(appSettings.EnforceConsent()){
+
+                <text>
+                $('#ClientsFamilyClientIDs').on("select2:select", function (e) {
+                    $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                            { FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                                ID: e.params.data.id,
+                                InputName: 'ClientsFamilyClientIDs',
+                                Callback: '' },
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                        });
+                });
+
+                $('button[name="ClientsFamilyClientIDs_SelectAllBtn"]').on('click', function () {
+                    var select = document.getElementById('ClientsFamilyClientIDs');
+
+                    var familyArray = [];
+                    for (var key in select.options) {
+                        if (select.options.hasOwnProperty(key)) {
+                            familyArray.push(select.options[key].value);
+                        }
+                    }
+
+                    var postData = {
+                        FamilyMembers: familyArray,
+                        InputName: 'ClientsFamilyClientIDs',
+                        Callback: ''
+                    };
+
+                    $.post('@Url.Action("FamilyConsent", "Master")',
+                            $.param(postData, true),
+                            function (data) {
+                                $("#family-attestation-result").html(data);
+                            });
+                });
+                </text>
+            }
+</script>
+);
+}

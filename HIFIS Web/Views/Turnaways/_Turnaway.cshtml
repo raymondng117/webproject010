@@ -1,0 +1,169 @@
+﻿@model TurnawayViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.IsAnonymous)
+@Html.HiddenFor(model => model.OrganizationID)
+
+@if (!Model.IsAnonymous)
+{
+    <div id="familyInputs">
+        @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList)
+    </div>
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.EffectiveDT, "DateAndTime")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.NumOfAdults, null, new { @class = "AdultNum" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.NumOfChildren, null, new { @class = "ChildNum" })
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReasonsForTurnawayTypeID, CachedTableTypes.HIFIS_ReasonsForTurnawayTypes)
+</div>
+
+
+<div>
+    @Html.HifisEditorFor(model => model.OnBehalfOfID, ViewBag.Staff as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ReferredByName)
+</div>
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+    </div>
+}
+else
+{
+    <div>
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+    </div>
+}
+
+
+@if (Model.TurnawayID == null)
+{
+    <div>
+
+        @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.ProgramList as SelectList)
+    </div>
+}
+else
+{
+    <div>
+        <div class="row">
+            @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "control-label col-sm-3" })
+            <div class="col-sm-9">
+                @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                    new MultipleItemSelectList
+                    {
+                        IDs = Model.AssociatedProgramIDs,
+                        List = ViewBag.ProgramList as SelectList
+                    })
+            </div>
+        </div>
+
+    </div>
+}
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+            function PopulateFamilyList(data)
+            {
+                var select = document.getElementById('ClientsFamilyIDs');
+                var familyBox = $('#ClientsFamilyIDs');
+
+                select.options.length = 0; // clear out existing items
+
+                if(data.length < 1){
+                    $('#familyInputs').hide();
+                    $('#SelectAllFamilyButton').hide();
+                    familyBox.prop('disabled', true);
+                    familyBox.trigger('change');
+                    return;
+                }
+
+                for(var i=0; i < data.length; i++) {
+                    var d = data[i];
+                    select.options.add(new Option(d.Text, d.Value))
+                }
+
+                $('#familyInputs').show();
+                $('#SelectAllFamilyButton').show();
+                familyBox.prop('disabled',false);
+                familyBox.trigger('change');
+            }
+
+            function GetFamilyList(id)
+            {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                    Data = "{clientID: id}",
+                    OnSuccess = "PopulateFamilyList(data);",
+                });
+            }
+
+            function ClientSelectHandler(event, ui)
+            {
+                event.preventDefault();
+                $(this).val(ui.item.labelToInsert);
+                GetFamilyList(ui.item.value);
+                getROVitals(ui.item.value);
+            }
+
+             function SelectAllClients() {
+                var familyInput = $('#ClientsFamilyIDs');
+
+                familyInput.children('option').each(function (index, element) {
+                    if (element.value != "") {
+                        element.selected = true;
+                    }
+                });
+
+                familyInput.trigger('change');
+             }
+
+             var requiredIf1 = function () {
+
+                 var value = document.querySelector("#IsAnonymous").getAttribute("value");
+                 return value === "False";
+             }
+             var requiredIf2 = function () {
+
+                 var value = document.querySelector("#IsAnonymous").getAttribute("value");
+                 return value === "True";
+             }
+</script>
+);
+}
+
+

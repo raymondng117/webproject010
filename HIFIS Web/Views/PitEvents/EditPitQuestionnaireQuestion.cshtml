@@ -1,0 +1,28 @@
+﻿@model PitQuestionViewModel
+@{
+	ViewBag.ViewTitle = Labels.EditQuestion;
+	
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>    
+	@using (Html.BeginForm("EditPitQuestionnaireQuestion", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+	{
+		@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+		<div>
+			@Html.Partial("_EditPitQuestionnaireQuestion", Model)  
+		</div>
+		
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="saveButton  ">@Labels.Save</button>
+				@Html.ActionLink(Labels.Cancel, "EditPitQuestionnaire", new { PitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+			</div>
+		</div>
+	}
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

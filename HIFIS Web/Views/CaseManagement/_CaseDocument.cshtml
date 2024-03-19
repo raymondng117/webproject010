@@ -1,0 +1,16 @@
+﻿@model CaseDocumentsViewModel
+
+<div class="col-sm-12">
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.CaseID)
+
+    @Html.HiddenFor(model => model.ClientID)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Documents, new { @class = "col-sm-3" })
+        <div class="col-sm-9">
+            @Html.HifisEditorFor(model => model.Documents, "File", null, true, null)
+        </div>
+    </div>
+</div>

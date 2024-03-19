@@ -1,0 +1,10 @@
+﻿@model ConsentViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayConsent;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ConsentDisplay", Model)
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

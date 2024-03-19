@@ -1,0 +1,157 @@
+﻿@model LogOnModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+
+    if (ViewBag.ChangeOrgTitle != null)
+    {
+        ViewBag.ViewTitle = ViewBag.ChangeOrgTitle;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.logIn;
+    }
+}
+@if (HttpContext.Current.Request.Url.Host.ToLower() == "pit.demo.hifis.ca" )
+{
+    // When posted to "demo.hifis.ca", the following block will display
+    <div class="alert exception-panel">
+        <div class="mrgn-bttm-sm align-center">
+            <h3 class="panel-title">Login Credentials / Pouvoirs connexion</h3>
+        </div>
+        <div>
+            <div class="container">
+                <div class="row" style="margin-top: 10px;">
+                    <div class="col-sm-3 col-sm-push-3"><b>User Name / Nom d'utilisateur</b></div>
+                    <div class="col-sm-3 col-sm-push-3"><b>Password / Mot de passe:</b></div>
+                </div>
+                <div class="row" style="margin-top: 3px;">
+                    <div class="col-sm-3"><b>PIT Administrator</b></div>
+                    <div class="col-sm-3">PitAdminVolunteer</div>
+                    <div class="col-sm-3">123456</div>
+                </div>
+                <div class="row" style="margin-top: 3px;">
+                    <div class="col-sm-3"><b>PIT Volunteer</b></div>
+                    <div class="col-sm-3">PitLiveVolunteer</div>
+                    <div class="col-sm-3">123456</div>
+                </div>
+                <div class="row" style="margin-top: 3px;">
+                    <div class="col-sm-3"><b>General User</b></div>
+                    <div class="col-sm-3">User</div>
+                    <div class="col-sm-3">123456</div>
+                </div>
+                <div class="row" style="margin-top: 3px;">
+                    <div class="col-sm-3"><b>Administrator</b></div>
+                    <div class="col-sm-3">Admin</div>
+                    <div class="col-sm-3">123456</div>
+                </div>
+                <div class="row" style="margin-top: 3px;">
+                    <div class="col-sm-3"><b>Registry Week Volunteer</b></div>
+                    <div class="col-sm-3">RWVolunteer</div>
+                    <div class="col-sm-3">123456</div>
+                </div>
+            </div>
+            <div class="container" style="margin-top: 10px;">
+                <div class="row">
+                    <div class="col-sm-5"><b>HIFIS Support Desk / Bureau de soutien du SISA:</b></div>
+                    <div class="col-sm-2">1-866-324-2375</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (HttpContext.Current.Request.Url.Host.ToLower() == "demo.hifis.ca")
+{
+    // When posted to "demo.hifis.ca", the following block will display
+    <div class="alert exception-panel">
+        <div class="mrgn-bttm-sm align-center">
+            <h3 class="panel-title">Login Credentials / Pouvoirs connexion</h3>
+        </div>
+        <div>
+            <div class="container" style="margin-top: 10px;">
+                <div class="row">
+                    <div class="col-lg-3" style="padding-right: 20px; overflow-wrap:"><b>User Name / Nom d'utilisateur:</b></div>
+                    <div class="col-lg-1">Admin</div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3"><b>Password / Mot de passe:</b></div>
+                    <div class="col-lg-1">123456</div>
+                </div>
+            </div>
+            <div class="container" style="margin-top: 10px;">
+                <div class="row">
+                    <div class="col-lg-5"><b>HIFIS Support Desk / Bureau de soutien du SISA:</b></div>
+                    <div class="col-lg-2">1-866-324-2375</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("LogOn", "Account", FormMethod.Post, new { @class = "form-horizontal", id = "modalLoginForm" }))
+{
+    @Html.Partial("_LogOn", Model)
+
+    <div class="form-group">
+        <div class="col-sm-offset-4 col-sm-8">
+            <button type="submit" name="btnLogin" id="btnLogin">@Labels.logIn <span class="glyphicon glyphicon-log-in"></span></button>
+        </div>
+    </div>
+}
+
+@if (ViewBag.Outdated == false)
+{
+    @Html.ActionLink(Labels.ForgotPasswordLanding, "ForgetPassword", "Account", new { alt = Labels.ForgotPasswordLanding, aria_label=Labels.ForgotPasswordLanding })
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(function () {
+                $('#clientTimezone').val(new Date().getTimezoneOffset());
+
+                var lastUserName;
+
+                $("#UserName").blur(function () {
+                    if ($("#UserName").val() != "")
+                        twoFactorAuthentication();
+                });
+
+                $("#reloadSP").click(function () {
+                    twoFactorAuthentication(true);
+                });
+
+                function twoFactorAuthentication(forceReload) {
+                    if (forceReload == true || lastUserName != $("#UserName").val() && $("#UserName").val().trim() != "") {
+                        lastUserName = $("#UserName").val();
+
+                        $.ajax({
+                            url: "@Url.Content("~/Account/TwoFactorAuthentication")",
+                            type: "POST",
+                            data: {
+                                __RequestVerificationToken: gettoken(),
+                                userName: $('#UserName').val(), isTwoFactor: "@Model.EnableSecurityToken"
+                            },
+                            contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                        }).done(function (data) {
+                            console.log(data);
+                        }).complete(function () {
+                            //window.hideLoader('#OrganizationID');
+                        });
+                    }
+                }
+            });
+
+            if (document.readyState === "complete") {
+                var requiredIf = function () {
+                    var value = document.querySelector("#EnableSecurityToken").getAttribute("value");
+                    return value === "True";
+                }
+            }
+        </script>
+);
+}

@@ -1,0 +1,317 @@
+﻿@model RegistrationViewModel
+
+@{
+    ViewBag.Title = Labels.ManageRegistration;
+    ViewBag.ViewTitle = Labels.ManageRegistration;
+    //ViewBag.ViewTitle = Model.ServiceProviderName + " Registration Status";
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@if (Model != null && Model.Status >= RegistrationStatusTypes.DPA_Required)
+{
+    @Html.HifisLabelFor(model => model.SiteID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-sm" })
+    @Html.DisplayFor(model => model.SiteID)
+}
+<style>
+    .regStatus-completed {
+        margin-left: 2.3em;
+    }
+
+        .regStatus-completed::before {
+            color: #278400;
+            content: "\e084";
+            display: inline-block;
+            font-family: "Glyphicons Halflings";
+            margin-left: -1.3em;
+            position: absolute;
+        }
+
+    .regStatus-current {
+        margin-left: 2.3em;
+        font-weight: bold;
+    }
+
+        .regStatus-current::before {
+            content: "\e092";
+            display: inline-block;
+            font-family: "Glyphicons Halflings";
+            margin-left: -1.3em;
+            position: absolute;
+        }
+
+    .regStatus-grey {
+        margin-left: 2.3em;
+        color: #a2a2a2;
+    }
+</style>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">
+        <p>@Labels.NhisConnectionMessage_Instances</p>
+    </div>
+}
+else
+{
+<div>
+    <h4 style="margin-bottom:3px;">@Labels.Status</h4>
+    @if (Model.Status > RegistrationStatusTypes.Unregistered)
+    {
+        <div class="regStatus-completed">@Labels.Unregistered</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.Unregistered)
+    {
+        <div class="regStatus-current">@Labels.Unregistered</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.Unregistered</div>
+    }
+    @if (Model.Status > RegistrationStatusTypes.PendingApproval)
+    {
+        <div class="regStatus-completed">@Labels.PendingApproval</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.PendingApproval)
+    {
+        <div class="regStatus-current">@Labels.PendingApproval</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.PendingApproval</div>
+    }
+    @if (Model.Status > RegistrationStatusTypes.DPA_Required)
+    {
+        <div class="regStatus-completed">@Labels.DPARequired</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.DPA_Required)
+    {
+        <div class="regStatus-current">@Labels.DPARequired</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.DPARequired</div>
+    }
+    @if (Model.Status > RegistrationStatusTypes.DPA_Received)
+    {
+        <div class="regStatus-completed">@Labels.DPAReceived</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.DPA_Received || Model.Status == RegistrationStatusTypes.DPA_Signed)
+    {
+        <div class="regStatus-current">@Labels.DPAReceived</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.DPAReceived</div>
+    }
+    @if (Model.Status > RegistrationStatusTypes.DPA_Verified)
+    {
+        <div class="regStatus-completed">@Labels.DPAVerified</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.DPA_Verified)
+    {
+        <div class="regStatus-current">@Labels.DPAVerified</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.DPAVerified</div>
+    }
+    @if (Model.Status > RegistrationStatusTypes.DPA_CounterSigned)
+    {
+        <div class="regStatus-completed">@Labels.DPACounterSigned</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.DPA_CounterSigned)
+    {
+        <div class="regStatus-current">@Labels.DPACounterSigned</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.DPACounterSigned</div>
+    }
+    @if (Model.Status > RegistrationStatusTypes.DPA_Downloaded)
+    {
+        <div class="regStatus-completed">@Labels.ReadyToActivate</div>
+    }
+    else if (Model.Status == RegistrationStatusTypes.DPA_Downloaded)
+    {
+        <div class="regStatus-current">@Labels.ReadyToActivate</div>
+    }
+    else
+    {
+        <div class="regStatus-grey">@Labels.ReadyToActivate</div>
+    }
+
+</div>
+<br />
+
+switch (Model.Status)
+{
+    case RegistrationStatusTypes.PendingJoinRegApproval:
+        <p>@Labels.PendingJoinRegApprovalText</p>
+        break;
+    case RegistrationStatusTypes.EULA_not_Accepted:
+        break;
+    case RegistrationStatusTypes.Unregistered:
+        <p>@Html.Raw(Labels.UnregisteredText1)</p>
+        @Html.ActionLink(Labels.BeginRegistration, "Register", new { ID = Model.ID }, new { @class = "addButton", target = "_blank", onclick = "$('#refreshModal').trigger('open.wb-lbx', [[{src: '#refreshModal',type: 'inline'}],true]);", alt=Labels.BeginRegistration, aria_label = Labels.BeginRegistration, @role = "button" })
+        <br />
+        <br />
+        <p>@Html.Raw(@Labels.UnregisteredText2)</p>
+        <a class="moveRightButton wb-lbx lbx-modal" title="@Labels.JoinRegistration" aria-controls='Modal_JoinReg' href="#Modal_JoinReg" role="button">
+            @Labels.JoinRegistration
+        </a>
+        break;
+    case RegistrationStatusTypes.PendingApproval:
+        <p>@Html.Raw(Labels.PendingApprovalText)</p>
+        break;
+    case RegistrationStatusTypes.DPA_Required:
+        <p>@Labels.DPARequiredText</p>
+        <div>
+            <p><strong>1:</strong> @Labels.DPARequiredText1</p>
+            <div class="col-sm-offset-1">
+                <p>@Html.ActionLink(Labels.DownloadBlankDPA, "DownloadDPA", new { french = (ViewBag.CurrentCulture != Constants.Eng) }, new { @class = "downloadButton", alt=Labels.DownloadBlankDPA, aria_label = Labels.DownloadBlankDPA, @role = "button" })</p>
+            </div>
+        </div>
+        <br />
+
+        <div>
+            <p><strong>2:</strong> @Labels.DPARequiredText2</p>
+        </div>
+        <br />
+
+        <div>
+            <p><strong>3:</strong> @Labels.DPARequiredText3</p>
+            <div class="col-sm-7 ">
+                @Html.Partial("_UploadDPA", new DPAFile() { ID = Model.ID })
+            </div>
+        </div>
+        break;
+    case RegistrationStatusTypes.DPA_Exempt:
+        //?
+        break;
+    case RegistrationStatusTypes.DPA_Signed:
+    case RegistrationStatusTypes.DPA_Received:
+        <p>@Html.Raw(Labels.DPAReceivedText)</p>
+        break;
+    case RegistrationStatusTypes.DPA_Verified:
+        <p>@Html.Raw(Labels.DPAVerifiedText)</p>
+        break;
+    case RegistrationStatusTypes.DPA_CounterSigned:
+        <p>@Labels.DPACounterSignedText</p>
+        @Html.ActionLink(Labels.DownloadCounterSignedDPA, "DownloadCounterDPA", new { id = Model.ID }, new { @class = "downloadButton", onclick = "setTimeout('location.reload();',3000);", alt=Labels.DownloadCounterSignedDPA, aria_label = Labels.DownloadCounterSignedDPA, @role = "button" })
+        <br /><br />
+        <p>@Html.Raw(Labels.DPACounterSignedText2)</p>
+        break;
+    case RegistrationStatusTypes.DPA_Downloaded:
+        <p>
+            @Html.Raw(Labels.ReadyToActivateText)
+            <br />
+            @Html.ActionLink(Labels.DownloadCounterSignedDPA, "DownloadCounterDPA", new { id = Model.ID }, new { @class = "downloadButton", alt=Labels.DownloadCounterSignedDPA, aria_label = Labels.DownloadCounterSignedDPA, @role = "button" })
+        </p>
+        <br />
+        <section class="alert alert-warning " id="alert-warning" open="">
+            <h3>@Labels.FactoryReset</h3>
+            <p>
+                @Html.Raw(Labels.FactoryResetText)
+                <br /><br />
+                <button class="btn btn-danger" type="button" role="button" onclick="$('#FactoryResetConfirmation_Modal').trigger('open.wb-lbx', [[{ src: '#FactoryResetConfirmation_Modal', type: 'inline' }], true]);">
+                    @Labels.Reset
+                </button>
+            </p>
+        </section>
+        <br />
+        if (ViewBag.hasProdInstanc == true)
+        {
+            <section class="alert alert-info " id="alert-info" open="">
+                <h3>@Labels.Activate</h3>
+                <p>
+                    @Labels.ActivateText
+                    <br /><br />
+                    <button class="btn btn-primary" type="button" role="button" onclick="$('#ActivateConfirmation_Modal').trigger('open.wb-lbx', [[{ src: '#ActivateConfirmation_Modal', type: 'inline' }], true]);">
+                        @Labels.Activate
+                    </button>
+                </p>
+            </section>
+        }
+        else
+        {
+            <section class="alert alert-warning " id="alert-warning" open="">
+                <h3>@Labels.Activate</h3>
+                <p>
+                    @Labels.ActivateDisabledText
+                    <br /><br />
+                    <button class="btn btn-default disabled" role="button" type="button">
+                        @Labels.Activate
+                    </button>
+                </p>
+            </section>
+        }
+        break;
+    case RegistrationStatusTypes.SiteActivated:
+        <p>@Labels.SiteActivatedText</p>
+        @Html.ActionLink(Labels.DownloadCounterSignedDPA, "DownloadCounterDPA", new { id = Model.ID }, new { @class = "downloadButton", alt=Labels.DownloadCounterSignedDPA, aria_label = Labels.DownloadCounterSignedDPA, @role = "button" })
+        break;
+}
+
+<section id="refreshModal" class="mfp-hide modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.WaitingforRegistration</h2>
+    </header>
+    <div class="modal-body">
+        @Labels.WaitingforRegistrationText<br />
+        <button onclick="location.reload();">@Labels.Close</button>
+    </div>
+</section>
+
+<section id="FactoryResetConfirmation_Modal" class="mfp-hide modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.FactoryResetConfirmation</h2>
+    </header>
+    <div class="modal-body">
+        <div class="alert alert-warning " id="alert-warning" open="" style="margin-bottom: 0px !important;">
+            @Html.Raw(Labels.FactoryResetConfirmationText)
+            <br />
+            <input id="resetConfirmTextbox" class="form-control">
+        </div>
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        @Html.ActionLink(Labels.Reset, "FactoryReset", new { id = Model.ID }, new { id = "ResetButton", @class = "btn btn-danger disabled", disabled = "disabled", alt=Labels.Reset, aria_label = Labels.Reset, @role = "button" })
+        <button class="btn btn-primary popup-modal-dismiss cancelButton" type="button" role = "button">@Labels.Cancel</button>
+    </div>
+</section>
+
+<section id="ActivateConfirmation_Modal" class="mfp-hide modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.ActivateConfirmation</h2>
+    </header>
+    <div class="modal-body">
+        <p>
+            @Html.Raw(Labels.ActivateConfirmationText)
+        </p>
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        @Html.ActionLink(Labels.Yes, "ActivateRegistration", new { id = Model.ID }, new { @class = "btn btn-default", alt=Labels.Yes, aria_label = Labels.Yes, @role = "button" })
+        <button class="btn btn-primary popup-modal-dismiss cancelButton" type="button" role = "button">@Labels.No</button>
+    </div>
+</section>
+
+
+@Html.Partial("_JoinRegistration", new JoinRegistrationViewModel() { RegID = Model.ID })
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     $(document).ready(function () {
+         $('#resetConfirmTextbox').on('change propertychange input', function (e) {
+             if (e.target.value.toLowerCase() == "reset" || e.target.value.toLowerCase() == "réinitialisez" || e.target.value.toLowerCase() == "reinitialisez") {
+                 $('#ResetButton').removeClass('disabled');
+                 $('#ResetButton').removeAttr('disabled');
+             } else {
+                 $('#ResetButton').addClass('disabled');
+                 $('#ResetButton').attr('disabled', 'disabled');
+             }
+         });
+     });
+</script>);
+}

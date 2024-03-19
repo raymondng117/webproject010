@@ -1,0 +1,27 @@
+﻿@model List<HIFISGlossaryModel> 
+@{
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISGlossary;
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+}
+@Html.Partial("Common/_TopArea")     
+<div>
+    <div class="table-responsive"><table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>  
+        <thead>
+            <tr>
+                <th>@Labels.HifisHelp_Term</th>
+                <th>@Labels.HifisHelp_Definition</th>
+            </tr> 
+        </thead>
+        <tbody>
+            @foreach (var term in Model)
+            {
+            <tr>
+                <td class="preserve-newline vertical-align-top"><strong>@(lang == english ? term.WordE : term.WordF)</strong></td>
+                <td class="preserve-newline">@(lang == english ? term.DefinitionE : term.DefinitionF)</td>
+            </tr>
+            }
+        </tbody>
+    </table></div> 
+</div>

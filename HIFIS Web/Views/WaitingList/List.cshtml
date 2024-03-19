@@ -1,0 +1,82 @@
+﻿@using System.Linq
+@model  WaitingListsListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_WaitingLists;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+    Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values *@
+@Html.Partial("_DateFilterList", Model.DateFilter)
+<div class="clearfix"></div>
+<br />
+
+<div>
+    @using (Html.BeginForm("List", "WaitingList", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        <div class="form-color-white module-form-block">
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.WaitingListName
+                                </th>
+                                <th>@Labels.WaitingListType
+                                </th>
+                                <th>@Labels.DateStart
+                                </th>
+                                <th>@Labels.Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.WaitingLists.IsEmptyOrNull())
+                            {
+                                foreach (var vm in Model.WaitingLists)
+                                {
+                                    <tr>
+                                        <td>@vm.WaitingListName</td>
+                                        <td class="align-text-center">@vm.WaitingListTypeName</td>
+                                        <td class="align-text-center">@vm.ListDateStart.ToString("yyyy-MM-dd")</td>
+                                        <td class="align-text-center">
+                                            @if (RightsHelper.HasRight(UserRights.WaitingList_Display))
+                                            {
+                                                @Html.ActionLink(Labels.Display, "DisplayList", "WaitingList", new { WaitingListID = vm.WaitingListID }, new { @class = "noText displayButton", alt = Labels.Display, aria_label = Labels.Display, @role = "button" }) 
+                                            }
+                                
+                                            @if (RightsHelper.HasRight(UserRights.WaitingList_Edit))
+                                            {
+                                                @Html.ActionLink(Labels.Edit, "EditList", "WaitingList", new { WaitingListID = vm.WaitingListID }, new { @class = "noText editButton", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" }) 
+                                            }
+                                
+                                            @if (RightsHelper.HasRight(UserRights.WaitingList_Clients_List))
+                                            {
+                                                @Html.ActionLink(Labels.ManageClients, "ManageClients", "WaitingList", new { WaitingListID = vm.WaitingListID }, new { @class = "noText clientButton", alt = Labels.ManageClients, aria_label = Labels.ManageClients, @role = "button" }) 
+                                            }         
+                                            
+                                            @if (RightsHelper.HasRight(UserRights.WaitingList_Delete))
+                                            {
+                                                @Html.ActionLink(Labels.Delete, "DeleteWaitingList", "WaitingList", new { WaitingListID = vm.WaitingListID }, new { @class = "noText deleteButton", alt = Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                            }
+                       
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+        
+        <div class="clearfix"></div>
+        
+        <div class="mrgn-tp-md">
+            @if (RightsHelper.HasRight(UserRights.WaitingList_Add))
+            {
+                @Html.ActionLink(Labels.NewWaitingList, "NewList", "WaitingList", null, new { @class = "addButton", alt = Labels.NewWaitingList, aria_label = Labels.NewWaitingList, @role = "button" })
+            }            
+        </div>
+    }
+</div>

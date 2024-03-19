@@ -1,0 +1,133 @@
+﻿@model CallsVisitsLogViewModel 
+
+<div class="displayView col-sm-12 mrgn-bttm-md">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Subject)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="Subject" name="Subject"
+                   value="@Html.DisplayFor(model => model.Subject)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ContactEventTypeID)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="ContactEventTypeID" name="ContactEventTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.ContactEventTypeID,
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ContactEventTypes, ViewBag.CurrentCulture, Model.ContactEventTypeID)
+                            })
+                            @if (Model.IncomingYNbool)
+                            {
+                                @:(@Labels.Incoming)
+                            }
+                            else
+                            {
+                                @:(@Labels.Outgoing)
+                            }" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.GeoRegionTypeID)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="GeoRegionTypeID" name="GeoRegionTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.GeoRegionTypeID,
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, ViewBag.CurrentCulture, Model.GeoRegionTypeID)
+                            })" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.EventDateTime)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="EventDateTime" name="EventDateTime"
+                   value="@Html.HifisDisplayFor(model => model.EventDateTime, null, true, "DateAndTime")" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OtherPartyName)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="OtherPartyName" name="OtherPartyName"
+                   value="@Html.DisplayFor(model => model.OtherPartyName)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExResidentYNbool)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="ExResidentYNbool" name="ExResidentYNbool"
+                   value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ExResidentYNbool).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.NatureOfContactTypeID)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="NatureOfContactTypeID" name="NatureOfContactTypeID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.NatureOfContactTypeID,
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_NatureOfContactTypes, ViewBag.CurrentCulture, Model.NatureOfContactTypeID)
+                            })" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Hours)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="Hours" name="Hours"
+                   value="@Html.DisplayFor(model => model.Hours)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Minutes)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="Minutes" name="Minutes"
+                   value="@Html.DisplayFor(model => model.Minutes)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OrganizationID)
+        <div class="col-sm-9">
+            <input type="text" class="inputTextOnly" id="OrganizationID" name="OrganizationID"
+                   value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.OrganizationID,
+                                List = ViewBag.Orgs as SelectList
+                            })" readonly style="width: 100%;" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <label class="control-label wdth-strct-200">@Labels.Comment</label>
+            @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="btn-group">
+                @if (RightsHelper.HasRight(UserRights.CallsVisitslog_Edit, Model.OrganizationID))
+                { 
+                    @Html.ActionLink(Labels.Edit, "Edit", new { id = Model.ClientID, contactID = Model.ClientContactEventTypeID }, new { @class = "editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role="button" })
+                }
+                    
+                @Html.ActionLink(Labels.Cancel, "ClientList", "CallsVisitsLog", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button" }) 
+            </div>
+        </div>
+    </div>
+</div>

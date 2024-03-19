@@ -1,0 +1,26 @@
+﻿@model WaitingListViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)   
+ 
+@Html.HiddenFor(model => model.WaitingListID)
+             
+<div class="row">
+    @Html.HifisEditorFor(model => model.WaitingListName)
+</div>
+
+<div class="row">       
+    @Html.HifisEditorFor(model => model.WaitingListTypeID, CachedTableTypes.HIFIS_WaitingListTypes, Culture)
+</div>
+
+<div class="row">
+    @Html.HifisListBoxFor(model => model.OrganizationIDs, ViewBag.AllOrganizations as SelectList)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(model => model.ListDateStart)
+</div>
+
+<div class="row">
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+</div>

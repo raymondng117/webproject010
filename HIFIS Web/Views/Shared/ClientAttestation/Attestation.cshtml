@@ -1,0 +1,117 @@
+﻿@model AttestationViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.AttestationDialogTitle;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="modal-view-placeholder">
+    @Html.Partial("_ValidationSummaryOuter")
+</div>
+
+@Html.Partial("ClientAttestation/_AttestationModal")
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script>
+            var femaleGenderId = "@((short)GenderTypes.Female)";
+            var femalePictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+            var malePictureSrc = "@Url.Content("~/Content/images/Thumbnails/DefaultPicture.jpg")";
+            var clientPictureUrl = "@Url.Action("GetClientPhotoThumbnail", "Documents")?id=@Model.ClientROVitals.ClientID";
+
+            var clientHasPicture = "@Model.ClientROVitals.HasPicture.ToString().ToLower()";
+            var clientGenderId = "@Model.ClientROVitals.GenderID";
+
+            function adjustBodyHeight() {
+                var $header = $("header[role='banner']");
+                var $pageTitle = $("#page-title");
+                var $footer = $("footer[id='wb-info']");
+                var height = $(window).height() - $header.height() - ($pageTitle.height() * 3) - $footer.height();
+                $("#modal-view-placeholder").css("height", height + "px");
+            }
+
+            function redirectToReferrer() {
+                var referrerUrl = "@Request.UrlReferrer";
+                if (referrerUrl === "") {
+                    window.location.replace("@Url.Content("~/")");
+                } else {
+                    window.location.replace(referrerUrl);
+                }
+            };
+
+            function showOverlayLoader() {
+                $('<div id="overlay-div"><div id="inner-overlay" style="left: 45%;"><img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="@Labels.AnimatedActivityIndicatorImage" /> <p>@Labels.Loading</p></div></div>').appendTo('body');
+            }
+
+            function hideOverlayLoader() {
+                $('#overlay-div').remove();
+            }
+
+            //for Ajax validation display
+            function showValidation(data) {
+                $('#validationSummary').removeClass("hide").addClass("show");
+                $('#validationSummaryText').removeClass("hide").empty().append(data);
+            }
+
+            $(function () {
+                adjustBodyHeight();
+
+                $('#yes-button').on('click', function () {
+                    $("#attestationDialog").modal('toggle');
+                    showOverlayLoader();
+
+                    //go ahead and save the attestation
+                    $.ajax({
+                        url: "@Url.Action("SaveClientAttestation", "Master")",
+                        type: "POST",
+                        data: $('#attestationForm').serialize(),
+                    }).done(function (data) {
+                        if (data.Success) {
+                            displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                    var encodedCallback = encodeURIComponent("@Html.Raw(Model.Callback)");
+                    var encodedReturnPath = encodeURIComponent("@Html.Raw(Request.UrlReferrer)");
+
+                            @*This is just for browsing...*@
+                            @if (appSettings.EnforceConsent() && !Model.ClientROVitals.HasActiveConsent)
+                            {
+                            <text>
+                            /*Now I have to go to the consent...*/
+                            window.location.replace('@Url.Action("ConsentRedirect", "Master")'
+                                + "?id=" + '@Model.ClientROVitals.ClientID'
+                                + "&age=" + '@Model.ClientROVitals.AproximativeAge'
+                        + "&callback=" + encodedCallback
+                        + "&returnPath=" + encodedReturnPath
+                                + "&personID=" + '@Model.ClientROVitals.PersonID'
+                                + "&fullName=" + '@(Model.ClientROVitals.FirstName + " " +Model.ClientROVitals.LastName)');
+                            </text>
+                            }
+                            else
+                            {
+                            <text>
+                            //then continue with normal flow
+                            window.location.replace("@Html.Raw(Model.Callback)");
+                            </text>
+                            }
+                        } else {
+                            displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                            showValidation(data.ValidationSummary);
+                            hideOverlayLoader();
+                        }
+                    });
+                });
+
+                $('#no-button').on('click', function () {
+                    showOverlayLoader();
+                    redirectToReferrer();
+                });
+            });
+        </script>
+);
+
+    Html.AddScriptFile("~/Scripts/Hifis/AttestationDialog.js");
+
+}

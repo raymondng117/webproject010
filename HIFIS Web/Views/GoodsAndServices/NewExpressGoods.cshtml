@@ -1,0 +1,294 @@
+﻿@model Goods_ServiceViewModel
+@{
+    ViewBag.ViewTitle = Labels.NewExpressGoods;
+
+    if (Model.ClientIDs.Count == 0)
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.Client;
+    }
+}
+
+<div class="clearfix"></div>
+@Html.Partial("_ValidationSummaryOuter") 
+<div class="col-md-7">
+    <div class="row">
+        @using (Html.BeginForm("NewExpressGoods", "GoodsAndServices", new { returnTo = ViewBag.ReturnTo }, FormMethod.Post, new { @class = "form-horizontal" }))
+        {
+            @Html.Partial("_BaseHiddenFor")
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.DateStart)
+            @Html.HiddenFor(model => model.DateEnd)
+            @Html.HiddenFor(model => model.OrganizationID)
+
+            if (Model.ClientIDs.Count != 0)
+            {
+                @Html.HiddenFor(model => model.ClientIDs[0])
+            }
+            else
+            {
+                <div class="form-horizontal">
+                    @Html.HifisMultiAutocompleteFor(model => model.ClientIDs, "~/ClientTombstone/AjaxGetClientList", Model.clientListForMultiSelect, new AutocompleteViewModelOptions() { OnSelect = "selectClient();" })
+                </div>
+            }
+
+            //Need to pass Enumerable.Empty<SelectListItem>() so GoodItemID is created as a 'select' element as opposed to an input element.
+            <div>
+                @Html.HifisEditorFor(model => model.GoodItemID, Enumerable.Empty<SelectListItem>())
+            </div>
+
+            <div>
+                @Html.HifisListBoxFor(model => model.ProgramIDs, ViewBag.ProgramList as SelectList)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.UnitOfMeasureTypeID, CachedTableTypes.HIFIS_UnitOfMeasureTypes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.UnitPrice, "Money", new { @class = "money" })
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.ReasonForGoodsActivityTypeID, CachedTableTypes.HIFIS_ReasonForGoodsActivityTypes)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.Comments)
+            </div>
+
+            @Html.Partial("~/Views/Outreach/_OutreachAddress.cshtml", Model.OutReachAddress, "OutReachAddress.")
+
+            <div class="btn-group">
+                <div class="row">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <button type="submit" class="saveButton  ">@Labels.Save</button>
+
+                        @if (Model.ClientIDs.Count == 0)
+                        {
+                            @Html.ActionLink(Labels.Cancel, "List", "GoodsAndServices", null, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink(Labels.Cancel, "ClientList", "GoodsAndServices", new { id = Model.ClientIDs[0] }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div style="overflow:hidden; height:583px; border-left: solid 1px #d3d3d3; border-bottom:solid 1px #d3d3d3;">
+    <div class="col-md-3" style="overflow:hidden; min-height:600px; max-height:600px; width:104%;">
+
+        <div id="loaderDiv" style="margin-left:45%; display:none;">
+            <img src="@Url.Content("~/Content/images/Loaders/loader-50.gif")" class="loading_circle" alt="loading" />
+            <p>
+                @Labels.Loading
+            </p>
+        </div>
+
+        <div id="NoResultsDiv" class="row">
+            <section class="col-md-12">
+                <div class="well well-sm">
+                    <h5 class="mrgn-tp-0">
+                        @Labels.GoodsItemInfo
+                    </h5>
+                    @Labels.NoPredefinedSelected
+                </div>
+            </section>
+        </div>
+
+        <div id="innerListWrapper"></div>
+    </div>
+</div>
+
+@if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Good_Add))
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+                $(function () {
+                    $.ajax({
+                        url: "@Url.Action("GetGoodsItemsList", "GoodsAndServices")",
+                        type: "POST",
+                    }).done(function (data) {
+                        $('#GoodItemID').prepend('<optgroup label="@Labels.ExpressGoods">' + makeOptions(data.Result.data) + '</optgroup>');
+                    }).always(function () {
+                        reinitSelect2($('#GoodItemID'));
+                    });
+                });
+            </script>
+);
+    }
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $('#GoodItemID').append('<option value=""/>');
+            var cID;
+            var badName = "";
+            //$("#ClientIDs").on("select2:select", function (e) {
+            //    cID = $('select[id=ClientIDs]').children('option').last().val();
+            //    badName = $('select[id=ClientIDs]').children('option').last().text();
+            //    isClientRestricted(cID.toString(), badName);
+            //});
+            function selectClient() {
+                cID = $('select[id=ClientIDs]').children('option').last().val();
+                badName = $('select[id=ClientIDs]').children('option').last().text();
+                isClientRestricted(cID.toString(), badName);
+            }
+
+            $(function () {
+                $.ajax({
+                    url: "@Url.Action("GetGoodsTypeListJson", "GoodsAndServices")?selectedID=@Model.GoodItemID",
+                    type: "POST",
+                }).done(function (data) {
+                    $('#GoodItemID').append('<optgroup label="@Labels.StandardGoods">' + makeOptions(data.Result.data) + '</optgroup>');
+                }).always(function () {
+                    reinitSelect2($('#GoodItemID'));
+                });
+            });
+
+            function makeOptions(res) {
+                var str = "";
+                if (res.length > 0) {
+                    for (i = 0; i < res.length; i++) {
+                        str += '<option value="' + res[i].value + '">' + res[i].label + '</option>';
+                    }
+                }
+                else {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+                return str;
+            };
+
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+            }
+
+            $('#GoodItemID').on("select2:unselect", function (e) {
+                $('#innerListWrapper').hide("slow");
+                $('#NoResultsDiv').show('slow');
+                $('#UnitOfMeasureTypeID').val('', null);
+                $('select').trigger('change');
+            });
+
+            $('#GoodItemID').on("select2:select", function (e) {
+                var substrings = $(this).val().split(',');
+
+                var Details;
+
+                if (substrings[1] == 'D') {
+                    $.ajax({
+                        url: "@Url.Action("GetGoodsItemInfo", "GoodsAndServices")",
+                        type: "POST",
+                        data: { "itemID": substrings[0] },
+                        beforeSend: function () { $('#loaderDiv').show('slow'); $('#innerListWrapper').hide('slow'); $('#NoResultsDiv').hide('slow'); },
+                    }).done(function (data) {
+
+                        Details = '<section class="alert alert-success">' +
+                                               '<div class="row">' +
+                                                   '<div>' +
+                                                       '<h3>' + data.Result.data[0].name + '</h3>' +
+                                                   '</div>' +
+                                               '</div>' +
+                                               '<div class="row">' +
+                                                   '<div class="col-md-6">' +
+                                                       '<strong>@Labels.Quantity: </strong>' +
+                                                   '</div>' +
+                                                   '<div class="col-md-3">' +
+                                                       data.Result.data[0].quantity +
+                                                   '</div>' +
+                                               '</div>' +
+                                               '<div class="row">' +
+                                                   '<div class="col-md-6">' +
+                                                       '<strong>@Labels.UnitOfMeasure: </strong> ' +
+                                                   '</div>' +
+                                                   '<div class="col-md-3">' +
+                                                       data.Result.data[0].measurement +
+                                                   '</div>' +
+                                               '</div>' +
+                                               '<div class="row">' +
+                                                   '<div class="col-md-6">' +
+                                                       '<strong>@Labels.UnitCost: </strong> ' +
+                                                   '</div>' +
+                                                   '<div class="col-md-3">' +
+                                                       data.Result.data[0].unitCost +
+                                                   '</div>' +
+                                               '</div>' +
+                                               '<div class="row">' +
+                                                   '<div class="col-md-6">' +
+                                                       '<strong>@Labels.UnitPrice: </strong> ' +
+                                                   '</div>' +
+                                                   '<div class="col-md-3">' +
+                                                       data.Result.data[0].unitPrice +
+                                                   '</div>' +
+                                               '</div>' +
+                                           '</div></section>';
+                        $('#loaderDiv').hide('slow');
+                        $('#innerListWrapper').html(Details).show("slow");
+
+                        $('#UnitOfMeasureTypeID').val(data.Result.data[0].measurementID);
+                        $('select').trigger('change');
+
+                        //prefill price
+                        $("#UnitPrice").val(data.Result.data[0].unitPrice);                        
+
+                    }).fail(function () {
+                        $('#NoResultsDiv').show('slow');
+                    }).always(function () {
+                        $('#NoResultsDiv').hide('slow');
+                    });
+                }
+                else {
+                    $('#NoResultsDiv').show('slow');
+                    $('#innerListWrapper').hide("slow");
+                    $('#UnitOfMeasureTypeID').val('', null);
+                    $('select').trigger('change');
+                }
+            });
+            /***************************************************************************
+          *
+          *   This function checks if the client is currently booked in and if not
+          *   it then checks for a service restriction.
+          *
+          ****************************************************************************/
+            function isClientRestricted(id, text) {
+                $.ajax({
+
+                    url: "@Url.Action("GetGoodsRestriction", "GoodsAndServices")",
+                    type: "POST",
+                    data: { "clientID": id },
+
+                }).done(function (data) {
+                    if (data) {
+                        if ("@RightsHelper.HasRight(UserRights.Barred_Override)" === "False") {
+
+                        displayNotification('error', '', "<p>@Labels.ClientServiceRestrictions</p>");
+                        $("#ClientIDs option[value=" + id + "]").prop("selected", false).parent().trigger("change");
+                        $("#ClientIDs option[value=" + id + "]").remove();
+                        $(".clientButton[data-clientid='" + id + "']").remove();
+                        } else {
+
+                            displayNotification('alert', '', "<p>@Labels.ClientServiceRestrictions</p>");
+
+                        }
+
+                    } else {
+
+                        displayNotification('success', '', "<p>@Labels.ServiceSelected</p>");
+                    }
+                });
+            };
+        </script>
+);
+}

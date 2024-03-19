@@ -1,0 +1,45 @@
+﻿@model ProgramViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ProgramList;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    int j = 1;
+}
+
+
+    <div class="form-color-white module-form-block">
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.ServiceProviders </th>
+                        <th class="align-text-center">@Labels.ManageDefaults</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ProgramServiceProviderViewModel vm in Model.ServiceProviders)
+                    {
+                        <tr>
+                            <td align="center">
+                                @vm.ProgramServiceProviderName
+                            </td>                           
+                            <td class="align-text-center no-print">
+                                @if (RightsHelper.HasRight(UserRights.Programs_Service_Providers_Edit, vm.OrganizationID))
+                                {
+                                    @Html.ActionLink(Labels.ManageDefaults, "ManageSPDefaults", "Programs", new { @programServiceProviderID = vm.ProgramServiceProviderID }, new { @class = "fa fa-toggle-on btn btn-default noText", alt=Labels.ManageDefaults, aria_label = Labels.ManageDefaults, @role = "button" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="mrgn-tp-md no-print">
+            @Html.ActionLink(Labels.Back, "All", "Programs", null, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+        </div>
+    </div>
+

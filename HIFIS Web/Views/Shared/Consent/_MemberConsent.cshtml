@@ -1,0 +1,16 @@
+﻿@model ConsentViewModel
+
+@Html.HiddenFor(m => m.ClientID)
+@Html.HiddenFor(m => m.ConsentID)
+@Html.HiddenFor(m => m.OrganizationID)
+@Html.HiddenFor(m => m.StartDate)
+@if (Model.IsReadOnly)
+{
+    @Labels.NA
+}
+else
+{
+    @*@Html.HifisEditorFor(model => model.ConsentTypeID, ViewBag.TypeList as SelectList)*@
+    @Html.HifisEditorFor(model => model.ConsentTypeID, Model.ClientConsentTypeList as SelectList, null, new { id = "ConsentTypeID" + Guid.NewGuid().ToString() })
+    @Html.HifisEditorFor(m => m.ExpiryDate)
+}

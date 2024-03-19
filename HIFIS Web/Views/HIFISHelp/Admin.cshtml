@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISContentDevelopmentPortal;
+}
+<div>
+    @Html.ActionLink("Help: Index", "HelpIndex", "HIFISHelp", null, new { @class = "searchButton", alt="Help: Index", aria_label = "Help: Index", @role = "button"})    
+    @Html.ActionLink("Help: Modules and Topics", "CreateHelpModule", "HIFISHelp", null, new { @class = "editButton", alt="Help: Modules and Topics", aria_label = "Help: Modules and Topics", @role = "button" })
+    @Html.ActionLink("Help: Material", "CreateHelpMaterial", "HIFISHelp", null, new { @class = "editButton", alt="Help: Material", aria_label = "Help: Material", @role = "button" })
+</div>
+<br />
+<div>
+    @Html.ActionLink("eLearning: Index", "TrainingIndex", "HIFISHelp", null, new { @class = "searchButton", alt="eLearning: Index", aria_label = "eLearning: Index", @role = "button" })
+    @Html.ActionLink("eLearning: Playlists", "CreateELearningPlaylist", "HIFISHelp", null, new { @class = "editButton", alt="eLearning: Playlists", aria_label = "eLearning: Playlists", @role = "button" })
+    @Html.ActionLink("eLearning: Modules and Topics", "CreateELearningModule", "HIFISHelp", null, new { @class = "editButton", alt="eLearning: Modules and Topics", aria_label = "eLearning: Modules and Topics", @role = "button" })
+    @Html.ActionLink("eLearning: Material", "CreateELearningMaterial", "HIFISHelp", null, new { @class = "editButton", alt="eLearning: Material", aria_label = "eLearning: Material", @role = "button" })
+</div>
+<br />
+<div>
+    @Html.ActionLink("HIFIS Glossary", "CreateGlossary", "HIFISHelp", null, new { @class = "editButton", alt="HIFIS Glossary", aria_label = "HIFIS Glossary", @role = "button" }) 
+    @Html.ActionLink("HIFIS Controller and Actions List", "InternalActionsList", "HIFISHelp", null, new { @class = "searchButton", alt="HIFIS Controller and Actions List", aria_label = "HIFIS Controller and Actions List", @role = "button" }) 
+</div>

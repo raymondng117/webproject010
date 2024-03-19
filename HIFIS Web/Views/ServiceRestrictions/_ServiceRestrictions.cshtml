@@ -1,0 +1,32 @@
+﻿@model ClientBarViewModel
+
+@Html.HiddenFor(m => m.ClientID)
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.OnBehalfOfPersonID, ViewBag.Staff as SelectList)
+</div>
+    
+<div class="row">
+    @Html.HifisEditorFor(m => m.DateStart, "DateAndTime")
+</div>
+    
+<div class="row">
+    @Html.HifisEditorFor(m => m.DateEnd, "DateAndTime")
+</div>
+    
+<div class="row">
+    @Html.HifisListBoxFor(m => m.SelectedOrganizations, (ViewBag.Orgs != null ? ViewBag.Orgs as SelectList : Enumerable.Empty<SelectListItem>()))
+</div>
+
+<div class="row">
+    @Html.HifisListBoxFor(m => m.SelectedModules, CachedTableTypes.HIFIS_ServiceRestrictionsModuleTypes)
+</div>
+    
+<div class="row">
+    @Html.HifisEditorFor(m => m.ReasonBarredTypeID, CachedTableTypes.HIFIS_ReasonBarredTypes)
+</div>
+
+<div class="row">
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(m => m.Comments, new { @class = "mceEditor_Messaging" })
+</div> 

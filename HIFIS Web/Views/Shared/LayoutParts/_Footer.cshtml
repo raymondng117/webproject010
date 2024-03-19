@@ -1,0 +1,260 @@
+﻿@{
+    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("HIFIS.ENUMS.Labels.Labels", typeof(Labels).Assembly);
+    System.Globalization.CultureInfo enCulture = new System.Globalization.CultureInfo("en-CA");
+    System.Globalization.CultureInfo frCulture = new System.Globalization.CultureInfo("fr-CA");
+}
+<footer role="contentinfo" id="wb-info" class="visible-sm visible-md visible-lg wetFooter">
+    <div class="container footerNav">
+        <nav role="navigation" class="row">
+            <h2>Site Footer</h2>
+            <section class="col-sm-4">
+                <h6 class="wet-col-head">
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case "undefined":
+                            <text>
+                                @temp.GetString("FooterTitle1", enCulture) / @temp.GetString("FooterTitle1", frCulture)
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                @Labels.FooterTitle1</text>
+                            break;
+                    }
+                </h6>
+                <ul>
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case Constants.Eng:
+                            <text>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/index-eng.html" id="@temp.GetString("Footer1Sub1", enCulture)" aria-label="@temp.GetString("Footer1Sub1", enCulture)">@temp.GetString("Footer1Sub1", enCulture)</a></li>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/index-eng.html" id="@temp.GetString("Footer1Sub2", enCulture)" aria-label="@temp.GetString("Footer1Sub2", enCulture)">@temp.GetString("Footer1Sub2", enCulture)</a></li>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/release-notes-mises-a-jour-eng.html" id="@temp.GetString("Footer1Sub3", enCulture)" aria-label="@temp.GetString("Footer1Sub3", enCulture)">@temp.GetString("Footer1Sub3", enCulture)</a></li>
+                                <li><a href="mailto: support@hifis.ca" aria-label="@Labels.Footer1Sub4">@Labels.Footer1Sub4</a></li>
+                            </text>
+                            break;
+                        case Constants.Fr:
+                            <text>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/index-fra.html" id="@temp.GetString("Footer1Sub1", frCulture)" aria-label="@temp.GetString("Footer1Sub1", frCulture)">@temp.GetString("Footer1Sub1", frCulture)</a></li>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/index-fra.html" id="@temp.GetString("Footer1Sub2", frCulture)" aria-label="@temp.GetString("Footer1Sub2", frCulture)">@temp.GetString("Footer1Sub2", frCulture)</a></li>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/release-notes-mises-a-jour-fra.html" id="@temp.GetString("Footer1Sub3", frCulture)" aria-label="@temp.GetString("Footer1Sub3", frCulture)">@temp.GetString("Footer1Sub3", frCulture)</a></li>
+                                <li><a href="mailto: support@hifis.ca" aria-label="@Labels.Footer1Sub4">@Labels.Footer1Sub4</a></li>
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                <li>
+                                    <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/index-eng.html" id="@temp.GetString("Footer1Sub1", enCulture)" aria-label="@temp.GetString("Footer1Sub1", enCulture)">@temp.GetString("Footer1Sub1", enCulture)</a>
+                                    / <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/index-fra.html" id="@temp.GetString("Footer1Sub1", frCulture)" aria-label="@temp.GetString("Footer1Sub1", frCulture)">@temp.GetString("Footer1Sub1", frCulture)</a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/index-eng.html" id="@temp.GetString("Footer1Sub2", enCulture)" aria-label="@temp.GetString("Footer1Sub2", enCulture)">@temp.GetString("Footer1Sub2", enCulture)</a>
+                                    / <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/index-fra.html" id="@temp.GetString("Footer1Sub2", frCulture)" aria-label="@temp.GetString("Footer1Sub2", frCulture)">@temp.GetString("Footer1Sub2", frCulture)</a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/release-notes-mises-a-jour-eng.html" id="@temp.GetString("Footer1Sub3", enCulture)" aria-label="@temp.GetString("Footer1Sub3", enCulture)">@temp.GetString("Footer1Sub3", enCulture)</a>
+                                    / <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/release-notes-mises-a-jour-fra.html" id="@temp.GetString("Footer1Sub3", frCulture)" aria-label="@temp.GetString("Footer1Sub3", frCulture)">@temp.GetString("Footer1Sub3", frCulture)</a>
+                                </li>
+                                <li>
+                                    <a href="mailto: support@hifis.ca" aria-label="@temp.GetString("Footer1Sub4", enCulture)">@temp.GetString("Footer1Sub4", enCulture)</a>
+                                    / <a href="mailto: support@hifis.ca" aria-label="@temp.GetString("Footer1Sub4", frCulture)">@temp.GetString("Footer1Sub4", frCulture)</a>
+                                </li>
+                            </text>
+                            break;
+                    }
+                </ul>
+            </section>
+            <section class="col-sm-4">
+                <h6 class="wet-col-head">
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case "undefined":
+                            <text>
+                                @temp.GetString("FooterTitle2", enCulture) / @temp.GetString("FooterTitle2", frCulture)
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                @Labels.FooterTitle2</text>
+                            break;
+                    }
+                </h6>
+                <ul>
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case Constants.Eng:
+                            <text>
+                                <li>@Html.ActionLink(temp.GetString("Footer2Sub1", enCulture), "EULA", "License", new { currentCulture = Constants.Eng }, new { alt = Labels.LoginEnglishBtn, aria_label = Labels.LoginEnglishBtn })</li>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/dpa-etd-eng.html" id="@temp.GetString("Footer2Sub2", enCulture)" aria-label="@temp.GetString("Footer2Sub2", enCulture)">@temp.GetString("Footer2Sub2", enCulture)</a></li>
+                            </text>
+                            break;
+                        case Constants.Fr:
+                            <text>
+                                <li>@Html.ActionLink(temp.GetString("Footer2Sub1", frCulture), "EULA", "License", new { currentCulture = Constants.Fr }, new { alt = Labels.LoginFrenchBtn, aria_label = Labels.LoginFrenchBtn })</li>
+                                <li><a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/dpa-etd-fra.html" id="@temp.GetString("Footer2Sub2", frCulture)" aria-label="@temp.GetString("Footer2Sub2", frCulture)">@temp.GetString("Footer2Sub2", frCulture)</a></li>
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                @*<li>
+                                        @Html.ActionLink(temp.GetString("Footer2Sub1", enCulture), "EULA", "License")
+                                      / @Html.ActionLink(temp.GetString("Footer2Sub1", frCulture), "EULA", "License")
+                                    </li>*@
+                                <li>
+                                    <a href="~/License/EULA?currentCulture=en-CA" id="@temp.GetString("Footer2Sub1", enCulture)" aria-label="@temp.GetString("Footer2Sub1", enCulture)">@temp.GetString("Footer2Sub1", enCulture)</a>
+                                    / <a href="~/License/EULA?currentCulture=fr-CA" id="@temp.GetString("Footer2Sub1", frCulture)" aria-label="@temp.GetString("Footer2Sub1", frCulture)">@temp.GetString("Footer2Sub1", frCulture)</a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/dpa-etd-eng.html" id="@temp.GetString("Footer2Sub2", enCulture)" aria-label="@temp.GetString("Footer2Sub2", enCulture)">@temp.GetString("Footer2Sub2", enCulture)</a>
+                                    / <a target="_blank" href="https://www.infrastructure.gc.ca/homelessness-sans-abri/hifis-sisa/dpa-etd-fra.html" id="@temp.GetString("Footer2Sub2", frCulture)" aria-label="@temp.GetString("Footer2Sub2", frCulture)">@temp.GetString("Footer2Sub2", frCulture)</a>
+                                </li>
+                            </text>
+                            break;
+                    }
+                </ul>
+            </section>
+            <section class="col-sm-4">
+                <h6 class="wet-col-head">
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case "undefined":
+                            <text>
+                                @temp.GetString("FooterTitle3", enCulture) / @temp.GetString("FooterTitle3", frCulture)
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                @Labels.FooterTitle3</text>
+                            break;
+                    }
+                </h6>
+                <ul>
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case Constants.Eng:
+                            <text>
+                                <li><a target="_blank" href="https://homelessnesslearninghub.ca/categ/hifis/" id="@temp.GetString("Footer3Sub1", enCulture)" aria-label="@temp.GetString("Footer3Sub1", enCulture)">@temp.GetString("Footer3Sub1", enCulture)</a></li>
+                                <li><a target="_blank" href="https://homelessnesslearninghub.ca/library/resources/hifis-user-guide/" id="@temp.GetString("Footer3Sub2", enCulture)" aria-label="@temp.GetString("Footer3Sub2", enCulture)">@temp.GetString("Footer3Sub2", enCulture)</a></li>
+                                @*<li><a aria-label="@Labels.Footer3Sub3">@Labels.Footer3Sub3</a></li>*@
+                            </text>
+                            break;
+                        case Constants.Fr:
+                            <text>
+                                <li><a target="_blank" href="https://plateformeapprentissageitinerance.ca/categ/sisa/" id="@temp.GetString("Footer3Sub1", frCulture)" aria-label="@temp.GetString("Footer3Sub1", frCulture)">@temp.GetString("Footer3Sub1", frCulture)</a></li>
+                                <li><a target="_blank" href="https://plateformeapprentissageitinerance.ca/bibliotheque/ressources/le-guide-de-lutilisateur-du-sisa/" id="@temp.GetString("Footer3Sub2", frCulture)" aria-label="@temp.GetString("Footer3Sub2", frCulture)">@temp.GetString("Footer3Sub2", frCulture)</a></li>
+                                @*<li><a aria-label="@Labels.Footer3Sub3">@Labels.Footer3Sub3</a></li>*@
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                <li>
+                                    <a target="_blank" href="https://homelessnesslearninghub.ca/categ/hifis/" id="@temp.GetString("Footer3Sub1", enCulture)" aria-label="@temp.GetString("Footer3Sub1", enCulture)">@temp.GetString("Footer3Sub1", enCulture)</a>
+                                    / <a target="_blank" href="https://plateformeapprentissageitinerance.ca/categ/sisa/" id="@temp.GetString("Footer3Sub1", frCulture)" aria-label="@temp.GetString("Footer3Sub1", frCulture)">@temp.GetString("Footer3Sub1", frCulture)</a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://homelessnesslearninghub.ca/library/resources/hifis-user-guide/" id="@temp.GetString("Footer3Sub2", enCulture)" aria-label="@temp.GetString("Footer3Sub2", enCulture)">@temp.GetString("Footer3Sub2", enCulture)</a>
+                                    / <a target="_blank" href="https://plateformeapprentissageitinerance.ca/bibliotheque/ressources/le-guide-de-lutilisateur-du-sisa/" id="@temp.GetString("Footer3Sub2", frCulture)Footer3Sub2" aria-label="@temp.GetString("Footer3Sub2", frCulture)">@temp.GetString("Footer3Sub2", frCulture)</a>
+                                </li>
+                                @*<li><a aria-label="@Labels.Footer3Sub3">@Labels.Footer3Sub3</a>
+                                    / <a aria-label="@Labels.Footer3Sub3">@Labels.Footer3Sub3</a></li>*@
+                            </text>
+                            break;
+                    }
+                </ul>
+            </section>
+            @*<section class="col-sm-3">
+                    <h6 class="wet-col-head">
+                    @switch ((string)ViewBag.CurrentCulture)
+                    {
+                        case "undefined":
+                            <text>
+                                @temp.GetString("FooterTitle4", enCulture) / @temp.GetString("FooterTitle4", frCulture)
+                            </text>
+                            break;
+                        default:
+                            <text>
+                                @Labels.FooterTitle4</text>
+                            break;
+                    }
+                    </h6>
+                    <ul>
+                        <li><a aria-label="@Labels.Footer4Sub1">@Labels.Footer4Sub1</a></li>
+                        <li><a aria-label="@Labels.Footer4Sub2">@Labels.Footer4Sub2</a></li>
+                        <li>@Html.ActionLink(Labels.Footer4Sub3, "EULA", "License", new { alt = Labels.Footer4Sub3, aria_label = Labels.Footer4Sub3 })</li>
+                    </ul>
+                </section>*@
+        </nav>
+        <div class="row" id="appInfo">
+            <div id="updaterequireddate" class="col-sm-6">
+                @ViewBag.FooterSiteStatus
+                @ViewBag.HifisExpireDate
+            </div>
+            <div id="appversion" class="col-sm-6">
+                @Labels.Build @ViewBag.HifisVersion (@ViewBag.HifisVersionDate)
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+@* Commented out original because links were dead, kept this incase we want to take some of the links out at a later time. *@
+
+@*<footer role="contentinfo" id="wb-info" class="visible-sm visible-md visible-lg wetFooter">
+        <div class="container">
+            <nav role="navigation" class="row">
+                <h2>Site Footer</h2>
+                <section class="col-sm-3">
+                    <h6 class="wet-col-head">
+                        <a href="http://hifis.hrsdc.gc.ca/formation-training/index-eng.shtml" target="_blank">@Labels.FooterTitle1</a>
+                    </h6>
+                    <ul>
+                        <li><a href="http://www.esdc.gc.ca/eng/about/index.shtml" target="_blank">@Labels.Footer1Sub1</a></li>
+                        <li><a href="#" target="_blank">@Labels.Footer1Sub2</a></li>
+                        <li><a href="#" target="_blank">@Labels.Footer1Sub3</a></li>
+                    </ul>
+                </section>
+                <section class="col-sm-3">
+                    <h6 class="wet-col-head">
+                        <a href="http://wet-boew.github.io/wet-boew/demos/index-eng.html" target="_blank">@Labels.FooterTitle2</a>
+                    </h6>
+                    <ul>
+                        <li><a href="http://nouvelles.gc.ca/web/dsptch-dstrbr-fr.do?mthd=advSrch&crtr.dpt1D=420&crtr.thm1D=&crtr.tp1D=1&crtr.sj1D=&crtr.lc1D=&crtr.aud1D=&crtr.kw=&crtr.dyStrtVl=1&crtr.mnthStrtVl=1&crtr.yrStrtVl=2002&crtr.dyndVl=1&crtr.mnthndVl=1&crtr.yrndVl=3000" target="_blank">@Labels.Footer2Sub1</a></li>
+                        <li><a href="http://nouvelles.gc.ca/web/dsptch-dstrbr-fr.do?mthd=advSrch&crtr.dpt1D=420&crtr.thm1D=&crtr.tp1D=1&crtr.sj1D=&crtr.lc1D=&crtr.aud1D=&crtr.kw=&crtr.dyStrtVl=1&crtr.mnthStrtVl=1&crtr.yrStrtVl=2002&crtr.dyndVl=1&crtr.mnthndVl=1&crtr.yrndVl=3000" target="_blank">@Labels.Footer2Sub2</a></li>
+                        <li><a href="http://www.edsc.gc.ca/fra/branches/index.shtml" target="_blank">@Labels.Footer2Sub3</a></li>
+                    </ul>
+                </section>
+                <section class="col-sm-3">
+                    <h6 class="wet-col-head">
+                        <a href="http://hifis.hrsdc.gc.ca/logiciel-software/index-eng.shtml" target="_blank">@Labels.FooterTitle3</a>
+                    </h6>
+                    <address>
+                        <ul>
+                            <li><a href="http://www.esdc.gc.ca/eng/communities/homelessness/nhis/hifis/training/help/contacting_us.shtml" target="_blank">@Labels.Footer3Sub1</a></li>
+                            <li><a href="https://srv212.services.gc.ca/ihst/Questionnaire.aspx?sid=d572073b-8550-4a61-b40f-4ce109845c9b&lc=eng&iffsappid=Catalogue&iffssid=9150ff39-c002-4756-8f30-531d02525d89" target="_blank">@Labels.Footer3Sub2</a></li>
+                            <li><a href="#" target="_blank">@Labels.Footer3Sub3</a></li>
+                        </ul>
+                    </address>
+                </section>
+                <section class="col-sm-3">
+                    <h6 class="wet-col-head">
+                        <a href="http://support.hifis.ca/workshop2015/files.htm" target="_blank">@Labels.FooterTitle4</a>
+                    </h6>
+                    <ul>
+                        <li><a rel="external" href="#">@Labels.Footer4Sub1</a></li>
+                        <li><a rel="external" href="#">@Labels.Footer4Sub2</a></li>
+                        <li><a href="#" target="_blank">@Labels.Footer4Sub3</a></li>
+                    </ul>
+                </section>
+            </nav>
+            <div class="row">
+                <div id="updaterequireddate" class="col-sm-6">
+                    @ViewBag.HifisExpireDate
+                </div>
+                <div id="appversion" class="col-sm-6">
+                    @Labels.Build @ViewBag.HifisVersion (@ViewBag.HifisVersionDate)
+                </div>
+            </div>
+        </div>
+    </footer>*@ 

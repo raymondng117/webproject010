@@ -1,0 +1,53 @@
+﻿@model RightViewModel
+
+@{
+    if (Model.SubRights != null && Model.SubRights.Count() > 0)
+    {
+        <text><li id="@Model.UserRightID" data-right-id = "@Model.RightID" data-jstree='{ "icon" : "glyphicon glyphicon-th-list" }'></text>
+    }
+    else
+    {
+        <text><li id="@Model.UserRightID" data-right-id = "@Model.RightID" data-jstree='{ "icon" : "glyphicon glyphicon-eye-close" }'></text>
+    }
+
+    if (Model.AllowedYN && Model.SubRights == null)
+    {
+        if (Model.CanEdit)
+        {
+            @Html.ActionLink(Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), "UpdateUserRight", "Users", new {id = Model.UserRightID}, new {@class = "jstree-clicked", alt=Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : "")})
+        }
+        else
+        {
+            @Html.ActionLink(Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), "UpdateUserRight", "Users", new {id = Model.UserRightID}, new {@class = "jstree-clicked jstree-disabled", alt=Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : "") })
+        }
+    }
+    else if (Model.AllowedYN && Model.SubRights != null && Model.SubRights.Count() <= 0)
+    {
+        @Html.ActionLink(Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), "UpdateUserRight", "Users", new { id = Model.UserRightID }, new { @class = "jstree-clicked", alt=Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : "") })
+    }
+    else
+    {
+        if (Model.CanEdit)
+        {
+            
+            @Html.ActionLink(Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), "UpdateUserRight", "Users", new { id = Model.UserRightID }, new { alt = Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : "") })
+        }
+        else
+        {
+            @Html.ActionLink(Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), "UpdateUserRight", "Users", new { id = Model.UserRightID }, new { @class = "jstree-disabled", alt=Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : ""), aria_label = Model.Name + ((Model.SubRights != null && Model.SubRights.Count > 0) ? " (" + Model.SubRights.Count.ToString() + ")" : "") })
+        }
+    }
+        
+            <img class="loaderImg hide hght-strct-15 mrgn-0" src="~/Content/images/Loaders/loader-20.gif" alt="@Labels.DynamicLoading" />
+            if (Model.SubRights != null)
+            {
+                <ul>
+                    @foreach (RightViewModel right in Model.SubRights)
+                    {
+                        @Html.Partial("_RightTreeItem", right)
+                    }            
+                </ul>
+            }
+            
+    <text>@Html.Raw("</li>")</text>
+}

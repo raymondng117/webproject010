@@ -1,0 +1,43 @@
+﻿@{
+    Layout = null;
+}
+
+<section id="help-panel" class="wb-overlay modal-content overlay-def wb-bar-t" style="min-width:60%; max-width:60%; margin-left:20% !important;">
+    <header class="modal-header">
+            <h2 id="ajaxTitle" class="modal-title">@*Ajax Title Here*@</h2>
+    </header>
+    <div class="modal-body">
+        <div id="ajaxContent">
+            @*Ajax Body Here, the partial located in HIFISHelp/helpInfoButton *@
+        </div>
+    </div>
+</section>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+	@<script type="text/javascript">
+	     $(function () {
+	         // Get the title
+             $.ajax({
+	             url: '@Url.Content("~/HifisHelp/GetHelpName")',
+	             type: "GET",
+	             data: { m: '@ViewBag.HelpID', uniq_param: (new Date()).getTime() }
+	         })
+            .done(function (string) {
+                $("#ajaxTitle").html(string);
+            });
+                
+            // Get the body content		     
+		    $.ajax({
+                url: '@Url.Content("~/HifisHelp/GetHelp")',
+			    type: "GET",
+			    data: { m: '@ViewBag.HelpID', uniq_param: (new Date()).getTime() }
+			})
+            .done(function (partialViewResult) {
+                $("#ajaxContent").html(partialViewResult);
+            });
+	    });
+	    </script>
+	);
+}

@@ -1,0 +1,148 @@
+﻿@*
+    This is used in Goods & Services and Food Banks to dynamically 
+update the case sessions in the case management activity field.
+    There are slight differences such as ClientID(s).
+    *@
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            $(document).ready(function () {
+                $('#datePicker1').on('dp.change', function () {
+                    $('#DateStart').trigger('change');
+                    if ($("#ClientIDs").val() != null) {
+                        isServiceRestricted($("#ClientIDs").val(), $("#ClientIDs").text());
+                    }
+                });
+
+                $('#DateStart').on('change', function () {
+                    var date = $('#DateStart').val();
+                    if (date.match(/^\d{4}-((0\d)|(1[012]))-(([012]\d)|3[01])$/) && !!$('#ClientIDs').val())
+                    {
+                        $('#SessionSelectionLoader').show();
+                        getSessions();
+                    }
+                });
+
+            }); //$(document).ready(function 
+            
+            
+            $('#SessionID').append('<option value=""/>');
+            var cID;
+            var badName = "";
+            if (!!document.getElementById("ClientIDs")) {
+                $("#ClientIDs").on("select2:select", function (e) {
+                    cID = $('#ClientIDs').val();
+                    getSessions();
+                });
+            } else {
+                cID = $('#HiddenClientID').val();
+            }
+
+             
+
+            function getSessions() {
+                $.ajax({
+                    url: "@Url.Action("getDropDownListAjax", "OnTheFly")",
+                    type: "POST",
+                data: { functionName: "getSessionList", functionParameters: { 0 : cID, 1: $("#DateStart").val()} },
+                }).done(function (data) {
+                    $('#SessionID').empty();
+                    $('#SessionID').append(makeCaseOptions(data.Result));
+                }).always(function () {
+                    reinitSelect2($('#SessionID'));
+                    $('#SessionSelectionLoader').hide('slow');
+                });
+            };
+
+            function makeCaseOptions(res) {
+                var str = "";
+                if (res.length > 0) {
+                    for (i = 0; i < res.length; i++) {
+                        str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                    }
+                }
+                else {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+                return str;
+            };
+
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+            }
+
+            function isServiceRestricted(id, text) {
+                if (!!$("#DateStart_Date").val().trim()) {
+                $("#sveBttn").hide();
+                var good = $.ajax({
+                    url: "@Url.Action("IsServiceRestrictedAjax", "Master")",
+                    type: "GET",
+                    data: { "id": id, "moduleType": "@ServiceRestrictionModules.Goods", "requestDate": ($("#DateStart_Date").val() + " " + $("#DateStart_TimeOfDay").val()) },
+                }),
+                    service = $.ajax({
+                        url: "@Url.Action("IsServiceRestrictedAjax", "Master")",
+                        type: "GET",
+                        data: { "id": id, "moduleType": "@ServiceRestrictionModules.Services", "requestDate": ($("#DateStart_Date").val() + " " + $("#DateStart_TimeOfDay").val()) },
+                    });
+
+                    $.when(good, service).done(function () {
+                        if (good.responseText == "true" && service.responseText == "true") {
+                            if ("@RightsHelper.HasRight(UserRights.Barred_Override)" === "False") {
+
+                                alert(text + "@Labels.ActiveServiceRestriction");
+                                $(".clientButton[data-clientid='" + id + "']").remove();
+
+                            } else {
+                                alert(text + "@Labels.ActiveServiceRestriction");
+                            }
+                        } else if ($(".clientButton[data-clientid='" + id + "']").length == 0) {
+                            $("#familyBtn").show();
+                            $("#clientToolBar").append("<div class=\"clientButton btn btn-primary\" data-clientid=\"" + id
+                                + "\"><span class=\"glyphicon glyphicon-user\"></span>&nbsp&nbsp" + text + "</div>");
+
+                        }
+                        $("#sveBttn").show();
+                    });
+                    }else{
+                    $("#sveBttn").hide();
+                }
+                
+
+            }
+            function restrictedGood(id) {
+                $.ajax({
+                    url: "@Url.Action("IsServiceRestrictedAjax", "Master")",
+                    type: "GET",
+                data: { "id": id, "moduleType": "@ServiceRestrictionModules.Goods", "requestDate": ($("#DateStart_Date").val() + " " + $("#DateStart_TimeOfDay").val()) },
+                }).done(function (data) {
+                    return data;
+                });
+            }
+            function restrictedService(id){
+               return $.ajax({
+                    url: "@Url.Action("IsServiceRestrictedAjax", "Master")",
+                    type: "GET",
+                data: { "id": id, "moduleType": "@ServiceRestrictionModules.Services", "requestDate": ($("#DateStart_Date").val() + " " + $("#DateStart_TimeOfDay").val()) },
+                }).done(function (data) {
+                    return data;
+                });
+            }
+
+
+            
+
+            $('#ClientIDs').on('select2:select', function (e) {
+                if ($("#ClientIDs").val() != null) {
+                    isServiceRestricted(e.params.data.id, e.params.data.text);
+                }
+            });
+
+            
+            </script>
+    );
+
+}

@@ -1,0 +1,60 @@
+﻿@model DocumentViewModel 
+
+<div class="mrgn-tp-md">
+
+    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.DocumentID)
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.PersonID)
+    @Html.HiddenFor(model => model.IsClient)
+    @Html.HiddenFor(model => model.DocumentTypeID)
+    @Html.HiddenFor(model => model.ReferenceID)
+
+    @Html.HiddenFor(model => model.ReturnUrl)
+
+    <div class="row">
+        @if (Model.DocumentID == null || Model.DocumentID == "0")
+        {
+            @Html.HifisTextBoxFor(model => model.UploadFile, new { @type = "file" })
+        }
+        else
+        {
+            @Html.HiddenFor(model => model.UploadFile)
+        }
+    </div>
+
+    <div class="row">
+        @if (Model.DocumentID != null || Model.DocumentID != "0")
+        {
+
+        }
+        @Html.HifisEditorFor(model => model.Name)
+    </div>
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ConfidentialYN, "YesNo")
+    </div>
+
+    <div class="row">
+        @Html.HifisTextAreaFor(model => model.Description, new { @class = "commentBoxSize" })
+    </div>
+
+</div>
+
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             var requiredIf = function () {
+
+                 var value = document.querySelector("#DocumentID").getAttribute("value");
+                 return value === "" || value === "0";
+             }
+        </script>
+    );
+}

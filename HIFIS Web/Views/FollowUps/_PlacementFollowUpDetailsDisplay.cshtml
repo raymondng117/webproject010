@@ -1,0 +1,29 @@
+﻿@model FollowUpPlacementViewModel
+
+
+        <div>
+            <table class="wb-tables table table-striped">
+                <thead>
+                    <tr>
+                        <th>@Labels.ClientName</th>
+                        <th>@Labels.StillInHousing</th>
+                        <th>@Labels.IsHousedElsewhere</th>
+                        <th>@Labels.ReasonLeftHousing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var followUpDetail in Model.FollowUpDetailsList)
+                    {
+                        <tr>
+                            <td>@followUpDetail.ClientName</td>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_StillInHousingTypes, ViewBag.CurrentCulture, followUpDetail.StillInHousingTypeID)</td>
+                            <td>@followUpDetail.HousedElsewhereYN</td>
+                            <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReasonLeftHouseTypes, ViewBag.CurrentCulture, followUpDetail.ReasonLeftHouseTypeID)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+

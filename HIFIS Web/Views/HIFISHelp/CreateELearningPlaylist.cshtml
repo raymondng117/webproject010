@@ -1,0 +1,240 @@
+﻿@model List<ELearningPlaylistModel>
+@{
+    string lang = ViewBag.CurrentCulture;
+	string english = Constants.Eng;
+	ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_ELearningPlaylistDev; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.AntiForgeryToken()
+@Html.Partial("Plugins/_TinyMCEScript")
+@Html.Partial("Plugins/_TinyMCE-HelpAjaxFix")
+@Html.Partial("Plugins/_ActiveAccordion")
+
+<ol class="breadcrumb mrgn-tp-sm">
+	<li><a class="ui-link" href='@Url.Content("~/HIFISHelp/Admin")'>@Labels.HifisHelp_HIFISContentDevelopmentPortal</a></li>
+	<li>@Labels.HifisHelp_ELearningPlaylistDev</li>
+</ol>
+@Html.Partial("Common/_TopArea")  
+<div class="panel-group" id="accordion">
+	@for (int i = 0; i < Model.Count; i++)
+	{ 
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<a data-toggle="collapse" data-parent="#accordion" href="#@(Model[i].PlaylistID)">					
+                    <div class="row"> 
+						<div class="col-md-4">
+							<strong>@(lang == english ? Model[i].NameE : Model[i].NameF)</strong>
+						</div>                        
+						<div class="col-md-4 text-center">
+                            <div class="text-center">
+						        @if (Model[i].PlaylistModules.Count >= 1)
+						        { 
+							        @Model[i].PlaylistModules.Count @: Module(s)
+						        }
+                            </div>
+						</div>
+						<div class="col-md-4">
+							@Html.ActionLink(Labels.HifisHelp_EditPlaylist, "EditPlaylist", "HIFISHelp", new { id = Model[i].PlaylistID }, new { @class = "pull-right editButton editPlaylistButton", data_Id = Model[i].PlaylistID, alt=Labels.HifisHelp_EditPlaylist, aria_label = Labels.HifisHelp_EditPlaylist, @role = "button" })
+						</div>
+					</div>
+				</a>
+			</div>
+			<div id="@(Model[i].PlaylistID)" class="panel-collapse collapse">
+				<div class="row"> 
+                    <div class="col-md-6">
+                        <div class="mrgn-tp-sm mrgn-lft-sm">                            
+                            @Html.Partial("eLearningPartials/_PlaylistSequence", new ELearningPlaylistModel { PlaylistID = Model[i].PlaylistID, PlaySequence = Model[i].PlaySequence }) 
+                        </div>
+                    </div>	
+                    <div class="col-md-6">                        
+                        <div class="pull-right mrgn-tp-sm mrgn-rght-sm">
+                            @Html.Partial("eLearningPartials/_AddModuleToPlaylist", new ELearningAddToPlaylistModel { PlaylistID = Model[i].PlaylistID })
+                        </div>	
+                    </div>
+                </div>
+                <hr />                 
+                <div class="mrgn-sm-md mrgn-lft-sm">
+					@Html.Raw((lang == english ? Model[i].DescriptionE : Model[i].DescriptionF))  
+				</div>
+				<div class="mrgn-lft-sm mrgn-rght-sm mrgn-bttm-md">
+					<div class="table-responsive">
+                        <table class="wb-tables table table-striped" data-wb-tables='{ "ordering" : false,  "paging" : false,  "searching" : false, "info": false }'>
+						    <thead>
+							    <tr>
+								    <th>@Labels.HifisHelp_ModuleName</th> 
+                                    <th>@Labels.HifisHelp_ModuleDescription</th>
+                                    <th>@Labels.HifisHelp_ModuleOrder</th>
+								    <th class="text-center">@Labels.HifisHelp_Action</th>
+							    </tr> 
+						    </thead>
+						    <tbody>
+							    @foreach (var mod in Model[i].PlaylistModules)
+							    {
+								    if (mod.PlaylistID == Model[i].PlaylistID)
+								    {    
+									    <tr>
+										    <td class="col-md-2">
+											    @(lang == english ? mod.NameE : mod.NameF)
+										    </td>
+                                             <td class="col-md-6">
+                                                 @(lang == english ? Html.Raw(HttpUtility.HtmlDecode(mod.DescriptionE)) : Html.Raw(HttpUtility.HtmlDecode(mod.DescriptionF)))											   
+										    </td>
+                                            <td class="col-md-2">                            
+                                                @Html.Partial("eLearningPartials/_ModuleSequence", new ELearningModuleModel { SequenceList = mod.SequenceList, PlaylistID = mod.PlaylistID, ModuleID = mod.ModuleID, ModSequence = mod.ModSequence }) 
+                                            </td>
+										    <td class="col-md-2">
+                                                @Html.ActionLink(Labels.HifisHelp_RemovePlaylist, "RemoveModuleFromPlaylist", "HIFISHelp", new { playId = Model[i].PlaylistID, modId = mod.ModuleID }, new { @class = "pull-right deleteButton", alt=Labels.HifisHelp_RemovePlaylist, aria_label = Labels.HifisHelp_RemovePlaylist, @role = "button" })                    
+											 </td>
+									    </tr>
+								    }
+							    }  
+						    </tbody>                      
+					    </table>
+					</div>
+				</div>             
+			</div>            
+		</div>
+	}
+</div>
+
+<div id="newPlaylistButton">
+	@Html.ActionLink(Labels.HifisHelp_NewPlaylist, "NewPlaylist", "HIFISHelp", null, new { @class = "addButton newPlaylistButton", alt=Labels.HifisHelp_NewPlaylist, aria_label = Labels.HifisHelp_NewPlaylist, @role = "button" })    
+    @Html.ActionLink(Labels.HifisHelp_GoToCreateModules, "CreateELearningModule", "HIFISHelp", null, new { @class = "addButton", alt=Labels.HifisHelp_GoToCreateModules, aria_label = Labels.HifisHelp_GoToCreateModules, @role = "button" })              
+</div> 
+<div id="playlistDiv">
+    <h5 id="newplay" class="mrgn-tp-sm">@Labels.HifisHelp_ModuleNew</h5>
+    <h5 id="editplay" class="mrgn-tp-sm">@Labels.HifisHelp_ModuleEdit</h5>
+	<hr />
+
+	@using (Html.BeginForm("InsertOrUpdatePlaylist", "HIFISHelp", FormMethod.Post, new { @class = "form-horizontal" }))
+	{
+		<div id="playlistUpdate">
+		</div>
+		  
+		<div class="mrgn-tp-md">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "CreateELearningPlaylist", "HIFISHelp", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label =Labels.Cancel, @role = "button" })
+		</div>  			                
+	}
+</div>
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+	@<script type="text/javascript">
+		 function resetTinyMCE() {
+			var i, t = tinyMCE.editors;
+			for (i in t){
+				if (t.hasOwnProperty(i)){
+					t[i].remove();
+				}
+			}
+		 }         
+
+		 $(function () {
+		     $('#playlistDiv').hide();
+			 $('#moduleDiv').hide();
+			 $('#topicDiv').hide();
+	
+             // Changing the Sequence of the Playlists
+			 $('.PlaySequenceOrder').on('select2:select', function (e) {
+			     var playid = $(this).attr('data-id');
+			     var order = $(this).val();
+			     var thisHolder = $(this);
+
+			     $.ajax({
+			         url: '@Url.Content("~/HifisHelp/ChangePlaylistSequence")',
+			         type: "GET",
+			         data: { playId: playid, rank: order, uniq_param: (new Date()).getTime() }
+			     }).done(function (data) {
+			         var elements = thisHolder.closest("div").find("select option:selected[value='" + order + "']");
+			         elements.each(function (index, element) {
+			             if ($(element).parent().attr("data-id") !== playid) {
+			                 $(element).removeAttr("selected").parent().trigger("change");
+			             }
+			         });
+			         if (data.Success) { // i.e. there is no validation summary 
+			             displayNotification('success', null, data.DataSavedMessage || '@Labels.DefaultDataSavedMessage');
+                     }
+			     });
+			 });
+
+		     // Changing the Sequence of the Modules in a Playlist
+		     $('.ModSequenceOrder').on('select2:select', function (e) {
+		         var playid = $(this).attr('data-id');
+		         var modid = $(this).attr('data-modid');
+		         var order = $(this).val();
+		         var thisHolder = $(this);
+
+		         $.ajax({
+		             url: '@Url.Content("~/HifisHelp/ChangeModuleSequence")',
+			         type: "GET",
+			         data: { playId: playid, modId: modid, rank: order, uniq_param: (new Date()).getTime() }
+		         }).done(function (data) {
+		             var elements = thisHolder.closest("tbody").find("select option:selected[value='" + order + "']");
+		             elements.each(function (index, element) {
+		                 if ($(element).parent().attr("data-playid") !== playid && $(element).parent().attr("data-modid") !== modid) {
+		                     $(element).removeAttr("selected").parent().trigger("change");
+		                 }
+		             });
+		             if (data.Success) { // i.e. there is no validation summary 
+		                 displayNotification('success', null, data.DataSavedMessage || '@Labels.DefaultDataSavedMessage');
+                     }
+		         });
+             });
+
+			 // New Playlist
+			 $('.newPlaylistButton').click(function (e) {
+			     e.preventDefault();
+			     resetTinyMCE();
+			     $.ajax({
+			         url: '@Url.Content("~/HifisHelp/NewPlaylist")',
+			         type: "GET",
+			         data: null,
+			     })
+                 .done(function (partialViewResult) {
+                     $('#playlistDiv').show();
+                     $('#editplay').hide();
+                     $('#newplay').show();
+                     $('.newPlaylistButton').hide();
+
+                     $("#playlistUpdate").html(partialViewResult);
+                     $(function () {
+                         initTinyMCE();
+                         $(document).scrollTop($("#playlistUpdate").offset().top);
+                     });
+                 });
+			 });
+
+             //Edit Playlist
+		     $('.editPlaylistButton').click(function (e) {
+		         e.preventDefault();
+		         $('#topicDiv').hide();
+		         $('#newPlaylistButton').hide();
+
+		         resetTinyMCE();
+		         var editDataID = $(this).attr('data-id')
+		         $.ajax({
+		             url: '@Url.Content("~/HifisHelp/EditPlaylist")',
+				    type: "GET",
+				    data: { id: editDataID, uniq_param: (new Date()).getTime() }
+				})
+				.done(function (partialViewResult) {
+				    $('#playlistDiv').show();
+				    $('#editplay').show();
+				    $('#newplay').hide();
+
+				    $("#playlistUpdate").html(partialViewResult);
+				    $(function () {
+				        initTinyMCE();
+				        $(document).scrollTop($("#playlistUpdate").offset().top);
+				    });
+				});
+		     });		     
+		 });
+		</script>
+	);
+}

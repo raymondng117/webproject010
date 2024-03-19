@@ -1,0 +1,33 @@
+﻿@model string
+@{
+	ViewBag.ViewTitle = Labels.PiTExporttoRH + " - " + TempData["CityName"];
+
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div>
+	<div class="alert alert-info" role="alert">
+		<p>
+			@Html.Raw(Labels.ExporttoRHInfo)
+		</p>
+	</div>
+
+    @if (String.IsNullOrEmpty(ViewBag.eventExportID))
+    {
+        <section class="alert alert-warning " id="alert-warning" open="">
+            <h3>@Labels.ImportantMessage</h3>
+            <p>
+                @Labels.msgUnregisteredPiT
+            </p>
+        </section>
+    }
+
+	<p>
+		@Html.ActionLink(Labels.ViewExporttoRH, "DownloadExport", "PitEvents", new { filename = Model.Split('\\').LastOrDefault() }, new { @class = "downloadButton", alt=Labels.ViewExporttoRH, aria_label = Labels.ViewExporttoRH, @role = "button" })
+	</p>
+
+	<div class="clearfix"></div>
+		
+	@Html.ActionLink(Labels.SendExporttoRH, "SendRHExport", "PitEvents", new { eventID = ViewBag.eventID, includeCOH = ViewBag.includeCOH }, new { @class = "sendButton", alt=Labels.SendExporttoRH, aria_label = Labels.SendExporttoRH, @role = "button" })
+
+</div> 

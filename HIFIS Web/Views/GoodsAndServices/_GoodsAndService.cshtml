@@ -1,0 +1,227 @@
+﻿@model GoodsAndServices_ServiceViewModel
+@Html.AntiForgeryToken()
+@{
+
+    if (Model.ReadOnlyVitals == null)
+    {
+        @*<div class="row">
+            <div class="col-sm-offset-2 mrgn-bttm-md">
+                @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Client_Add))
+                {
+                    @Html.Partial("_OnTheFlyButton",
+                        new OnTheFlyButtonViewModel()
+                        {
+                            ButtonName = Labels.NewClient,
+                            Title = Labels.NewClient,
+                            ActionName = "NewVitals",
+                            ControllerName = "ClientTombstone",
+                            PartialName = "~/Views/ClientTombstone/_ClientVitalsEdit.cshtml",
+                            CallBackFunction = "OnTheFlyCallBack",
+                            ViewModel = new ClientVitalsViewModel() { IsStealth = false }
+                        }
+                    )
+                }
+            </div>
+        </div>*@
+        <div class="clearfix"></div>
+
+        <div>
+            @Html.HifisAutocompleteFor(
+                model => model.ClientIDs
+                , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                , null
+                , new AutocompleteViewModelOptions
+                {
+                    OnSelect = "updateClientSideBar();"
+                }
+            )
+
+            @*new AutocompleteViewModelOptions { OnSelect = "getROVitals($('#ClientIDs').val());", HiddenValue = true }*@
+            @using (Html.BeginScriptContext())
+            {
+                Html.AddScriptBlock(
+        @<script type="text/javascript">
+             //$('#ClientIDs').on('change', function () {
+             //    getROVitals($('#ClientIDs').val());
+             //});
+
+             function updateClientSideBar() {
+                 getROVitals($('#ClientIDs').val());
+             }
+
+        </script>
+        );
+                    }
+
+            @*@if (Model.ServiceTypeID == (int)ServiceTypes.FoodBanks)*@
+            @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ServiceTypes, (short)Model.ServiceTypeID) == (short)ServiceTypes.FoodBanks)
+
+            {
+                <button type="button" id="ClientLastVisitInfoButton" name="radio" value="@Labels.UseLastVisitDetails" class="addButton  ">@Labels.UseLastVisitDetails</button>
+            }
+
+        </div>
+    }
+    else
+    {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        if (Model.ClientIDs.Count > 0)
+        {
+            @Html.HiddenFor(model => model.ClientIDs[0])
+        }
+    }
+
+}
+
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.Partial("_BaseHiddenFor")
+
+@*<div>
+        @Html.HifisEditorFor(model => model.OrganizationID, ViewBag.Orgs as SelectList)
+    </div>*@
+
+<div>
+    @Html.HifisEditorFor(model => model.ReasonForGoodsActivityTypeID, CachedTableTypes.HIFIS_ReasonForGoodsActivityTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+</div>
+
+@*<div>
+        @Html.HifisEditorFor(model => model.ProgramServiceProviderID, ViewBag.ProgramList as SelectList)
+        <img id="ProgramSelectionLoader" alt="Loader animation" src="@Url.Content("~/Content/images/Loaders/loader-30.gif")" class="hide" />
+    </div>*@
+
+<div>
+    @Html.HifisListBoxFor(model => model.ProgramIDs, ViewBag.ProgramList as SelectList, null, false, true, true)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.SessionID, ViewBag.SessionList as SelectList)
+    <img id="SessionSelectionLoader" alt="Loader animation" src="@Url.Content("~/Content/images/Loaders/loader-30.gif")" style="display:none" />
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.NumberOfPeople)
+</div>
+
+@*@if (Model.isGeoRegionEnforced)
+    {
+    <div style="border: 1px solid #e2e2e2; padding-left: 10px; ">
+        <span style="font-weight:700; font-size: 1.1em;">@Labels.ReferredFilter</span>
+        <br style="margin-bottom: 5px;" />
+
+        <div style="float:left; margin-right: 30px; margin-left: 150px;">
+            <label>@Labels.GeoRegion</label>
+            @Html.HifisEditorFor(m => m.GeoRegionID, CachedTableTypes.HIFIS_GeoRegionTypes, new { id = "ddGeo" }, true)
+        </div>
+
+        <div style="float:left;">
+            <label>@Labels.City</label>
+            @Html.HifisEditorFor(m => m.CityID, ViewBag.Cities as SelectList, null, new { id = "ddCity" }, true)
+        </div>
+        <br />
+        <br />
+        <br />
+    </div>
+        <div class="clearfix">
+                    </div>
+    }*@
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.GeoFilter.GeoRegionID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.GeoFilter.GeoRegionID, FilterType = (short)GeoFilterTypes.ReferTo })))
+    </div>
+}
+else
+{
+    <div>
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+    </div>
+    <div>
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+    </div>
+}
+
+<div>
+    @Html.HifisEditorFor(model => model.ReferredByName)
+</div>
+
+@*@using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+                 var defaultGeoRegionID = '@Model.GeoFilter.GeoRegionID';
+
+                 function UpdateDropdowns() {
+                     $("#ddGeo").trigger('change');
+                 }
+
+                 function UpdateDropdownValues(dropdown, values) {
+                     dropdown.options.length = 0; // clear out existing items
+
+                     for (var i = 0; i < values.length; i++)
+                         dropdown.options.add(new Option(values[i].Text, values[i].Value));
+
+                     $(dropdown).trigger('change');
+                 }
+
+                 function PopulateReferalToList() {
+                     @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Async = false,
+                    Url = "'" + Url.Content("~/Master/AjaxGetReferalToList") + "'",
+                    Data = "{ GeoID: $('#ddGeo').val(), CityID: $('#ddCity').val()}",
+                    OnSuccess = @"UpdateDropdownValues(document.getElementById('ddTo'), data);"
+
+                });
+                 }
+
+                function PopulateReferalFromList() {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Async = false,
+                   Url = "'" + Url.Content("~/Master/AjaxGetReferalFromList") + "'",
+                   Data = "{ GeoID: $('#ddGeo').val(), CityID: $('#ddCity').val()}",
+                   OnSuccess = @"UpdateDropdownValues(document.getElementById('ddFrom'), data);"
+
+               });
+                }
+
+                function PopulateCity() {
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Async = false,
+                   Url = "'" + Url.Content("~/Master/AjaxGetGeoCityList") + "'",
+                   Data = "{ GeoID: $('#ddGeo').val()}",
+                   OnSuccess = @"UpdateDropdownValues(document.getElementById('ddCity'), data);"
+               });
+                }
+
+                 function PopulateDDFunction() {
+                     PopulateCity();
+                     PopulateReferalFromList();
+                     PopulateReferalToList()
+                 }
+
+                 function PopulateFromTo() {
+                     PopulateReferalFromList();
+                     PopulateReferalToList()
+                 }
+
+
+                     //Onload
+                 $(document).ready(function () {
+                     PopulateCity();
+                     $("#ddGeo").change(PopulateDDFunction);
+                     $("#ddCity").change(PopulateFromTo);
+                 });
+
+            </script>
+    );
+    }*@

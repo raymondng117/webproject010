@@ -1,0 +1,223 @@
+﻿@model ClientHousingHistoryViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientHousingHistory;
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    string fullHistoryUrlDefault = Url.Content("~/ClientTombstone/GetHousingHistoryList/?clientID=" + Model.ClientID + "&includeStay=" + Model.ShowShelterStaysInHousingYN);
+    string fullHistoryUrlPartialParam = Url.Content("~/ClientTombstone/GetHousingHistoryList/?clientID=" + Model.ClientID);
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#History" role="tab" data-toggle="tab">@Labels.HousingHistory</a>
+    </li>
+
+    @if (RightsHelper.HasRight(UserRights.ClientFactors_Risk_List))
+    {
+        <li>
+            <a class="tabButton" href="#ClientRiskOfHomelessness" role="tab" data-toggle="tab">@Labels.ClientRiskOfHomelessness</a>
+        </li>
+    }
+
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+
+            <!-- Housing History -->
+            <div class="tab-pane active" id="History">
+                <div>
+
+                    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+                    @Html.HiddenFor(m => m.ClientID)
+
+                    <div class="form-color-white module-form-block">
+
+                        @if (RightsHelper.HasRight(UserRights.Stays_Client_List))
+                        {
+                            <div class="modal-footer" style="background-color: white;">
+                                <button id="showHideStaysBtn" value="True"></button>
+                            </div>
+                        }
+
+                        <div class="table-responsive">
+
+                            <table id="clientHousingHistory" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                { "width": "20%", "data": "HouseType", "orderable": true, "type": "string", "name" : "Category_En"},
+                                                                { "width": "25%", "data": "Address", "orderable": false, "type": "string", "name" : "Address"},
+                                                                { "width": "10%", "data": "DateStart", "orderable": true, "type": "string", "name": "DateStart"},
+                                                                { "width": "10%", "data": "DateEnd", "orderable": true, "type": "string", "name": "DateEnd"},
+                                                                { "width": "25%", "data": "actions", "orderable": false, "type": "string", "name": "actions"}
+                                                            ],
+                                                            "order": [ [2, "desc"] ],
+                                                            "serverSide": true,
+                                                            "processing": true,
+                                                            "bFilter" : false,
+                                                            "ajax": { 
+                                                                "url": "@fullHistoryUrlDefault",
+                                                                "type": "GET",
+                                                                "datatype": "json"
+                                                            } }'>
+                                <thead>
+                                    <tr>
+                                        <th class="col-xs-2">@Labels.HousingType</th>
+                                        <th class="col-xs-3">@Labels.Address</th>
+                                        <th class="col-xs-1">@Labels.DateStart</th>
+                                        <th class="col-xs-1">@Labels.DateEnd</th>
+                                        <th class="col-xs-3">@Labels.Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <div class="mrgn-tp-md">
+
+                        @if (RightsHelper.HasRight(UserRights.Client_Housing_Add))
+                        {
+                            @Html.ActionLink(Labels.AddHousingHistory, "ClientHousingHistoryNew", "ClientTombstone", new { id = Model.ClientID, }, new { @class = "addButton  ", title = @Labels.AddHousingHistory, alt=Labels.AddHousingHistory, aria_label = Labels.AddHousingHistory, @role = "button"  })
+                        }
+                        @{
+                            string clientActiveHouseID = string.Empty;
+                            if (Model.ClientHousingHistory.Where(c => c.DateEnd == null && c.HouseRetentionID == null).Count() > 0)
+                            {
+                                clientActiveHouseID = Model.ClientHousingHistory.Where(c => c.DateEnd == null).First().ClientHouseID;
+                            }
+                        }
+                        @* Watch out! Change for the appropriate right *@
+                        @if (RightsHelper.HasRight(UserRights.HousingRetention_Add) && !string.IsNullOrEmpty(clientActiveHouseID))
+                        {
+                            @Html.ActionLink(Labels.AddHousingRetention, "GetNewForm", "HousingRetention", new { id = Model.ClientID, clientHouseID = clientActiveHouseID }, new { @class = "wb-lbx lbx-modal addButton  ", alt=Labels.AddHousingRetention, aria_label = Labels.AddHousingRetention, @role = "button"  })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+                        {
+                            <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "HousingHistory", DataSetName = "ClientHousingHistoryWithStays", ClientID = Model.ReadOnlyVitals.ClientID }, new { @id = "excelExportWithStays", @class = "excelButton no-print wb-lbx lbx-modal", aria_controls = "Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel })</span>
+                            <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "HousingHistory", DataSetName = "ClientHousingHistoryWithoutStays", ClientID = Model.ReadOnlyVitals.ClientID }, new { @id = "excelExportWithoutStays", @class = "excelButton no-print wb-lbx lbx-modal", aria_controls = "Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel })</span>
+                        }
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Risk of Homelessness -->
+            <div class="tab-pane" id="ClientRiskOfHomelessness">
+                @if (RightsHelper.HasRight(UserRights.ClientFactors_Risk_List))
+                {
+                    <div class="table-responsive">
+                        <table id="risksTable" class="wb-tables table table-striped table-hover" data-wb-tables='{  "columns": [
+                                               { "width": "25%" , "data": "RiskName" },
+                                               { "width": "25%" , "data": "Date" },
+                                               { "width": "25%" , "data": "CaseWorkerName" },
+                                               { "width": "25%" , "data": "Action" }
+                                               ],
+                                               "order": [ [0, "desc" ] ],
+                                               "ajax": "@Url.Content("~/ClientFactors/GetRisksJson?id=" + Model.ClientID)"
+                                               }'>
+                            <thead>
+                                <tr>
+                                    <th class="align-text-center">@Labels.RiskStatus</th>
+                                    <th class="align-text-center">@Labels.DateChange</th>
+                                    <th class="align-text-center">@Labels.CaseWorker</th>
+                                    <th class="align-text-center">@Labels.Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+
+                    </div>}
+                <div class="clearfix"></div>
+                <div class="mrgn-bttm-md mrgn-tp-md">
+                    @if (RightsHelper.HasRight(UserRights.ClientFactors_Risk_Add))
+                    {
+                        <a href="@Url.Content("~/ClientFactors/GetNewRiskForm?id=" + Model.ClientID)" aria-controls="Modal_NewRisk" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewHomelessnessRisk</a>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript" charset="utf-8">
+
+            //Set button to Hide if ShowShelterStaysInHousing is set to false and hide the stays
+            var showShelterStaysYN = "@Model.ShowShelterStaysInHousingYN";
+
+            if (showShelterStaysYN == "False") {
+                $("#excelExportWithoutStays").show();
+                $("#excelExportWithStays").hide();
+
+                $("#showHideStaysBtn").val("False");
+                $("#showHideStaysBtn").text("@Html.Raw(Labels.ShowStays)");
+            }
+            else {
+                $("#excelExportWithoutStays").hide();
+                $("#excelExportWithStays").show();
+
+                $("#showHideStaysBtn").val("True");
+                $("#showHideStaysBtn").text("@Html.Raw(Labels.HideStays)");
+            }
+
+            $(".deleteButton").click(function () {
+                if ($(this).is('[disabled=disabled]'))
+                    return false;
+            });
+
+            //shows or hides the stays and sets button value whenever user clicks the button
+            $("#showHideStaysBtn").click(function () {
+
+                if ($("#showHideStaysBtn").val() == "True") {
+
+                    $("#showHideStaysBtn").val("False");
+                    showShelterStaysYN = "False";
+
+                    UpdateHousingHistoryList(showShelterStaysYN);
+                    AdjustShowHideStaysBtnTextAndExcelBtn();
+                }
+                else {
+
+                    $("#showHideStaysBtn").val("True");
+                    showShelterStaysYN = "True";
+
+                    UpdateHousingHistoryList(showShelterStaysYN);
+                    AdjustShowHideStaysBtnTextAndExcelBtn();
+                }
+
+            });
+
+            function UpdateHousingHistoryList(includeStay) {
+                $('#clientHousingHistory').DataTable().ajax.url('@fullHistoryUrlPartialParam' + "&includeStay=" + includeStay.toString()).load(null, true);
+            }
+
+            function AdjustShowHideStaysBtnTextAndExcelBtn() {
+
+                if ($("#showHideStaysBtn").text() == "@Html.Raw(Labels.ShowStays)") {
+                    $("#showHideStaysBtn").text("@Html.Raw(Labels.HideStays)");
+                    $("#excelExportWithoutStays").hide();
+                    $("#excelExportWithStays").show();
+                }
+                else {
+                    $("#showHideStaysBtn").text("@Html.Raw(Labels.ShowStays)");
+                    $("#excelExportWithoutStays").show();
+                    $("#excelExportWithStays").hide();
+                }
+            }
+
+        </script>
+        );
+}

@@ -1,0 +1,96 @@
+﻿@model PitQuestionViewModel
+
+@{
+	ViewBag.ViewTitle = Labels.EditDropdown;
+
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+	string ajaxUrl = Url.Content(String.Format("~/PitEvents/DropDownValuesListJson?questionID={0}",
+	   new object[] { Model.QuestionID }));
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+
+	<div>
+		@Html.HifisDisplayFor(model => model.SequenceLabel)
+	</div>
+
+	<div>
+		@Html.HifisDisplayFor(model => model.QuestionNo) - @Model.SequenceNo
+	</div>
+
+    <div>
+        @(Culture.Equals(Constants.Eng) ? Html.HifisDisplayFor(model => model.Question) : Html.HifisDisplayFor(model => model.QuestionF))
+    </div>
+
+    <h4>@Labels.DropdownValues</h4>
+
+    <div class="table-responsive">
+		<table id="dropDownValuesTable" class="wb-tables table table-striped table-hover" 
+			   data-wb-tables='{ "columns": [
+									   { "data": "sequence" },
+									   { "data": "name" },
+									   { "data": "active" },
+									   { "data": "legacyId" },
+									   { "data": "affectedQuestions" },
+									   { "width":"10%", "data": "answeredBehaviour" },
+									   { "width":"10%", "data": "emptyBehaviour" },
+									   { "data": "dropDownActionType" },
+									   { "data": "actions" }
+								], 
+							"order": [ [0, "asc" ] ], 
+							"processing": true,
+							"ajax": "@ajaxUrl",
+							"info": false }'>
+			<thead>
+				<tr>
+					<th>@Labels.PitDDSequence</th>
+					<th>@Labels.Name</th>
+					<th>@Labels.Active</th>
+					<th>@Labels.PitLegacyID</th>
+					<th>@Labels.PitAffectedQuestions</th>
+					<th>@Labels.PitAnsweredBehaviourYN</th>
+					<th>@Labels.PitEmptyBehaviourYN</th>
+					<th>@Labels.PitDropDownActionType</th>
+					<th>@Labels.Action</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<div class="clearfix"></div>
+	<p>
+
+		@Html.ActionLink(Labels.AddDropdownValue, "CreatePitDropdown", new { questionID = Model.QuestionID, templateID = Model.PitTemplateID, PitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "addButton", alt=Labels.AddDropdownValue, aria_label = Labels.AddDropdownValue, @role = "button" })
+		@Html.ActionLink(Labels.ReorderDropDownValues, "GetReorderDropDownValuesForm",
+			new { questionID = Model.QuestionID }, new { @class = "randomButton wb-lbx lbx-modal ", alt=Labels.ReorderDropDownValues, aria_label = Labels.ReorderDropDownValues })
+
+
+        @if ((Model.PitTemplateID != null) && (Model.PitQuestionnaireID == null))
+		{
+			@Html.ActionLink(Labels.Cancel, "EditPitTemplate", new { pitTemplateID = Model.PitTemplateID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		}
+
+        @if ((Model.PitTemplateID == null) && (Model.PitQuestionnaireID != null))
+		{
+			@Html.ActionLink(Labels.Cancel, "EditPitQuestionnaire", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		}
+	</p>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(
+		@<script type="text/javascript">
+			$(document).on('draw.dt', '.dataTable', function (event) {
+				init_hifis();
+				$("div[id^='tooltip']").remove();
+			});
+		</script>);
+}

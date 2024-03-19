@@ -1,0 +1,26 @@
+﻿@model GoodsItemsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewGoodsItem;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="clearfix"></div>
+
+<div>
+    @using (Html.BeginForm("NewExpressGoodsItem", "GoodsAndServices", FormMethod.Post, new { @class = "form-horizontal", id = "myForm" }))
+    {
+        @Html.Partial("_BaseHiddenFor")
+                                    
+        @Html.Partial("_ExpressGoodItem", Model);        
+        
+        <div class="form-group">
+		    <div class="col-sm-offset-2 col-sm-10">
+			    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "ExpressList", "GoodsAndServices", new { }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		    </div>
+	    </div>    
+    }
+</div>

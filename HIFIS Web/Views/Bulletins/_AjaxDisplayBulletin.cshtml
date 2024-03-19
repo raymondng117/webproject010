@@ -1,0 +1,124 @@
+﻿@model HIFIS.CONTRACTS.WCFContracts.DataContracts.Bulletin
+
+<style>
+    td, th {
+        padding: 10px;
+    }
+
+    .tooltip.top .tooltip-inner {
+        background-color: #d43f3a;
+    }
+
+    .tooltip.top .tooltip-arrow {
+        border-top-color: #d43f3a;
+    }
+
+    #hideBulletinWrapper {
+        font-weight: normal;
+        color: inherit;
+    }
+</style>
+
+<section id="Modal_DisplayBulletin" class="modal-dialog modal-content overlay-def">
+    
+        <div class="modal-header" style="color:white;">
+            <h2 class="modal-title">@Model.Subject</h2>
+        </div>
+        <div class="modal-body">
+
+            @if (Model.OnBehalfOfPersonName != null)
+            {
+                <div class="modal-sub-header"><strong>@Labels.OnBehalfOf_LowerCase:</strong> @Model.OnBehalfOfPersonName</div>
+            }
+
+            @if (Model.OwnerOrgID != null)
+            {
+                <div class="modal-sub-header"><strong>@Labels.OwnerOrg:</strong> @Model.OwnerOrgName</div>
+            }
+
+            @if (Model.BulletinsClient.Count > 0)
+            {
+                <div class="modal-sub-header">
+                    <strong>@Labels.Clients:</strong>
+                    @Html.Partial("DisplayViewTemplates/_DisplayListStringsWithViewMore", Model.BulletinsClient.Select(c => c.LastName + ", " + c.FirstName).ToList() as List<string>)
+                </div>
+            }
+            <div style="overflow: auto; margin-top: 10px; min-width:100%;">
+                @Html.Raw(Model.Description)
+            </div>
+        </div>
+    <form id="hideBulletinForm" class="form-horizontal">
+        <div class="modal-footer" style="background-color: white;">
+
+            @Html.AntiForgeryToken()
+            @if (Model.DateEnd >= DateTime.Today && (bool)ViewBag.ShowHideBulletinCB)
+            {
+                //if (Model.BulletinPriorityTypeID == (short)BulletinPriorityTypes.High)
+                if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_BulletinPriorityTypes, Model.BulletinPriorityTypeID) == (short)BulletinPriorityTypes.High)
+                {
+                    <label id="hideBulletinWrapper" style="float:left;" data-toggle="tooltip" data-placement="top" title="@Labels.BulletinsCantHideHighPriority">
+                        <input id="hideBulletin" type="checkbox" disabled /> @Labels.DontShowThisAgain
+                    </label>
+                }
+                else
+                {
+                    <label id="hideBulletinWrapper" style="float:left;">
+                        <input id="hideBulletin" type="checkbox" /> @Labels.DontShowThisAgain
+                    </label>
+                }
+            }
+
+            <button id="displayBulletinCloseBtn" class="btn btn-primary cancelButton" type="button">@Labels.Close</button>
+
+            @* Sadly, no way triger lightbox close through javascript, trigger click on this hidden element instead *@
+            <span id="hiddenClose" class="popup-modal-dismiss" style="display:none;"></span>
+        </div>
+    </form>
+        
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $("#hideBulletinWrapper").tooltip();
+
+    $("#displayBulletinCloseBtn").click(function () {
+
+        if ($("#hideBulletin").is(':checked')) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+
+            $.ajax({
+
+                url: "@Url.Content("~/Bulletins/HideBulletin?BulletinID=" + Model.BulletinID)",
+                type: "POST",
+                data: $("#hideBulletinForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#userBulletinList').DataTable().ajax.reload(function () {
+                        $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        $(".expandableSummary").trigger("wb-init.wb-details");
+                    }); // Re-load the datatable
+                    $("#hiddenClose").click(); //Close the modal window on success
+                }
+            });
+        }
+        else {
+            $("#hiddenClose").click();
+        }
+    });
+
+</script>
+
+

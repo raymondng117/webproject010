@@ -1,0 +1,122 @@
+﻿@model ClientLifeEventsViewModel
+ 
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+      
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ClientID)    
+@Html.HiddenFor(model => model.PersonID)         
+@Html.HiddenFor(model => model.PeopleLifeEventID)
+@Html.HiddenFor(model => model.LegalFactor.IsLegalMandatory, new { id = "isLegalMandatory" }) 
+@Html.HiddenFor(model => model.ProbationFactor.IsProbationMandatory, new { id = "isProbationMandatory" })
+@Html.HiddenFor(model => model.GangFactor.IsGangMandatory, new { id = "isGangMandatory" })
+
+    <div>
+        @*I check to see if a legal dropdown option was selected, if so I disable the dropdown list*@
+        @*@if (Model.LifeEventTypeID == (byte)LifeEventTypes.LegalBail || Model.LifeEventTypeID == (byte)LifeEventTypes.LegalCourt || Model.LifeEventTypeID == (byte)LifeEventTypes.LegalOther || Model.LifeEventTypeID == (byte)LifeEventTypes.LegalParole || Model.LifeEventTypeID == (byte)LifeEventTypes.LegalPolice || Model.LifeEventTypeID == (byte)LifeEventTypes.LegalProbation)*@
+        @if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID) == (short)LifeEventTypes.LegalBail) || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID) == (short)LifeEventTypes.LegalCourt)
+            || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID) == (short)LifeEventTypes.LegalOther) || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID) == (short)LifeEventTypes.LegalParole)
+            || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID) == (short)LifeEventTypes.LegalPolice) || (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_LifeEventsTypes, Model.LifeEventTypeID) == (short)LifeEventTypes.LegalProbation))
+        {
+            @*@Html.HifisEditorFor(model => model.LifeEventTypeID, CachedTableTypes.HIFIS_LifeEventsTypes, new { disabled = "disabled", id = "ddlLifeEventType" })*@
+            @Html.HifisRollupEditorFor(model => model.LifeEventTypeID, CachedTableTypes.HIFIS_LifeEventsTypes, new { @class = "max_width_90", disabled = "disabled", id = "ddlLifeEventType" })
+        }
+        else
+        {
+            @*@Html.HifisEditorFor(model => model.LifeEventTypeID, CachedTableTypes.HIFIS_LifeEventsTypes, new { id = "ddlLifeEventType" })*@
+            @Html.HifisRollupEditorFor(model => model.LifeEventTypeID, CachedTableTypes.HIFIS_LifeEventsTypes, new { @class = "max_width_90", id = "ddlLifeEventType" })
+        }
+
+        @Html.ValidationImageFor(model => model.LifeEventTypeID)
+    </div>
+
+<div>    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)
+</div>
+
+<div id="divClientLegal">
+    @Html.Partial("_ClientLegal", Model)
+</div>
+        
+<div id="divClientProbation">
+    @Html.Partial("_ClientProbation", Model)
+</div>
+    
+<div id="divClientBail">
+    @Html.Partial("_ClientBail", Model) 
+</div>
+    
+<div id="divClientGang">
+    @Html.Partial("_ClientGang", Model) 
+</div>   
+
+<script type="text/javascript">
+            $(document).ready(function () {
+                $('#divClientProbation').show();
+                $('#divClientBail').show();
+            });
+
+                $('#ddlLifeEventType').ready(ShowHideLifeEventDIV);
+                $('#ddlLifeEventType').change(ShowHideLifeEventDIV);
+
+
+        function ShowHideLifeEventDIV() {
+            var selectedValue = getLookupOrRollup('#ddlLifeEventType');
+            switch (selectedValue) {
+                case @((byte)LifeEventTypes.LegalOther):
+                    case @((byte)LifeEventTypes.LegalCourt):
+                    case @((byte)LifeEventTypes.LegalPolice):
+                        $("#isLegalMandatory").val(true);
+                        $("#isProbationMandatory").val(false);
+                        $("#isGangMandatory").val(false);
+                        $('#divClientLegal').show();
+                        $('#divClientProbation').hide();
+                        $('#divClientBail').hide();
+                        $('#divClientGang').hide();
+            break;
+                    case @((byte)LifeEventTypes.LegalParole):
+                    case @((byte)LifeEventTypes.LegalProbation):
+                        $("#isLegalMandatory").val(true);
+                        $("#isProbationMandatory").val(true);
+                        $("#isGangMandatory").val(false);
+                        $('#divClientLegal').show();
+                        $('#divClientProbation').show();
+                        $('#divClientBail').hide();
+                        $('#divClientGang').hide();
+            break;
+                    case @((byte)LifeEventTypes.LegalBail):
+                        $("#isLegalMandatory").val(true);
+                        $("#isProbationMandatory").val(false);
+                        $("#isGangMandatory").val(false);
+                        $('#divClientLegal').show();
+                        $('#divClientProbation').hide();
+                        $('#divClientBail').show();
+                        $('#divClientGang').hide();
+            break;
+                    case @((byte)LifeEventTypes.Gang):
+                        $("#isLegalMandatory").val(false);
+                        $("#isProbationMandatory").val(false);
+                        $("#isGangMandatory").val(true);
+                        $('#divClientLegal').hide();
+                        $('#divClientProbation').hide();
+                        $('#divClientBail').hide();
+                        $('#divClientGang').show();
+            break;
+            default:
+                        $("#isLegalMandatory").val(false);
+                        $("#isProbationMandatory").val(false);
+                        $("#isGangMandatory").val(false);
+                        $('#divClientLegal').hide();
+                        $('#divClientProbation').hide();
+                        $('#divClientBail').hide();
+                        $('#divClientGang').hide();
+            break;
+            }
+            init_hifis();
+        }
+</script>
+
+
+

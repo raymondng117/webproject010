@@ -1,0 +1,70 @@
+﻿@model List<CustomTableFieldViewModel>
+
+@* Probably room for improvement. *@
+@if (!Model.IsEmptyOrNull())
+{
+    var columns = Model.Max(m => m.XCoordinate.Value) + 1;
+    var rows = Model.Max(m => m.YCoordinate.Value) + 1;
+    var numCells = columns * rows;
+    var width = (100 / columns - 0.3) + "%";
+    var height = (100 / rows) + "%";
+    var curCol = 0;
+    var curRow = 0;
+    List<CustomTableFieldViewModel> fields;
+    int fieldIndex;
+
+    for (int i = 0; i < numCells; ++i)
+    {
+        if ((i - (curRow * columns)) == columns)
+        {
+            curRow++;
+            curCol = 0;
+        }
+        fields = Model.Where(f => f.XCoordinate == curCol && f.YCoordinate == curRow).ToList();
+        
+        <div class="gridCell align-inline-block align-vertical-top">
+                @if (fields.Count != 0)
+                {
+                    if (fields.Count > 1)
+                    {
+                        fields = fields.OrderBy(field => field.Position).ToList();
+                    }
+
+                    foreach (var f in fields)
+                    {
+                        <div>
+                            @{
+                        fieldIndex = Model.IndexOf(f);
+                                @Html.Partial("_CustomTableFieldEditor", Model[fieldIndex], (ViewData["InputNamePrependString"] as string ?? String.Empty) + "[" + fieldIndex + "].", true)
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    @:&nbsp;
+                }
+        </div>
+        
+                curCol++;
+    }
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+		    @<script type="text/javascript">
+                $(function () {
+                    var divHeight = 0;
+
+                    $('.gridCell').each(function (index, element) {
+                        $(element).children('div').each(function(divIndex, divElement){
+                            divHeight += divElement.offsetHeight;
+                        });
+
+                        $(element).height('@height').width('@width');
+                    })
+                    .parent()
+                    .height(divHeight);
+                });
+            </script>);
+    }
+}

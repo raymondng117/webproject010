@@ -1,0 +1,270 @@
+﻿@model System.Linq.IGrouping<short, HIFIS.WEB.ViewModels.PitQuestionViewModel>
+
+
+@{
+    var AgeQuestionGUID = new Guid("{47b141a7-c709-4ff0-8fd6-eacd8417be8a}");
+    var AgeFirstQuestionGUID = new Guid("{35deda28-72ff-4f95-a290-678bde00f7e4}");
+    var Q6guidForAge = new Guid("{2aaa0491-d9c4-4fbc-83d0-f1090ad7cbc9}");
+    var Q7guidForAge = new Guid("{5ad090b9-86ad-4906-8876-813d65a2cc1a}");
+    var Q10guidForAge = new Guid("{6d4e5a2d-e162-4822-9b86-6305be37118d}");
+    var Q14guidForAge = new Guid("{c313d7eb-e575-43e0-86cf-ab07511cd552}");
+    var Q3Core = new Guid("{FFF11985-5992-43AC-B9AA-0D5D0ED90130}");
+    var Q4Core = new Guid("{51D4D6B0-8B76-499A-85D5-3C2FCE6B11B3}");
+    var Q5Core = new Guid("{0C8083EE-12A2-4BF1-8773-EAB371A6A086}");
+
+    PitSurveyViewModel survey = Session["PageSurveyID_" + ViewBag.PitSurveyID];
+
+    var seedIncrement = 0;
+    var firstQuestion = Model.OrderBy(q => q.SequenceNo).First();
+    var subQuestions = Model.OrderBy(q => q.SequenceNo).Skip(1);
+
+    string questionLabel =
+        (ViewBag.currentculture == Constants.Eng ? firstQuestion.Question : firstQuestion.QuestionF);
+    string calloutClass = "callout-default";
+
+    switch (firstQuestion.QuestionCategoryTypeID)
+    {
+        case 1:
+            calloutClass = "callout-primary";
+            break;
+        case 2:
+            calloutClass = "callout-danger";
+            break;
+        case 3:
+            calloutClass = "callout-success";
+            break;
+        case 4:
+            calloutClass = "callout-default";
+            break;
+        default:
+            break;
+    }
+}
+@*@if (firstQuestion.QuestionGUID.Equals(Q3Core)*@
+@if(firstQuestion.QuestionGUID.Equals(Q4Core)
+
+                    || Request.Url.PathAndQuery.ToLower().Contains("paging") && (firstQuestion.QuestionGUID.Equals(Q4Core) || firstQuestion.QuestionGUID.Equals(Q5Core)))
+{
+
+    <div class="form-group" id="">
+        <div class="col-md-12">
+            <div class="callout callout-info @ViewBag.QuestionWell" style="padding-bottom:0px;">
+
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-default">
+                        <div class="">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#homedef" class="" aria-expanded="true">
+                                <span class="fa-stack">
+                                    <span class="fa fa-circle fa-stack-2x"></span>
+                                    <span class="fa fa-info fa-stack-1x fa-inverse"></span>
+                                </span>
+                                <span><strong>@Labels.PITHomelessness</strong></span>
+                            </a>
+                        </div>
+                        @*<div id="homedef" class='pitlabel_B panel-collapse collapse @((firstQuestion.QuestionGUID.Equals(Q3Core))?"in":"")' tabindex="-1" aria-expanded="true" style="">*@
+                        <div id="homedef" class='pitlabel_B panel-collapse collapse @((firstQuestion.QuestionGUID.Equals(Q4Core))?"in":"")' tabindex="-1" aria-expanded="true" style="">
+                                <h4>
+                                    @Html.Raw(Labels.PITHomelessDefinition)
+                                </h4>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+<div class="form-group" id="form-group_@firstQuestion.QuestionID">
+    <div class="col-md-12">
+        <div class="callout @calloutClass @ViewBag.QuestionWell">
+            <div class="" style="display: table">
+                <div class="pitlabel_A"><h4>@firstQuestion.QuestionNo.</h4></div>
+                <div class="pitlabel_B" style="overflow:hidden;"><h4>@Html.Raw(questionLabel)</h4></div>
+            </div>
+            <br />
+            <div class="">
+                <div class="pitlabel_A">&nbsp;</div>
+                <div class="pitlabel_B" style="overflow:hidden;">
+                    @Html.Partial("SurveyPartials/_InputPITAnswerHelper", firstQuestion, "Questions[" + (firstQuestion.QuestionSeed + seedIncrement++) + "].")
+                </div>
+            </div>
+            <div class="clearfix"></div>
+
+            @foreach (var question in subQuestions)
+            {
+                // Set the question label
+                questionLabel = (ViewBag.currentculture == Constants.Eng ? question.Question : question.QuestionF);
+
+                // Check to see if this is the Age of First Homeless question
+                if (question.QuestionGUID.Equals(AgeFirstQuestionGUID) || question.QuestionGUID.Equals(Q6guidForAge) || question.QuestionGUID.Equals(Q7guidForAge) || question.QuestionGUID.Equals(Q10guidForAge) || question.QuestionGUID.Equals(Q14guidForAge))
+                {
+                    // Let's check to see if we need to set a Max Age value
+                    if (survey != null)
+                    {
+                        //if user dropdown is set to answered, update the ViewBag with the value otherwise set to the default (120)
+                        var AgeDropDownQuestion = survey.Questions.Single(q => q.QuestionGUID.Equals(new Guid("{de37f489-94a0-4835-a105-01000428ce8e}"))); //q2 dropdown selection
+                        var AgeQuestion = survey.Questions.Single(q => q.QuestionGUID.Equals(AgeQuestionGUID)); //value entered in age field
+                        string answeredlbl = ViewBag.currentculture == Constants.Eng ? "answered" : "répondu";
+                        if (WebHelper.DecryptID(AgeDropDownQuestion.QuestionAnswer.SingleDropdownValue) == (int)AgeDropDownQuestion.DropdownSelectList.Find(t => t.Label.ToLower().Equals(answeredlbl)).Value)
+                        {
+                            //if age field is left blank but dropdown selection is set to answered, set default to 120
+                            if (AgeQuestion.QuestionAnswer.NumericValue.HasValue)
+                            {
+                                ViewBag.AgeValueMax = AgeQuestion.QuestionAnswer.NumericValue;
+                            }
+                            else
+                            {
+                                ViewBag.AgeValueMax = 120;
+                            }
+
+                        }
+                        else
+                        {
+                            ViewBag.AgeValueMax = 120;
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.AgeValueMax = 120;
+                    }
+
+                }
+
+                // Attach a display none to any question that is not initially visible
+                var grpStyle = Html.Raw("");
+                if (!question.InitiallyEnabledYN)
+                {
+                    grpStyle = Html.Raw("style=\"display: none;\"");
+                }
+
+                <div class="form-group" id="form-group_@question.QuestionID" @grpStyle>
+                    <div style="width: 50px;">
+                        &nbsp;
+                    </div>
+                    <div>
+
+                        @*<div class="pitlabel" style="width: 50px !important; float: left;">&nbsp;</div>*@
+
+                        <div class="" style="display: table; width:100%;">
+                            @if (@question.SequenceLabel.IsEmptyOrNull())
+                            {
+                                <div style="display: inline; float:left; width:50px;">
+                                    &nbsp;
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="pitlabel_A" style="width: 100%;">
+                                    <h4>@question.SequenceLabel.</h4>
+                                </div>
+                            }
+
+
+                            <div class="pitlabel_B" style="overflow:hidden;">
+                                @{
+                                    // Show an error for the age and length of time homeless question
+                                    if (ViewBag.NumericValueMax != null)
+                                    {
+                                        if (true)
+                                        {
+                                            <h4>
+                                                @questionLabel <span style="color: red;">(Value cannot be greater than @ViewBag.NumericValueMax.ToString("00"))</span>
+                                            </h4>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <h4>@questionLabel</h4>
+                                    }
+                                }
+
+
+                            </div>
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        @*<div class="pitlabel" style="width: 50px !important; float: left;">&nbsp;</div>*@
+                        <div class="" style="display: table; width:100%;">
+                            @if (@question.SequenceLabel.IsEmptyOrNull())
+                            {
+                                <div style="display: inline; width: 50px !important; float:left;">
+                                    &nbsp;
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="pitlabel_A" style="width: 50px !important;">&nbsp;</div>
+                            }
+                            <div class="pitlabel_B" style="float:left;">
+                                @Html.Partial("SurveyPartials/_InputPITAnswerHelper", question, "Questions[" + (firstQuestion.QuestionSeed + seedIncrement++) + "].")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+            }
+        </div>
+        <section id="screening_NoticePanel" class="alert alert-info" style="display: none; padding-top: 5px;">
+            <header class="alert-heading">
+                <h3 class="alert-title">@Labels.Notice</h3>
+            </header>
+            <div class="alert-body">
+                <p>@Labels.ScreenedOutNotice</p>
+            </div>
+        </section>
+    </div>
+</div>
+@*<div class="col-sm-6">
+
+        @Html.LabelFor(model => model.QuestionAnswer.TextValue, (Model.SequenceNo > 1 && !Model.SequenceLabel.IsEmptyOrNull() ? Model.SequenceLabel + " - " : "") + questionLabel, new
+        {
+            @class = "pitsurveylivelabel control-label pit-label",
+            id = Model.QuestionID,
+            //style = (Model.SequenceLabel.IsEmptyOrNull() ? "padding-left: 10%" : "")
+        })
+    </div>*@
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript">
+        @*$(document).ready(function () {
+            $('[id^=SurveyQuestion_]').on('keypress', function (e) {
+                var qNumeric = @Html.Raw(Json.Encode(PitQuestionTypes.Numeric));
+                var qNoOfYears = @Html.Raw(Json.Encode(PitQuestionTypes.NoOfYears));
+                var qNoOfDays = @Html.Raw(Json.Encode(PitQuestionTypes.NoOfDays));
+                var qType = $(this).attr('questiontype');
+
+                if (qType == qNumeric || qType == qNoOfYears || qType == qNoOfDays) {
+                    return e.metaKey || // cmd/ctrl
+                    e.which <= 0 || // arrow keys
+                    e.which == 8 || // delete key
+                    /[0-9]/.test(String.fromCharCode(e.which)); // numbers
+                } else if( e.which == 13){
+                    // move cursor out of element on enter keypress
+                    $(this).trigger('blur');
+                    // prevent form from submitting
+                    e.preventDefault();
+                    return false;
+                } else {
+                    return true;
+                    }
+            })
+        });*@
+
+        // prevent enter keypress from submitting form
+        $(document).on("keypress", "input", function (e) {
+            var code = e.keyCode || e.which;
+            if (code == 13) {
+                // move cursor out of element on enter keypress
+                $(this).trigger('blur');
+                // prevent form from submitting
+                e.preventDefault();
+                return false;
+            }
+        });
+</script>);
+}

@@ -1,0 +1,167 @@
+﻿@model ConsentDialogViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.ConsentDialogTitle;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="modal-view-placeholder">
+    @Html.Partial("_ValidationSummaryOuter")
+</div>
+
+@Html.Partial("Consent/_ConsentModal")
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script>
+    var minTriggerConsentAge = @appSettings.GetMinTriggerConsentAge();
+    var clientsAge = @Model.ClientAge;
+
+    function fixWidth() {
+        var $elements = $('.modal-body label.col-sm-2');
+        $elements.each(function () {
+            $(this).removeClass("col-sm-2").addClass("col-sm-4")
+                .parent().find(".col-sm-10").removeClass("col-sm-10").addClass("col-sm-8");
+        });
+
+        $(".modal-body select").parent().attr('style', 'width: 85% !important');
+    }
+
+    function adjustBodyHeight() {
+        var $header = $("header[role='banner']");
+        var $pageTitle = $("#page-title");
+        var $footer = $("footer[id='wb-info']");
+        var height = $(window).height() - $header.height() - ($pageTitle.height() * 3) - $footer.height();
+        $("#modal-view-placeholder").css("height", height + "px");
+    }
+
+    function redirectToReferrer() {
+        var referrerUrl = "@Model.ReturnPath";
+        if (referrerUrl === "") {
+            window.location.replace("@Url.Content("~/")");
+        } else {
+            window.location.replace(referrerUrl);
+        }
+    };
+            
+        function gettoken() {
+            var token = '@Html.AntiForgeryToken()';
+            token = $(token).val();
+            return token;
+        }
+    function showOverlayLoader() {
+        $('<div id="overlay-div"><div id="inner-overlay" style="left: 45%;"><img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="@Labels.AnimatedActivityIndicatorImage" /> <p>@Labels.Loading</p></div></div>').appendTo('body');
+    }
+
+    function hideOverlayLoader() {
+        $('#overlay-div').remove();
+    }
+
+    //for Ajax validation display
+    function showValidation(data) {
+        $('#validationSummary').removeClass("hide").addClass("show");
+        $('#validationSummaryText').removeClass("hide").empty().append(data);
+    }
+
+    $(function () {
+        ////Get everything to display correctly
+        fixWidth();
+        adjustBodyHeight();
+
+        $('#consentDialog').modal({
+            backdrop: 'static',
+            keyboard: false,
+            show: false
+        });
+
+        $('#consentDialog').modal('toggle');
+
+        $('#save-button').on('click', function () {
+            $("#consentDialog").modal('toggle');
+            showOverlayLoader();
+
+            var uploadedFile = $("#UploadedFile")[0];
+
+            var consentFormData = new FormData();
+            consentFormData.append('ClientID', $("#ClientID").val());
+            consentFormData.append('ReadOnlyVitals.PersonID', $("#ReadOnlyVitals_PersonID").val());
+            consentFormData.append('OrganizationID', $("#OrganizationID").val());
+            consentFormData.append('StartDate', $("#StartDate").val());
+            consentFormData.append('ExpiryDate', $("#ExpiryDate").val());
+            consentFormData.append('UploadedFile', uploadedFile.files[0]);
+            consentFormData.append('ConsentTypeID', $("#ConsentTypeID").val());
+            consentFormData.append("__RequestVerificationToken", gettoken());
+            consentFormData.append('FamilyHeadClientID', $("#FamilyHeadClientID").val());
+
+            //go ahead and save the consent
+            $.ajax({
+                url: "@Url.Action("ConsentNew", "Consent")",
+                data: consentFormData,
+                processData: false,
+                contentType: false,
+                type: 'POST'
+            }).done(function (data) {
+                if (data.Success) {
+                    displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+
+                    //then continue with normal flow
+                    window.location.replace("@Html.Raw(Model.Callback)");
+                } else {
+                    displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                    showValidation(data.ValidationSummary);
+                    hideOverlayLoader();
+                }
+            });
+        });
+
+        $('#cancel-button').on('click', function () {
+            //redirect to client search or home ?
+            redirectToReferrer();
+        });
+
+        $('#explicitConsentFields').hide();
+        $('#inheritedConsentFields').hide();
+
+        $('#ConsentTypeID').on('change', function (event) {
+            // We only use the following when lookup table is editable
+            // var selectedValue = $('option:selected', this).attr('data-rollup') == "" ? $(this).val() : $('option:selected', this).attr('data-rollup');
+            // switch (selectedValue) {
+            switch ($(this).val()) {
+                case "@((short)ConsentTypes.Explicit)":
+                case "@((short)ConsentTypes.CoordinatedAccessExplicit)":
+                    $('#explicitConsentFields').fadeIn('slow');
+                    if($("#familyFields").length){
+                        $('#inheritedConsentFields').hide();
+                        $('#FamilyHeadClientID').val(null).trigger('change');
+                    }
+                    break;
+                case "@((short)ConsentTypes.Implied)":
+                    if($("#familyFields").length){
+                        $('#inheritedConsentFields').hide();
+                        $('#FamilyHeadClientID').val(null).trigger('change');
+                    }
+                    $('#explicitConsentFields').hide();
+                    break;
+                case "@((short)ConsentTypes.Inherited)":
+                    if(clientsAge >= minTriggerConsentAge){
+                        displayNotification('alert', '', "<p>@Labels.TriggerConsentAgeError</p>");
+                        $('#ConsentTypeID').val(null).trigger('change');
+                    }else{
+                        if($("#familyFields").length){
+                            $('#inheritedConsentFields').fadeIn('slow');
+                        }
+                        $('#explicitConsentFields').hide();
+                    }
+                    break;
+                default:
+                    console.log('other consent type: ' + $(this).val());
+            }
+        });
+    });
+</script>);
+
+}

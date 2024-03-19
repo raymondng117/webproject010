@@ -1,0 +1,30 @@
+﻿@model AddressSearchViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_AddressSearch;
+    ViewBag.LayoutView = LayoutPage.Client;
+    
+    ViewBag.CountryTypes = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CountryTypes, ViewBag.CurrentCulture);
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("ClientAddressSearch", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+        @Html.HiddenFor(m => m.AddressID)
+        @Html.HiddenFor(m => m.ClientID)
+
+        @Html.Partial("_AddressSearch", Model)
+    
+        <div class="form-group">
+	        <div class="col-sm-offset-2 col-sm-10">
+		        <button type="submit" class="searchButton  ">@Labels.Search</button> 
+                @Html.ActionLink(Labels.Cancel, "ClientHousingHistory", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton  ", title = @Labels.New, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" }) 
+	        </div>
+        </div>         
+    }
+</div>
+
+

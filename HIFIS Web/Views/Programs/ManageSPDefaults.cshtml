@@ -1,0 +1,125 @@
+﻿@model ProgramEditServiceProviderViewModel
+@{
+    ProgramEditServiceProviderViewModel vm = Model;
+    ViewBag.ViewTitle = Labels.ManageDefaults + ": " + vm.ProgramName + " - " + vm.ProgramServiceProviderName;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div>
+    <div class="form-color-white module-form-block">
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.ServiceType</th>
+                        <th class="align-text-center">@Labels.HifisHelp_Default</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (int x in vm.ProgramServiceTypes)
+                    {
+                        <tr class="align-text-center no-print">
+                            <td>
+                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, x.ToString())
+                                @Html.HiddenFor(m => vm.ProgramServiceProviderID)
+                                @Html.HiddenFor(m => x)
+                            </td>
+                            <td>
+                                @if (RightsHelper.HasRight(UserRights.Programs_Service_Providers_Edit))
+                                {
+                                    string value = vm.ProgramServiceValues[x];
+                                    if (value.Equals("Y"))
+                                    {
+                                        vm.DefaultYN = true;
+                                    }
+                                    else
+                                    {
+                                        vm.DefaultYN = false;
+                                    }
+                                    @Html.HifisEditorFor(m => vm.DefaultYN, "YesNo", null, true)
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md no-print">
+        @if (ViewBag.state != null)
+        {
+            @Html.ActionLink(Labels.Back, "SPDefaultsList", "Programs", new { @programID = Model.ProgramID }, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+        }
+        else if (TempData["temp"] != null)
+        {
+            @Html.ActionLink(Labels.Back, "Display", "Programs", new { @programID = Model.ProgramID }, new { @class = "prevButton ", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+            
+                TempData["temp"] = null;               
+        }
+        else
+        {
+            @Html.ActionLink(Labels.Back, "All", "Programs", null, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+        }
+        
+    </div>
+</div>
+
+@* Similar code can be used for any async non delete functions that don't require a new database call to fully update *@
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+
+        @<script type="text/javascript">
+
+            //Following code will center the bootstrap checkbox. Just replace the id value in 'input[id=vm_DefaultYN]'
+            //to whatever is in your expression being passed to the HifisEditorFor that creates it.
+            //Swap the period in expression statement for an underscore.
+            //example: html.hifiseditorfor(m => m.test) 'input[id=m_test]'
+            $(document).ready(function () {
+                $(this).find('input[id=vm_DefaultYN]').closest("p").removeClass("align-left");
+            });
+    
+            function gettoken() {
+                var token = '@Html.AntiForgeryToken()';
+                token = $(token).val();
+                return token;
+            }
+
+            var progID;
+            var typeID;
+
+            function defaultSaved() {
+
+                if (window.location.href.indexOf("/Messages/List") != -1) {
+                    CheckForNewMessages();
+                }
+
+                displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+            }
+
+            function defaultFailed() {
+                displayNotification("error", "", "<p>@Labels.FailedToSave</p>");
+            }
+
+            $('input[id=vm_DefaultYN]').on('switchChange.bootstrapSwitch', function (event, state) {
+                var targetUrl = $(this).attr("href");
+
+                progID = $(this).closest("tr").children("td").first().children("input[id=vm_ProgramServiceProviderID]").val();
+                typeID = $(this).closest("tr").children("td").first().children("input[id=x]").val();
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/Programs/MakeDefaultProvider") + "'",
+                    Data = "{providerID: progID, serviceTypeID: typeID, __RequestVerificationToken: gettoken()}",
+                    OnSuccess = "defaultSaved()",
+                    OnFailure = "defaultFailed()",
+                    OnComplete = "",
+                    Type="POST"
+                });
+            });
+        </script>
+);
+}

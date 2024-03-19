@@ -1,0 +1,136 @@
+﻿@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+    ViewBag.ViewTitle = Labels.CustomizeLookupTableValues + " - " + ViewBag.TableName;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>   
+    <div class="table-responsive">
+        <table id="existingLookups" class="wb-tables table table-striped table-hover" data-wb-tables='{                    
+                    "ajax": "@Url.Action("GetTableValuesListJson", "LookupTables")?lookUpTableID=@ViewBag.LookUpTableID",
+                    "order": [[ 2, "asc" ]],
+                     "columns": [
+                        { "data": "nameE" },
+                        { "data": "nameF" },
+                        { "data": "order" },
+                        { "data": "rollUp" },
+                        { "data": "stratum" },
+                        { "data" : "customCol", "name" : "customCol", "visible" : false},
+                        { "data": "action", "width" : "20%" }
+                     ] 
+            }'>
+            <thead>
+                <tr>
+                    <th>@Labels.NameE</th>
+                    <th>@Labels.NameF</th>
+                    <th>@Labels.Sequence</th>
+                    <th>@Labels.RollUp</th>
+                    <th>@Labels.Stratum</th>
+                    <th>@ViewBag.CustomColTitle</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="clear"></div>
+
+    <p>
+        @Html.ActionLink(Labels.Back, "List", "LookupTables", null, new { @class = "prevButton", alt=Labels.Back, aria_label = Labels.Back, @role = "button" })
+
+        @if (RightsHelper.HasRight(UserRights.LookupTables_Sort))
+        {
+            <a href="@Url.Content("~/LookupTables/GetSortLookupTableValuesForm")?lookupTablesID=@ViewBag.LookUpTableID" aria-controls="Modal_SortTableValues" class="wb-lbx lbx-modal orderButton" role="button">@Labels.SortLookupTableValues</a>
+        }
+
+        @if (RightsHelper.HasRight(UserRights.LookupTables_Add))
+        {
+            <a href="@Url.Content("~/LookupTables/GetNewLookupValueForm")?lookupTablesID=@ViewBag.LookUpTableID" aria-controls="Modal_NewLookupValue" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewLookup</a>
+        }
+    </p>
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            var lookupTableID = "@ViewBag.LookUpTableID";
+            var showCustomColOption = "@ViewBag.ShowCustomColOption";
+
+            //Had to add this, on each new page draw events ahve to be binded to buttons because they are not applied unless visible
+            $('#existingLookups').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+
+                if (showCustomColOption == "True")
+                {
+                    var table = $(this).DataTable();
+                    table.column("customCol:name").visible(true);
+                }
+            });
+
+            //Subscribe button logic
+             $(document).on("click", ".subscribeBtn", function changeActivationHandler(e) {
+                e.preventDefault();
+
+                var btn = $(this);
+                btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+                $.ajax({
+
+                    url: btn.attr("href"),
+                    type: "GET"
+
+                }).done(function (data) {
+
+                    defaultNotify(data.Success); //display the default error or success message
+
+                    btn.attr("disabled", false); //Enable the button incase there was an error
+
+                    if (data.Success) {
+
+                        $('#existingLookups').DataTable().ajax.reload(
+                            function () {
+                                $(".wb-lbx").trigger("wb-init.wb-lbx");
+                            }
+                        ); // Re-load the datatable
+                    }
+                });
+             });
+
+             //toggles the placeable flag with the yes/no slider
+             $(function () {
+                 $(document).on('switchChange.bootstrapSwitch', "input[id=placeableYN]", function (event, state) {
+                     var lookupID;
+                     var placeableYN = "N";
+
+                     lookupID = $(this).val();
+
+                     var switchState = state;
+                     if (switchState)
+                         placeableYN = "Y";
+
+                     togglePlaceableFlag(lookupID, lookupTableID, placeableYN);
+                 });
+             });
+
+             function togglePlaceableFlag(lid, ltid, flag) {
+
+                @Html.Partial("_Ajax", new AjaxViewModel()
+                 {
+                    Url = "'" + Url.Content("~/LookupTables/TogglePlaceable") + "'",
+                    Data = "{lookupID: lid, lookupTableID: ltid, placeableYN: flag}",
+                    OnSuccess = "displayNotification('success', '', '" + @Labels.DefaultDataSavedMessage + "')",
+                    OnFailure = "displayNotification('error', '', '" + @Labels.FailedToSave + "');",
+                    OnComplete = "",
+                    Type = "POST"
+                });
+             };
+        </script>
+    );
+}

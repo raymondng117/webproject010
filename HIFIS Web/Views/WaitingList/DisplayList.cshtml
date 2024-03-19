@@ -1,0 +1,51 @@
+﻿@model WaitingListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayWaitingLists;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div class=" displayView">
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.WaitingListName, new { @class = "col-sm-2" })
+            @Html.DisplayFor(model => model.WaitingListName)
+    </div>
+
+    <div class="row">    
+        @Html.HifisLabelFor(model => model.WaitingListTypeID, new { @class = "col-sm-2" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.WaitingListTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_WaitingListTypes, Culture, Model.WaitingListTypeID)
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.OrganizationIDs, new { @class = "col-sm-2" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+                        new MultipleItemSelectList 
+                        {
+                            IDs = Model.OrganizationIDs,
+                            List = ViewBag.AllOrganizations as SelectList
+                        })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ListDateStart, new { @class = "col-sm-2" })
+            @Html.DisplayFor(model => model.ListDateStart)
+    </div>
+
+    <div class="row">
+        <label class="control-label wdth-strct-200">@Labels.Comment</label>
+        @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+    </div>
+        
+    <div class="row">
+        @Html.ActionLink(Labels.Cancel, "List", "WaitingList", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

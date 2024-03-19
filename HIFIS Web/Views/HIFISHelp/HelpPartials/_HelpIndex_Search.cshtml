@@ -1,0 +1,25 @@
+﻿@model Help_SearchResultsModel
+
+<div class="row">
+    @using (Html.BeginForm("InsertSearchResults", "HIFISHelp", FormMethod.Post, null ))
+    {
+         @Html.AntiForgeryToken()
+         <div class="col-sm-9">
+            @Html.HifisAutocompleteFor(
+                m => m.HelpTopicID
+                , Url.Content("~/HIFISHelp/AjaxSearch")
+                , Model.HelpTopicName
+                , new AutocompleteViewModelOptions()
+                {
+                    Placeholder = Labels.HifisHelp_SearchHelpTopic
+                    , ExcludeLabel = true
+                    , HiddenValue = true
+                    , SelectClientFieldType = SelectClientFieldTypes.Other
+                }, new { @class = "wdth-50" })  
+        </div> 
+        <div class="col-sm-3">
+		    <button type="submit" class="searchButton pull-right" style="padding:6px 10px;" value="@Labels.HifisHelp_GoToHelp">@Labels.HifisHelp_GoToHelp</button>
+	    </div>        
+    }
+</div>
+

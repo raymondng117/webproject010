@@ -1,0 +1,59 @@
+﻿@model BulletinViewModel 
+@{
+    ViewBag.AvoidAttestation = true;
+}
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)   
+  
+@Html.HiddenFor(model => model.BulletinID)
+@Html.AntiForgeryToken()
+
+<div>
+    @Html.HifisEditorFor(model => model.Subject)
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.BulletinPriorityTypeID, CachedTableTypes.HIFIS_BulletinPriorityTypes)
+</div>
+
+<div>
+    @if (RightsHelper.HasRight(UserRights.Bulletins_Client_Add))
+    {
+        @Html.HifisMultiAutocompleteFor(model => model.ClientIDs, Url.Content("~/ClientTombstone/AjaxGetClientList"), (Model.BulletinsClients.IsEmptyOrNull() ? null : Model.BulletinsClients.Select(bc => bc.FullName)))
+    }
+    else
+    {
+        if (Model.ClientIDs != null)
+        {
+            for (int i = 0; i < Model.ClientIDs.Count; i++)
+            {
+                @Html.HiddenFor(model => model.ClientIDs[i])
+            }
+        }
+    }
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.OnBehalfOfID, ViewBag.AllUsers as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.OwnerOrganizationID, ViewBag.AllOrganizations as SelectList)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.SelectedOrganizationIDs, ViewBag.AllOrganizations as SelectList, null, new { @id = "orgList" }) 
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)
+</div>  
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Description, new { @class = "mceEditor_Messaging" })
+</div> 

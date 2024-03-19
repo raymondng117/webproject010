@@ -1,0 +1,180 @@
+﻿@model StayViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_BookOut;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("BookOut", "Admissions", FormMethod.Post, new { @class = "form-horizontal", id = "submitStay" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.PrimaryClientID)
+        @Html.HiddenFor(model => model.ServiceID)
+        @Html.HiddenFor(model => model.ServiceTypeID)
+        @Html.HiddenFor(model => model.StayID)
+        @Html.HiddenFor(model => model.OrganizationID)
+        @Html.HiddenFor(model => model.RoomID)
+        @Html.HiddenFor(model => model.BedID)
+        @Html.HiddenFor(model => model.IsReservation)
+        @Html.HiddenFor(model => model.ReasonForServiceID)
+
+        if (ViewBag.referredFromIdIsMandatory != null && string.IsNullOrEmpty(Model.ReferredFromID))
+        {
+            @Html.HiddenFor(model => model.ReferredFromID, new { data_val = "false" })
+        }
+        else
+        {
+            @Html.HiddenFor(model => model.ReferredFromID)
+        }
+        @*@Html.HiddenFor(model => model.DateStart)*@
+        @Html.TextBoxFor(model => model.DateStart, "{0:yyyy-MM-dd}", htmlAttributes: new { @type = "hidden" })
+        @Html.TextBoxFor(model => ((DateTime)model.DateStart).TimeOfDay, null, htmlAttributes: new { @type = "hidden", Name = "DateStart.TimeOfDay", id = "DateStart_TimeOfDay" })
+
+        @Html.HiddenFor(model => model.IsIntoxicated)
+        @Html.HiddenFor(model => model.IsFromStays)
+        @Html.HiddenFor(model => model.IsBookOut)
+        @Html.HiddenFor(model => model.ExpectedBookOutDate)
+        @Html.HiddenFor(model => model.ReferredByName)
+
+        @*<div class="hide">
+                @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.programsList as SelectList)
+            </div>*@
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9 form-control-static">
+                @Html.DisplayFor(model => model.OrganizationName)
+                @Html.ValidationImageFor(model => model.OrganizationID)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.RoomID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9 form-control-static">
+                @Html.DisplayFor(model => model.RoomName)
+                @Html.ValidationImageFor(model => model.RoomID)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.BedID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9 form-control-static">
+                @Html.DisplayFor(model => model.BedName)
+                @Html.ValidationImageFor(model => model.BedID)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DateStart, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9 form-control-static">
+                @Html.HifisDisplayFor(model => model.DateStart, null, true, "DateAndTime")
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ReasonForServiceID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9 form-control-static">
+                @Html.DisplayFor(model => model.ReasonForServiceName)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DateEnd, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime", new { @class = "input-group date align-left" }, true)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ReasonForDischargeTypeID, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                @Html.HifisEditorFor(model => model.ReasonForDischargeTypeID, CachedTableTypes.HIFIS_ReasonForDischargeTypes, null, true)
+            </div>
+        </div>
+
+        if (Model.isGeoRegionEnforced)
+        {
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ReferredToID, new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.HifisEditorFor(model => model.ReferredToID, ViewBag.toPlaces as SelectList, null, 
+                                            new { id = "ddTo" }, true, 
+                                            String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", 
+                                            Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", 
+                                            new { GeoRegionID = Model.ToReferredGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ReferredToID, new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.HifisEditorFor(model => model.ReferredToID, ViewBag.toPlaces as SelectList, true)
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Comments, new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-9">
+                @Html.HifisTextAreaFor(model => model.Comments, new { @class = "commentBoxSize" }, true)
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="bookOutButton">@Labels.BookOut</button>
+                    <a href="@ViewBag.ReturnURL" class="cancelButton" role="button">@Labels.Cancel</a>
+                </div>
+            </div>
+        </div>
+
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+    }
+</div>
+
+<div id="JSGlobalVar">
+    @Html.Partial("_SharedGlobalVar", Model)
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            //***************************************************************************
+            //*
+            //*   Global variables
+            //*
+            //****************************************************************************
+
+            var clients = '@Model.Clients.Select(x => x.ClientID).FirstOrDefault()';
+
+            $(document).on('SharedGlobalVar_OnReady', function () {
+
+                HIFIS_Admissions.BookInView.ApplyOnLoad.OnReady();
+            });
+
+            $(document).on("ready", function () {
+                //HIFIS_Admissions.BookInView.ApplyOnLoad.OnReady();
+            });
+
+
+            var requiredIf = function () {
+
+                var condition = document.querySelector("#IsBookOut").getAttribute("value");
+
+                if (condition === "False") {
+                    return false;
+                }
+
+                return true;
+            };
+
+</script>
+    );
+}

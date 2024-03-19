@@ -1,0 +1,45 @@
+﻿@model EncFilterViewModel
+
+<form id="encSearchFilterForm" class="form-horizontal">
+    
+    <div>
+        <div>
+            @Html.HifisListBoxFor(model => model.ETs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_EncampmentLocationTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Act, "YesNo")
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-8"></div>
+            <button type="button" id="filterListButton" class="filterButton">@Labels.ApplyFilters</button>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+		     $("#filterListButton").click(function () {
+                 if ($("#encSearchFilterForm").valid()) {
+		             var btn = $(this);
+
+                     $('#encampmentsTable').DataTable().ajax.url('@Url.Content("~/Outreach/EncSearchResultsJson/?")' + $("#encSearchFilterForm").serialize() + '').load(null, false);
+
+		             btn.attr("disabled", true);
+
+		             if ($('#MapContainer').is(':visible')) {
+		                 updateMap();
+		             }
+
+                     $('#encampmentsTable').on('xhr.dt', function () {
+		                 btn.attr("disabled", false);
+		                 $('#filter-panel').trigger('close.wb-overlay');
+		             });
+                 }
+             });
+</script>);
+}
+

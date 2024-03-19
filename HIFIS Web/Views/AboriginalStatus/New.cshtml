@@ -1,0 +1,129 @@
+﻿@model IndianStatusViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewIndianStatus;
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+    <div>
+        @using (Html.BeginForm("New", "AboriginalStatus", FormMethod.Post, new { id = "IndianStatusForm", @class = "form-horizontal" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ClientID)
+            @Html.HiddenFor(m => m.IndianStatusID)
+            //@Html.HifisEditorFor(m => m.AboriginalStatusID, ViewBag.StatusTypes as SelectList)
+            @Html.HifisRollupEditorFor(model => model.AboriginalStatusID, CachedTableTypes.HIFIS_AboriginalIndicatorTypes, new { id = "ddlAboriginalStatus" })
+            <div id="morefields">
+                @Html.HifisEditorFor(m => m.ProvinceID, ViewBag.Provinces as SelectList)
+                @Html.HifisEditorFor(m => m.BandNameType, ViewBag.BandTypes as SelectList, null, new { data_loader = true })
+                @Html.HifisEditorFor(m => m.TreatyNumber)
+                @Html.HifisEditorFor(m => m.HomeReserveType, ViewBag.ReserveTypes as SelectList, null, new { data_loader = true })
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "Display", "AboriginalStatus", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label=Labels.Cancel, @role="button" })
+                </div>
+            </div>
+        }
+    </div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+        
+        function requiredTreatyNumberIf()
+        {
+                if (@Json.Encode(Model.IsTreatyNumberMandatory))
+                {
+                    var statusID = getLookupOrRollup('#ddlAboriginalStatus');
+                    if (statusID == 1 || statusID == 7)
+                        return false;
+                    else
+                        return true;
+                }
+                 else
+                      return false;
+        }
+
+        function requiredHomeReserveIf()
+        {
+                if (@Json.Encode(Model.IsHomeReserveMandatory))
+                {
+                    var statusID = getLookupOrRollup('#ddlAboriginalStatus');
+                    if (statusID == 1 || statusID == 7)
+                        return false;
+                    else
+                        return true;
+                }
+                 else
+                      return false;
+            }
+
+    function updateDropDown(data, field) {
+        for (var i = 0; i < data.length; i++) {
+            $("#" + field).append($("<option />").val(data[i].Value).text(data[i].Text));
+        }
+    }
+
+    $(function () {
+        @{
+            //if (Model.AboriginalStatusID == (short)IndianStatusTypes.NonAboriginal || Model.AboriginalStatusID == (short)IndianStatusTypes.Unknown)
+            if ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, short.Parse(Model.AboriginalStatusID.ToString())) == (short)IndianStatusTypes.NonAboriginal) ||
+                         (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, short.Parse(Model.AboriginalStatusID.ToString())) == (short)IndianStatusTypes.Unknown))
+            {
+                @:$('#morefields').hide();
+            }
+            else
+            {
+                @:$('#morefields').show();
+            }
+         }
+
+        $("#ddlAboriginalStatus").change(function () {
+            
+            var statusID = getLookupOrRollup('#ddlAboriginalStatus');
+            if (statusID == 1 || statusID == 7 ) {
+                $('#ProvinceID').val("");
+                $('#BandNameType').val("");
+                $('#TreatyNumber').val("");
+                $('#HomeReserveType').val("");
+                $('#morefields').hide();
+            }
+            else {
+                $('#morefields').show();
+            }
+        });
+
+        $("#ProvinceID").change(function () {
+            document.getElementById("BandNameType").options.length = 0;
+            window.showLoader("#BandNameType");
+
+            @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/AboriginalStatus/GetBandTypes") + "'",
+                        Data = "{ provinceID: $(this).val() }",
+                        OnSuccess = "updateDropDown(data, 'BandNameType');",
+                        LoaderGif = false,
+                        OnComplete = "window.hideLoader('#BandNameType');"
+                    });
+
+            document.getElementById("HomeReserveType").options.length = 0;
+            window.showLoader("#HomeReserveType");
+
+            @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/AboriginalStatus/GetHomeReserveTypes") + "'",
+                        Data = "{ provinceID: $(this).val() }",
+                        OnSuccess = "updateDropDown(data, 'HomeReserveType');",
+                        LoaderGif = false,
+                        OnComplete = "window.hideLoader('#HomeReserveType');"
+                    });
+        });
+    });
+        </script>
+    );
+}

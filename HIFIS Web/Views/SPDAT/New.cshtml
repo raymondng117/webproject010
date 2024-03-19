@@ -1,0 +1,54 @@
+﻿@model SPDATIntakeViewModel
+@{
+    ViewBag.ViewTitle = Labels.ThirdPartyToolsNew + " " + Model.IntakeTypeName + " " + Labels.ThirdPartyToolsIntake;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Hidden("FormSubmitted", "false")
+
+<div class="row">
+    <div class="col-xs-12">
+        @using (Html.BeginForm("New", "SPDAT", FormMethod.Post, new { @class = "form-horizontal", id = "SPDATIntakeForm" }))
+        {
+            <div id="Intake_FormPortion">
+                @Html.AntiForgeryToken()
+                @Html.Partial("_SPDATIntake", Model)
+            </div>
+
+            <div id="Question_FormPortion">
+                @Html.Partial("_SPDATQuestionList", Model)
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="saveButton no-print">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "List", "SPDAT", new { }, new { @class = "cancelButton no-print", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+
+@Html.Partial("_SPDATProgressPanel")
+
+
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+    //769987 - Update Description box to avoid timing issue and sending null value as Description
+    $(document).on('blur', '#SPDATIntakeForm', function () {
+        tinyMCE.triggerSave();//able mce to save changes
+    });
+
+</script>
+);
+}

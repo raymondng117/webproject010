@@ -1,0 +1,19 @@
+﻿@model DPAFile
+
+@using (Html.BeginForm("UploadDPA", "Registration", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        @Html.HiddenFor(model => model.ID)
+        @*<div class="control-label col-sm-3">
+		<label> @Labels.ExcelTemplate </label>
+        </div>*@
+	<div>
+		@Html.HifisTextBoxFor(model => model.UploadFile, new { @class = "wdth-strct-250", @type = "file" })
+		@*@Html.HifisEditorFor(model => model.UploadFile, "File")*@
+	</div>
+	<div class="col-sm-offset-2 col-sm-10">
+		<button type="submit" class="saveButton">@Labels.Upload</button>
+	</div>
+</div>
+}

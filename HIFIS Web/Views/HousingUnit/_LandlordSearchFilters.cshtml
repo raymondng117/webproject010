@@ -1,0 +1,104 @@
+﻿@model UnitSearchFilterViewModel
+
+<form id="landlordSearchFilterForm" class="form-horizontal" style="width: 415px">
+    @*@Html.HiddenFor(model => model.PS)
+        @Html.HiddenFor(model => model.PCID)
+        @Html.HiddenFor(model => model.HPID)*@
+    <div style="margin-left: 10px; width: 525px">
+
+        @* Housing types sought *@
+        @*<div>
+                @Html.HifisListBoxFor(model => model.HTS, Enumerable.Empty<SelectListItem>(), new { @class = "fixedContainer", style = "width:250px;" })
+            </div>*@
+
+        @* Only this Service Provider *@
+        <div>
+            @Html.HifisEditorFor(model => model.SP, "YesNo")
+        </div>
+
+        @* Status Type ID *@
+        @*<div>
+                @Html.HifisEditorFor(Model => Model.STID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseStatusTypes, Culture))
+            </div>*@
+
+        @* Attribute types *@
+        @*<div>
+                @Html.HifisListBoxFor(model => model.As, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseAttributeTypes, Culture), new { @class = "wdth-strct-250" })
+            </div>*@
+
+        @if (ViewBag.IsGeoRegionEnabled)
+        {
+            <div>
+                @Html.HifisEditorFor(Model => Model.GeoID, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture))
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(Model => Model.City, Enumerable.Empty<SelectListItem>())
+            </div>
+        }
+
+        <div class="form-group">
+            <div class="col-xs-11"><button type="button" id="filterListButton" class="filterButton pull-right">@Labels.ApplyFilters</button></div>
+        </div>
+    </div>
+</form>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(function () {
+                $("#GeoID").trigger("select2:select");
+            });
+
+            $("#filterListButton").click(function () {
+                if ($("#landlordSearchFilterForm").valid()) {
+                    var btn = $(this);
+
+                    $('#landlordsTable').DataTable().ajax.url('@Url.Content("~/HousingUnit/LandlordSearchResultsJson/?")' + $("#landlordSearchFilterForm").serialize() + '').load(null, false);
+
+                    btn.attr("disabled", true);
+
+                    $('#landlordsTable').on('xhr.dt', function () {
+                        btn.attr("disabled", false);
+                        $('#filter-panel').trigger('close.wb-overlay');
+                    });
+                }
+            });
+
+            $("#GeoID").on("select2:select", function () {
+                $.ajax({
+                    url: '@Url.Action("AjaxGetGeoCityList", "Master")',
+                    type: 'POST',
+                    data: { "GeoID": $("#GeoID").val() }
+                }).done(function (data) {
+                    $('#City').find('option').remove();
+                    $('#City').append(makeOptions(data.Result));
+                    $('#City').trigger('change');
+                    $('#City').closest('.form-group').show();
+                });
+            });
+
+
+            $("#GeoID").on("select2:unselect", function () {
+                $('#City').find('option').remove();
+                $('#City').trigger('change');
+                $('#City').closest('.form-group').hide();
+            });
+
+            function makeOptions(res) {
+                var str = "";
+                if (res.length > 0) {
+                    for (i = 0; i < res.length; i++) {
+                        str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                    }
+                }
+                else {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+                return str;
+            };
+
+        </script>);
+}

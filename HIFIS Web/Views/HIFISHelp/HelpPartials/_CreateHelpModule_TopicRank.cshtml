@@ -1,0 +1,8 @@
+﻿@model HelpTopicModel
+
+@using (Html.BeginForm("ChangeTopicRank", "HIFISHelp", FormMethod.Post))
+{ 
+    @Html.HiddenFor(model => model.HelpTopicID)
+    @Html.DropDownListFor(model => model.RankOrder, ViewBag.RankList as SelectList, new { @class="rankOrder",  data_Id = Model.HelpTopicID,  data_ModId = Model.HelpModuleID})
+    @*<button type="submit" class="saveButton noText topicRankSave">@Labels.Save</button>*@
+}

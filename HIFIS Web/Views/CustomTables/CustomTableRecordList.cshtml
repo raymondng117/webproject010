@@ -1,0 +1,137 @@
+﻿@model CustomTablesForModuleAndRecordViewModel
+@{
+    ViewBag.ViewTitle = WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ModuleTypes, Culture, (byte)Model.ModuleType) + " " + Labels.CustomTables;
+  
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+
+        @<script type="text/javascript">
+            var newRecordLink;
+
+            $(function(){
+                var href = $('#NewCustomTableRecordLink').attr('href');
+
+                if(href){
+                    newRecordLink = href.substring(0, href.indexOf('=') + 1);
+
+                    $('#CustomTableID').change(function(){
+                        var customTableID = $(this).val();
+                        if(customTableID){
+                            $('#NewCustomTableRecordLink').attr('href', newRecordLink + customTableID).show();
+                        }
+                        else
+                            $('#NewCustomTableRecordLink').hide();
+                    }).change();
+                }
+            });
+        </script>
+    );
+}
+
+<div> 
+    <div id="radio" class="btn-group mrgn-bttm-md">
+
+                @{ string classlink1 = (!Model.IncludeInactiveFields ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.Active, "CustomTableRecordList", "CustomTables", new { id = Model.RecordID, moduleType = (short)Model.ModuleType }, new { @class = classlink1, alt=Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+                @{ string classlink2 = (Model.IncludeInactiveFields ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+                @Html.ActionLink(Labels.All, "CustomTableRecordList", "CustomTables", new { id = Model.RecordID, moduleType = (short)Model.ModuleType, IncludeInactiveFields = true }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+        <div class="clearfix"></div>
+    </div>
+
+    @if (RightsHelper.HasRight(UserRights.CustomTables_Records_Add))
+    { 
+	    if (!Model.CustomTablesList.IsEmptyOrNull())
+        {
+            <div>
+                <h5>@Labels.NewCustomTableRecord</h5>
+                <div>
+                    <label for="CustomTableID">@Labels.CustomTable</label>
+                    @Html.DropDownList("CustomTableID", Model.CustomTablesList)
+
+                    <div>
+                        @Html.ActionLink(Labels.New, "NewCustomTableRecord", "CustomTables", new { id = Model.RecordID, customTableID = 0 }, new { id = "NewCustomTableRecordLink", @class = "addButton", alt=Labels.New, aria_label = Labels.New, @role = "button" })
+                    </div>
+                        
+
+                </div>
+            </div>
+        }
+    }
+    
+    <div>
+        <h5>@Labels.ExistingRecords</h5>
+        @if (!Model.RecordsList.IsEmptyOrNull())
+        {
+            foreach (var customTableRecordList in Model.RecordsList)
+            {
+                customTableRecordList.CustomTableFields = customTableRecordList.CustomTableFields.OrderBy(cf => cf.CustomTableFieldID).ToList();
+                <div class="table-responsive"><table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                    <caption class="align-text-left"><strong>@customTableRecordList.CustomTableDisplayName</strong></caption>
+                    <thead>
+                        <tr>
+                            @foreach (var header in customTableRecordList.CustomTableFields)
+                            {           
+                                <th>@header.CustomTableFieldDisplayName</th>    
+                            }
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in customTableRecordList.RecordData)
+                        {
+                            record.Data = record.Data.OrderBy(d => d.CustomTableFieldID).ToList();
+                            <tr>
+                                @foreach (var data in record.Data)
+                                {
+                                    <td>@Html.Partial("_CustomTableFieldDataDisplay", data)</td>
+                                }
+                                @*Adds empty cells for newly added fields that don't have data yet*@
+                                @for (int i = 0; i < customTableRecordList.CustomTableFields.Count - record.Data.Count; ++i)
+                                {
+                                    <td>-</td>
+                                }
+                                <td>
+                                    @if (RightsHelper.HasRight(UserRights.CustomTables_Records_Edit))
+                                    {
+                                        if (!customTableRecordList.IsOneToMany)
+                                        {
+                                            @Html.ActionLink(Labels.Edit, "EditCustomTableRecord", "CustomTables", new { id = record.CustomTableLinkID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                        }
+                                    }
+                                    
+                                    @if (RightsHelper.HasRight(UserRights.CustomTables_Records_Delete))
+                                    {
+                                        @Html.ActionLink(Labels.Delete, "AjaxDeleteCustomTableRecord", "CustomTables", new { id = record.CustomTableLinkID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                    }
+                                    
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table></div>
+                if (RightsHelper.HasRight(UserRights.CustomTables_Records_Add))
+                {
+                    if (customTableRecordList.IsOneToMany || customTableRecordList.RecordData.IsEmptyOrNull())
+                    {
+                    <p>
+                        @Html.ActionLink(Labels.New + " " + customTableRecordList.CustomTableDisplayName, "NewCustomTableRecord", "CustomTables", new { id = Model.RecordID, CustomTableID = customTableRecordList.CustomTableID }, new { @class = "addButton", alt=Labels.New + " " + customTableRecordList.CustomTableDisplayName, aria_label = Labels.New + " " + customTableRecordList.CustomTableDisplayName, @role = "button" })
+                    </p>
+                    }
+                }
+            }
+        }
+        else
+        {
+            <p>@Labels.NoRecords</p>
+        }
+    </div>
+</div>

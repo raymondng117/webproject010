@@ -1,0 +1,247 @@
+﻿@model HousingMaintenanceListViewModel
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_HousingUnitsThatNeedMaintenance; 
+}
+
+@*@if (!Model.HousingUnits.IsEmptyOrNull())
+{
+    <p><span class="btn btn-default" id="ToggleViewButton"  onclick="ToggleMapView()">@Labels.MapView</span></p>
+}*@
+<div id="StandardView" >  
+    <div class="table-responsive"><table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th>@Labels.Address</th>
+                @*<th>@Labels.HousingType</th>*@
+                <th>@Labels.Landlord</th>
+                @*<th>@Labels.Rent</th>*@
+                <th>@Labels.UnitStatus</th>
+                <th>@Labels.StatusDate</th>
+                <th>@Labels.Maintenance</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.HousingUnits.IsEmptyOrNull())
+            {
+                foreach (var unit in Model.HousingUnits)
+                {
+                    <tr>
+                        <td>
+                            @if (unit.Address != null)
+                            {
+                                @(unit.Address.AddressLn1 ?? unit.Address.AddressLn2)
+                            }
+                            else
+                            {
+                                @Html.ActionLink(Labels.Address, "AddressSearch", new { id = unit.HouseID, actionName = "List" }, new { @class = "addButton", alt=Labels.Address, aria_label = Labels.Address, @role = "button" })
+                            }  
+                        </td>
+                        @*<td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseTypes, Culture, unit.HouseTypeID)</td>*@
+                        <td>
+                            @if (unit.Landlord != null)
+                            { 
+                                @unit.Landlord.FullName
+                            }
+                            else
+                            {
+                                <text>@Labels.NA</text>
+                            }
+                        </td>
+                        @*<td>@unit.Rent</td>*@
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HouseStatusTypes, Culture, unit.StatusTypeID)</td>
+                        <td>@Html.DisplayFor(model => unit.StatusDate)</td>
+                        <td>
+                            <ul class="list-bullet-none mrgn-0" > 
+                                @foreach (HousingMaintenanceViewModel m in unit.MaintenanceWork)
+                                {
+
+                                    if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Edit, unit.OrganizationID))
+                                    {
+                                        <li>
+                                            <a href="@Url.Content("~/HousingUnit/EditMaintenance/")@m.HouseMaintenanceID" title="@Labels.Edit @Labels.MaintenanceWork">@m.MaintenanceTypeName</a>
+                                        </li>
+                                    }
+                                    else
+                                    { 
+                                        <li>
+                                            <p>@m.MaintenanceTypeName</p>                                  
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </td>
+                        <td class="align-text-center">
+
+                            @if (RightsHelper.HasRight(UserRights.HousingUnits_Display, unit.OrganizationID))
+                            { 
+                                @Html.ActionLink(Labels.Display + " " + Labels.HousingUnit, "Display", new { id = unit.HouseID }, new { @class = "displayButton noText", alt=Labels.Display + " " + Labels.HousingUnit, aria_label = Labels.Display + " " + Labels.HousingUnit, @role = "button" })
+                            }
+                            
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table></div>
+</div>
+
+
+@* Commented out map view with maintenance, will revisit this when there is more time since maps have been moved from v7 to v8 elsewhere. *@
+
+@*<div id="MapContainer" style="width:850px; height:600px; margin: 10px auto 5px auto; border: thin solid black; display:none;">
+    <div id="MapView" style="width:850px; height:600px;">
+    </div>
+</div>
+
+@{
+    var centerLatitude = Model.HousingUnits.Average(hu => hu.Address != null ? hu.Address.Latitude : null);
+    var centerLongtitude = Model.HousingUnits.Average(hu => hu.Address != null ? hu.Address.Longitude : null);
+    var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+}
+
+<script type="text/javascript" src="http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            var map, housingUnitList, prevPin,
+                infoBoxHeader = function(title){
+                                return '<div style="min-width:300px; position:relative; top:-45px; right:-5px; background-color:white; padding:5px; border: thin solid black; -moz-border-radius: 15px; border-radius: 15px;"> ' +
+                                ' <p><span class="color-accent"><strong>' + title + '</strong></span><a class="glyphicon glyphicon-remove align-right" href="javascript:void(0)" onClick="DeselectPrevPin()"></a></p><hr class="mrgn-tp-0 pddng-tp-0" />';},
+                infoBoxFooter = '</div>';
+
+            @if (centerLatitude != null && centerLongtitude != null)
+            {
+                <text>
+                function InitMap() {
+                    var mapView = document.getElementById('MapView');
+                    var mapOptions = {
+                                credentials:'@ViewBag.Key',
+                        //credentials:"AhcLAnlg4N0MjquRxIvPRFV-1mSgqqKHXKsovCuzUY5lG4jp62jAmXxgggiJE3Ol",
+                                enableSearchLogo: false,
+                                zoom: 10,
+                                center: new Microsoft.Maps.Location(@centerLatitude, @centerLongtitude),
+                                height: mapView.offsetHeight,
+                                width: mapView.offsetWidth
+                                };
+                    map = new Microsoft.Maps.Map(mapView, mapOptions);
+                    housingUnitList = @Html.Raw(serializer.Serialize(Model.HousingUnits));
+                    var pin;
+                    var pinOptions;
+                    var infoBox;
+                    var infoBoxOptions;
+                    var selectUnitLink;
+
+                    for(var i = 0; i < housingUnitList.length; ++i)
+                    {
+                        if(housingUnitList[i].Address && housingUnitList[i].Address.Latitude && housingUnitList[i].Address.Longitude)
+                        {
+                            infoBoxOptions = {
+                                                visible: false, 
+                                                htmlContent: infoBoxHeader(housingUnitList[i].Address.AddressLn1) +
+                                                            ' <table class="wdth-90"><tbody> ' +
+                                                            ' <tr><th>@Labels.HousingType</th><td>' + housingUnitList[i].HousingTypeName + '</td></tr> ' +
+                                                            ' <tr><th>@Labels.Landlord</th><td>' + (housingUnitList[i].Landlord.FullName || '@Labels.NA')+ '</td></tr> ' +
+                                                            ' <tr><th>@Labels.Rent/@Labels.Month</th><td>' + (housingUnitList[i].Rent || '@Labels.NA') + '</td></tr> ' +
+                                                            ' <tr><th>@Labels.UnitStatus</th><td>' + housingUnitList[i].StatusName + '</td></tr> ' +
+                                                            ' <tr><th>@Labels.StatusDate</th><td>' + housingUnitList[i].StatusDateAsString + '</td></tr>' + 
+                                                            ' <tr><th>@Labels.MaintenanceWork</th><td>' + (GetMaintenanceWork(housingUnitList[i]) || '@Labels.NA') + '</td></tr> ' +    
+                                                            '<tr><th><a class="selectHousing btn btn-default" href="@Url.Content("~/HousingUnit/Edit/")'+ housingUnitList[i].HouseID +'"><span class="glyphicon glyphicon-pencil"></span> @Labels.Edit</a></th><td></td></tr>' +
+                                                            ' </tbody></table></div> ' +
+                                                            infoBoxFooter
+                                                };
+                            infoBox = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(housingUnitList[i].Address.Latitude, housingUnitList[i].Address.Longitude), infoBoxOptions);
+                            pinOptions = {
+                                            draggable: false,
+                                            visible: true,
+                                            htmlContent: '<img src="' + GetIcon() + '" class="pinIcon" style="cursor:pointer;" />',
+                                            infobox: infoBox
+                                         };
+                            pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(housingUnitList[i].Address.Latitude, housingUnitList[i].Address.Longitude), pinOptions);
+                    
+                            Microsoft.Maps.Events.addHandler(pin, 'click', SelectPin);
+                            map.entities.push(pin);
+                            map.entities.push(infoBox);
+                        }
+                    }
+                    $('.pinIcon').click(SetSelectedPin);
+                    $('.addButton').button();
+                }
+
+                function SelectPin(e){
+                    var curPin = e.target;
+                    var curInfoBox = curPin.getInfobox();
+
+                    if(prevPin)
+                        DeselectPrevPin();
+
+                    $(curPin).addClass('selectedPin');
+                    curInfoBox.setOptions({ visible:true });
+
+                    map.setView({center: curPin.getLocation(), centerOffset: { x: -70, y: 100}});
+                    curPin.setOptions({state:Microsoft.Maps.EntityState.highlighted});
+                    prevPin = curPin;
+                    //$('#MapContainer .selectHousing').button({ icons: { primary: "ui-icon-pencil"} });
+                }
+
+                function DeselectPrevPin()
+                {
+                    if(prevPin)
+                        prevPin.getInfobox().setOptions({visible: false});
+                    if(prevPinIcon)
+                        $(prevPinIcon).removeClass('selectedPin');
+                }
+        
+                function SetSelectedPin(e)
+                {
+                    prevPinIcon = $(e.target);
+                    prevPinIcon.addClass('selectedPin');
+                }
+
+                function GetIcon()
+                {
+                    return '@Url.Content("~/Content/images/Icons/iconRed.png")';
+                }
+
+                function ToggleMapView(){
+                    var mapView = $('#MapContainer');
+
+                    if(mapView.is(':visible')){
+                        mapView.hide();
+                        $('#StandardView').show();
+
+                        $('#ToggleViewButton').html("@Labels.MapView");
+                        
+                    }
+                    else{
+                        $('#StandardView').hide();
+                        mapView.show();
+                        $('#ToggleViewButton').html("@Labels.StandardView");
+
+                        if(!map)
+                            Microsoft.Maps.loadModule('Microsoft.Maps.Themes.BingTheme', { callback: InitMap });
+                    }
+                }
+
+                function GetMaintenanceWork(unit)
+                {
+                    var propsHeader = '<ul class="pddng-lft-0 pddng-rght-0 " style=\"list-style: none;\">' ;
+                    var props = "";
+
+                    for(var i = 0; i < unit.MaintenanceWork.length; i++){
+                        props += '<li><a href="@Url.Content("~/HousingUnit/EditMaintenance/")'+ unit.MaintenanceWork[i].HouseMaintenanceID +'" title="' + '@Labels.Edit'+" "+'@Labels.MaintenanceWork' + '">' + unit.MaintenanceWork[i].MaintenanceTypeName + '</a></li>';
+                    }
+     
+                    return props && (propsHeader + props + '</ul>');
+                }
+                </text>
+            }
+
+        </script>);
+}*@

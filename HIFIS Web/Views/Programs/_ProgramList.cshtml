@@ -1,0 +1,112 @@
+﻿
+<h3>@Labels.Programs</h3>
+
+<div class="table-responsive">
+    <table id="programListTable" class="wb-tables table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>@Labels.ProgramName</th>
+                <th>@Labels.Type</th>
+                <th>@Labels.OwnerOrg</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.DateEnd</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+@* Modal markup is below *@
+<a href="@Url.Content("~/Programs/GetAddProgramServiceForm?serviceID=" + ViewBag.ServiceID)&serviceTypeID=@ViewBag.ServiceTypeID" class="addButton" data-toggle="modal" data-target="#AddProgramModal">@Labels.AddPrograms</a>
+
+<button onclick="backToService();" class="prevButton">@Labels.Back</button>
+
+<script type="text/javascript">
+
+    $(function () {
+
+        $("#programListTable").DataTable({
+            "ajax": '@Url.Action("GetProgramListJson", "Programs", new { serviceID = ViewBag.ServiceID })',
+            "columns": [
+                { "width": "30%", "data": "name" },
+                { "width": "15%", "data": "type" },
+                { "width": "15%", "data": "ownerOrg" },
+                { "width": "15%", "data": "startDate" },
+                { "width": "15%", "data": "endDate" },
+                { "width": "10%", "data": "action" }
+            ],
+            "order": [[3, "desc"]]
+        });
+    });
+
+    //This will decorate buttons an things correctly when table is drawn
+    $('#programListTable').on('draw.dt', function () {
+
+        // Get the records that were just loaded into the table and grab the names to update view
+        // Doing it here isn't the best option, but the code is really slow and I didn't have time to refactor it...
+        var data = $('#programListTable').DataTable().rows().data();
+
+        var programs = "";
+
+        for (var i = 0; i < data.length; i++) {
+            var startDate;
+            var endDate;
+            var currentDate = new Date();
+
+            // set start date
+            if (data[i].startDate == "")
+                startDate = null;
+            else
+                startDate = new Date(data[i].startDate);
+
+            // set end date
+            if (data[i].endDate == "")
+                endDate = null;
+            else
+                endDate = new Date(data[i].endDate);
+
+            // check if program is active
+            if ((startDate != null && startDate < currentDate) && (endDate == null || endDate > currentDate)) {
+
+                if (programs != "") {
+                    programs += ", ";
+                }
+
+                programs += data[i].name;
+            }
+        }
+
+        $('label[for*="rogram"]').parent().next().html(programs);
+
+        init_hifis();
+        //This re-init any lightboxes that are dynamically added via the datables reload call
+        $(".wb-lbx").removeClass("wb-init").removeClass("wb-lbx-inited");
+        $(".wb-lbx").trigger("wb-init.wb-lbx");
+        $("div[id^='tooltip']").remove();
+    });
+
+    $(document).on('hidden.bs.modal', function (e) {
+        if (!$(e.target).find("#ConfirmDeleteModalContent").length) {
+            $(e.target).removeData('bs.modal').find(".modal-content").html('<img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" /><p style="color:white; text-align:center;"> @Labels.Loading</p>');
+        }
+    });
+</script>
+
+@* Modal For editing a program *@
+<div class="modal fade OnTheFlyPanel" id="EditServiceProgramModal" role="dialog" aria-hidden="true" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-content overlay-def mrgn-tp-10 ">
+
+        <img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" />
+        <p style="color:white; text-align:center;">@Labels.Loading</p>
+
+    </div>
+</div>
+
+@* Modal For adding a program *@
+<div class="modal fade OnTheFlyPanel" id="AddProgramModal" role="dialog" aria-hidden="true" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-content overlay-def mrgn-tp-10 ">
+        <img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" />
+        <p style="color:white; text-align:center;">@Labels.Loading</p>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+﻿@model ClientLifeEventsViewModel
+@{
+    if (Model.GangFactor == null){ Model.GangFactor = new ClientGangViewModel(); }
+}
+
+@Html.HiddenFor(model => model.GangFactor.GangAffiliationID)
+@Html.HiddenFor(model => model.LifeEventTypeID)
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.GangFactor.GangName)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.GangFactor.DirectInvolvementYN, new { @class = "autowidth" })
+    @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.GangFactor.DirectInvolvementYN)
+</div>
+
+<div class="row" style="word-wrap:break-word;">
+    @Html.HifisDisplayFor(model => model.GangFactor.Comments)
+</div>

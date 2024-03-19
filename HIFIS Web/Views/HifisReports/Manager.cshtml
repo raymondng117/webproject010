@@ -1,0 +1,88 @@
+﻿@model ManagerViewModel
+@{
+    ViewBag.Title = "Reports Manager";
+    ViewBag.ViewTitle = Labels.viewTitle_ReportManager;
+    
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#HIFISReports" role="tab" data-toggle="tab">@Labels.HIFISReports</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#CustomReports" role="tab" data-toggle="tab">@Labels.CustomReports</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#ArchivedReports" role="tab" data-toggle="tab">@Labels.ArchivedReports</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#ReportAdd" role="tab" data-toggle="tab">@Labels.ReportAdd</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+            <div class="tab-pane active" id="HIFISReports">
+                @if (Model.IsReportMarketplaceAvailableYN == false)
+                {
+                    <div class="alert alert-warning ">
+                        <p class="panel-title marging-top">
+                            @Labels.IsReportMarketplaceAvailableYN
+                        </p>
+                    </div>
+                }
+
+                @Html.Partial("_HifisReportsList", Model.HifisCrFileInfoList)
+            </div>
+			<div class="tab-pane" id="CustomReports">
+				@Html.Partial("_CustomReportsList", Model.CustomCrFileInfoList)
+			</div>
+			<div class="tab-pane" id="ArchivedReports">
+				@Html.Partial("_HifisReportsArchivedList", Model.HifisArchivedCrFileInfoList)
+			</div>
+			<div class="tab-pane" id="ReportAdd">
+				<h3>@Labels.ReportAddCustom</h3>
+
+				@if (RightsHelper.HasRight(UserRights.ReportManager_Upload))
+				{
+					using (Html.BeginForm("Upload", "HifisReports", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+					{														
+						@Html.Partial("_Document", new ReportDocViewModel() { Preferences = new ReportPreferences() })
+
+						<div class="form-group">
+							<div class="col-sm-offset-2 col-sm-10">
+								<input  type="submit" value="@Labels.Upload" />
+							</div>
+						</div> 
+					}
+				}
+			</div>
+		</div>	
+	</div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $('.YesAndNo').on('switchChange.bootstrapSwitch', function (event, state) {
+                 var Data = { id: document.getElementById(this.getAttribute('name')).getAttribute('data-reportid'), value: state };
+
+                 @Html.Partial("_Ajax", new AjaxViewModel()
+                   {
+                       Url = "'/HifisReports/ChangeFavorite'",
+                       Data = "Data",
+                       Type = "GET"
+                   });
+             });
+        </script>
+    );
+}

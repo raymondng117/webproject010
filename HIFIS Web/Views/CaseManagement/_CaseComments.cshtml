@@ -1,0 +1,19 @@
+﻿@model CommentViewModel
+
+<div class="col-sm-12">
+
+    @Html.HiddenFor(m => m.CommentsID)
+    @Html.HiddenFor(m => m.CommentTypeID)
+    @Html.HiddenFor(m => m.ClientID)
+    @Html.HiddenFor(m => m.DateCreated)
+
+    <div class="row">
+        @Html.HifisEditorFor(model => model.Subject)
+    </div>
+
+    <div class="row">
+        @Html.Partial("Plugins/_TinyMCEScript")
+        @Html.HifisTextAreaFor(model => model.CommentBody, new { @class = "mceEditor_Messaging" })
+    </div>
+
+</div>

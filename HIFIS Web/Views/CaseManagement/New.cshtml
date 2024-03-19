@@ -1,0 +1,334 @@
+﻿@model CaseViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_CaseManagementNew;
+    ViewBag.LayoutView = LayoutPage.Client;
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="row">
+    <div id="NewCaseManagement_Form">
+
+        @using (Html.BeginForm("New", "CaseManagement", FormMethod.Post, new { @class = "form-horizontal" }))
+        {
+            <div class="col-xs-12">
+
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ServiceID)
+                @Html.HiddenFor(model => model.ServiceTypeID)
+                @Html.HiddenFor(model => model.ReasonForServiceID)
+                @Html.HiddenFor(model => model.OrganizationID)
+                @Html.HiddenFor(m => m.CaseID)
+                @Html.Partial("_BaseHiddenFor")
+
+                @if (Model.PrimaryClientID != null)
+                {
+                    @Html.HiddenFor(m => m.PrimaryClientID)
+                }
+                else
+                {
+                    <div class="row">
+                        @Html.HifisAutocompleteFor(
+                            m => m.PrimaryClientID
+                            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                            , Model.PrimaryClientName
+                            , new AutocompleteViewModelOptions()
+                            {
+                                OnSelect = "callFunctionsList();",
+                                HiddenValue = true
+                            }, new { @class = "col-sm-12" })
+                    </div>
+                }
+
+                <div id="familyInputs" class="row">
+                    @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList)
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorker as SelectList)
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.DesiredOutcomeTypeID, CachedTableTypes.HIFIS_DesiredOutcomeTypes)
+                </div>
+
+                <div class="row">
+                    @Html.HifisRollupEditorFor(model => model.CaseStateTypeID, CachedTableTypes.HIFIS_CaseStateTypes, new { id = "CaseStateTypeID" })
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+                </div>
+
+                <div class="row">
+                    @Html.HifisEditorFor(model => model.TargetDate)
+                </div>
+
+                <div class="row">
+                    @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.ProgramList as SelectList)
+                </div>
+
+                <div class="row">
+                    @Html.HifisListBoxFor(model => model.ClientFactors, (ViewBag.Factors as SelectList ?? Enumerable.Empty<SelectListItem>()))
+                </div>
+
+                <div id="caseClosed" class="row">
+                    @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime")
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-offset-3 col-sm-9" style="padding-left:10px;">
+                        <div class="btn-group">
+                            <button type="submit" class="saveButton" name="SaveButton">@Labels.Save</button>
+                            @if (Model.PrimaryClientID == null)
+                            {
+                                @Html.ActionLink(Labels.Cancel, "List", "CaseManagement", null, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+                            }
+                            else
+                            {
+                                @Html.ActionLink(Labels.Cancel, "ClientList", "CaseManagement", new { id = Model.PrimaryClientID }, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+<div id="family-attestation-result"></div>
+<div id="ClientsFamilyIDs-attestation-result"></div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+    $(document).ready(function() {
+        callFunctionsList();
+    });
+
+    function PopulateFamilyList(data)
+    {
+        console.log(data);
+        var select = document.getElementById('ClientsFamilyIDs');
+        var familyBox = $('#ClientsFamilyIDs');
+
+        select.options.length = 0; // clear out existing items
+
+        if(data.length < 1){
+            $('#familyInputs').hide();
+            $('#SelectAllFamilyButton').hide();
+            familyBox.prop('disabled', true);
+            familyBox.trigger('change');
+            return;
+        }
+
+        for(var i=0; i < data.length; i++) {
+            var d = data[i];
+            select.options.add(new Option(d.Text, d.Value))
+        }
+
+        $('#familyInputs').show();
+        $('#SelectAllFamilyButton').show();
+        familyBox.prop('disabled',false);
+        familyBox.trigger('change');
+    }
+
+    function GetFamilyList(id)
+    {
+        @Html.Partial("_Ajax", new AjaxViewModel()
+                {
+                    Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                    Data = "{clientID: id}",
+                    OnSuccess = "PopulateFamilyList(data);",
+                });
+    }
+
+    function callFunctionsList() {
+        var id = $('#PrimaryClientID').val();
+        if (id != ""){
+            getROVitals(id);
+            GetFamilyList(id);
+            PopulateClientFactors(id)
+        }
+    }
+
+    function SelectAllClients() {
+        var familyInput = $('#ClientsFamilyIDs');
+
+        familyInput.children('option').each(function (index, element) {
+            if (element.value != "") {
+                element.selected = true;
+            }
+        });
+
+        familyInput.trigger('change');
+    }
+</script>
+);
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+    	        function PopulateClientFactors(id)
+            {
+                @Html.Partial("_Ajax", new AjaxViewModel()
+               {
+                   Url = "'" + Url.Content("~/CaseManagement/AjaxClientFactorList") + "'",
+                   Data = "{id: id}",
+                   OnSuccess = @"var select = document.getElementById('ClientFactors');
+                                    select.options.length = 0; // clear out existing items
+                                    for(var i=0; i < data.length; i++)
+                                    {
+                                    var d = data[i];
+                                    select.options.add(new Option(d.Text, d.Value))
+                                    }
+                                    $('#ClientFactors').trigger('change');"
+               });
+            }
+
+</script>
+);
+}
+
+@using (Html.BeginScriptContext())
+{
+Html.AddScriptBlock(
+@<script type="text/javascript">
+
+    function ShowHideDIV() {
+
+        var selectedValue = getLookupOrRollup('#CaseStateTypeID');
+
+        switch (selectedValue) {
+            case @((byte)CaseStateType.ClosedSuccess):
+            case @((byte)CaseStateType.ClosedGoalNotMet):
+                $('#caseClosed').show();
+                break;
+            case @((byte)CaseStateType.Open):
+                $('#caseClosed').hide();
+                break;
+            default:
+                $('#caseClosed').hide();
+        }
+    }
+
+    $(document).ready(function(){
+
+        @{
+                    if(Model.CaseStateTypeID == null)
+                    {
+                        @:$('#caseClosed').hide();
+                            }
+                }
+
+        $('#CaseStateTypeID').ready(ShowHideDIV);
+        $('#CaseStateTypeID').change(ShowHideDIV);
+
+        $("#OrganizationID").change(function () {
+            var data = { functionName: "getProgramListNonStayOrgID", functionParameters: $("#OrganizationID").val() };
+
+        }).change();
+    });
+
+
+
+    function getPrograms(data) {//jsonResultList is a list of jsonResults
+        //Initialize the dropdown list to defaults
+        $("#ProgramServiceProviderID").empty();
+
+        $.each(data, function () {//Appends all of the available options
+            $("#ProgramServiceProviderID").append($("<option />").val(this.Value).text(this.Text));
+        });
+
+        $("#ProgramServiceProviderID").trigger('change'); //This is needed in order to display the updates
+        $('#ProgramSelectionLoader').hide();
+    } //success
+
+    @if (appSettings.IsAttestationEnabled())
+            {
+                <text>
+    $('#ClientsFamilyIDs').on("select2:select",function(e){
+        $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                { FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                    ID: e.params.data.id,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: '' },
+            function (data) {
+                $("#family-attestation-result").html(data);
+            });
+    });
+
+    $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function(){
+        var select = document.getElementById('ClientsFamilyIDs');
+
+        var familyArray = [];
+        for (var key in select.options) {
+            if (select.options.hasOwnProperty(key)) {
+                familyArray.push(select.options[key].value);
+            }
+        }
+
+        var postData = {
+            FamilyMembers: familyArray,
+            InputName: 'ClientsFamilyIDs',
+            Callback: ''
+        }
+
+        $.post('@Url.Action("FamilyAttestation", "Master")',
+                $.param(postData, true),
+                function (data) {
+                    $("#family-attestation-result").html(data);
+                });
+    });
+    </text>
+            }
+            else if (appSettings.EnforceConsent())
+            {
+               <text>
+            $('#ClientsFamilyIDs').on("select2:select",function(e){
+                       $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                               { FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                                   ID: e.params.data.id,
+                                   InputName: 'ClientsFamilyIDs',
+                                   Callback: '' },
+                           function (data) {
+                               $("#family-attestation-result").html(data);
+                           });
+                   });
+
+                $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function(){
+                    var select = document.getElementById('ClientsFamilyIDs');
+
+                    var familyArray = [];
+                    for (var key in select.options) {
+                        if (select.options.hasOwnProperty(key)) {
+                            familyArray.push(select.options[key].value);
+                        }
+                    }
+
+                    var postData = {
+                        FamilyMembers: familyArray,
+                        InputName: 'ClientsFamilyIDs',
+                        Callback: ''
+                    };
+
+                    $.post('@Url.Action("FamilyConsent", "Master")',
+                            $.param(postData, true),
+                            function (data) {
+                                $("#family-attestation-result").html(data);
+                            });
+                });
+    </text>
+            }
+</script>
+);
+}
+
+

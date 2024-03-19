@@ -1,0 +1,9 @@
+﻿@model ELearningPlaylistModel
+
+@using (Html.BeginForm("ChangePlaylistSequence", "HIFISHelp", FormMethod.Post))
+{ 
+    @Html.HiddenFor(model => model.PlaylistID)
+    <div><label>@Labels.HifisHelp_PlaylistOrder</label></div>
+    @Html.DropDownListFor(model => model.PlaySequence, ViewBag.PlayRankList as SelectList, new { @class="PlaySequenceOrder",  data_Id = Model.PlaylistID })
+    @*<button type="submit" class="saveButton noText topicRankSave">@Labels.Save</button>*@
+}

@@ -1,0 +1,84 @@
+﻿@model ContinuumViewModel
+
+<script type="text/javascript" src="@Url.Content("~/Scripts/Hifis/jquery-ui.custom/jquery-ui.min.js")"></script>
+
+<section id="Modal_SortCatagories" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.HousingContinuum_ChangeCategoryOrder</h2>
+    </header>
+    <div class="modal-body">
+        <form id="sortCategoriesForm" class="form-horizontal">
+
+            @Html.HiddenFor(model => model.ContinuumID)
+
+            <ol id="catagories" class="mrgn-lft-xs" style="overflow:hidden; list-style-position:inside;">
+                @for (int i = 0; i < Model.Categories.Count; ++i)
+                {
+                    <li class="mrgn-bttm-sm sortableItem">
+                        @Model.Categories[i].Name
+                        
+                        @Html.HiddenFor(m=> m.Categories[i].ContinuumCategoryID)
+                        @Html.HiddenFor(m => m.Categories[i].Sequence)
+                    </li>
+                }
+            </ol>
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="sortCategoriesSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="sortCategoriesCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    var form = $("#sortCategoriesForm");
+
+    $(function () {
+        form.hifisValidation();
+        $('#catagories').sortable({ items: "li" });
+    });
+
+    $("#sortCategoriesSaveBtn").click(function () {
+
+        if (form.valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $('#catagories li').each(function (index, element) {
+                $(element).find('[name$=Sequence]').val(index + 1);
+            });
+
+            $.ajax({
+
+                url: "@Url.Content("~/Continuum/OrderCategories")",
+                type: "POST",
+                data: form.serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#categoryTable').DataTable().ajax.reload(
+                        function () {
+                            $(".wb-lbx").trigger("wb-init.wb-lbx");
+                            $(".expandableSummary").trigger("wb-init.wb-details");
+                        }
+                    ); // Re-load the datatable
+
+                    $("#sortCategoriesCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>

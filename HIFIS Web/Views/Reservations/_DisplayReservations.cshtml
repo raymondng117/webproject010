@@ -1,0 +1,81 @@
+﻿@model ReservationViewModel 
+
+<div class=" displayView"> 
+
+    <div>
+        @Html.HifisLabelFor(model => model.PrimaryClientID, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.ReadOnlyVitals.ClientFullName)
+    </div>  
+             
+    <div id="familyInputs">
+        @Html.HifisLabelFor(model => model.ClientsFamilyIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+                        new MultipleItemSelectList 
+                        {
+                            IDs = Model.ClientsFamilyIDs.Select(l => l.ToString()).ToList(),
+                            List = ViewBag.clientFamilyList as SelectList
+                        })
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.DateOfReservation, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.DateOfReservation)
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.RequestingAgencyTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.RequestingAgencyTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_RequestingAgencyTypes, Culture, Model.RequestingAgencyTypeID)
+                        })
+    </div>
+
+    <div>
+        @Html.HifisDisplayFor(model => model.ReferredByName)
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.ReferrerCategTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.ReferrerCategTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReferrerCategTypes, Culture, Model.ReferrerCategTypeID)
+                        })
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.OrganizationID,
+                            List = ViewBag.orgList as SelectList
+                        })
+    </div>
+
+    <div>
+        @Html.HifisLabelFor(model => model.StatusTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.StatusTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReservationStatusTypes, Culture, Model.StatusTypeID)
+                        })
+    </div>
+
+    <div>
+        @Html.HifisDisplayFor(model => model.Description, new { @class = "commentBoxSize", @readonly = "readonly" })
+    </div>
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Reservations_Edit))
+        { 
+            @Html.ActionLink(Labels.Edit, "Edit", "Reservations", new { id = Model.ReadOnlyVitals.ClientID, reservationID = Model.ReservationID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+
+        @Html.ActionLink(Labels.Cancel, "ClientList", "Reservations", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>

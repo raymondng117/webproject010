@@ -1,0 +1,122 @@
+﻿@model ConflictViewModel
+@{
+    if (Model.FirstClientID == null)
+    {
+        ViewBag.ViewTitle = Labels.NewConflict;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.viewTitle_NewConflict;
+    }
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("New", "Conflicts", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        if (Model.ReadOnlyVitals == null || Model.FirstClientID == null)
+        {
+            @*<div class="row">
+                <div class="col-sm-offset-2 mrgn-bttm-md">
+                    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Client_Add))
+                    {
+                        @Html.Partial("_OnTheFlyButton", new OnTheFlyButtonViewModel()
+                        {
+                                ButtonName = Labels.NewClient,
+                                Title = Labels.NewClient,
+                                ActionName = "NewVitals",
+                                ControllerName = "ClientTombstone",
+                                PartialName = "~/Views/ClientTombstone/_ClientVitalsEdit.cshtml",
+                                CallBackFunction = "OnTheFlyCallBack",
+                                ViewModel = new ClientVitalsViewModel() { IsStealth = false }
+                        })
+                    }
+
+                </div>
+            </div>*@
+    <div>
+        @Html.HifisAutocompleteFor(
+            model => model.FirstClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.ReadOnlyVitals.ClientFullName
+            , new AutocompleteViewModelOptions
+            {
+                OnSelect = "callGetROVitals();"
+                ,
+                     HiddenValue = true
+            })
+    </div>
+        }
+        else
+        {
+            @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        }
+        
+        @Html.Partial("_Conflict")
+        
+        <div class="form-group">
+	        <div class="col-sm-offset-3 col-sm-9">
+		        <button type="submit" class="saveButton">@Labels.Save</button>
+                @if (Model.ReadOnlyVitals == null || Model.FirstClientID == null)
+                {
+                    @Html.ActionLink(Labels.Cancel, "List", "Conflicts", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })            
+                }
+                else
+                {
+                    @Html.ActionLink(Labels.Cancel, "ClientList", "Conflicts", new { id = Model.FirstClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                }
+	        </div>
+        </div>         
+    }   
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(document).ready(function () {
+
+                $("#FirstIsVictimYN").click(function () {
+
+                    if (this.checked) {
+                        $("#SecondIsVictimYN").attr("disabled", true);                
+                    } else {
+                        $("#SecondIsVictimYN").removeAttr("disabled");
+                    }
+         
+                });
+
+                $("#SecondIsVictimYN").click(function () {
+
+                    if (this.checked) {
+                        $("#FirstIsVictimYN").attr("disabled", true);
+                    } else {
+                        $("#FirstIsVictimYN").removeAttr("disabled");
+                    }         
+                });
+
+            });
+
+            function callGetROVitals() {
+                getROVitals($('#FirstClientID').val());
+            }
+    
+            function OnTheFlyCallBack(objectID, formData) {
+
+                if ($("#FirstClientID").val() == "" || $("#FirstClientID").val() == " ") {
+                    getROVitals($("#FirstClientID").val());
+                }
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#FirstClientID").val(objectID);
+
+                getROVitals(objectID);
+            }
+        </script>
+    );
+}

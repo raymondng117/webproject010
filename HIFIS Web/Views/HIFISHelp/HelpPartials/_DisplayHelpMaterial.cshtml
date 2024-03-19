@@ -1,0 +1,65 @@
+﻿@model HelpMaterialModel
+@{
+	string lang = ViewBag.CurrentCulture;
+	string english = Constants.Eng;    
+}      
+@switch (Model.ContentTypeID)
+{
+	case (short)HIFISHelp_HelpContentTypes.HowToRichText:
+		<span class="@Model.StyleString">
+			@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))				
+		</span> 						
+	break;
+	case (short)HIFISHelp_HelpContentTypes.Image: 
+		<span>
+			@{
+                string image = "";
+                image = Url.Action("GetMateralImage", "HIFISHelp", new { id = lang == english ? Model.ImageEnglish.HelpImageID : Model.ImageFrench.HelpImageID }); 
+			}
+			<img class="mrgn-bttm-md img-responsive @Model.StyleString" alt="@(lang == english ? Model.ImageEnglish.DescriptionE : Model.ImageEnglish.DescriptionF)"  src="@image" title="@(lang == english ? Model.ImageEnglish.NameE : Model.ImageEnglish.NameF)" />			
+		</span> 
+	break;
+	case (short)HIFISHelp_HelpContentTypes.ShowMeLearnHow:
+		<div class="row">
+			<div class="col-sm-12">
+                <div class="alert help-panel-border help-showme pddng-tp-sm" style="padding-bottom:0px;">
+					<div class="mrgn-bttm-sm">
+						<h3 class="panel-title">@Labels.HifisHelp_LearnHow</h3>
+					</div>
+					<div>
+						@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+					</div>
+				</div>					
+			</div>
+		</div>
+	break;
+	case (short)HIFISHelp_HelpContentTypes.HelpfulHint:
+		<div class="row">
+            <div class="col-sm-12">
+				<div class="alert help-panel-border help-hint pddng-tp-sm" style="padding-bottom:0px;">
+					<div class="mrgn-bttm-sm">
+						<h3 class="panel-title">
+                            @Labels.HifisHelp_HelpfulHint &nbsp @(lang == english ? Model.ContentTitleE : Model.ContentTitleF)</h3>
+					</div>
+					<div>
+						@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+					</div>
+				</div>
+			</div>
+        </div>				
+	break;
+    case (short)HIFISHelp_HelpContentTypes.RelatedHelp:
+	    <div class="row">
+            <div class="col-sm-12">
+			    <div class="alert help-panel-border help-help pddng-tp-sm" style="padding-bottom:0px;">
+				    <div class="mrgn-bttm-sm">
+					    <h3 class="panel-title">@Labels.HifisHelp_RelatedHelp</h3>
+				    </div>
+				    <div>
+					    @(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+				    </div>
+			    </div>
+		    </div>
+	    </div>				
+	break;
+}

@@ -1,0 +1,32 @@
+﻿@model CaseCommentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseCommentNew;
+    
+}
+        
+@Html.Partial("_ValidationSummaryOuter")
+
+
+    @using (Html.BeginForm("NewCaseComment", "CaseManagement", FormMethod.Post, new { @class = "form-horizontal", pViewModel = Model }))
+    {
+        <div class="col-sm-12">
+            @Html.Partial("_BaseHiddenFor")
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.CaseCommentID)
+            @Html.HiddenFor(model => model.CaseID)
+            @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+
+            @Html.Partial("_CaseComments", Model)
+
+            <div class="row">
+	            <div class="col-sm-offset-3 col-sm-9">
+                    <div class="btn-group">
+                        <button type="submit" class="saveButton">@Labels.Save</button>
+                        @Html.ActionLink(Labels.Cancel, "Edit", "CaseManagement", new { caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    }

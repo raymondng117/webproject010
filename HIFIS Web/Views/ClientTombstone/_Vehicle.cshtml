@@ -1,0 +1,36 @@
+﻿@model ClientCarViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(m => m.ClientCarID)
+@Html.HiddenFor(m => m.ClientID)
+
+<div>
+    @Html.HifisEditorFor(m => m.Make)
+</div>
+      
+<div>
+    @Html.HifisEditorFor(m => m.Model)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.Year)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.Colour)
+</div>
+      
+<div>
+    @Html.HifisEditorFor(m => m.LicencePlate)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.DateEnd)
+</div>

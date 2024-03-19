@@ -1,0 +1,152 @@
+﻿@model ClientEmergencyContactViewModel
+
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.AddContact</h2>
+    </header>
+
+    <div class="modal-body">
+        <form id="contactForm" class="form-horizontal">
+            @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+            @Html.Partial("_BaseHiddenFor")
+
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.ClientID)
+
+            <div>
+                @Html.HifisAutocompleteFor(
+                    m => m.PersonID
+                    , Url.Content("~/PeopleTombstone/AjaxGetPList")
+                    , Model.PersonName
+                    , new AutocompleteViewModelOptions
+                    {
+                        HiddenValue = true,
+                        SelectClientFieldType = SelectClientFieldTypes.PersonID
+                    }
+                    , new { @class = "autocomplete" }
+                    )
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ClientEmergencyRelationshipTypeID, CachedTableTypes.HIFIS_PeopleRelationshipTypes)
+            </div>
+
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+
+        <button type="submit" id="btnAddContact" class="saveButton">@Labels.AddContact</button>
+        <button id="contactCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+
+</section>
+
+
+<script type="text/javascript">
+
+    @*if ($('#MinimumCharacterInput').val()) {
+        initAutocomplete(parseInt($('#MinimumCharacterInput').val()));
+    }
+    else {
+        initAutocomplete(parseInt(@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultMinCharInput"]));
+    }*@
+    initAutocomplete(1);
+    function initAutocomplete(minInputLength) {
+        console.log("FD - initAutocomplete minInputLength " + minInputLength);
+        $('#PersonID').select2({
+            minimumInputLength: minInputLength,
+            ajax: {
+                type: "POST",
+                url: "@Url.Content("~/PeopleTombstone/AjaxGetPList")",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        @("searchString" + ": params.term,")
+                        @("resultsToReturn: " + 10 + " ,")
+                };
+            },
+            processResults: function (data, page) {
+                // parse the results into the format expected by Select2.
+                // since we are using custom formatting functions we do not need to
+                // alter the remote JSON data
+                var result = [];
+                $.each(data.Result, function (index, item) {
+                    result.push({ "id": item.value, "text": item.label });
+                });
+                return {
+                    results: result
+                };
+            },
+            cache: true
+        },
+        });
+    }
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    fixWidth();
+
+    function fixWidth() {
+        var $elements = $('.modal-body label.col-sm-2');
+        $elements.each(function () {
+            $(this).removeClass("col-sm-2").addClass("col-sm-3")
+                .parent().find(".col-sm-10").removeClass("col-sm-10").addClass("col-sm-9");
+        });
+    }
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+    }
+
+
+
+    $("#btnAddContact").click(function () {
+        if ($("#contactForm").valid()) {
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+                url: "@Url.Content("~/Diversion/NewContact")",
+                type: "POST",
+                data: $('#contactForm').serialize()
+            }).done(function (data)
+            {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success)
+                {
+                    $("#contactCloseBtn").click(); //Close the modal window 
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    console.log("FD - newContactSaveBtn OnSuccess calling servicesTable ajax.reload");
+
+                    var clientid = data.Result.clientid;
+
+
+                    $('#contactsTable').DataTable().ajax.url('@Url.Content("~/Diversion/ContactListJson?")' + 'clientID=' + clientid).load(null, false);
+                    $('#contactsTable').DataTable().ajax.reload();
+
+                    $("#contactCloseBtn").click(); //Close the modal window 
+                }
+                else {
+                    data.Result.message.forEach(function (element) {
+                        displayNotification('error', '', element);
+                    });
+                }
+
+                
+            });
+        }
+    });
+
+
+</script>

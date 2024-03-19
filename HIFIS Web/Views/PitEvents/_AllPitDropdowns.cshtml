@@ -1,0 +1,95 @@
+﻿@model IEnumerable<PitQuestionDropdownViewModel>
+
+
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th>@Labels.Name</th>
+                <th>@Labels.Active</th>
+                <th>@Labels.PitAffectedQuestions</th>
+                <th>@Labels.PitAnsweredBehaviourYN</th>
+                <th>@Labels.PitEmptyBehaviourYN</th>
+                <th>@Labels.PitDropDownActionType</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dropdown in Model)
+            {
+                <tr>
+                    @if (ViewBag.CurrentCulture == Constants.Eng)
+                    {
+                        <td>@dropdown.NameE</td>
+                    }
+                    else
+                    {
+                        <td>@dropdown.NameF</td>
+                    }
+
+                    <td>@(dropdown.ActiveYN ? Labels.Yes : Labels.No)</td>
+                    <td>
+                        @if (!dropdown.AffectedQuestions.IsEmptyOrNull())
+                        {
+                            foreach (var q in dropdown.AffectedQuestions)
+                            {
+                                <text>@q.SequenceLabel - @q.Question</text>
+                                if (q != dropdown.AffectedQuestions.Last())
+                                { <text><br /></text> }
+                            }
+                        }
+                </td>
+                <td>@(dropdown.AnsweredBehaviourYN ? Labels.Yes : Labels.No)</td>
+                <td>@(dropdown.EmptyBehaviourYN ? Labels.Yes : Labels.No)</td>
+                <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTDropDownActionTypes, Culture, dropdown.DropDownActionTypeID)</td>
+                <td class="align-text-center">
+                    @Html.ActionLink(Labels.Edit, "EditPitDropdown", new { dropdownID = dropdown.QuestionPickListID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })                    
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@*<table id="allDropdowns" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+    <thead>
+        <tr>
+            <th>@Labels.DropdownValues</th>
+            <th>@Labels.ActiveYN</th>
+            @if (ViewBag.QuestionDropdowns == null)
+            {
+                <th> @Labels.Action</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.IsEmptyOrNull())
+        {
+            foreach (var dropdown in Model)
+            {
+                <tr>
+                    <td>@dropdown.PitDropDownName</td>
+                    <td class="align-text-center wdth-20">
+                        @if(dropdown.ActiveYN)
+                        {
+                            @Labels.Yes   
+                        }
+                        else
+                        {
+                            @Labels.No   
+                        }
+                    </td>
+                    @if (ViewBag.QuestionDropdowns == null)
+                    {
+                        <td class="align-text-center wdth-30">
+                            
+                                @Html.ActionLink(Labels.Edit, "EditPitDropdown", new { dropdownID = dropdown.QuestionPickListID }, new { @class = " editButton noText" })
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>*@

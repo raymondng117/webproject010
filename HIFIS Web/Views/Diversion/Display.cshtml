@@ -1,0 +1,296 @@
+﻿@model DiversionViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DiversionDisplay;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class=" displayView">
+
+    @*@Html.HiddenFor(model => model.OrganizationID)*@
+
+    @if (Model.IsAnonymous)
+    {
+
+        if (ViewBag.EnabledPresumedIndigenousIndicator == true)
+        {
+            <div class="row">
+                @Html.HifisLabelFor(model => model.PresumedAboriginalYN)
+                @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.PresumedAboriginalYN)
+            </div>
+        }
+        if (ViewBag.EnabledObservedDisabilityIndicator == true)
+        {
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ObservedDisability)
+                @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ObservedDisability)
+            </div>
+        }
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.AgeCategoryTypeID)
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.AgeCategoryTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_AgeCategoryTypes, ViewBag.CurrentCulture)
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.GenderTypeID)
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.GenderTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, ViewBag.CurrentCulture)
+                            })
+        </div>
+
+    }
+    else
+    {
+        <div id="clientsection">
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ReadOnlyVitals.ClientFullName)
+                @Html.DisplayFor(model => model.ReadOnlyVitals.ClientFullName)
+            </div>
+
+            <div id="familyInputs" class="row">
+                @Html.HifisLabelFor(model => model.ClientsFamilyIDs)
+                @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                    new MultipleItemSelectList
+                    {
+                        IDs = Model.ClientsFamilyIDs,
+                        List = ViewBag.clientFamilyList as SelectList
+                    })
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DiversionDateTime)
+        @Html.DisplayFor(model => model.DiversionDateTime, "DateAndTime")
+
+
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReasonForServiceTypeID)
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList
+            {
+                ID = Model.ReasonForServiceTypeID,
+                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, ViewBag.CurrentCulture)
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.FromReferrerPlaceID)
+        @Html.DisplayFor(model => model.FromReferralName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ToReferrerPlaceID)
+        @Html.DisplayFor(model => model.ToReferralName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.HousedSafelyLastNightYN)
+        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.HousedSafelyLastNightYN)
+    </div>
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.CaseWorkerID)
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList { ID = Model.CaseWorkerID, List = ViewBag.CaseWorker as SelectList })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Minutes)
+        @Html.DisplayFor(model => model.Minutes)
+    </div>
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.AssociatedProgramIDs)
+        <div>
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                new MultipleItemSelectList
+                {
+                    IDs = Model.AssociatedProgramIDs,
+                    List = ViewBag.ProgramList as SelectList
+                })
+        </div>
+    </div>
+
+
+    <div id="FinancialAssistance_section">
+        <div class="row">
+            @Html.HifisLabelFor(model => model.FinancialAssistanceProvidedYN)
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.FinancialAssistanceProvidedYN)
+        </div>
+
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ExpectedDestinationTypeID)
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+            new SingleItemSelectList
+            {
+                ID = Model.ExpectedDestinationTypeID,
+                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_DiversionDestinationTypes, ViewBag.CurrentCulture)
+            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DiversionNextSteps)
+        @Html.DisplayFor(model => model.DiversionNextSteps)
+    </div>
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ScheduledFollowUpDate)
+        @Html.DisplayFor(model => model.ScheduledFollowUpDate)
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-12">
+            <label class="control-label wdth-strct-200">@Labels.DiversionStory</label>
+            @Html.EditorFor(model => model.DiversionStory, "TinyMCE_Print")
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <label class="control-label wdth-strct-200">@Labels.Comments</label>
+            @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+        </div>
+    </div>
+
+    @*Good and Services info BEGIN*@
+    @if (Model.IsAnonymous == false)
+    {
+        <div>
+            <h4>
+                @Labels.Goods
+            </h4>
+        </div>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>@Labels.Good</th>
+                        <th>@Labels.Quantity</th>
+                        <th>@Labels.UnitCost</th>
+                        <th>@Labels.UnitPrice</th>
+                        <th>@Labels.UnitOfMeasure</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.vmGoodService.ClientGoodList != null && Model.vmGoodService.ClientGoodList.Count > 0)
+                    {
+                        for (int i = 0; i < Model.vmGoodService.ClientGoodList.Count; i++)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientGoodList[i].GoodName)</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientGoodList[i].NoOfUnits)</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientGoodList[i].UnitCost)</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientGoodList[i].UnitPrice)</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientGoodList[i].UnitOfMeasureName)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h4>
+                @Labels.Services
+            </h4>
+        </div>
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>@Labels.Service</th>
+                        <th>@Labels.StartDate</th>
+                        <th>@Labels.EndDate</th>
+                        <th>@Labels.ExpendedTime</th>
+                        <th>@Labels.UnitCost</th>
+                        <th>@Labels.UnitPrice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.vmGoodService.ClientActivityList != null && Model.vmGoodService.ClientActivityList.Count > 0)
+                    {
+                        for (int i = 0; i < Model.vmGoodService.ClientActivityList.Count; i++)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientActivityList[i].ActivitiesTypeName)</td>
+                                <td>@DateHelper.DateTimeFormaterENFR(Model.vmGoodService.ClientActivityList[i].DateStart, Labels.CurrentCulture)</td>
+                                <td>@DateHelper.DateTimeFormaterENFR((DateTime)Model.vmGoodService.ClientActivityList[i].DateEnd.GetValueOrDefault(), Labels.CurrentCulture)</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientActivityList[i].Hours) @Labels.Hrs @Html.DisplayFor(m => m.vmGoodService.ClientActivityList[i].Minutes) @Labels.Mins</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientActivityList[i].ServiceCost)</td>
+                                <td>@Html.DisplayFor(m => m.vmGoodService.ClientActivityList[i].ServicePrice)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        @*Good and Services info END*@
+    }
+    <div class="row">
+        <div class="col-sm-12">
+
+            @if (RightsHelper.HasRight(UserRights.Diversion_Edit, Model.OrganizationID))
+            {
+
+                if (Model.WorkFlowCompletedYN == false && Model.WorkFlowSteps.ToList().Count > 0 && (RightsHelper.HasRight(UserRights.Diversion_WorkFlow_Edit, Model.OrganizationID)))
+                {
+                    @Html.ActionLink(Labels.Edit, "DiversionWorkFlow", "Diversion", new { clientid = Model.PrimaryClientID, diversionID = Model.DiversionID, returnurl = Model.returnUrl }, new { @class = "editButton", @role = "button" })
+                }
+                else
+                {
+                    @Html.ActionLink(Labels.Edit, "Edit", new { clientid = Model.PrimaryClientID, diversionID = Model.DiversionID,returnurl = Model.returnUrl }, new { @class = "editButton", @role = "button" })
+
+                }
+
+            }
+            @Html.ActionLink(Labels.Cancel, Model.returnUrl, "Diversion", new { id = Model.PrimaryClientID }, new { @class = "cancelButton", @role = "button" })
+
+        </div>
+
+    </div>
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+
+     //$(document).ready(function () {
+
+
+     //    //var bIsAnonymous = $("#IsAnonymous").bootstrapSwitch("state");
+     //    var bIsAnonymous = $("#IsAnonymous").val();
+     //    console.log("FD - bIsAnonymous : ") + $("#IsAnonymous").val();
+
+     //    if (bIsAnonymous) {
+     //        $('#clientsection').hide();
+     //        $('#AnonymousFields_Section').show();
+     //    }
+     //    else {
+     //        $('#clientsection').show();
+     //        $('#AnonymousFields_Section').hide();
+     //    }
+     //    console.log("FD - bIsAnonymous : ") + $("#IsAnonymous").val();
+     //});
+
+</script>
+);
+}

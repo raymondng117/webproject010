@@ -1,0 +1,60 @@
+﻿@model IEnumerable<ProgramFixedCostViewModel>
+
+<div id="programFixedCosts" style="padding: 20px;">
+    <div class="table-responsive">
+        <table id="fixedCostsTable" class="wb-tables table table-striped table-hover" 
+            data-wb-tables='{ "info": false,
+                            "ajax": "@Url.Action("FixedCostsJson", "Programs", new { id = ViewBag.programID })",
+                            "columns": [
+                                { "width": "35%", "data": "description"},
+                                { "width": "10%", "data": "amount"},
+                                { "width": "15%", "data": "from"},
+                                { "width": "15%", "data": "to"},
+                                { "width": "10%", "data": "show"},
+                                { "width": "15%", "data": "action"}
+                            ] }'>
+            <thead>
+                <tr>
+                    <th class="align-text-center">@Labels.Description</th>
+                    <th class="align-text-center">@Labels.Amount</th>
+                    <th class="align-text-center">@Labels.DateFrom</th>
+                    <th class="align-text-center">@Labels.DateTo</th>
+                    <th class="align-text-center">@Labels.ShowOnReport</th>
+                    <th class="align-text-center no-print">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="no-print">
+        @*  //Only give the option to add if the user is logged in as the owner organization
+        //for the program, or the program has no designated owner so any user with the rights
+        //can edit.*@
+        @if (ViewBag.CurrentProgOrgID == null || ViewBag.CurrentProgOrgID == ViewBag.CurrentOrgID)
+        {
+            if (RightsHelper.HasRight(UserRights.Programs_Fixed_Costs_Add))
+            {
+                @Html.ActionLink(Labels.AddNewFixedCost, "NewFixedCost", "Programs", new { @programID = ViewBag.programID}, new { @class = "addButton", alt=Labels.AddNewFixedCost, aria_label = Labels.AddNewFixedCost, @role = "button"})            
+            }
+        }   
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function OnTheFlyCallBack(objectID, formData) {
+                 var table = $(".table");
+                 table.DataTable().ajax.reload();
+             }
+
+             // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+             $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                 initButtons();
+                 $(".editButton").parents("td").addClass("align-text-center");
+                 $(".deleteButton").parents("td").addClass("align-text-center");
+             });
+        </script>
+    );
+}

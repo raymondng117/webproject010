@@ -1,0 +1,139 @@
+﻿@model MedicationListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_MedicationList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>    
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.MedicationName</th>
+                    <th>@Labels.HealthIssue</th>
+                    <th>@Labels.Dosage</th>
+                    <th title="@Labels.Morning">
+                        @Labels.MorningLetter
+                    </th>
+                    <th title="@Labels.Noon">
+                        @Labels.NoonLetter
+                    </th>
+                    <th title="@Labels.Evening">
+                        @Labels.EveningLetter
+                    </th>
+                    <th title="@Labels.Bedtime">
+                        @Labels.BedtimeLetter
+                    </th>
+                    <th title="@Labels.PRN">
+                        @Labels.PRNLetter
+                    </th>
+                    <th>@Labels.DateStart</th>
+                    <th>@Labels.DateEnd</th>
+                    <th>@Labels.OwnerOrg</th>
+                    @if(appSettings.EnableSharing())
+                    {
+                        <th>@Labels.Visibility</th>
+                    }
+                    <th class="print-none">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (MedicationViewModel medication in Model.Medications)
+                {
+                    <tr>
+                        <td>
+                            @medication.MedicationName (@medication.CurrentPillCount)
+                        </td>
+                        
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_HealthIssueTypes, Culture, medication.HealthIssueTypeID)</td>
+                        
+                        <td>@medication.Dosage</td>
+
+                        <td>
+                            @if (medication.Recurrence.Contains((byte)MedicationRecurrenceTypes.Morning))
+                            { <span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Morning">&nbsp;</span> }
+                        </td>
+                        <td>
+                            @if (medication.Recurrence.Contains((byte)MedicationRecurrenceTypes.Noon))
+                            { <span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Noon">&nbsp;</span> }
+                        </td>
+                        <td>
+                            @if (medication.Recurrence.Contains((byte)MedicationRecurrenceTypes.Evening))
+                            { <span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Evening">&nbsp;</span> }
+                        </td>
+                        <td>
+                            @if (medication.Recurrence.Contains((byte)MedicationRecurrenceTypes.Bedtime))
+                            { <span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.Bedtime">&nbsp;</span> }
+                        </td>
+                        <td>
+                            @if (medication.Recurrence.Contains((byte)MedicationRecurrenceTypes.PRN))
+                            { <span class="glyphicon glyphicon-ok align-inline-block" title="@Labels.PRN">&nbsp;</span> }
+                        </td>
+
+                        <td>@Html.DisplayFor(ModelItem => medication.DateStart)</td>
+                        <td>
+                            @if (medication.DateEnd.HasValue)
+                            {
+                                @Html.DisplayFor(ModelItem => medication.DateEnd)
+                            }
+                        </td>
+
+                        <td>@medication.OwnerOrgName</td>
+
+                        @if(appSettings.EnableSharing())
+                        {
+                            <td>
+                                @if (medication.ShareYN)
+                                {
+                                    <span>@Labels.Shareable</span>@(medication.EditableYN ? ", " : "")
+                                }
+                                @if (medication.EditableYN)
+                                {
+                                    <span>@Labels.Editable</span>
+                                }
+                            </td>
+                        }
+
+                        <td class="print-none">
+                            @if (RightsHelper.HasRight(UserRights.Health_Medication_Display) && (medication.OwnerOrganizationID == null || medication.OwnerOrganizationID == ViewBag.CurrentOrgID || medication.ShareYN))
+                            {
+                                @Html.ActionLink(Labels.Display, "DisplayMedication", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = medication.MedicationID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                            }
+                            
+                            @if (medication.OwnerOrganizationID == null || medication.OwnerOrganizationID == ViewBag.CurrentOrgID || medication.EditableYN)
+                            {
+                                if (RightsHelper.HasRight(UserRights.Health_Medication_Edit))
+                                {
+                                    @Html.ActionLink(Labels.Edit, "EditMedication", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = medication.MedicationID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+                                if (RightsHelper.HasRight(UserRights.Health_Medication_Refill_List))
+                                {
+                                    @Html.ActionLink(Labels.MedicationDispensingHistory, "MedicationDispensingHistory", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = medication.MedicationID }, new { @class = "listButton noText", alt=Labels.MedicationDispensingHistory, aria_label = Labels.MedicationDispensingHistory, @role = "button" })
+                                }
+                            }
+                        
+                        </td>
+                    </tr>
+                }            
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+
+        @if (RightsHelper.HasRight(UserRights.Health_Medication_Add))
+        {
+            @Html.ActionLink(Labels.NewMedication, "NewMedication", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewMedication, aria_label = Labels.NewMedication, @role = "button" })
+        }
+
+    </div>
+</div>
+

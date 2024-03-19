@@ -1,0 +1,80 @@
+﻿@model GenericTableLookUpViewModel
+
+<section id="Modal_NewLookupValue" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@(Labels.NewLookup  + " - " + ViewBag.KeyName)</h2>
+	</header>
+	<div class="modal-body">
+        <form id="newLookupValueForm" class="form-horizontal">
+            @Html.Partial("_Lookup", Model)
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newLookupValueSaveBtn" class="saveButton">@Labels.Save</button>
+		<button id="newLookupValueCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    //Used by "RequiredIf" annotation for field RollUpID
+    var requiredIf = function () {
+        return "True";
+    }
+
+    var showDesiredOutcome = '@ViewBag.ShowDesiredOutcomeOption';
+
+
+    //Used by "RequiredIf" annotation for field DesiredOutcomeTypeID
+    var requiredIf2 = function () {
+        return showDesiredOutcome;
+    }
+
+    var showGroupType = '@ViewBag.ShowGroupTypeOption';
+    //Used by "RequiredIf" annotation for field GroupTypeID
+    var requiredIf3 = function () {
+        return showGroupType;
+    }
+
+
+    var form = $("#newLookupValueForm");
+
+    $(function () { form.hifisValidation(); });
+
+    $("#newLookupValueSaveBtn").click(function () {
+
+        if (form.valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            @Html.Partial("_Ajax", new AjaxViewModel()
+            {
+                Url = "'" + @Url.Content("~/LookupTables/AjaxInsertLookupValue") + "'",
+                Data = "form.serialize()",
+                OnSuccess = "onSuccessAddLookup();",
+                OnFailure = "displayNotification(\"error\", \"\", \"<p>" + Labels.FailedToSave + "</p>\");",
+                OnComplete = "btn.attr(\"disabled\", false);",
+                Type="POST"
+        });
+        }
+    });
+
+    function onSuccessAddLookup() {
+
+        displayNotification("success", "", "<p>@Labels.DefaultDataSavedMessage</p>");
+
+        $('#existingLookups').DataTable().ajax.reload(
+            function () {
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            }
+         ); // Re-load the datatable
+
+        $("#newLookupValueCloseBtn").click(); //Close the modal window on success
+    }
+</script>

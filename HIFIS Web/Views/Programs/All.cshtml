@@ -1,0 +1,168 @@
+﻿@model IEnumerable<ProgramViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ProgramList;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+    int j = 1;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+    
+<div>
+    <div id="radio" class="btn-group mrgn-bttm-md no-print">
+
+        @{ string classlink1 = (ViewBag.filterCurrentlyInEffect == "active" ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); string width = "min-width: 80px;"; }
+
+        @Html.ActionLink(Labels.Active, "All", new { listType = "active" }, new { @class = classlink1, style = width, alt = Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+        @{ string classlink2 = (ViewBag.filterCurrentlyInEffect == "all" ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Inactive, "All", new { listType = "inactive" }, new { @class = classlink2, style = width, alt = Labels.Inactive, aria_label = Labels.Inactive, @role = "button" })
+
+        @if (RightsHelper.HasRight(UserRights.Programs_List_Complete))
+        {
+            string classlink3 = (ViewBag.filterCurrentlyInEffect == "admin" ? "btn btn-primary btn-sm" : "btn btn-default btn-sm");
+            @Html.ActionLink(Labels.Admin, "All", new { isFIlteredByOrganization = false, listType = "admin" }, new { @class = classlink3, style = width, alt = Labels.Admin, aria_label = Labels.Admin, @role = "button" })
+        }
+
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="form-color-white module-form-block">
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                <thead>
+                    <tr>
+                        <th class="align-text-center">@Labels.ProgramName</th>
+                        <th class="align-text-center">@Labels.Services</th>
+                        <th class="align-text-center">@Labels.DateStart</th>
+                        <th class="align-text-center">@Labels.DateEnd</th>
+                        <th class="align-text-center">@Labels.TimeUnit</th>
+                        <th class="align-text-center">@Labels.ProgramType</th>
+                        <th class="align-text-center">@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ProgramViewModel vm in Model)
+                    {
+                        <tr>
+                            <td>
+                                @vm.Name
+                                
+                            </td>
+                            <td>
+                                @{var serviceIDs = vm.ServiceProviders.Where(y => y.OrganizationID == ViewBag.organizationID).FirstOrDefault();}
+                                @if (vm.ServiceTypeIDs != null)
+                                {
+                                    if (vm.ServiceTypeIDs.Count() > 1)
+                                    {
+
+                                        <div class="panel-default">
+                                            <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                                <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+                                                    @vm.ServiceTypeIDs.Count() @Labels.Services
+                                                    <span class="caret pull-right mrgn-tp-sm"></span>
+                                                </a>
+                                            </div>
+                                            <div id="@j" class="panel-collapse collapse">
+                                                <ul class="pddng-lft-md">
+                                                    @if (serviceIDs != null)
+                                                    {
+                                                        foreach (var st in serviceIDs.ProgramServiceValues)
+                                                        {
+                                                            <li>
+                                                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, st.Key)
+                                                            @if (st.Value.Equals("Y"))
+                                                                {
+                                                                  <span class="glyphicon glyphicon-ok"></span>
+                                                                }
+                                                        </li>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        foreach (var st in vm.ServiceTypeIDs)
+                                                        {
+                                                            <li>
+                                                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, st)
+                                                        </li>
+                                                        }
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                                    j++;
+                                    }
+                                    else
+                                    {
+                                        if (serviceIDs != null)
+                                        {
+                                            foreach (var st in serviceIDs.ProgramServiceValues)
+                                            {
+                                                    @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, st.Key)
+                                                    if (st.Value.Equals("Y"))
+                                                    {
+                                                        <span class="glyphicon glyphicon-ok"></span>
+                                                    }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (var st in vm.ServiceTypeIDs)
+                                            {      
+                                                    @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, st) 
+                                            }
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => vm.DateStart)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(model => vm.DateEnd)
+                            </td>
+                            <td>
+                                @vm.TimeUnitTypeName
+                            </td>
+                            <td>
+                                @vm.ProgramTypeName
+                            </td>
+                            <td class="align-text-center no-print">
+                                @if (RightsHelper.HasRight(UserRights.Programs_Display))
+                                {
+                                    @Html.ActionLink(Labels.Manage, "Display", "Programs", new { programID = vm.ProgramID }, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                                }
+                                @if (RightsHelper.HasRight(UserRights.Programs_Service_Providers_Edit))
+                                {
+                                    if (ViewBag.filterCurrentlyInEffect.Equals("admin"))
+                                    {
+                                        @Html.ActionLink(Labels.EditDefaults, "SPDefaultsList", "Programs", new { @programID = vm.ProgramID }, new { @class = "toggleButton noText", alt=Labels.EditDefaults, aria_label = Labels.EditDefaults, @role = "button" })
+                                    }
+                                    else if (!(vm.ServiceProviders.Where(x => x.OrganizationID.Equals(ViewBag.organizationID)).IsEmptyOrNull()))
+                                    {
+                                        @Html.ActionLink(Labels.EditDefaults, "ManageSPDefaults", "Programs", new { @programServiceProviderID = vm.ServiceProviders.Where(x => x.OrganizationID.Equals(ViewBag.organizationID)).FirstOrDefault().ProgramServiceProviderID }, new { @class = "toggleButton noText", alt=Labels.EditDefaults, aria_label = Labels.EditDefaults, @role = "button" })
+                                    }}
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md no-print">
+        @*@if (RightsHelper.HasRight(UserRights.Programs_Add))
+        {
+            @Html.ActionLink(Labels.ManageDefaults, "ManageDefaults", "Programs", null, new { @class = "manageButton", title = Labels.ManageDefaults })
+        }*@
+        @if (RightsHelper.HasRight(UserRights.Programs_Add))
+        {
+            @Html.ActionLink(Labels.AddProgram, "New", "Programs", new { }, new { @class = "addButton  ", title = Labels.AddProgram, alt=Labels.AddProgram, aria_label = Labels.AddProgram, @role = "button" })
+        }
+    </div>
+</div>

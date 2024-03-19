@@ -1,0 +1,427 @@
+﻿@model ReportViewModel
+@{
+    ViewBag.Title = Labels.ReportGenerator;
+    ViewBag.ViewTitle = Labels.viewTitle_ReportGenerator;
+    if (Model.ReportName != null)
+    {
+        ViewBag.ViewTitle += ": " + CultureHelper.CurrentNameSplit(Model.ReportName, ViewBag.CurrentCulture);
+        //ViewBag.ViewTitle += " | " + Model.ReportName;
+
+    }
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+
+    @Html.Partial("_ValidationSummaryOuter")
+
+
+@if (Model.ParameterList != null)
+{
+    using (Html.BeginForm("Display", "HifisReports", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        <h2>@Labels.viewTitle_ReportParameters</h2>    
+
+        @Html.HiddenFor(m => m.ReportName)
+            @Html.HiddenFor(m => m.ReportID)
+
+        for (int i = 0; i < Model.ParameterList.Length; i++)
+        {
+
+            @Html.HiddenFor(m => m.ParameterList[i].Name)
+            @Html.HiddenFor(m => m.ParameterList[i].Label)
+            @Html.HiddenFor(m => m.ParameterList[i].ParameterData.Type)
+
+            if (Model.ParameterList[i].ParameterData.Internal)
+                {
+                    @Html.HiddenFor(m => m.ParameterList[i].ParameterData.Data)
+            }
+
+                else
+                {
+                    string labelText = null;
+                <div class="form-group">
+                    @*@Html.Label(Model.ParameterList[i].Label ?? "Label Property Missing", new { @class = "control-label col-sm-4", @for = "Model.ParameterList[i].Name" })*@
+
+                    @switch (Model.ParameterList[i].Name)
+                    {
+                        case "Date":
+                            labelText = Labels.ReportDate;
+                            break;
+                        case "ServiceProvider":
+                            labelText = Labels.ProviderSelection;
+                            break;
+                        case "RPDateStart":
+                            labelText = Labels.RPDateStart;
+                            break;
+                        case "Date Start":
+                            labelText = Labels.Date_Start;
+                            break;
+                        case "DateToCalculateSPInteract":
+                            labelText = Labels.DateToCalculateSPInteract;
+                            break;
+                        case "RPDateEnd":
+                            labelText = Labels.RPDateEnd;
+                            break;
+                        case "RServiceProviders":
+                            labelText = Labels.RServiceProviders;
+                            break;
+                        case "RServiceProvider":
+                            labelText = Labels.RServiceProvider;
+                            break;
+                        case "Rdate":
+                            labelText = Labels.Rdate;
+                            break;
+                        case "Rclient":
+                            labelText = Labels.Rclient;
+                            break;
+                        case "Person":
+                            labelText = Labels.Person;
+                            break;
+                        case "Program":
+                            labelText = Labels.Program;
+                            break;
+                        case "SPDATType":
+                            labelText = Labels.SPDATType;
+                            break;
+                        case "ForAgeUse":
+                            labelText = Labels.ForAgeUse;
+                            break;
+                        case "FirstAssessment":
+                            labelText = Labels.FirstAssessment;
+                            break;
+                        case "VIType":
+                            labelText = Labels.VIType;
+                            break;
+                        case "OpenCase":
+                            labelText = Labels.OpenCase;
+                            break;
+                        case "CurrentClient":
+                            labelText = Labels.CurrentClient;
+                            break;
+                        case "SPgrpAge":
+                            labelText = Labels.SPgrpAge;
+                            break;
+                        // possibly move the name checks from the switch block starting on line 90 here
+                        case "SERVICEPROVIDER":
+                        case "SERVICEPROVIDERS":
+                            if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                            {
+                                if (Model.ParameterList[i].ParameterData.Data != null)
+                                {
+                                    try
+                                    {
+                                        //Model.ParameterList[i].ParameterData.Data = (Model.ParameterList[i].ParameterData.Data as int[]);
+                                        int[] tmpValues;
+                                        int y = 0;
+
+                                        //foreach (var item in Model.ParameterList[i].ParameterData.Data)
+                                        //{
+                                        //    tmpValues[y++] = item;
+                                        //}
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        //throw;
+                                        //Model.ParameterList[i].ParameterData.Data = "";
+                                    }
+                                }
+                                @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, Utilities.ConvertToSelectList(Model.OrgList), null, excludeLabel: true)
+                            }
+                            else
+                            {
+                                @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, Utilities.ConvertToSelectList(Model.OrgList), null, null, true, null)
+                            }
+                            break;
+                        default:
+                            labelText = Model.ParameterList[i].Label;
+                            break;
+                    }
+
+                    @Html.Label(labelText ?? Labels.LabelMissing, new { @class = "control-label col-sm-4", @for = "Model.ParameterList[i].Name" })
+
+                    <div class="col-sm-8">
+                        @switch (Model.ParameterList[i].ParameterData.Type)
+                        {
+                            case "crFieldValueTypeDateTimeField":
+                                <a href="~/Views/HifisReports/Generate.cshtml">~/Views/HifisReports/Generate.cshtml</a>
+                                if (Model.ParameterList[i].ParameterData.Data != null) { Model.ParameterList[i].ParameterData.Data = (Model.ParameterList[i].ParameterData.Data as string[])[0]; }
+                                @Html.HifisTextBoxFor(m => m.ParameterList[i].ParameterData.Data, new { type = "Date" }, true)
+                                break;
+
+                            case "crFieldValueTypeDateField":
+                                if (Model.ParameterList[i].ParameterData.Data != null)
+                                {
+                                    try
+                                    {
+                                        Model.ParameterList[i].ParameterData.Data = (Model.ParameterList[i].ParameterData.Data as string[])[0];
+                                    }
+                                    catch (Exception)
+                                    {
+                                        //throw;
+                                        Model.ParameterList[i].ParameterData.Data = "";
+                                    }
+                                }
+                                @Html.HifisTextBoxFor(m => m.ParameterList[i].ParameterData.Data, new { type = "Date" }, true)
+                                break;
+
+                            case "crFieldValueTypeBooleanField":
+                                if (Model.ParameterList[i].ParameterData.Data != null)
+                                {
+                                    Model.ParameterList[i].ParameterData.Data = true;// (Model.ParameterList[i].ParameterData.Data as bool)[0];
+                                }
+                                else
+                                {
+                                    Model.ParameterList[i].ParameterData.Data = false;
+                                }
+
+                                @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, "YesNo", excludeLabel: true)
+
+                                break;
+
+                            case "crFieldValueTypeNumberField":
+
+                                switch (Model.ParameterList[i].Name.ToUpper())
+                                {
+                                    case "SERVICEPROVIDER":
+                                    case "SERVICEPROVIDERS":
+                                    case "RSERVICEPROVIDER":
+                                    case "RSERVICEPROVIDERS":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            if (Model.ParameterList[i].ParameterData.Data != null)
+                                            {
+                                                try
+                                                {
+                                                    //Model.ParameterList[i].ParameterData.Data = (Model.ParameterList[i].ParameterData.Data as int[]);
+                                                    int[] tmpValues;
+                                                    int y = 0;
+
+                                                    //foreach (var item in Model.ParameterList[i].ParameterData.Data)
+                                                    //{
+                                                    //    tmpValues[y++] = item;
+                                                    //}
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    //throw;
+                                                    //Model.ParameterList[i].ParameterData.Data = "";
+                                                }
+                                            }
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, Utilities.ConvertToSelectList(Model.OrgList), null, excludeLabel: true)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, Utilities.ConvertToSelectList(Model.OrgList), null, null, true, null)
+                                        }
+                                        break;
+                                    case "CLIENT":
+                                    case "CLIENTS":
+                                    case "RCLIENT":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.Label(Labels.msgFunctionNotImplemented)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisAutocompleteFor(
+                                                m => m.ParameterList[i].ParameterData.Data
+                                                , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                                                , null
+                                                , new AutocompleteViewModelOptions
+                                                {
+                                                    Placeholder = Labels.Search
+                                                    ,
+                                                    ExcludeLabel = true
+                                                    ,
+                                                    HiddenValue = true
+                                                    //, HiddenID = "ParameterList_" + i + "__ParameterData_Data"
+                                                    ,
+                                                    SelectClientFieldType = SelectClientFieldTypes.ClientID
+                                                    ,
+                                                    OnSelect = "autocompleteCallback();"
+                                                })
+                                        }
+                                        break;
+                                    case "PERSON":
+                                    case "PEOPLE":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.Label(Labels.msgFunctionNotImplemented)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisAutocompleteFor(
+                                                m => m.ParameterList[i].ParameterData.Data
+                                                , Url.Content("~/PeopleTombstone/AjaxGetPList")
+                                                , null
+                                                , new AutocompleteViewModelOptions()
+                                                     {
+                                                    Placeholder = Labels.Search
+                                                    ,
+                                                         ExcludeLabel = true
+                                                    ,
+                                                         HiddenValue = true
+                                                    //, HiddenID = "ParameterList_" + i + "__ParameterData_Data"
+                                                    ,
+                                                         SelectClientFieldType = SelectClientFieldTypes.Other
+                                                     }
+                                                )
+                                        }
+                                        break;
+                                    case "PROGRAM":
+                                    case "PROGRAMS":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllProgramsMulti as MultiSelectList, null, excludeLabel: true)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllProgramsSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+                                    case "QUESTIONNAIRE":
+                                    case "QUESTIONNAIRES":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllQuestionnairesMulti as MultiSelectList, null, excludeLabel: true)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllQuestionnairesSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+                                    case "VITYPE":
+                                    case "VITYPES":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllVITypesMulti as MultiSelectList, null, excludeLabel: true);
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllVITypesSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+                                    case "SPDATTYPE":
+                                    case "SPDATTYPES":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllSPDATTypesMulti as MultiSelectList, null, excludeLabel: true);
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllSPDATTypesSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+                                    case "ACTIVITY":
+                                    case "ACTIVITIES":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllActivitiesMulti as MultiSelectList, null, excludeLabel: true)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllActivitiesSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+                                    case "HOUSINGCONTINUUM":
+                                    case "HOUSINGCONTINUUMS":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllHousingContinuumMulti as MultiSelectList, null, excludeLabel: true)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllHousingContinuumSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+
+                                    case "FORAGEUSE":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.Label(Labels.msgFunctionNotImplemented)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllForAgeUseSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+                                case "GEOREGION":
+                                case "GEOREGIONS":
+                                    if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                    {
+                                        @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllGeoRegionMulti as MultiSelectList, null, excludeLabel: true)
+                                    }
+                                    else
+                                    {
+                                        @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllGeoRegionSingle as SelectList, null, null, true, null)
+                                    }
+                                    break;
+
+                                    case "SPGRPAGE":
+                                        if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                        {
+                                            @Html.Label(Labels.msgFunctionNotImplemented)
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, ViewBag.AllAgeGroupSingle as SelectList, null, null, true, null)
+                                        }
+                                        break;
+
+                                    default:
+                                        if (Model.ParameterList[i].ListValues != null && Model.ParameterList[i].ListValues.Count > 0)
+                                        {
+                                            // This is a custom static lookup!!
+
+                                            if (Model.ParameterList[i].ParameterData.AllowMultiple)
+                                            {
+                                                @Html.HifisListBoxFor(m => m.ParameterList[i].ParameterData.Data, Utilities.ConvertToSelectList(Model.ParameterList[i].ListValues), null, excludeLabel: true)
+                                            }
+                                            else
+                                            {
+                                                @Html.HifisEditorFor(m => m.ParameterList[i].ParameterData.Data, Utilities.ConvertToSelectList(Model.ParameterList[i].ListValues), null, null, true, null)
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @Html.HifisTextBoxFor(m => m.ParameterList[i].ParameterData.Data, new { placeholder = "Enter Custom Value" }, true)
+                                        }
+                                        break;
+                                }
+                                break;
+                            case "crFieldValueTypeStringField":
+                                @Html.HifisTextBoxFor(m => m.ParameterList[i].ParameterData.Data, null, true, null)// Changed third argument from false to true to exclude label
+                                break;
+                            default:
+                                break;
+                        }
+                    </div>
+                </div>
+            }
+        }
+
+        <br />
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit"><span class="glyphicon glyphicon-play"></span> @Labels.RunReport</button>
+                @Html.ActionLink(Labels.BackToReportManager, "Manager", null, new { @class = "btn btn-default prevButton", alt = Labels.BackToReportManager, aria_label = Labels.BackToReportManager, @role = "button" })
+            </div>
+        </div>
+
+    }// End Of using (Html.BeginForm("Display", "HifisReports", FormMethod.Post))
+}
+else
+{
+    @Html.ActionLink(Labels.ReportManager, "Manager", null, new { @class = "btn btn-default", alt=Labels.ReportManager, aria_label = Labels.ReportManager, @role = "button" })
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     $(document).ready(function () {
+         // You can do stuff here when the page loads if necessary!
+     });
+</script>);
+}

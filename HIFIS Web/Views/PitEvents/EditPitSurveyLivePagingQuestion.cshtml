@@ -1,0 +1,405 @@
+﻿@model  List<PitQuestionViewModel>
+@{
+    ViewBag.ViewTitle = Labels.CreatePitSurveyLive;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    PitSurveyViewModel survey = Session["PageSurveyID_" + ViewBag.PitSurveyID];
+}
+
+@* All of the SurveyModel hidden fields are added by _EditPitSurveyRevised.cshtml Partialview*@
+
+@*<input id="ShiftIDHidden" type="hidden" value="@survey.ShiftID" />*@
+@Html.Hidden("ShiftIDHidden", survey.ShiftID)
+
+
+<section id="popup-screen" class="wb-overlay modal-content overlay-def wb-popup-full">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.Info</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Raw(survey.PitQuestionnaire.QuickInfo)
+    </div>
+    @*<div id="location_map">
+            <!-- GeomapStart -->
+            <div id="location_map"
+                 class="wb-geomap static"
+                 data-wb-geomap='{
+                "tables": [{
+                    "id": "addNRCan",
+                    "style": {
+                        "type": "symbol",
+                        "init": {
+                            "pointRadius": 12,
+                            "graphicName": "star",
+                            "strokeColor": "#FF0000",
+                            "fillColor": "#FF0000",
+                            "fillOpacity": 0.7
+                                }
+                            }
+                            }]
+                        }'>
+                <div class="row">
+                    <div class="col-md-4">
+                        <!-- Insert Map Start (mandatory) -->
+                        <div class="wb-geomap-map"></div>
+                        <!-- Insert Map End -->
+                    </div>
+                    <!-- Insert Layer Data Start (mandatory) -->
+                    <div class="wb-geomap-layers col-md-4">
+                        <table id="addNRCan" aria-label="PIT Survey Locations" class="table">
+                            <caption class="wb-inv">Live PIT Survey</caption>
+                            <thead>
+                                <tr>
+                                    <th>Current location</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    string longitude = "-75.71941";
+                                    string latitude = "45.42579";
+
+                                    if (survey.Longitude.HasValue && survey.Latitude.HasValue)
+                                    {
+                                        longitude = ((decimal)survey.Longitude.Value).ToString("F5");
+                                        latitude = ((decimal)survey.Latitude.Value).ToString("F5");
+                                    }
+                                }
+                                <tr data-geometry="POINT (@longitude @latitude)" data-type="wkt">
+                                    <td>
+                                        Current location @longitude @latitude
+
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Insert Layer Data End -->
+                </div>
+            </div>
+            <!-- GeomapEnd -->
+        </div>*@
+</section>
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="form-horizontal" id="SurveyQuestions_FormPortion">
+
+    <div class="clearfix"></div>
+
+    <div class="pull-left">
+        <a href="#popup-screen" aria-controls="popup-screen" class="overlay-lnk listButton" role="button">
+            @Labels.Info
+        </a>
+    </div>
+
+    <a class="closeButton wb-lbx align-right btn-danger" href="#Modal_AbandonSurvey">
+        @Labels.AbandonSurvey
+    </a>
+
+    <div class="clearfix"></div>
+
+    @*<div style="display: inline-block; margin-top: 10px;">
+            <strong id="currentPageNumber">@ViewBag.CurrentPageNo </strong> @Labels.Of <strong id="totalOfPages">@Session["PitTotalOfPages"]</strong>
+        </div>*@
+
+    <br />
+    @*<progress value="@ViewBag.CurrentPageNo" max="@Session["PitTotalOfPages"]"><span class="wb-inv">22%</span></progress>
+        <br />*@
+
+    <div class="clearfix"></div>
+
+
+    <p><a href="#right-panel-debug" aria-controls="right-panel-debug" class="overlay-lnk hidden" role="button">Debug Info</a></p>
+
+    <section id="right-panel-debug" class="wb-overlay modal-content overlay-def wb-panel-r">
+        <header class="modal-header">
+            <h2 class="modal-title">Debug Info</h2>
+        </header>
+        <div class="modal-body">
+            @foreach (var qtn_grp in survey.Questions.GroupBy(q => q.QuestionNo))
+            {
+                <span>Group</span>@qtn_grp.Key<br />
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cat</th>
+                            <th>Seq</th>
+                        </tr>
+                    </thead>
+                    @foreach (var qtn in qtn_grp.OrderBy(q => q.QuestionCategoryTypeID).ThenBy(q => q.SequenceNo))
+                    {
+                        <tr>
+                            <td>
+                                @qtn.QuestionCategoryTypeID
+                            </td>
+                            <td>
+                                @qtn.SequenceNo
+                            </td>
+
+                        </tr>
+                    }
+                </table>
+            }
+        </div>
+    </section>
+
+
+    @*------------------ Survey details ------------------------*@
+    @* Survey details html will only shown to the user if Shift time or location is missing.
+        Missing shift time or location in survey will end the survey after screening question
+    *@
+    <div id="SurveyDetails" class="callout callout-primary @(ViewBag.surveyDetailsPanel ? "" : "hidden")">
+        <div class="" style="display: table; width: 100%; ">
+            <h4>@Labels.SurveyDetails</h4>
+            <hr />
+            <form id="Survey_DetailsForm">
+                <div class="">
+                    @Html.Partial("SurveyPartials/_EditPitSurveyRevised", survey)
+                </div>
+                <button class="enabledbutton pull-right btn-lg" id="GoToSurveyQBtn">
+                    @Labels.Begin
+                <span class="glyphicon glyphicon-arrow-right"></span>
+            </button>
+
+            <div class="clearfix"></div>
+        </form>
+    </div>
+</div>
+@*------------------ Survey details ------------------------*@
+
+
+<div id="SurveyQuestions" class=@(ViewBag.surveyDetailsPanel ? "hidden" : "")>
+    <div class="ProgressNodes">
+        @*@for (int i = 1; i < (int) Session["Pages"]; i++)*@
+
+        @{
+            var i = 0;
+        }
+
+        @foreach (var question in survey.GetPages())
+        {
+            var pageMarkerClass = "pending";
+
+            if (i == (int)ViewBag.CurrentPageNo)
+            {
+                pageMarkerClass = "current";
+            }
+            else
+            {
+                if (question.QuestionAnswer.Answered())
+                {
+                    pageMarkerClass = "complete";
+                }
+            }
+
+            var buttonLabel = "";
+            switch ((PitQuestionCategories)question.QuestionCategoryTypeID)
+            {
+                case (PitQuestionCategories.Screening):
+                    buttonLabel = Labels.PiTScreeningAbrv;
+                    break;
+                case (PitQuestionCategories.Core):
+                    buttonLabel = question.QuestionNo.ToString();
+                    break;
+                case (PitQuestionCategories.COH):
+                    buttonLabel = "OP" + question.QuestionNo.ToString();
+                    break;
+                case (PitQuestionCategories.Local):
+                    buttonLabel = "L" + question.QuestionNo.ToString();
+                    break;
+            }
+
+            //uses the appropriate GUID for sq1 based on whether or not hiddenhomelessess is enabled
+            string sqGuid = survey.PitQuestionnaire.HiddenHomelessnessYN ? Constants.PitQuestionGUIDs.SQ1_Tonight_Hidden_Homelessness.ToLower() : Constants.PitQuestionGUIDs.SQ1_Tonight.ToLower();
+
+            // Get the answered value of the screening question by GUID
+            if (ViewBag.CurrentPageNo == 0 && !survey.GetPages().FirstOrDefault(q => q.QuestionGUID == new Guid(sqGuid)).QuestionAnswer.Answered())
+            {
+                <a class="@pageMarkerClass">@buttonLabel</a>
+                i++;
+            }
+            else
+            {
+                @Html.ActionLink(buttonLabel, "EditPitSurveyLivePagingQuestion", new { PitSurveyID = ViewBag.PitSurveyID, PageNo = (i++) }, new { @class = pageMarkerClass, alt=buttonLabel, aria_label = buttonLabel })
+            }
+        }
+
+    </div>
+
+    <div class="clearfix"></div>
+
+    @*<div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                @if (Model.First().QuestionCategoryTypeID == (int) PitQuestionCategories.Local)
+                {
+                    @Labels.LocalQuestions
+            }
+                else
+                {
+                    @(Labels.Question + " " + @Model.FirstOrDefault().QuestionNo)
+                }
+            </h4>
+        </div>
+        <div class="panel-body">*@
+    <form>
+        @*action="javascript:$('#NextSurveyPageBtn')[0].click(); ">*@
+
+        @*@foreach (var question in Model.OrderBy(q => q.QuestionNo).ThenBy(q => q.SequenceNo))*@
+        @foreach (var questionGroup in Model.GroupBy(q => q.QuestionNo))
+        {
+            @*@:Encrypted ID: @question.QuestionID<br />
+                @:GUID: @(question.QuestionGUID.HasValue ? question.QuestionGUID.Value.ToString() : "")<br/>*@
+
+            @Html.Partial("SurveyPartials/_EditPitSurveyQuestionAnswer", questionGroup);
+
+            @*if (question.QuestionCategoryTypeID != 4
+                    || (survey.PitQuestionnaire.HiddenHomelessnessYN && question.HiddenHomelessness)
+                    || (!survey.PitQuestionnaire.HiddenHomelessnessYN && !question.HiddenHomelessness))
+                {
+                    @Html.Partial("SurveyPartials/_EditPitSurveyQuestionAnswer", question);
+                }*@
+        }
+    </form>
+</div>
+</div>
+@*</div>*@
+
+<div id="NextQuestionButton" class="@(ViewBag.surveyDetailsPanel ? "hidden" : "")">
+    <div class="col-md-12">
+        <div class="row nowrap align-right">
+            <div style="display: inline-flex">
+                @if ((int)ViewBag.CurrentPageNo > 0)
+                {
+                    <ul class="pager pit-pager margin-none">
+                        <li>
+                            @Html.ActionLink(Labels.Previous, "EditPitSurveyLivePagingQuestion", "PitEvents",
+                                     new { PitSurveyID = ViewBag.PitSurveyID, PageNo = ViewBag.CurrentPageNo - 1 }, new { @class = "NextorPrevSurveyPageBtn", rel = "prev", alt=Labels.Previous, aria_label = Labels.Previous, @role = "button" })
+                        </li>
+                    </ul>
+                }
+            </div>
+
+            <div style="display: inline-flex">
+                <ul class="pager pit-pager margin-none">
+                    <li>
+                        @Html.ActionLink((int)Session["PitTotalOfPages"] == (int)ViewBag.CurrentPageNo ? Labels.EndSurvey : Labels.Next, "EditPitSurveyLivePagingQuestion", "PitEvents",
+                           new { PitSurveyID = ViewBag.PitSurveyID, PageNo = ViewBag.CurrentPageNo + 1 }, new { @class = "enabledbutton", style = "width: 120px; !important", rel = "next", alt=(int)Session["PitTotalOfPages"] == (int)ViewBag.CurrentPageNo ? Labels.EndSurvey : Labels.Next, aria_label = (int)Session["PitTotalOfPages"] == (int)ViewBag.CurrentPageNo ? Labels.EndSurvey : Labels.Next, @role = "button" })
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@foreach (var question in (List<PitQuestionViewModel>)ViewBag.NoOfYearsQuestions)
+{
+    <input id="SQ_@question.QuestionID" value="@question.QuestionAnswer.NumericValue" style="display: none" />
+}
+@*</div>*@
+
+<div class="clearfix"></div>
+
+@Html.Partial("SurveyPartials/_PitSurveyQuestionsJS")
+@Html.Partial("_AbandonSurvey", survey)
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript">
+
+        $("#right-panel-debug").trigger("open.wb-overlay");
+
+		function SurveyModel() {
+			var self = this;
+            self.PitSurveyID = $("#PitSurveyID").val();
+            self.PitQuestionnaireID = $("#PitQuestionnaireID").val();
+            self.PitScreenedIN = $("#PitScreenedIN").val();
+            self.IsLive = $("#IsLive").val();
+            self.Longitude = $("#Longitude").val();
+            self.Latitude = $("#Latitude").val();
+            self.SurveyNo = $("#SurveyNo").val();
+            self.Location = $("#Location").val();
+            self.Comment = $("#Comment").val();
+            self.ShiftTime = $("#ShiftTime").val();
+            self.ShiftID = $("#ShiftIDHidden").val();
+            self.IsComplete = $("#IsComplete").val();
+            self.SurveyIdentifier = $("#SurveyIdentifier").val();
+            self.SurveyDate = $("#SurveyDate").val();
+		}
+
+		$(function ()
+		{
+
+			$('[pit-fam-button="true"]').attr('href', $('[pit-fam-button="true"]').attr('href')
+				+ '&shiftID=@survey.ShiftID'
+				+ '&surveyNo=@survey.SurveyNo');
+
+            //// prevent enter keypress from submitting form
+			//$(document).on("keypress", "input", function (e) {
+			//	var code = e.keyCode || e.which;
+			//	if (code == 13) {
+			//		// move cursor out of element on enter keypress
+			//		$(this).trigger('blur');
+			//		// prevent form from submitting
+			//		e.preventDefault();
+			//		return false;
+			//	}
+			//});
+
+			EnableDisableSurveyQuestions(@Html.Raw(Json.Encode(Model.Select(q => new {QuestionID = q.QuestionID, QuestionTypeID = q.QuestionTypeID}).ToList())));
+		});
+
+        $(function () {
+            //getLocation();
+
+            $("#GoToSurveyQBtn").click(function (event) {
+                event.preventDefault();
+                var isValid = ($("#Location").valid() && $("#ShiftID").valid());
+                if (isValid) {
+                    $("#ShiftIDHidden").val($("#ShiftID").val())
+                    var survey = new SurveyModel();
+                    $.ajax({
+                        url: "@Url.Content("~/PitEvents/SaveSurveyAttr")",
+                        type: 'POST',
+                        async: false,
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        //data: JSON.stringify(survey)
+                    });
+                    //window.location = $(this)[0].href;
+                    $("#SurveyDetails").addClass("hidden");
+                    $("#SurveyQuestions").removeClass("hidden");
+                    $("#NextQuestionButton").removeClass("hidden");
+
+                }
+                $("#ShiftIDHidden").valid();
+            });
+
+            $('#Survey_DetailsForm :input, #Survey_DetailsForm [class*="date"]').on('change dp.change', function () {
+                $("#ShiftIDHidden").val($("#ShiftID").val())
+                var survey = new SurveyModel();
+
+                $.ajax({
+                    url: "@Url.Content("~/PitEvents/SaveSurveyAttr")",
+                    type: 'POST',
+                    async: true,
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(survey),
+                    success: function (response) { // If required fields are missing disable next btn
+                        //if (response != null && response.Success) {
+                        //    $("#GoToSurveyQBtn").removeClass("disabledbutton");
+                        //    $("#GoToSurveyQBtn").removeAttr('disabled');
+                        //}
+                        //else {
+                        //    $("#GoToSurveyQBtn").addClass("disabledbutton");
+                        //    $("#GoToSurveyQBtn").attr('disabled', 'disabled');
+                        //}
+                }
+                });
+            });
+        });
+
+</script>);
+}

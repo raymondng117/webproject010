@@ -1,0 +1,99 @@
+﻿@model ClientSearchViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientSearch;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    if (Model.ShowAll.IsEmptyOrNull())
+    {
+        Model.ShowAll = "Active";
+    }
+}
+
+<div id="radio" class="btn-group">
+    <ul class="list-unstyled">
+        <li class="btn-group btn-group-sm">
+            @{ string classlink1 = (Model.ShowAll.Equals("All") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.All, "ClientSearchProxy", new { @cSearchString = Model.cSearchString, @ShowAll = "All" }, new { @class = classlink1, alt=Labels.All, aria_label = Labels.All, @role = "button"  })
+
+            @{ string classlink2 = (Model.ShowAll.Equals("Active") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.Active, "ClientSearchProxy", new { @cSearchString = Model.cSearchString, @ShowAll = "Active" }, new { @class = classlink2, alt=Labels.Active, aria_label = Labels.Active, @role = "button"  })
+
+            @{ string classlink3 = (Model.ShowAll.Equals("Inactive") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.Inactive, "ClientSearchProxy", new { @cSearchString = Model.cSearchString, @ShowAll = "Inactive" }, new { @class = classlink3, alt=Labels.Inactive, aria_label = Labels.Inactive, @role = "button"  })
+
+            @{ string classlink4 = (Model.ShowAll.Equals("Deceased") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.Deceased, "ClientSearchProxy", new { @cSearchString = Model.cSearchString, @ShowAll = "Deceased" }, new { @class = classlink4, alt=Labels.Deceased, aria_label = Labels.Deceased, @role = "button"  })
+
+            @{ string classlink5 = (Model.ShowAll.Equals("Archived") ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.Archived, "ClientSearchProxy", new { @cSearchString = Model.cSearchString, @ShowAll = "Archived" }, new { @class = classlink5, alt=Labels.Archived, aria_label = Labels.Archived, @role = "button"  })
+        </li>
+    </ul>
+    <div class="clearfix"></div>
+</div>
+
+<div class="row">
+    <div class="table-responsive col-xs-12">
+        <table id="clientSearchTable" class="wb-tables table table-striped table-hover" 
+            data-wb-tables='{   "serverSide": true,
+                                "processing": true,
+                                "columns": [
+                                { "width": "5%",  "data": "ID","orderable": true, "type": "integer", "name": "ClientID" },
+                                { "width": "25%",  "data": "name","orderable": true, "type": "string", "name": "FullName"  },
+                                { "width": "8%",  "data": "gender","orderable": true, "type": "string", "name": "GenderTypeID" },
+                                { "width": "13%",  "data": "aka1" ,"orderable": true, "type": "string", "name": "Aka1" },
+                                { "width": "10%",  "data": "dob" ,"orderable": true, "type": "string", "name": "DOB" },
+                                { "width": "5%",  "data": "age" ,"orderable": true, "type": "string", "name": "CurrentAge" },
+                                { "width": "10%",  "data": "fileNumber","orderable": true, "type": "string", "name": "FileNumber"  },
+                                { "width": "16%",  "data": "clientHousingStatus","orderable": true, "type": "integer", "name": "ClientHousingStatusTypeID"  },
+                                { "width": "8%",  "data": "action","orderable": false }
+                                ],
+                                "order": [ [1, "asc"] ],                 
+                                "bFilter": false,
+                                 "bSort":true,
+                                 "ajax":  {"url": "@Url.Action("ClientSearchJsonResult", "ClientTombstone", new { q = Model.cSearchString, type = Model.ShowAll })",
+                                            "type":"post"
+                                            }
+
+                        }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ID</th>
+                    <th>@Labels.FullName</th>
+                    <th>@Labels.Gender</th>
+                    <th>@Labels.Aka</th>
+                    <th>@Labels.DOB</th>
+                    <th>@Labels.Age</th>
+                    <th>@Labels.FileNumber</th>
+                    <th>@Labels.ClientHousingStatusType</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mrgn-tp-md">
+    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add))
+    { 
+	    @Html.ActionLink(Labels.AddNewClient, "NewVitals", "ClientTombstone", new { }, new { @class = "addButton  ", title = @Labels.AddNewClient, alt=Labels.AddNewClient, aria_label = Labels.AddNewClient, @role = "button"  })
+    }   
+</div>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+           
+            
+            // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+            $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+                initButtons();
+            });
+        </script>
+    );
+}

@@ -1,0 +1,102 @@
+﻿@model GroupActivityViewModel
+
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.GroupActivityID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(m => m.OwnerOrganizationID)
+@Html.HiddenFor(m => m.OrganizationID)
+@Html.HiddenFor(m => m.Comments)
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.GroupActivityTypeID, CachedTableTypes.HIFIS_GroupActivitiesTypes)
+</div>
+
+@if(Model.GroupActivityID == null)
+{
+    <div class="row">
+        @Html.HifisListBoxFor(model => model.ProgramIDs, ViewBag.ProgramList as SelectList)
+    </div>
+}
+else
+{
+    <div class="row">
+        @Html.Partial("DisplayViewTemplates/_DisplayStringList",
+                                    new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.ProgramIDs).ToString() })
+    </div>
+}
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div class="row">
+        @Html.HifisEditorFor(m => m.LocationID, ViewBag.locations as SelectList, null, new { id = "ddLocation" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.LocationFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.LocationGeoID, FilterType = (short)GeoFilterTypes.Either })))
+    </div>
+}
+else
+{
+    <div class="row">
+        @Html.HifisEditorFor(m => m.LocationID, ViewBag.locations as SelectList, null, new { id = "ddLocation" }, false)
+    </div>
+}
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.DateStart, "DateAndTime")
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.Hours, null, new { id="hoursInput" })
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.Minutes, null, new { id = "minutesInput" })
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.Description)
+</div>
+
+<div class="row">
+    @Html.HifisEditorFor(m => m.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+</div>
+
+@if (Model.isGeoRegionEnforced)
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+    </div>
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+    </div>
+}
+else
+{
+    <div class="row">
+        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+    </div>
+    <div class="row">
+        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+    </div>
+}
+
+@Html.Partial("~/Views/Outreach/_OutreachAddress.cshtml", Model.OutReachAddress, "OutReachAddress.")
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script>
+     const dec = 0;
+     const regex = new RegExp("(\\.\\d{" + dec + "})\\d+", "g");
+
+     const hoursInput = document.getElementById("hoursInput");
+     hoursInput.addEventListener("input", function () {
+         hoursInput.value = hoursInput.value.replace(regex, '$1');
+     });
+
+     const minutesInput = document.getElementById("minutesInput");
+     minutesInput.addEventListener("input", function () {
+         minutesInput.value = minutesInput.value.replace(regex, '$1');
+     });
+</script>
+);
+}
+

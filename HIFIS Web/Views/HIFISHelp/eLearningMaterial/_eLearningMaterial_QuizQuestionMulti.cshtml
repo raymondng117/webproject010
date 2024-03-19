@@ -1,0 +1,124 @@
+﻿@model ELearningMaterialQuizModel
+@Html.HiddenFor(model => model.ContentTypeID)
+@Html.HiddenFor(model => model.ELearningMaterialID)
+@Html.HiddenFor(model => model.QuizQuestionID)
+@Html.HiddenFor(model => model.QuizQuestion.QuizQuestionID)
+@Html.HiddenFor(model => model.QuizQuestion.QuestionType)
+@if (ViewBag.isTopic)
+{ 
+    @Html.HiddenFor(model => model.ELearningPageID)
+    @Html.HiddenFor(model => model.ELearningTopicID)
+    <div class="row">
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            { 
+                @Html.Label(Labels.HifisHelp_LayoutOrder) @:&nbsp
+                @Html.Partial("Common/_HelpMandatory")
+            }
+            else
+            {
+                @Html.Label(Labels.HifisHelp_LayoutOrder)<text>:</text> 
+            }
+        </div>
+        <div class="col-sm-3"> 
+            @if (ViewBag.isEdit == true)
+            {
+                @Html.TextBoxFor(model => model.LayoutOrder)
+            }
+            else
+            {
+                @Html.HiddenFor(model => model.LayoutOrder)
+                @Model.LayoutOrder
+            }           
+        </div>
+    </div>         
+}
+<div class="row">
+    <div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuizQuestionNameE) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.MaterialNameE) 
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuizQuestionNameF) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.MaterialNameF) 
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionE) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.QuizQuestion.QuestionE) 
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionF) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.QuizQuestion.QuestionF) 
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionSummaryE)
+	</div>
+	<div class="col-sm-3"> 
+        @Html.TextAreaFor(model => model.QuizQuestion.DescriptionE) 
+	</div>
+	<div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionSummaryE)
+	</div>
+	<div class="col-sm-3"> 
+        @Html.TextAreaFor(model => model.QuizQuestion.DescriptionF) 
+	</div>
+</div>
+<hr />
+@* Question Choices *@
+<div class="row">
+    <div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionChoice1E)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceE1) 
+	</div>
+	<div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionChoice2E)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceE2) 
+	</div>
+	<div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionChoice3E)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceE3)
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionChoice4E)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceE4) 
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-3">
+        @Html.Label(Labels.HifisHelp_QuestionChoice1F)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceF1)  
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionChoice2F)
+		@Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceF2) 
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_QuestionChoice3F)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceF3) 
+	</div>
+	<div class="col-sm-3"> 
+        @Html.Label(Labels.HifisHelp_QuestionChoice4F)
+        @Html.TextBoxFor(model => model.QuizQuestion.QuestionChoiceF4) 
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_Answer)
+        @Html.DropDownListFor(model => model.QuizQuestion.QuestionChoiceAnswer, ViewBag.ChoiceList as SelectList)
+	</div>
+	<div class="col-sm-9"> 
+	</div>
+</div>
+

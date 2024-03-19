@@ -1,0 +1,42 @@
+﻿@model AuditSearchFilterViewModel
+
+<form id="auditFilterForm" class="form-horizontal">
+    <div>
+        @Html.HiddenFor(model => model.UserID)
+        <div>
+            @Html.HifisEditorFor(model => model.FromDate)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ToDate)
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-11">
+                <button type="button" id="filterListButton" class="filterButton pull-right">@Labels.ApplyFilters</button>
+            </div>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $("#filterListButton").click(function () {
+                if ($("#auditFilterForm").valid()) {
+                    var btn = $(this);
+
+                    $('#userAuditList').DataTable().ajax.url('@Url.Content("~/Users/GetActivityLogJson/?")' + $("#auditFilterForm").serialize() + '').load(null, false);
+
+                    btn.attr("disabled", true);
+
+                    $('#userAuditList').on('xhr.dt', function () {
+                        btn.attr("disabled", false);
+                        $('#filter-panel').trigger('close.wb-overlay');
+                    });
+                }
+            });
+
+        </script>);
+}

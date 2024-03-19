@@ -1,0 +1,29 @@
+﻿@model ProgramEditServiceProviderViewModel
+
+@Html.HiddenFor(m => m.ProgramID)
+@Html.HiddenFor(m => m.ProgramServiceProviderID)
+
+@Html.HiddenFor(model => model.OrganizationID)
+
+<div>
+  @Html.HifisEditorFor(m => m.DateStart)
+</div>
+<div>
+    @Html.HifisEditorFor(m => m.DateEnd)
+</div>
+<div>
+    @Html.HifisEditorFor(m => m.MaxFundingPerPeriod, "Money", new { @class = "money wdth-strct-150 stay-required" })
+</div>
+<div>
+    @Html.HifisEditorFor(m => m.MaxBedsPerPeriod)
+</div>
+<div>
+    @Html.HifisEditorFor(m => m.TimeUnitTypeID, CachedTableTypes.HIFIS_TimeUnitTypes, new { @class = "stay-required" })
+</div>
+<div>
+    @Html.HifisEditorFor(m => m.Rate, "Money", new { @class = "money wdth-strct-150 stay-required" })
+</div>
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(m => m.Comments, new { @class = "mceEditor_Messaging" })
+</div>

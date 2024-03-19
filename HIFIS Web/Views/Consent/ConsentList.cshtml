@@ -1,0 +1,9 @@
+﻿ @model ConsentsListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ConsentsList;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Consent/_ConsentList.cshtml"), ViewModel = Model })
+

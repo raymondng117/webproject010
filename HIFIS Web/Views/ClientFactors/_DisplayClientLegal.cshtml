@@ -1,0 +1,43 @@
+﻿@model ClientLifeEventsViewModel 
+@{
+    if (Model.LegalFactor == null){ Model.LegalFactor = new ClientLegalViewModel(); }
+}
+
+@Html.HiddenFor(model => model.LegalFactor.LegalEventID)
+@Html.HiddenFor(model => model.LifeEventTypeID)
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.LegalFactor.Charge)
+</div>
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.LegalFactor.ChargeNumber)
+</div>
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.LegalFactor.ChargeType)
+</div>
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.LegalFactor.DateOffence, null, false, "DateOnly")
+</div>
+
+<div class="row">
+    @Html.HifisDisplayFor(model => model.LegalFactor.DateCharge, null, false, "DateOnly")
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.LegalFactor.PardonedYN, new { @class = "autowidth" })
+    @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.LegalFactor.PardonedYN)
+</div>
+
+<div class="row">
+    @Html.HifisLabelFor(model => model.LegalFactor.ConvictedYN, new { @class = "autowidth" })
+    @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.LegalFactor.ConvictedYN)
+</div>
+
+<div class="row" style="word-wrap:break-word;">
+    @Html.HifisDisplayFor(model => model.LegalFactor.Comments)
+</div>
+ 
+

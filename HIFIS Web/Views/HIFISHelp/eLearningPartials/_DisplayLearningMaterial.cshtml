@@ -1,0 +1,167 @@
+﻿@model ELearningMaterialModel
+@{
+	string lang = ViewBag.CurrentCulture;
+	string english = Constants.Eng;    
+}           
+@switch (Model.ContentTypeID)
+{
+    case (short)HIFISHelp_HelpContentTypes.HowToRichText:
+		<span class="@Model.StyleString">
+			@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))								
+		</span> 						
+        break;
+    case (short)HIFISHelp_HelpContentTypes.Image:
+		<span>
+			@{
+                string image = "";
+                image = Url.Action("GetMateralImage", "HIFISHelp", new { id = (lang == english ? Model.ImageEnglish.HelpImageID : Model.ImageFrench.HelpImageID) }); 
+			}
+			<img class="mrgn-bttm-md img-responsive @Model.StyleString" alt="@(lang == english ? Model.ImageEnglish.DescriptionE : Model.ImageEnglish.DescriptionF)"  src="@image" title="@(lang == english ? Model.ImageEnglish.NameE : Model.ImageEnglish.NameF)" />			
+		</span> 
+        break;
+    case (short)HIFISHelp_HelpContentTypes.HelpfulHint:
+		<div class="row">
+            <div class="col-sm-12">
+				<div class="alert help-panel-border help-hint pddng-tp-sm" style="padding-bottom:0px;">
+					<div class="mrgn-bttm-sm">
+						<h3 class="panel-title">@Labels.HifisHelp_HelpfulHint @(lang == english ? Model.ContentTitleE : Model.ContentTitleF)</h3>
+					</div>
+					<div>
+						@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+					</div>
+				</div>
+			</div>
+        </div>				
+        break;
+    case (short)HIFISHelp_HelpContentTypes.Simulation:
+	<div class="row">
+        <div class="col-sm-12">
+			<div class="alert help-panel-border help-sim pddng-tp-sm" style="padding-bottom:0px;">
+				<div class="mrgn-bttm-sm">
+					<h3 class="panel-title">@Labels.HifisHelp_Simulation</h3>
+				</div>
+				<div>
+					@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+				</div>
+			</div>
+		</div>
+	</div>				
+        break;
+    case (short)HIFISHelp_HelpContentTypes.KeyPoint:
+	<div class="row">
+        <div class="col-sm-12">
+			<div class="alert help-panel-border help-key pddng-tp-sm" style="padding-bottom:0px;">
+				<div class="mrgn-bttm-sm">
+					<h3 class="panel-title">@Labels.HifisHelp_KeyPoint @(lang == english ? Model.ContentTitleE : Model.ContentTitleF)</h3>
+				</div>
+				<div>
+					@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))	
+				</div>
+			</div>
+		</div>
+	</div>				
+        break;
+    case (short)HIFISHelp_HelpContentTypes.ChallengeYourself:
+	<div class="row">
+        <div class="col-sm-12">
+			<div class="alert help-panel-border help-chal pddng-tp-sm" style="padding-bottom:0px;">
+				<div class="mrgn-bttm-sm">
+					<h3 class="panel-title">@Labels.HifisHelp_ChallengeYourself</h3>
+				</div>
+				<div>
+					@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+				</div>
+			</div>
+		</div>
+	</div>				
+        break;
+    case (short)HIFISHelp_HelpContentTypes.StepByStep:
+	<div class="row">
+        <div class="col-sm-12">
+			<div class="alert help-panel-border help-step pddng-tp-sm" style="padding-bottom:0px;">
+				<div class="mrgn-bttm-sm">
+					<h3 class="panel-title">@Labels.HifisHelp_StepByStep</h3>
+				</div>
+				<div>
+					@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))
+				</div>
+			</div>
+		</div>
+	</div>				
+        break;
+    case (short)HIFISHelp_HelpContentTypes.Demonstration:
+	<div class="row">
+        <div class="col-sm-12">
+			<div class="alert help-panel-border help-demo pddng-tp-sm" style="padding-bottom:0px;">
+				<div class="mrgn-bttm-sm">
+					<h3 class="panel-title">@Labels.HifisHelp_Demonstration</h3>
+				</div>
+				<div>
+					@(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.ContentE)) : Html.Raw(HttpUtility.HtmlDecode(Model.ContentF)))	
+				</div>
+			</div>
+		</div>
+	</div>				
+        break;
+    case (short)HIFISHelp_HelpContentTypes.QuizQuestionMulti:
+	<div class="row">
+        <div class="col-sm-12">
+			<div class="alert  pddng-tp-sm" style="padding-bottom:0px;">        
+				<div class="mrgn-bttm-sm">
+                    <div>
+                        Work in progress!
+                        @(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.QuizQuestion.DescriptionE)) : Html.Raw(HttpUtility.HtmlDecode(Model.QuizQuestion.DescriptionF)))	                 
+                    </div>
+                     
+					<h5 class="panel-title">
+                        @(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.QuizQuestion.QuestionE)) : Html.Raw(HttpUtility.HtmlDecode(Model.QuizQuestion.QuestionF)))	
+					</h5>
+				</div>
+				<div class="mrgn-lft-md">
+                    @if (lang == english)
+                    { 
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceE1, "1", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceE1</label>
+                        <br />
+                                                
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceE2, "2", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceE2</label>
+                        <br />
+                        
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceE3, "3", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceE3</label>
+                        <br />                        
+                        
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceE4, "4", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceE4</label>
+                    }
+                    else
+                    {
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceF1, "1", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceF1</label>
+                        <br />
+                                                
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceF2, "2", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceF2</label>
+                        <br />
+                        
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceF3, "3", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceF3</label>
+                        <br />                        
+                        
+                        @Html.RadioButtonFor(m => m.QuizQuestion.QuestionChoiceF4, "4", new { Name = "id-" + Model.QuizQuestion.QuizQuestionID })
+                        <label>@Model.QuizQuestion.QuestionChoiceF4</label>
+                    }                    
+				</div>
+			</div>
+		</div>
+	</div>				
+                    break;
+    case (short)HIFISHelp_HelpContentTypes.QuizQuestionTF:
+	<div class="row">
+        <div class="col-sm-12">
+			Not implemented!
+		</div>
+	</div>				
+                    break;
+}				 

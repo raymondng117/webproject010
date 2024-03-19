@@ -1,0 +1,171 @@
+﻿@model HIFIS.WEB.ViewModels.PlaceViewModel
+
+<div class=" displayView">
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PlaceName, new { @class = "autowidth" })
+        @Html.DisplayFor(model => model.PlaceName)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.PlaceTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.PlaceTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PlaceTypes, Culture, Model.PlaceTypeID)
+                            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ServicesOfferedIDs, new { @class = "autowidth" })
+        <a class="wb-lbx" title="@Labels.ServicesOffered" href="#servicesOffered">@Labels.HifisHelp_ViewAll</a>
+        <section id="servicesOffered" class="mfp-hide modal-dialog modal-content overlay-def">
+            <header class="modal-header">
+                <h2 class="modal-title">@Labels.ServicesOffered</h2>
+            </header>
+            <div class="modal-body">
+                <ul class="pddng-lft-md">
+                    @if (Model.ServicesOfferedIDs != null && Model.ServicesOfferedIDs.Count != 0)
+                    {
+                        foreach (var type in Model.ServicesOfferedIDs)
+                        {
+                            <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServicesOfferedTypes, Culture, type)</li>
+                        }
+                    }
+                    else
+                    {
+                        @Labels.NoServicesOffered
+                    }
+
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ContactPersonNames, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_DisplayListStrings", Model.ContactPersonNames)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReferrerCategTypeID, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.ReferrerCategTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReferrerCategTypes, Culture, Model.ReferrerCategTypeID)
+                            })
+    </div>
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReferableFromYN, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ReferableFromYN)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ReferableToYN, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ReferableToYN)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Address.GeoIDs, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                            new MultipleItemSelectList
+                            {
+                                IDs = Model.Address.GeoIDs.Select(a => a.ToString()).ToList(),
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture)
+                            })
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Active, new { @class = "autowidth" })
+        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.Active)
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Comments, new { @class = "autowidth" })
+    </div>
+
+    <div>
+        @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+    </div>
+
+    <div>
+        <div class="mrgn-tp-md">
+
+            @if (Model.Address != null)
+            {
+                <h3>@Labels.Address</h3>
+
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>@Labels.Address</th>
+                                <th>@Labels.Building/@Labels.FloorCount</th>
+                                <th>@Labels.PostalCode</th>
+                                <th>@Labels.City</th>
+                                <th>@Labels.InternationalProvince</th>
+                                <th>@Labels.Country</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p>@(Model.Address.Unit == null ? "" : Model.Address.Unit.ToString() + " - ") @Model.Address.AddressLn1</p>
+                                    @if (Model.Address.AddressLn2 != null)
+                                    {
+                                        <p>@Model.Address.AddressLn2</p>
+                                    }
+                                </td>
+                                <td>
+                                    <p>@Model.Address.Building</p>
+                                    <p>@Model.Address.Floor</p>
+                                </td>
+                                <td>
+                                    <p>@Model.Address.PostalCode</p>
+                                </td>
+                                <td>
+                                    @if (Model.Address.CityID != null)
+                                    {
+                                        @Model.Address.City
+
+                                    }
+                                    else if (Model.Address.InternationalCityName != null)
+                                    {
+                                        @Model.Address.InternationalCityName
+                                    }
+                                </td>
+                                <td>
+                                    @if (Model.Address.ProvinceID != null)
+                                    {
+                                        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ProvinceTypes, ViewBag.CurrentCulture, WebHelper.DecryptID(Model.Address.ProvinceID))
+                                    }
+                                    else if (Model.Address.InternationalProvinceName != null)
+                                    {
+                                        @Model.Address.InternationalProvinceName
+                                    }
+                                </td>
+                                <td>
+                                    @if (Model.Address.CountryID != null)
+                                    {
+                                        @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_CountryTypes, ViewBag.CurrentCulture, Model.Address.CountryID)
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div>
+        @if (RightsHelper.HasRight(UserRights.Places_Edit))
+        {
+            @Html.ActionLink(Labels.Edit, "PlaceDetails", new { placeID = Model.PlaceID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+        }
+        @Html.ActionLink(Labels.Cancel, "PlaceList", "Places", new { }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+    </div>
+</div>

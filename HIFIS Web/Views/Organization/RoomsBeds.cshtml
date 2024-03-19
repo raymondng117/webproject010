@@ -1,0 +1,20 @@
+﻿@model SheltersViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_RoomsBeds;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Partial("_RoomsBeds", Model)
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(function () {
+                displayShelters();
+            });
+        </script>);
+}

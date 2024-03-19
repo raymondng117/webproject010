@@ -1,0 +1,96 @@
+﻿@model FollowUpPlacementViewModel
+
+<section id="Modal_FollowUpEdit" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditFollowUp</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editPlacementFollowUpForm" class="form-horizontal">
+            <div>
+                @*@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model.FollowUpHeader)*@
+                
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.FollowUpHeader.HifisRowVersion)
+                @Html.HiddenFor(model => model.FollowUpHeader.LastUpdatedBy)
+                @Html.HiddenFor(model => model.FollowUpHeader.CreatedBy)
+                @Html.HiddenFor(model => model.FollowUpHeader.LastUpdatedDate)
+                @Html.HiddenFor(model => model.FollowUpHeader.CreatedDate)
+
+                @Html.HiddenFor(model => model.FollowUpHeader.FollowUpID)
+                @Html.HiddenFor(model => model.FollowUpHeader.ServiceID)
+                @Html.HiddenFor(model => model.FollowUpHeader.OrganizationID)
+                @Html.HiddenFor(model => model.HousePlacementID)
+                @Html.HiddenFor(model => model.PrimaryClientID)
+                @Html.HiddenFor(model => model.DateMovedIn)
+                @Html.TextBoxFor(model => model.DateMovedIn, "{0:MM/dd/yyyy}", htmlAttributes: new { @id = "formattedDateMovedIn", @type = "hidden" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.FollowUpHeader.DateOfCheck)
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.FollowUpHeader.MonthsElapsed, null, new { @type = "number", @onkeydown = "return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || (event.keyCode == 8)" })
+            </div>
+
+            <div>
+                @Html.HifisTextAreaFor(model => model.FollowUpHeader.Comments, new { @class = "wdth-strct-250 hght-strct-150" })
+            </div>
+            @Html.Partial("~/Views/FollowUps/_PlacementFollowUpDetailsDisplay.cshtml", Model)
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="editPlacementFollowUpSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#editPlacementFollowUpForm").hifisValidation();
+    });
+
+    $("#editPlacementFollowUpSaveBtn").click(function () {
+
+        if ($("#editPlacementFollowUpForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/FollowUps/EditPlacementFollowUp")",
+                type: "POST",
+            data: $('#editPlacementFollowUpForm').serialize()
+
+        }).done(function (data) {
+                
+            defaultNotify(data.Success); //display the default error or success message
+
+            btn.attr("disabled", false); //Enable the button incase there was an error
+
+            if (data.Success) {
+                $("#editPlacementFollowUpCloseBtn").click(); //Close the modal window on success
+                //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                $('#followUpsTable').DataTable().ajax.reload();
+            }
+        });
+    }
+    });
+
+    function ChangeMonthsElapsed() {
+        var movedInDate = new Date($("#formattedDateMovedIn").val().replace(/-/g, "/"));
+        var followUpDate = new Date($("#FollowUpHeader_DateOfCheck").val());
+
+        var monthsElapsed = followUpDate.getUTCMonth() - movedInDate.getUTCMonth() + (12 * (followUpDate.getUTCFullYear() - movedInDate.getUTCFullYear()));
+        $('input[name="FollowUpHeader.MonthsElapsed"]').val(monthsElapsed);
+    }
+
+    $(function () {
+        $('#datePicker1').on('dp.change', ChangeMonthsElapsed);
+    });
+</script>

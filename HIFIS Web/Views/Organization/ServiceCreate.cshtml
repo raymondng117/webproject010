@@ -1,0 +1,110 @@
+﻿@model OrganizationServiceProviderViewModel
+@{
+    ViewBag.ViewTitle = Labels.OrganizationCreateTitle;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("ServiceCreate", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    <fieldset class="color-lightBlue">
+        <legend>@Labels.ServiceProviderCreateTitle</legend>
+
+        @Html.HiddenFor(model => model.ServiceProviderID)
+        @Html.HiddenFor(model => model.OrganizationID)
+        @Html.HiddenFor(model => model.ActiveYN)
+
+        <div>
+            @Html.HifisEditorFor(model => model.NameE)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.NameF)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ServiceProviderTypeID, Utilities.CreateSelectListWithBlankOption(ViewBag.ServiceProviderList, Model.ServiceProviderTypeID) as SelectList)
+        </div>
+
+        <div>
+            Rooms:
+            <input type="text" value="7" />
+        </div>
+
+        <div>
+            Beds:
+            <input type="text" value="23" />
+        </div>
+
+        <div>
+            Overflow:
+            <input type="text" value="4" />
+        </div>
+
+        <div>
+            Target Clientele:
+            @Html.DropDownListFor(model => model.CityID, Utilities.CreateSelectListWithBlankOption(ViewBag.TargetClienteleList, Model.CityID) as SelectList)
+        </div>
+
+        <div>
+            Genders Served:
+            <input type="checkbox" /> Males<br />
+            <input type="checkbox" /> Females<br />
+            <input type="checkbox" /> Other<br />
+        </div>
+
+        <div>
+            Other Attributes:
+            <input type="checkbox" /> Has Emergency Beds<br />
+            <input type="checkbox" /> Has Traditional Beds<br />
+            <input type="checkbox" /> Serves Families<br />
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.AddressLn1)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.AddressLn2)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(m => m.CountryID, CachedTableTypes.HIFIS_CountryTypes);
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ProvinceID, CachedTableTypes.HIFIS_ProvinceTypes)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.CityID, CachedTableTypes.HIFIS_CityTypes)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.PostalCode)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Phone1)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Fax)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.Email)
+        </div>
+
+    </fieldset>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <input id="btnSaveOrganization" type="submit" value="@Labels.Save" class="mrgn-xs" />
+            @Html.ActionLink(Labels.Cancel, "Index", "Organization", new { }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+}

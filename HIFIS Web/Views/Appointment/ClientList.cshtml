@@ -1,0 +1,148 @@
+﻿@model AppointmentListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_AppointmentList;
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.Appointments)
+
+
+<div id="CalendarView">@* The calender replaces this area *@</div>
+
+<div id="StandardView">
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.AppointmentType</th>
+                    <th>@Labels.Location</th>
+                    <th>@Labels.Description</th>
+                    <th>@Labels.StartDate</th>
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.With</th>
+                    <th>@Labels.FollowedThrough</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (AppointmentViewModel item in Model.Appointments)
+                {
+                    <tr>
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_AppointmentTypes, Culture, item.AppointmentTypeID)</td>
+                        <td>@item.PlaceName</td>
+                        <td>@item.Description</td>
+                        <td>@DateHelper.DateTimeFormaterENFR(item.StartDateTime, Labels.CurrentCulture)</td>
+                        <td>@(item.EndDateTime != null ? DateHelper.DateTimeFormaterENFR(item.EndDateTime.Value, Labels.CurrentCulture) : Labels.EmptyDateTime_DoubleDash)</td>
+                        <td>@((string.IsNullOrEmpty(item.PersonName) || item.PersonName.Trim().Equals(",")) ? "" : item.PersonName)</td>
+                        <td class="text-center">
+                            @if (item.FollowedThroughYN)
+                            { 
+                                <span class="glyphicon glyphicon-ok align-text-center align-inline-block" title="@Labels.FollowedThrough">&nbsp;</span>
+                            }  
+                        </td>
+                        <td class="nowrap">
+                            @if (RightsHelper.HasRight(UserRights.Appointments_Display, item.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Display, "Display", "Appointment", new { id = Model.ReadOnlyVitals.ClientID, appointmentID = item.AppointmentID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label=Labels.Display, @role="button"  })
+                            }
+                            @if ((RightsHelper.HasRight(UserRights.Appointments_Edit, item.OrganizationID)))
+                            {
+                                @Html.ActionLink(Labels.Edit, "Edit", "Appointment", new { id = Model.ReadOnlyVitals.ClientID, appointmentID = item.AppointmentID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role="button"  })
+                            }
+                            @if (RightsHelper.HasRight(UserRights.Appointments_Delete, item.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Delete, "Delete", "Appointment", new { id = Model.ReadOnlyVitals.ClientID, appointmentID = item.AppointmentID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label=Labels.Delete, @role="button"  })                               
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="clearfix"></div>
+</div>
+<div class="mrgn-tp-md">
+    @if (RightsHelper.HasRight(UserRights.Appointments_Add))
+    {
+        @Html.ActionLink(Labels.NewAppointment, "New", new { id = Model.ClientID }, new { @class = "addButton", alt=Labels.NewAppointment, aria_label = Labels.NewAppointment })
+    }
+</div>
+
+<a id="emptyNewAppLink" target="_blank" class="newAppLink addButton noText align-left hide" role="button" href="@Url.Content("~/Appointment/New/" + Model.ClientID + "?startDate=")">@Labels.NewAppointment</a>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            var calendarView;
+            var emptyNewAppLink;
+
+            function editEvent(app) {
+                var updateURL = '@Url.Content("~/Appointment/AjaxUpdateAppointmentDate/")' + app.id + '?dateTimeStart=' + app.start.toLocaleString() + '&dateTimeEnd=' + app.end.toLocaleString();
+                $.post(updateURL);
+            }
+
+            function attachNewLink(date, cell) {
+                var newLink = emptyNewAppLink.clone().attr('id', '');
+                newLink.attr('href', newLink.attr('href') + date.toLocaleDateString());
+
+                $(cell)
+                    .prepend(newLink)
+                    .mouseenter(function () { $(this).find('.newAppLink').show(); })
+                    .mouseleave(function () { $(this).find('.newAppLink').hide(); });
+            }
+
+            function formatAppointmentInfoAsTable(app) {
+                return '<table>' +
+                            '<tr>' +
+                                '<th>@Labels.Location</th>' +
+                                '<td>' + app.location + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<th>@Labels.With</th>' +
+                                '<td>' + app.personWith + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<th>@Labels.Description</th>' +
+                                '<td>' + app.description + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<th>@Labels.Comments</th>' +
+                                '<td>' + app.comments + '</td>' +
+                            '</tr>' +
+                       '</table></div>'
+            }
+
+            function allowDisplayAppointmentInfo() {
+                $(this).tooltip('enable');
+            }
+
+            //So that the tooltip doesn't show up while dragging
+            function disallowDisplayAppointmentInfo() {
+                $(this).tooltip('disable');
+            }
+
+            
+            function ToggleViews() {
+                if (calendarView.is(":visible")) {
+                    calendarView.hide();
+                    $('#StandardView').show();
+                    $('#ToggleViews').button('option', 'label', '@Labels.CalendarView');
+                    $('#CalendarMsg').hide();
+                }
+                else {
+                    calendarView.show();
+                    $('#StandardView').hide();
+                    $('#ToggleViews').button('option', 'label', '@Labels.StandardView');
+                    $('#CalendarMsg').show();
+                }
+            }
+  
+        </script>
+    );
+}

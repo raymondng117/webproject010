@@ -1,0 +1,596 @@
+﻿@model ClientVitalsViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayVitals;
+
+    var fullName = Html.DisplayTextFor(model => model.FirstName).ToString() + " ";
+    fullName += string.IsNullOrWhiteSpace(Html.DisplayTextFor(model => model.MiddleName).ToString()) ? "" : Html.DisplayTextFor(model => model.MiddleName) + " ";
+    fullName += Html.DisplayTextFor(model => model.LastName);
+}
+
+
+
+<ul class="nav nav-tabs" role="tablist">
+    @if (RightsHelper.HasRight(UserRights.Client_Vitals))
+    {
+	<li class="active">
+        <a class="tabButton" href="#Vitals" role="tab" data-toggle="tab">@Labels.Vitals</a>
+	</li>
+    }
+    @if(RightsHelper.HasRight(UserRights.Client_ContactInfo_List))
+    {
+    <li>
+        <a class="tabButton" href="#ContactInfo" role="tab" data-toggle="tab">@Labels.ContactInfo</a>
+    </li>
+    }
+    @if(RightsHelper.HasRight(UserRights.Client_Appearance))
+    {
+    <li>
+        <a class="tabButton" href="#PhysicalAppearance" role="tab" data-toggle="tab">@Labels.ClientTombstonePhysicalAppearance</a>
+    </li>
+    }
+    @if(RightsHelper.HasRight(UserRights.Client_Language_List))
+    {
+    <li>
+        <a class="tabButton" href="#Languages" role="tab" data-toggle="tab">@Labels.Languages</a>
+    </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.Client_Comments_List))
+    {
+    <li>
+        <a class="tabButton" href="#Comments" role="tab" data-toggle="tab">@Labels.Comments</a>
+    </li>
+    }
+    
+    @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+    {
+        <li>
+		    <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+            </a>
+	    </li>
+    }
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+
+            <!-- Tab Pane #1: Vitals -->
+            <div class="tab-pane active" id="Vitals" style="padding: 10px;">
+                <div class="form-horizontal row">
+
+                    <div class="displayView col-sm-offset-1 col-sm-11">
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ConsentTypeID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                @if (Model.ConsentTypeID != null)
+                                {
+                                    <input type="text" class="inputTextOnly" id="ConsentTypeID" name="ConsentTypeID"
+                                           value="@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ConsentTypes, Culture, Model.ConsentTypeID)" readonly />
+                                }
+                                else
+                                {
+                                    <input type="text" class="inputTextOnly" id="ConsentTypeID" name="ConsentTypeID"
+                                           value="@Labels.NoConsent" readonly />
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(Labels.FullName.Replace(" ", "_"), Labels.FullName, new { @class = "col-sm-4", id = "fullNameLabel" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="@Labels.FullName.Replace(" ", "_")" name="@Labels.FullName.Replace(" ", "_")"
+                                       value="@fullName" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.GenderID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="GenderID" name="GenderID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                    new SingleItemSelectList
+                                                    {
+                                                        ID = Model.GenderID,
+                                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, ViewBag.CurrentCulture, Model.GenderID)
+                                                    })" readonly />
+                            </div>
+                        </div>
+
+                        @if (Model.Aka1 == null && Model.Aka2 == null)
+                        {
+                            <div class="row">
+                                @Html.HifisLabelFor(Labels.Aka, Labels.Aka, new { id = "akaLabel", @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="@Labels.Aka" name="@Labels.Aka"
+                                           value="" readonly />
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.Aka1, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="Aka1" name="Aka1"
+                                           value="@Html.DisplayFor(model => model.Aka1)" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.Aka2, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="Aka2" name="Aka2"
+                                           value="@Html.DisplayFor(model => model.Aka2)" readonly />
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Date of Birth/Age fields -->
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.FileNumber, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="FileNumber" name="FileNumber"
+                                       value="@Html.DisplayFor(model => model.FileNumber)" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.DOB, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="DOB" name="DOB"
+                                       value="@Html.DisplayFor(model => model.DOB)" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.DOBDateFirmYNbool, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="DOBDateFirmYNbool" name="DOBDateFirmYNbool"
+                                       value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.DOBDateFirmYNbool).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @* Error in property name cause issue with label for screen reader (model.AproximativeAge) *@
+                            @Html.HifisLabelFor(Labels.ApproximateAge.Replace(" ", "_"), Labels.ApproximateAge, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="@Labels.ApproximateAge.Replace(" ", "_")" name="@Labels.ApproximateAge.Replace(" ", "_")"
+                                       value="@Html.DisplayFor(model => model.AproximativeAge)" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.InfoVerifiedYN, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="InfoVerifiedYN" name="InfoVerifiedYN"
+                                       value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.InfoVerifiedYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+                            </div>
+                        </div>
+
+
+                        <!-- Country Of Birth -->
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.CountryOfBirth, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="CountryOfBirth" name="CountryOfBirth"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.CountryOfBirth,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CountryTypes, ViewBag.CurrentCulture, Model.CountryOfBirth)
+                                            })" readonly />
+                            </div>
+                        </div>
+
+                        @*@if (Model.CountryOfBirth == (short)CountryTypes.Canada)*@
+                        @if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_CountryTypes, Model.CountryOfBirth) == (short)CountryTypes.Canada)
+                        {
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.ProvinceOfBirth, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="ProvinceOfBirth" name="ProvinceOfBirth"
+                                           value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                new SingleItemSelectList
+                                                {
+                                                    ID = Model.ProvinceOfBirth,
+                                                    List = ViewBag.Provinces as SelectList
+                                                })" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.CityOfBirth, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="CityOfBirth" name="CityOfBirth"
+                                           value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                new SingleItemSelectList
+                                                {
+                                                    ID = Model.CityOfBirth,
+                                                    List = ViewBag.Cities as SelectList
+                                                })" readonly />
+                                </div>
+                            </div>
+                        }
+                        //else if (Model.CountryOfBirth == (short)CountryTypes.UnitedStates)
+                        else if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_CountryTypes, Model.CountryOfBirth) == (short)CountryTypes.UnitedStates)
+                        {
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.StateOfBirth, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="@Labels.StateOfBirth" name="@Labels.StateOfBirth"
+                                           value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                new SingleItemSelectList
+                                                {
+                                                    ID = Model.StateOfBirth,
+                                                    List = ViewBag.Provinces as SelectList
+                                                })" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.USACityFreeText, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="@Labels.USACityFreeText" name="@Labels.USACityFreeText"
+                                           value="@Html.DisplayFor(model => model.USACityFreeText)" readonly />
+                                </div>
+                            </div>
+                        }
+
+
+                        <!-- Secondary info -->
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.DisabilityYN, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="DisabilityYN" name="DisabilityYN"
+                                       value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.DisabilityYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.MedicAlertYN, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="MedicAlertYN" name="MedicAlertYN"
+                                       value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.MedicAlertYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.VeteranStateID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="VeteranStateID" name="VeteranStateID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.VeteranStateID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_VeteranStatesTypes, ViewBag.CurrentCulture, Model.VeteranStateID)
+                                            })" readonly />
+                                @if (Model.VeteranStateID == (short)1)
+                                {
+                                    <a class="mrgn-lft-sm" href="http://www.veterans.gc.ca" rel="nofollow" target="_blank">www.veterans.gc.ca</a>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.CitizenshipTypeID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="CitizenshipTypeID" name="CitizenshipTypeID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                            ID = Model.CitizenshipTypeID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CitizenshipTypes, ViewBag.CurrentCulture, Model.CitizenshipTypeID)
+                                            })" readonly style="width: 100%;" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.AboriginalIndicatorID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="AboriginalIndicatorID" name="AboriginalIndicatorID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                            ID = Model.AboriginalIndicatorID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, ViewBag.CurrentCulture, Model.AboriginalIndicatorID)
+                                            })" readonly />
+                            </div>
+                        </div>
+                        <!-- Client racial identity-->
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.SelectedRacialIdentities, new { @class = "col-sm-4 " })
+                            <div class="col-sm-8">
+
+                                @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                    new MultipleItemSelectList
+                                    {
+                                        IDs = Model.SelectedRacialIdentities.Select(l => l.ToString()).ToList(),
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientRacialIdentityTypes, Culture, Model.SelectedRacialIdentities.Select(l => l.ToString()).ToList())
+                                    })
+                            </div>
+                        </div>
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.GeoRegionTypeID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="GeoRegionTypeID" name="GeoRegionTypeID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                            ID = Model.GeoRegionTypeID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, ViewBag.CurrentCulture, Model.GeoRegionTypeID)
+                                            })" readonly />
+                            </div>
+                        </div>
+
+
+                        <!-- Client state and visibility -->
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ClientStateTypeID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="ClientStateTypeID" name="ClientStateTypeID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                            ID = Model.ClientStateTypeID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientStateTypes, ViewBag.CurrentCulture, Model.ClientStateTypeID)
+                                            })" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.IsStealth, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="IsStealth" name="IsStealth"
+                                       value="@if (Model.IsStealth)
+                                            {
+                                                @Labels.Hidden
+                                            }
+                                            else
+                                            {
+                                                @Labels.Visible
+                                            }" readonly />
+                            </div>
+                        </div>
+
+
+
+                        @* We only use the following if the lookup table is editable *@
+                        @*@if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ClientStateTypes, Model.ClientStateTypeID) == (short)ClientStateTypes.Deceased)*@
+                        @if (Model.ClientStateTypeID == (short)ClientStateTypes.Deceased)
+                        {
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.CauseOfDeathTypeID, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="CauseOfDeathTypeID" name="CauseOfDeathTypeID"
+                                           value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                new SingleItemSelectList
+                                                {
+                                                    ID = Model.CauseOfDeathTypeID,
+                                                    List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CauseOfDeathTypes, ViewBag.CurrentCulture, Model.CauseOfDeathTypeID)
+
+                                                })" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.DODApproxYN, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="DODApproxYN" name="DODApproxYN"
+                                           value="@Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.DODApproxYN).ToString().Replace(" ", "").Replace(System.Environment.NewLine, "")" readonly />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.DOD, new { @class = "col-sm-4" })
+                                <div class="col-sm-8">
+                                    <input type="text" class="inputTextOnly" id="DOD" name="DOD"
+                                           value="@Html.DisplayFor(model => model.DOD)" readonly />
+                                </div>
+                            </div><br />
+                        }
+
+                        <!-- Client housing status-->
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ClientHousingStatusTypeID, new { @class = "col-sm-4" })
+                            <div class="col-sm-8">
+                                <input type="text" class="inputTextOnly" id="ClientHousingStatusTypeID" name="ClientHousingStatusTypeID"
+                                       value="@Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.ClientHousingStatusTypeID,
+                                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientHousingStatusTypes, ViewBag.CurrentCulture, Model.ClientHousingStatusTypeID)
+                                            })" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-12"> 
+                                <div class="btn-group">
+                                    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "UpdateVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "editButton mrgn-rght-sm", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button"  })
+                                    }
+                                    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+                                    {
+                                        @Html.ActionLink(Labels.DisplayVitalsHistory, "ClientVitalsHistoryList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "displayButton mrgn-rght-sm", alt=Labels.DisplayVitalsHistory, aria_label = Labels.DisplayVitalsHistory, @role = "button"  })
+                                    }
+                                    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+                                    {
+                                        @Html.ActionLink(Labels.DisplayClientStateHistory, "ClientStateHistoryList", "ClientTombstone", new { id = Model.ClientID }, new { @class = "displayButton", alt=Labels.DisplayClientStateHistory, aria_label = Labels.DisplayClientStateHistory, @role = "button"  })
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-sm-offset-1 col-sm-11 mrgn-tp-lg">
+                    @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+                </div>
+
+            </div>
+
+           
+            <!-- Tab Pane #2: Contact Info -->
+            @if (RightsHelper.HasRight(UserRights.Client_ContactInfo_List))
+            {
+            <div class="tab-pane" id="ContactInfo" style="padding: 10px;">
+                <div class="form-horizontal">
+                    @Html.Partial("_ContactsList", Model)
+                    @if (RightsHelper.HasRight(UserRights.Client_ContactInfo_Add))
+                    {
+                        <a href="@Url.Content("~/ClientTombstone/GetNewContactForm?id=" + Model.ClientID + "&personID=" + Model.ReadOnlyVitals.PersonID)" aria-controls="Modal_NewContact" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewContactInfo</a>
+                    }  
+                </div>
+              </div>
+            }
+
+            <!-- Tab Pane #3: Physical Appearance -->
+            @if(RightsHelper.HasRight(UserRights.Client_Appearance))
+            {
+            <div class="tab-pane" id="PhysicalAppearance" style="padding: 10px;">
+                <div class="form-horizontal">
+                    @if(RightsHelper.HasRight(UserRights.Client_Appearance)){
+                        @Html.Partial("_DisplayAppearance", Model)
+                    }
+                </div>
+
+            </div>
+            }
+            
+            <!-- Tab Pane #4: Languages -->
+            @if (RightsHelper.HasRight(UserRights.Client_Language_List))
+            {
+                <div class="tab-pane" id="Languages" style="padding: 10px;">
+                    <div class="form-horizontal">
+                        @Html.Partial("_LanguagesList", Model)
+
+                        @if (RightsHelper.HasRight(UserRights.Client_Language_Add))
+                        {
+                            <a href="@Url.Content("~/ClientTombstone/GetNewLanguageForm?id=" + Model.ClientID)" aria-controls="Modal_NewLanguage" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewLanguage</a>
+                        }                    
+                    </div>
+                </div>
+            }
+            
+            <!-- Tab Pane #5: Comments -->
+
+            <div class="tab-pane" id="Comments" style="padding: 10px;">
+                @if (RightsHelper.HasRight(UserRights.Client_Comments_List))
+                {
+
+                    <table id="commentsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                                    { "width": "15%", "data": "date"},
+                                                                                                    { "width": "25%", "data": "author"},
+                                                                                                    { "width": "55%", "data": "subject"},
+                                                                                                    { "width": "1.5%", "data": "replies"},
+                                                                                                    { "width": "1.5%", "data": "review"}
+                                                                                                ],
+                                                                                                "order": [ [0, "desc"] ],
+                                                                                                "ajax": "@Url.Content("~/ClientTombstone/CommentListJson?id=" + Model.ClientID)"                         
+                                                                                            }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.DateCreated</th>
+                                <th class="align-text-center">@Labels.Author</th>
+                                <th class="align-text-center">@Labels.Subject</th>
+                                <th class="align-text-center">@Labels.Replies</th>
+                                <th class="align-text-center">@Labels.Review</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-sm-12">
+			                <div class="alert exception-panel">
+				                <div class="mrgn-bttm-sm align-center">                                   
+					                <h3 class="panel-title">@Labels.UserRightsException</h3>
+				                </div>
+				                <div>
+					                <p>@Labels.RightsCommentsWarning</p>
+				                </div>
+			                </div>
+		                </div>
+	                </div>                   
+                }
+
+                @if (RightsHelper.HasRight(UserRights.Client_Comments_Add))
+                {
+                    <a href="@Url.Content("~/ClientTombstone/NewClientVitalsComment?id=" + Model.ClientID)" aria-controls="Modal_NewComment" class="wb-lbx lbx-modal addButton" role="button">@Labels.NewComment</a>
+                }
+            </div>
+            
+            <!-- Custom Tables -->
+                @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+                {
+                    <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                        @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                    </div>
+                }
+            </div>
+    </div>
+</div>
+
+<style>
+    td {
+        text-align: left;
+    }
+    #commentsTable {
+        table-layout: fixed;
+    }
+</style>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(document).on('draw.dt', function () {
+                init_hifis();
+            });
+
+             function OnTheFlyCallBack(objectID, formData) {
+                 var table = $('#commentsTable');
+                 table.DataTable().ajax.reload();
+             }
+
+             $(function () {
+
+                 $("#commentsTable tbody").on("click", "td.align-text-center", function (e) {
+                     var nextTR = $(this).parent("tr").next();
+                     
+                     if (nextTR.children("td").children(".parent").length < 1) {
+                         var nextRow = nextTR.nextUntil().find(".parent").first().parent("td").parent("tr");
+                         var rowList = nextTR.nextUntil(nextRow).add(nextTR);
+
+                         if (rowList.length > 1)
+                             rowList.stop(true, true).slideToggle("swing");
+                     }
+
+                     console.log(nextTR, nextRow, nextRow.prev());
+                     e.preventDefault();
+                 });                                 
+             });
+
+            @if (TempData["postAdd"] != null)
+             {
+                 <text>
+                     displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                 </text>
+             }
+        </script>
+    );
+}
+
+

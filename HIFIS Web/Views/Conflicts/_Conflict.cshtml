@@ -1,0 +1,128 @@
+﻿@model ConflictViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model) 
+
+@Html.HiddenFor(model => model.FirstClientID)
+@Html.HiddenFor(model => model.FirstPersonName)
+@Html.HiddenFor(model => model.ConflictID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+
+<div>
+    @Html.HifisListBoxFor(model => model.ConflictTypeIDs, CachedTableTypes.HIFIS_ConflictTypes)
+</div>
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.FirstIsVictimYN, new { @class = "col-sm-3 control-label" })
+		<div class="col-sm-9">
+            <p class="form-control-static">
+                @{   
+                    object first = new { @class = "YesAndNo", data_on_text = Labels.Victim, data_off_text = Labels.Aggressor, data_on_color = "info", data_off_color = "danger", id = "firstvictim" };
+                }
+                @Html.CheckBoxFor(m => m.FirstIsVictimYN, first)
+            </p>
+		</div>
+	</div>
+</div>
+
+<div>
+    @Html.HifisAutocompleteFor(
+        m => m.SecondPersonID
+        , Url.Content("~/PeopleTombstone/AjaxGetPList")
+        , Model.SecondPersonName
+        , new AutocompleteViewModelOptions()
+        {
+            Placeholder = Labels.Counterpart
+            , HiddenValue = true
+            , SelectClientFieldType = SelectClientFieldTypes.PersonID
+        })
+</div>
+
+<div>
+    <div class="form-group">
+		@Html.HifisLabelFor(model => model.SecondIsVictimYN, new { @class = "col-sm-3 control-label" })
+		<div class="col-sm-9">
+            <p class="form-control-static">
+                @{   
+                    object second = new { @class = "YesAndNo", data_on_text = Labels.Victim, data_off_text = Labels.Aggressor, data_on_color = "info", data_off_color = "danger", id = "secondvictim" };
+                }
+                @Html.CheckBoxFor(m => m.SecondIsVictimYN, second)
+            </p>
+		</div>
+	</div>
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.IntensityTypeID, CachedTableTypes.HIFIS_IntensityTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)    
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ProbabilityTypeID, CachedTableTypes.HIFIS_ProbabilityTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.RelationshipTypeID, CachedTableTypes.HIFIS_RelationshipTypes)
+</div>
+
+
+
+<div>
+    @Html.HifisListBoxFor(model => model.LocationTypeIDs, CachedTableTypes.HIFIS_LocationTypes)
+</div> 
+
+@if (Model.isGeoRegionEnforced)
+{
+<div>
+    @Html.HifisListBoxFor(model => model.ReferredByIDs, ViewBag.fromPlaces as SelectList, new { id = "ddFrom" }, false, true, true, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+</div>
+<div>
+    @Html.HifisListBoxFor(model => model.ReferredToIDs, ViewBag.toPlaces as SelectList, new { id = "ddTo" }, false, true, true, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+</div>
+}
+else
+{
+<div>
+    @Html.HifisListBoxFor(model => model.ReferredByIDs, ViewBag.fromPlaces as SelectList, new { id = "ddFrom" })
+</div>
+<div>
+    @Html.HifisListBoxFor(model => model.ReferredToIDs, ViewBag.toPlaces as SelectList, new { id = "ddTo" })
+</div>
+} 
+
+<div>
+    @Html.Partial("Plugins/_TinyMCEScript")
+    @Html.HifisTextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+</div> 
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+         $(function () {
+             $('input[name="FirstIsVictimYN"]').on('switchChange.bootstrapSwitch', function (event, state) {
+                 var secondstate = $('#secondvictim').bootstrapSwitch('state');
+                 if (state && secondstate) {
+                     $('input[name="SecondIsVictimYN"]').click();
+                 }
+             });
+
+             $('input[name="SecondIsVictimYN"]').on('switchChange.bootstrapSwitch', function (event, state) {
+                 var firststate = $('#firstvictim').bootstrapSwitch('state');
+                 if (state && firststate) {
+                     $('input[name="FirstIsVictimYN"]').click();
+                 }
+             });
+         });
+    </script>
+    );
+}

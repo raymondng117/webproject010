@@ -1,0 +1,388 @@
+﻿@model HIFIS.WEB.ViewModels.PitQuestionViewModel
+@using Newtonsoft.Json;
+
+@{
+    PitSurveyViewModel survey = (PitSurveyViewModel)Session["PageSurveyID_" + Model.QuestionAnswer.PitSurveyID];
+}
+
+@Html.HiddenFor(m => Model.ParentOfQuestionID)
+@Html.HiddenFor(m => Model.QuestionGUID)
+@Html.HiddenFor(m => Model.QuestionTypeID)
+@Html.HiddenFor(m => Model.QuestionCategoryTypeID)
+@Html.HiddenFor(m => Model.QuestionID)
+@Html.HiddenFor(m => Model.QuestionNo)
+@Html.HiddenFor(m => Model.Question)
+@Html.HiddenFor(m => Model.QuestionF)
+@Html.HiddenFor(m => Model.SequenceLabel)
+@Html.HiddenFor(m => Model.SequenceNo)
+@Html.HiddenFor(m => Model.QuestionAnswer.PitQuestionAnswerID)
+@Html.HiddenFor(m => Model.QuestionAnswer.QuestionCategoryTypeID)
+@Html.HiddenFor(m => Model.QuestionAnswer.QuestionID)
+@Html.HiddenFor(m => Model.QuestionAnswer.PitSurveyID)
+
+<input type="hidden" value="@Model.QuestionID" name="model.QuestionAnswer.QuestionID" />
+@*<h2>@Model.QuestionGUID</h2>*@
+
+@{
+
+    var htmlAttributes = new Dictionary<string, object>
+{
+        {"guid", Model.QuestionGUID},
+        {"id", "SurveyQuestion_" + Model.QuestionID},
+        {"ansid", Model.QuestionAnswer.PitQuestionAnswerID},
+        {"questiontype", Model.QuestionTypeID},
+        {"questioncateg", Model.QuestionCategoryTypeID},
+        {"initiallyenabled", Model.InitiallyEnabledYN},
+        {"affectedquestionsids", Json.Encode(Model.AffectedQuestionsIDs)},
+        {"questionaction", Model.QuestionActionTypeID},
+        {"class", "form-control"},
+    };
+
+    if (!Model.InitiallyEnabledYN)
+    {
+        htmlAttributes.Add("disabled", "disabled");
+    }
+
+    // All numeric questions must have a minimum value of zero
+    if (new[] { PitQuestionTypes.Numeric,
+                PitQuestionTypes.NoOfDays,
+                PitQuestionTypes.NoOfYears }.Contains((PitQuestionTypes)Model.QuestionTypeID))
+    {
+        htmlAttributes.Add("min", "0");
+    }
+    //default max age
+    int defaultAgeMax = 120;
+    // Behaviours for specific questions
+
+    // Max age value is defaulted 120!! for q2
+    if (Model.QuestionGUID.Equals(new Guid("47b141a7-c709-4ff0-8fd6-eacd8417be8a")))
+    {
+        htmlAttributes["min"] = survey != null ? survey.PitQuestionnaire.MinSurveyAge : 0;
+        htmlAttributes.Add("max", "120");
+    }
+
+    // Max age value for first time homeless is current age value
+    if (Model.QuestionGUID.Equals(new Guid("35deda28-72ff-4f95-a290-678bde00f7e4")))
+    {
+        if (ViewBag.AgeValueMax == null)
+        {
+            htmlAttributes["max"] = ViewBag.NumericValueMax;
+        }
+        else
+        {
+            htmlAttributes["max"] = ViewBag.AgeValueMax;
+        }
+    }
+    // Max age value for q6
+    if (Model.QuestionGUID.Equals(new Guid("2aaa0491-d9c4-4fbc-83d0-f1090ad7cbc9")))
+    {
+        if (ViewBag.AgeValueMax == null)
+        {
+            htmlAttributes["max"] = defaultAgeMax * 366;
+        }
+        else
+        {
+            htmlAttributes["max"] = ViewBag.AgeValueMax * 366;
+        }
+    }
+    //Max age value for q7
+    if (Model.QuestionGUID.Equals(new Guid("5ad090b9-86ad-4906-8876-813d65a2cc1a")))
+    {
+        if (ViewBag.AgeValueMax == null)
+        {
+            htmlAttributes["max"] = defaultAgeMax * 366;
+        }
+        else
+        {
+            htmlAttributes["max"] = ViewBag.AgeValueMax * 366;
+        }
+    }
+    //Max age value for q10
+    if (Model.QuestionGUID.Equals(new Guid("6d4e5a2d-e162-4822-9b86-6305be37118d")))
+    {
+        if (ViewBag.AgeValueMax == null)
+        {
+            htmlAttributes["max"] = defaultAgeMax * 366;
+        }
+        else
+        {
+            htmlAttributes["max"] = ViewBag.AgeValueMax * 366;
+        }
+    }
+
+    //Max age value for q14
+    if (Model.QuestionGUID.Equals(new Guid("c313d7eb-e575-43e0-86cf-ab07511cd552")))
+    {
+        if (ViewBag.AgeValueMax == null)
+        {
+            htmlAttributes["max"] = defaultAgeMax * 366;
+        }
+        else
+        {
+            htmlAttributes["max"] = ViewBag.AgeValueMax * 366;
+        }
+    }
+
+
+    //// limit to age value in days
+    //if (model.questionguid.equals(new guid("5ad090b9-86ad-4906-8876-813d65a2cc1a")))
+    //{
+    //    if (viewbag.agevaluemax != null)
+    //    {
+    //        htmlattributes["max"] = 366*(int)viewbag.numericvaluemax;
+    //    }
+    //}
+
+    //// Limit to age value in days
+    //if (Model.QuestionGUID.Equals(new Guid("c313d7eb-e575-43e0-86cf-ab07511cd552")))
+    //{
+    //    if (ViewBag.AgeValueMax != null)
+    //    {
+    //        htmlAttributes["max"] = 366*(int)ViewBag.NumericValueMax;
+    //    }
+    //}
+
+    // Limit to one year
+    if (Model.QuestionGUID.Equals(new Guid("fdfdf73c-2644-4005-a54b-5e7bbf94c47d")))
+    {
+        htmlAttributes.Add("max", "366");
+    }
+
+    if (Model.QuestionGUID.Equals(new Guid("13c344bc-858c-46d8-939b-5834d6bb071f")))
+    {
+        htmlAttributes.Add("max", "366");
+    }
+
+    if (Model.QuestionGUID.Equals(new Guid("815d06c3-efe6-458c-9065-a5564bc0c284")))
+    {
+        htmlAttributes.Add("max", "366");
+    }
+
+    //if (Model.QuestionGUID.Equals(new Guid("")))
+    //{
+    //    htmlAttributes.Add("max", "120");
+    //}
+}
+
+@switch ((PitQuestionTypes)Model.QuestionTypeID)
+{
+    case PitQuestionTypes.YesNo:
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.YNValue, "YesNo", htmlAttributes, true)
+        break;
+
+    case PitQuestionTypes.Numeric:
+        htmlAttributes.Add("type", "number");
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.NumericValue, null, htmlAttributes, true)
+        break;
+
+    case PitQuestionTypes.Text:
+        @Html.HifisTextAreaFor(model => Model.QuestionAnswer.TextValue, htmlAttributes, true)
+        break;
+
+    case PitQuestionTypes.Date:
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.DateValue, null, htmlAttributes, true)
+        break;
+
+    case PitQuestionTypes.DropdownSingle:
+        htmlAttributes.Add("dropdownlist",
+            Json.Encode(Model.DropdownValues.Select(q =>
+                new { ID = q.QuestionPickListID, ActionType = q.DropDownActionTypeID, AffectedQuestionList = q.AffectedQuestionsIDs, AnsweredBehaviourYN = q.AnsweredBehaviourYN }).ToList()));
+        htmlAttributes.Add("prev", "");
+
+        @Html.DropDownListFor(model => Model.QuestionAnswer.SingleDropdownValue,
+                 Utilities.ConvertToSelectList(Model.DropdownSelectList, false, Model.QuestionAnswer.SingleDropdownValue), htmlAttributes)
+
+        @Html.ValidationMessageFor(model => Model.QuestionAnswer.SingleDropdownValue)
+        break;
+
+    case PitQuestionTypes.DropdownMultiple:
+        if (Model.QuestionGUID.Equals(new Guid("B45BD1EA-4C77-4B9D-857C-33F5A7189179")))
+        {
+            // Modify the dropdown list to group by group headers
+            System.Diagnostics.Debug.WriteLine("Question 14! I need to render a multi-select with option groups for headers!");
+        }
+
+        if (Model.QuestionGUID.Equals(new Guid("9766CA56-AC79-4CFA-BBD1-7840CA586000")))
+        {
+            // Modify the dropdown list to group by group headers
+            System.Diagnostics.Debug.WriteLine("Question 15! I need to render a multi-select with option groups for headers!");
+        }
+
+        htmlAttributes.Add("dropdownlist",
+Json.Encode(Model.DropdownValues.Select(q =>
+    new { ID = q.QuestionPickListID, ActionType = q.DropDownActionTypeID, AffectedQuestionList = q.AffectedQuestionsIDs, AnsweredBehaviourYN = q.AnsweredBehaviourYN }).ToList()));
+        htmlAttributes.Add("prev", "");
+
+        @Html.QuestionnaireListBoxFor(model => Model.QuestionAnswer.MultipleDropdownValue,
+                 Utilities.ConvertToMultiSelectListInt(Model.DropdownSelectList, Model.QuestionAnswer.MultipleDropdownValue),
+                 htmlAttributes: htmlAttributes, excludeLabel: true, includeSelectAllButton: false, includeDeselectAllButton: false)
+        break;
+
+    case PitQuestionTypes.DropdownMultipleAddition:
+        htmlAttributes.Add("dropdownlist",
+            Json.Encode(Model.DropdownValues.Select(q =>
+                new { ID = q.QuestionPickListID, ActionType = q.DropDownActionTypeID, AffectedQuestionList = q.AffectedQuestionsIDs, AnsweredBehaviourYN = q.AnsweredBehaviourYN }).ToList()));
+        htmlAttributes.Add("prev", "");
+
+        @Html.QuestionnaireListBoxFor(model => Model.QuestionAnswer.MultipleDropdownValue,
+             Utilities.ConvertToMultiSelectListInt(Model.DropdownSelectList, Model.QuestionAnswer.MultipleDropdownValue),
+             htmlAttributes: htmlAttributes, excludeLabel: false, includeSelectAllButton: false, includeDeselectAllButton: false)
+
+        <a href="@Url.Action("CreateDropDownForMultiSelectAddQuestion", "PitEvents", new { questionID = Model.QuestionID })"
+           aria-controls="Modal_NewDropDownValue" class="wb-lbx lbx-modal addButton addValueButton" role="button">@Labels.AddOption</a>
+
+        // If this is question 14 - we are going to render two hidden buttons that can be triggered by selecting the two OTHER specify values in the dropdown
+
+        if (Model.QuestionGUID.Equals(new Guid("B45BD1EA-4C77-4B9D-857C-33F5A7189179")))
+        {
+            foreach (var item in Model.DropdownValues.Where(dd => dd.NameE.Contains(": Other")))
+            {
+                <a href="@Url.Action("CreateDropDownForAddOtherSpecify", "PitEvents", new { questionID = Model.QuestionID, rollupID = item.QuestionPickListID })"
+                   style="display: none;" triggeredby="@item.QuestionPickListID" aria-controls="Modal_NewDropDownValue" class="wb-lbx lbx-modal addButton addValueButton" role="button">@Labels.AddOption</a>
+            }
+        }
+
+        // If this is question 15 - we are going to render two hidden buttons that can be triggered by selecting the two OTHER specify values in the dropdown
+
+        if (Model.QuestionGUID.Equals(new Guid("9766CA56-AC79-4CFA-BBD1-7840CA586000")))
+        {
+            foreach (var item in Model.DropdownValues.Where(dd => dd.NameE.Contains(": Other")))
+            {
+                <a href="@Url.Action("CreateDropDownForAddOtherSpecify", "PitEvents", new { questionID = Model.QuestionID, rollupID = item.QuestionPickListID })"
+                   style="display: none;" triggeredby="@item.QuestionPickListID" aria-controls="Modal_NewDropDownValue" class="wb-lbx lbx-modal addButton addValueButton" role="button">@Labels.AddOption</a>
+            }
+        }
+
+        break;
+    case PitQuestionTypes.Country:
+        htmlAttributes.Add("province_question_id", Model.ParentOfQuestionID);
+
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.CountryID,
+                CachedTableTypes.HIFIS_CountryTypes,
+                htmlAttributes: htmlAttributes, excludeLabel: true)
+        @Html.ValidationMessageFor(model => Model.QuestionAnswer.CountryID)
+        break;
+
+    case PitQuestionTypes.Province:
+        htmlAttributes.Add("city_question_id", Model.ParentOfQuestionID);
+        htmlAttributes.Add("prev", Model.QuestionAnswer.ProvinceID); //this is to initialize the dropdown when page loads
+
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.ProvinceID,
+                ViewBag.ProvinceList as SelectList,
+                htmlAttributes: htmlAttributes, excludeLabel: true)
+        break;
+
+    case PitQuestionTypes.City:
+        htmlAttributes.Add("prev", Model.QuestionAnswer.CityID);
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.CityID,
+                ViewBag.CityList as SelectList,
+                htmlAttributes: htmlAttributes, excludeLabel: true)
+        break;
+
+    case PitQuestionTypes.AllReservesCities:
+        @Html.HifisEditorFor(m => Model.ProvinceForReserveCity, ViewBag.ReserveProvinceList as SelectList,
+                htmlAttributes: new { id = "ReserveProvinceList", reservecityid = Model.QuestionID }, excludeLabel: true)
+        @Html.HifisEditorFor(model => Model.QuestionAnswer.CityID,
+                ViewBag.AllReservesCities as SelectList,
+                htmlAttributes: htmlAttributes, excludeLabel: true)
+        break;
+
+    case PitQuestionTypes.FamilyMember: // load from session [QuesrionID] if exists - doesnot has htmlattribbute like all the above questions
+        <a pit-fam-button="true"
+           href="@Url.Content("~/PitEvents/CreateFamilyMember")?questionID=@Model.QuestionID"
+           aria-controls="Modal_NewFamilyMember"
+           class="wb-lbx lbx-modal addButton @{WriteLiteral(Model.InitiallyEnabledYN ? "" : "disabledbutton");} addValueButton"
+           role="button" id="SurveyQuestion_@Model.QuestionID"
+           ansid='@Model.QuestionAnswer.PitQuestionAnswerID'
+           questiontype='@Model.QuestionTypeID'
+           questioncateg='@Model.QuestionCategoryTypeID'
+           questionaction='@Model.QuestionActionTypeID'
+           affectedquestionsids=@Html.Raw(JsonConvert.SerializeObject(Model.AffectedQuestionsIDs))>@Labels.Add</a>
+        <div id="SurveyFMQuestion_@Model.QuestionID" questiontype=@Model.QuestionTypeID>
+            @{
+                if (Session["SurveyFMQuestion"] != null)
+                {
+                    PitQuestionViewModel qvm = (PitQuestionViewModel)Session["SurveyFMQuestion"];
+                    if (qvm.QuestionAnswer != null)
+                    {
+                        List<PitFamilyMemberAnswerViewModel> FamilyListVM = new List<PitFamilyMemberAnswerViewModel>();
+                        if (qvm.QuestionAnswer.FamilyMemberList != null && qvm.QuestionAnswer.FamilyMemberList.Count > 0)
+                        {
+                            FamilyListVM = qvm.QuestionAnswer.FamilyMemberList;
+                            Html.RenderPartial("FamilyMemberAnswersList", FamilyListVM);
+                        }
+                    }
+
+                }
+            }
+        </div>
+        break;
+
+    case PitQuestionTypes.NoOfYears:
+        htmlAttributes.Add("type", "number");
+        htmlAttributes.Add("parentquestionid", Model.ParentOfQuestionID);
+        htmlAttributes.Remove("class");
+        htmlAttributes.Add("class", "mobile-width form-control full-width-important");
+        <div class="row">
+            <div class="col-xs-9 col-sm-10">
+                <div class="input-group">
+                    @Html.TextBoxFor(model => Model.QuestionAnswer.NumericValue, htmlAttributes)
+
+                    <div class="input-group-addon">
+                        <span class="input-group-text" id="basic-addon2">@Labels.Years</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @Html.ValidationMessageFor(model => Model.QuestionAnswer.NumericValue)
+        break;
+
+    case PitQuestionTypes.NoOfDays:
+        htmlAttributes.Add("type", "number");
+        htmlAttributes.Remove("class");
+        htmlAttributes.Add("class", "mobile-width form-control full-width-important");
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="input-group">
+                    @Html.TextBoxFor(model => Model.QuestionAnswer.NumericValue, htmlAttributes)
+                    <div class="input-group-addon">
+                        <span class="input-group-text" id="basic-addon2">@Labels.DayDays</span>
+                    </div>
+                    <div class="input-group-addon">
+                        @{
+                            var qmax = htmlAttributes.ContainsKey("max") ? "&max=" + htmlAttributes["max"] : "";
+                        }
+                        <a href="@Url.Content("~/PitEvents/ToNoOfDaysConverter")?questionID=@Model.QuestionID@qmax"
+                           aria-controls="Modal_DaysConverter"
+                           class="wb-lbx lbx-modal @{ WriteLiteral(Model.InitiallyEnabledYN ? " " : " disabledbutton"); } "
+                           role="button" id="SurveyQuestionD_@Model.QuestionID"
+                           questiontype=@Model.QuestionTypeID>
+                            <span class="glyphicon glyphicon-option-horizontal"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @Html.ValidationMessageFor(model => Model.QuestionAnswer.NumericValue)
+        break;
+    case PitQuestionTypes.Community:
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+         $(document).ready(function () {
+             $(':input[type="number"]').keypress(function (e) {
+                 if (e.which < 48 || e.which > 57) {
+                     return false;
+                 }
+             });
+         });
+    </script>
+    );
+}

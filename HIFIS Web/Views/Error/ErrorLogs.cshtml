@@ -1,0 +1,77 @@
+﻿@model LogFileListViewModel
+@{
+    ViewBag.Title = "Error Logs";
+}
+
+<h2>Error Logs</h2>
+
+<div class="wb-tabs ignore-session col-xs-12">
+	<div class="tabpanels">
+        <!-- Tab Pane #1: Web Logs -->
+		<details id="details-panel1" class="pddng-md" open="open">
+            <summary>HIFIS.Web Logs</summary>
+            <div>
+                <table class="wb-tables table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Log File</th>
+                            <th>Size</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (LogFileViewModel file in Model.WebLogs)
+                        {
+                            var n = file.Size / 1024;
+                            <tr>
+                                <td>@file.FileName</td>
+                                <td>@n kb</td>
+                                <td>
+                                    @using (Html.BeginForm("ViewLog", "Error", FormMethod.Post, new { @class = "background-light" }))
+                                    {
+                                        <input type=hidden name="filename" value=@file.FileName />
+                                        <button type="submit" class="button" value="Yes" name="SubmitButton"><span class="wb-icon-tick"></span>Open</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        <!-- Tab Pane #1: Domain Logs -->
+		<details id="details-panel2" class="pddng-md" open="open">
+            <summary>HIFIS.Domain Logs</summary>
+            <div>
+                <table class="wb-tables table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Log File</th>
+                            <th>Size</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (LogFileViewModel file in Model.DomainLogs)
+                        {
+                            var n = file.Size / 1024;
+                            <tr>
+                                <td>@file.FileName</td>
+                                <td>@n kb</td>
+                                <td>
+                                    @using (Html.BeginForm("ViewDomainLog", "Error", FormMethod.Post, new { @class = "background-light" }))
+                                    {
+                                        <input type=hidden name="filename" value=@file.FileName />
+                                        <button type="submit" class="button" value="Yes" name="SubmitButton"><span class="wb-icon-tick"></span>Open</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>                    
+                    </tfoot>
+                </table>
+            </div>
+        </details>
+    </div>
+</div>

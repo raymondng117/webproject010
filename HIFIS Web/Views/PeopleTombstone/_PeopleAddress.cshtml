@@ -1,0 +1,16 @@
+﻿@model PeopleAddressViewModel 
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(m => m.PeopleAddressID)
+@Html.HiddenFor(m => m.AddressID)
+@Html.HiddenFor(m => m.PersonID)
+
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+    
+<div>
+    @Html.HifisEditorFor(model => model.DateEnd)
+</div>

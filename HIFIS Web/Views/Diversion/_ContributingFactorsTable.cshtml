@@ -1,0 +1,53 @@
+﻿@model DiversionViewModel
+
+@{
+    string ajaxUrl = "";
+
+    if (Model.PrimaryClientID != null)
+    {
+        //"ajax": "@Url.Content("~/ClientFactors/ContributingListJson?clientID=" + Model.PrimaryClientID)"
+
+        ajaxUrl = Url.Content(String.Format("~/ClientFactors/ContributingListJson?clientID={0}",
+            new object[] { Model.PrimaryClientID}));
+    }
+
+}
+
+<!-- Client Contributing Factors -->
+<div class="table-responsive">
+    <table id="contributingTable" class="wb-tables table table-striped table-hover"
+           data-wb-tables='{ "columns": [
+                            { "width": "50%", "data": "cont"},
+                            { "width": "15%", "data": "start"},
+                            { "width": "15%", "data": "end"},
+                            { "width": "20%", "data": "action"}
+		                        ],
+                            "info": false,
+                            "order": [ [0, "asc" ] ],
+                            "processing": true,
+                            "bSearch" : false,
+                            "bFilter" : false,
+                            "bDestroy": true,
+                            "ajax": "@ajaxUrl" 
+                            }'>
+        <thead>
+            <tr>
+                <th>@Labels.ContributingFactor</th>
+                <th>@Labels.DateStart</th>
+                <th>@Labels.DateEnd</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<p>
+
+    @if (RightsHelper.HasRight(UserRights.ClientFactors_Contributing_Add))
+    {
+        @Html.ActionLink(Labels.NewContributingFactor, "AddContributingFactor", "ClientFactors", new { id = Model.PrimaryClientID }, new { @class = "addButton wb-lbx lbx-modal", id = "addContFactors", aria_controls = "Modal_AddCFactor", @role = "button" })
+
+    }
+
+</p>

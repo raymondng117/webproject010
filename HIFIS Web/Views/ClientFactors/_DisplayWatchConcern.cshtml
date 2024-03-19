@@ -1,0 +1,77 @@
+﻿@model ClientWatchConcernsViewModel
+
+<section id="Modal_DisplayConcern" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_DisplayClientWatchConcern</h2>
+    </header>
+
+    <div class="modal-body">
+        <div class="col-sm-12">
+            <div class="displayView align-center">
+                @Html.HiddenFor(model => model.ClientID)
+                @Html.HiddenFor(model => model.ClientWatchConcernID)
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.WatchConcernName, new { @class = "col-sm-4" })
+                    @Html.HifisDisplayFor(model => model.WatchConcernName, null,true,null)
+                    @*@Html.HifisLabelFor(model => model.WatchConcernTypeID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.WatchConcernTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_WatchConcernTypes, Culture, Model.WatchConcernTypeID)
+                            })*@
+                </div>
+
+                <div class="row">
+                    @Html.HifisDisplayFor(model => model.DateStart, null, false, "DateOnly")
+                </div>
+
+                <div class="row">
+                    @Html.HifisDisplayFor(model => model.DateEnd, null, false, "DateOnly")
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.ProbabilityTypeID, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.ProbabilityTypeID,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ProbabilityTypes, Culture, Model.ProbabilityTypeID)
+                            })
+                </div>
+
+                <div class="row" style="word-wrap:break-word;">
+                    @Html.HifisDisplayFor(model => model.Comments, new { @class = "commentBoxSize", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-md">
+            <button id="newPlacementFollowUpCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+        </div>
+
+    </div>
+</section>
+
+<script>
+
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_DisplayConcern');
+
+    $(function () { $("#excelParamForm").hifisValidation(); });
+
+    $("#excelGetBtn").click(function () {
+
+        if ($("#excelParamForm").valid()) {
+            $("#excelParamForm").submit();
+        }
+    });
+
+</script>
+
+

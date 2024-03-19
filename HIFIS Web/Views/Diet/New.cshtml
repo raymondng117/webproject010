@@ -1,0 +1,27 @@
+﻿@model DietViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_AddDiet;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="row">    
+    @using (Html.BeginForm("New", "Diet", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        <div class="row">
+            @Html.Partial("_Diet")
+        </div>
+        
+        <div class="row">
+            <div></div>
+            <div>
+                <div class="form-group">
+                    <button type="submit" class="saveButton  ">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        </div>
+    }   
+</div>

@@ -1,0 +1,104 @@
+﻿@model PitQuestionViewModel
+
+<section id="modalReorderValues" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.ReorderDropDownValues</h2>
+    </header>
+    <div class="modal-body">
+        <ol id="dropDownValues" class="list-group">
+            @foreach (PitQuestionDropdownViewModel dropDownValue in Model.DropdownValues)
+            {
+                <li class="list-group-item">
+                    <span class="badge">@(dropDownValue.ActiveYN ? Labels.Active : Labels.Inactive)</span>
+                    @dropDownValue.NameE
+                    <form>
+                        @Html.Partial("_DropDownValueHiddenFields", dropDownValue)
+                    </form>
+                </li>
+            }
+        </ol>
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        <button id="reorderSaveBtn" type="button" class="saveButton">@Labels.Save</button>
+        <button id="reorderCloseBtn" type="button" class="popup-modal-dismiss cancelButton">@Labels.Close</button>
+    </div>
+</section>
+<script type="text/javascript" src="@Url.Content("~/Scripts/Hifis/jquery-ui.custom/jquery-ui.min.js")"></script>
+<script type="text/javascript">
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $('#dropDownValues').sortable();
+
+    $("#reorderSaveBtn").click(function () {
+        var btn = $(this);
+        //Disable the button so multiple request don't go through
+        btn.attr("disabled", true);
+
+        //Set the new values to the sequence fields
+        $('#dropDownValues li').each(function (index, element) {
+            $(element).find('[name$=Sequence]').val(index + 1);
+        });
+
+        var valuesArray = [];
+        $("#modalReorderValues form").each(function () {
+            valuesArray.push(serializeFormToObject($(this)));
+        });
+
+        $.ajax({
+            url: "@Url.Content("~/PitEvents/ReorderDropDownValues")",
+            dataType: 'json',
+            contentType: 'application/json',
+            type: "POST",
+            data: JSON.stringify({ 'dropDownValues': valuesArray })
+        }).done(function (data) {
+            if (data.Success) {
+                //display the default error or success message
+                defaultNotify(data.Success);
+
+                //Enable the button incase there was an error
+                btn.attr("disabled", false);
+
+                //Close the modal window on success
+                $("#reorderCloseBtn").click();
+
+                //Reload
+                $('#dropDownValuesTable').DataTable().ajax.reload();
+            } else {
+                displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+            }
+        });
+
+    });
+
+    function serializeFormToObject(formToSerialize) {
+        var arrayData, objectData;
+        arrayData = formToSerialize.serializeArray();
+        objectData = {};
+
+        $.each(arrayData, function () {
+            var value;
+
+            if (this.value != null) {
+                value = this.value;
+            } else {
+                value = '';
+            }
+
+            //if it is not an object itself
+            if (objectData[this.name] != null) { //if the name exists, this is a new value for the same name(property)
+                //for now, dont do anything...
+                /*if (!objectData[this.name].push) {
+                    //if is not an array already, convert it to an array and add the values
+                    objectData[this.name] = [objectData[this.name]];
+                }
+                objectData[this.name].push(value);*/
+            } else {
+                objectData[this.name] = value;
+            }
+        });
+
+        return objectData;
+    };
+</script>

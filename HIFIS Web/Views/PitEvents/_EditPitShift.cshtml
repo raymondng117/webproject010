@@ -1,0 +1,102 @@
+﻿@model PitShiftViewModel
+
+<div class="panel panel-default mrgn-tp-md">
+    <div class="panel-heading" role="tab" id="sDetails">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" class="accordionStyle"  href="#ShiftDetails" aria-expanded="false" aria-controls="ShiftDetails">
+                @Labels.ShiftDetails
+                    @*Shift Details*@
+                <span class="caret pull-right mrgn-tp-sm"></span>
+            </a>
+        </h4>
+    </div>
+
+    <div id="ShiftDetails" class="panel" role="tabpanel" aria-labelledby="sDetails">
+        <div class="panel-body">
+            <div>
+                @Html.HiddenFor(model => model.PitShiftID)
+                @Html.HiddenFor(model => model.PitQuestionnaireID)
+                @Html.HiddenFor(model => model.ReportingOrganizationID)
+
+                <div>
+                    @Html.HifisDisplayFor(m => m.PitQuestionnaireName)
+                </div>
+
+                <div>
+                    @Html.HifisDisplayFor(m => m.ReportingOrgName)
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.PersonID, ViewBag.Peolpe as SelectList, "DropDownList")
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.IsShelterdLocation, "YesNo", new { id = "IsShelterdLocation" })
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.OrganizationID, ViewBag.Orgs as SelectList, "DropDownList", new { id = "LocationIsOrg" })
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.PlaceID, ViewBag.myPalces as SelectList, "DropDownList", new { id = "LocationIsPlace" })
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.StartDateTime, "DateAndTime")
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.EndDateTime, "DateAndTime")
+                </div>
+
+                <div>
+                    @Html.HifisEditorFor(m => m.Comments)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@using (Html.BeginScriptContext()) // handling Question dependencies
+{
+    Html.AddScriptBlock(
+
+        @<script type="text/javascript">
+
+            function ToggleShiftLocation(state) {
+                if (state) {
+                   // alert("state1 = " + state);
+                    $('#LocationIsPlace').val([]);
+                    $('#LocationIsPlace').change();
+                    $('#LocationIsPlace').attr('disabled', 'disabled');
+                    $('#LocationIsOrg').removeAttr('disabled');
+                } else {
+                   // alert("state2 = " + state);
+                    $('#LocationIsPlace').removeAttr('disabled');
+                    $('#LocationIsOrg').val([]);
+                    $('#LocationIsOrg').change();
+                    $('#LocationIsOrg').attr('disabled', 'disabled');                    
+                }
+                return;
+            }
+
+            $(document).ready(function () {
+                init_hifis();
+                ToggleShiftLocation(@Model.IsShelterdLocation.ToString().ToLower());  
+           //     $("#StartDateTime").datetimepicker({ pickTime: true, dateFormat: 'yyyy-mm-dd', timeFormat: 'hh:mm' });
+           //     $("#EndDateTime").datetimepicker({ pickTime: true, dateFormat: 'yyyy-mm-dd', timeFormat: 'hh:mm' });
+            });
+
+    $('#IsShelterdLocation').on('switchChange.bootstrapSwitch', function (event, state) {
+        ToggleShiftLocation(state);
+    });
+        </script>
+    );
+}
+
+
+
+

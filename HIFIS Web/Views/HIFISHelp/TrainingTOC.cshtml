@@ -1,0 +1,127 @@
+﻿@model ELearningTOCModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.HifisHelp_HIFISTrainingCenter + " - " + Labels.HIFISHelp_TOC;
+}
+
+<div class="row">
+    <div class="col-sm-4">                 
+        <table class="wb-tables table help-table" data-wb-tables='{ "ordering" : false, "info": false, "filter": false, "paging": false}'>
+            <thead>                
+                <tr class="">
+                    <th>@Labels.HifisHelp_SelectPlaylist</th>
+                </tr>             
+            </thead>
+            <tbody> 
+                @foreach (var item in Model.Playlists)
+                {
+                    <tr>
+                        <td class="@Html.SidebarCurrentTopic(item.PlaylistID.ToString())">
+                            @Html.ActionLink(item.Name, "TrainingIndex", "HIFISHelp", new { id = item.PlaylistID }, new { alt = item.Name, aria_label = item.Name })
+                        </td>
+                    </tr>                                               
+                } 
+            </tbody>
+        </table>
+        <div class="clearfix"></div>   
+    </div>
+    <div class="col-sm-8">
+        <!-- Tab Headers -->
+        <ul class="nav nav-tabs" role="tablist">
+	        <li class="active">
+		        <a class="tabButton" href="#TOC" role="tab" data-toggle="tab">@Labels.HIFISHelp_TOC</a>
+	        </li>
+	        <li>
+		        <a class="tabButton" href="#TOC-Demos" role="tab" data-toggle="tab">@Labels.HifisHelp_Demonstrations</a>
+	        </li> 
+            <li>
+                <a class="tabButton" href="#TOC-Simss" role="tab" data-toggle="tab">@Labels.HifisHelp_Simulations</a>
+	        </li> 
+        </ul>
+        <!-- Tab Panes -->
+        <div class="panel panel-default border-top-fix-tabs">
+	        <div class="panel-body">
+		        <div class="tab-content">			
+			        <div class="tab-pane active" id="TOC">
+                        @foreach(var pl in Model.Playlists.OrderBy(ob => ob.PlaySequence))
+                        {
+                            <ul>
+                                <li>  
+                                    @Html.ActionLink(lang == english ? pl.NameE : pl.NameF, "TrainingIndex", "HIFISHelp", new { id = pl.PlaylistID }, new { @class="no-deco", alt=lang == english ? pl.NameE : pl.NameF, aria_label = lang == english ? pl.NameE : pl.NameF}) 
+                                    @foreach (var md in pl.PlaylistModules.OrderBy(ob => ob.ModSequence))
+                                    { 
+                                        <ul>
+                                            <li>
+                                                @Html.ActionLink(lang == english ? md.NameE : md.NameF, "TrainingModule", "HIFISHelp", new { id = md.ModuleID, playlistId = pl.PlaylistID }, new { @class="no-deco", alt = lang == english ? md.NameE : md.NameF, aria_label = lang == english ? md.NameE : md.NameF}) 
+                                                @foreach (var tp in md.ModuleTopics.OrderBy(ob => ob.Sequence))
+                                                { 
+                                                    <ul>
+                                                        @if (tp.IsSubTopicYN)
+                                                        {
+                                                            <li class="list-unstyled">
+                                                                <ul>                                                                
+                                                                    <li style="list-style-type: circle;">
+                                                                        @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = pl.PlaylistID }, new { @class="no-deco", alt=lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF}) 
+                                                                    </li>
+                                                                </ul>
+                                                            </li>
+                                                        }
+                                                        else
+                                                        {   
+                                                            <li>                                                             
+                                                                @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = pl.PlaylistID }, new { @class="no-deco", alt = lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF}) 
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        </ul>
+                                    }
+                                </li>
+                            </ul>            
+                        }
+			        </div>
+			        <div class="tab-pane" id="TOC-Demos">
+				        @foreach (var md in Model.DemoModules.OrderBy(ob => ob.Sequence))
+                        { 
+                            if(!md.Topics.IsEmptyOrNull())
+                            {
+                                <div>@md.ModuleName</div>
+                
+                                foreach (var tp in md.Topics.OrderBy(ob => ob.Sequence))
+                                {
+                                    <ul>                                
+                                    <li>                                                             
+                                        @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = md.PlayListID }, new { @class="no-deco", alt = lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF}) 
+                                        </li>
+                                    </ul>
+                                }                    
+                            }
+                        }
+			        </div>
+                    <div class="tab-pane" id="TOC-Sims">
+                        <strong>@Labels.HifisHelp_Simulation</strong>
+                        @foreach (var md in Model.SimModules.OrderBy(ob => ob.Sequence))
+                        { 
+                            if(!md.Topics.IsEmptyOrNull())
+                            {                            
+                                <div>@md.ModuleName</div>
+                
+                                foreach (var tp in md.Topics.OrderBy(ob => ob.Sequence))
+                                {
+                                    <ul>                                
+                                    <li>                                                             
+                                        @Html.ActionLink(lang == english ? tp.NameE : tp.NameF, "TrainingTopic", "HIFISHelp", new { id = tp.TopicID, playlistId = md.PlayListID }, new { @class="no-deco", alt=lang == english ? tp.NameE : tp.NameF, aria_label = lang == english ? tp.NameE : tp.NameF}) 
+                                        </li>
+                                    </ul>
+                                }  
+                            }                          
+                        }
+			        </div>
+		        </div>	
+	        </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+﻿@model ClientBarViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayServiceRestrictions;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/ServiceRestrictions/_DisplayServiceRestrictions.cshtml"), ViewModel = Model })
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

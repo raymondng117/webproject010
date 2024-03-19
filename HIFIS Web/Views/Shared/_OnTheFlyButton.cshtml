@@ -1,0 +1,76 @@
+﻿@model OnTheFlyButtonViewModel
+@{ 
+    string noText = "";
+    if (!Model.ButtonText)
+    {
+        noText = "noText";
+    }
+    // GUID defines a unique key for the session
+    string uniqueID = Guid.NewGuid().ToString();
+    Session[uniqueID] = Model;
+}    
+
+@*<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#@Model.PartialName">
+  Launch demo modal
+</button>*@
+
+@*<div class="wb-lbx">*@
+    @* title = Model.Title, actionName = Model.ActionName, controllerName = Model.ControllerName, partialName = Model.PartialName, callBackFunction = Model.CallBackFunction, viewModel = Model.ViewModel, populateListFunction = Model.PopulateListFunction*@
+    <a data-toggle="modal" data-target="#@(uniqueID + "ModalID")" href="@Url.Action("NewOnTheFly", "OnTheFly", new { uniqueSessionOTFID = uniqueID })" class="@Model.ButtonStyle @noText onTheFlyButton align-top lb-item">@Model.ButtonName</a>
+@*</div>*@
+
+<div class="modal fade OnTheFlyPanel" id="@(uniqueID + "ModalID")" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" /> 
+        <p style="color:white; text-align:center;">@Labels.Loading</p>
+    </div>
+  </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+    @<script type="text/javascript">
+         $(function () {
+             $("#@(uniqueID + "ModalID")").appendTo(document.body);
+         });
+    </script>);
+}
+
+@*<a href="@Url.Action("NewOnTheFly", "OnTheFly", new { uniqueSessionOTFID = uniqueID })" id="@Model.PartialName" class="@Model.ButtonStyle @noText onTheFlyButton align-top lb-item">@Model.ButtonName</a>*@
+
+@*@using (Html.BeginScriptContext())
+{
+    
+}*@
+
+@*<div style="display: inline" class="wet-boew-lightbox">
+    <a href="@Url.Action("NewOnTheFly", "OnTheFly", new { title = Model.Title, actionName = Model.ActionName, controllerName = Model.ControllerName, partialName = Model.PartialName, callBackFunction = Model.CallBackFunction, viewModel = Model.ViewModel, populateListFunction = Model.PopulateListFunction })" id="@Model.PartialName" class="@Model.ButtonStyle @noText onTheFlyButton align-top lb-item">@Model.ButtonName</a>
+</div>*@
+
+@* The following is an example of how to use the On The Fly Button:
+    
+    @Html.Partial("_OnTheFlyButton", 
+    new OnTheFlyButtonViewModel() 
+    { 
+        ButtonName = "Add New Client", 
+        Title = "New Client",
+        ActionName = "ClientNew",
+        ControllerName = "OnTheFly",
+        PartialName = "_ClientNewClientVitals",
+        CallBackFunction = "OnTheFlyCallBack",
+        ViewModel = new ClientVitalsViewModel(),
+        ButtonText = false,
+        ButtonStyle = "closeButton",
+    })
+
+    <script type="text/javascript">
+
+        function OnTheFlyCallBack(objectID, formData) {
+            var Name = formData["LastName"] + ", " + formData["FirstName"];
+            $("#ClientIDSearchBox").val(Name);
+            getROVitals(objectID);
+        }
+    </script>
+*@

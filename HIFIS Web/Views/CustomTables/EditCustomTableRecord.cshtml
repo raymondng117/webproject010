@@ -1,0 +1,97 @@
+﻿@model CustomTableRecordViewModel
+@{
+    ViewBag.ViewTitle = Model.CustomTable.DisplayName;
+
+    if (Model.ReadOnlyVitals.ClientID != null)
+    {
+        ViewBag.LayoutView = LayoutPage.Client;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+}
+
+@*
+    /*
+    * Removed when rolling back serializable changes
+    * for SQL sessions
+    */
+
+<table class="table table-striped">
+    <tbody>
+        @{
+            //var xmlSerializer = new System.Xml.Serialization.XmlSerializer(Model.GetType());
+
+            //string xml = "";
+
+            //using (StringWriter textWriter = new StringWriter())
+            //{
+            //    xmlSerializer.Serialize(textWriter, Model);
+            //    xml = textWriter.ToString();
+            //}
+
+            string output = "";
+            if (ViewBag.ModelState != null)
+            {
+                foreach (var item in ViewBag.ModelState)
+                {
+                <tr>
+                    <td>@item</td>
+                </tr>
+                }
+            }
+        }
+    </tbody>
+</table>*@
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("EditCustomTableRecord", "CustomTables", FormMethod.Post, (Model.CustomTable.Fields.Any(f => f.FieldTypeID == (short) CustomTableFieldTypes.Attachments) ? new {enctype = "multipart/form-data", @class = "form-horizontal"} : null)))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel) Model)
+
+        @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+        @Html.HiddenFor(model => model.ReturnUrl)
+        @Html.HiddenFor(model => model.CustomTableLinkID)
+
+        @Html.Partial("_CustomTableRecord", Model)
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="saveButton">@Labels.Save</button>
+                @if (Model.ReturnUrl != null)
+                {
+                    <a href="@Model.ReturnUrl" class="cancelButton" role="button">@Labels.Cancel</a>
+                }
+                else
+                {
+                    @Html.ActionLink(Labels.Cancel, "CustomTableRecordList", "CustomTables", new {id = Model.RecordID, CustomTableID = Model.CustomTableID}, new {@class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"})
+                }
+            </div>
+        </div>
+
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function otherVisibility(sender, targetId) {
+                 var val = sender.value;
+                 if (val != -2) {
+                     $("#" + targetId + " *").prop("disabled", true);
+                     $("#" + targetId + " *").parent().hide();
+                 } else {
+                     $("#" + targetId + " *").prop("disabled", false);
+                     $("#" + targetId + " *").parent().show();
+                 }
+             };
+         </script>
+        );
+}
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

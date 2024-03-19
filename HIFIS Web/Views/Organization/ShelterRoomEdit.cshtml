@@ -1,0 +1,35 @@
+﻿@model RoomViewModel
+@{
+    ViewBag.ViewTitle = Labels.EditRoom + ": " + Model.ShelterName;
+    
+    if (Model.OrganizationID != null)
+    {
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    } 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+    <div class="span-6">
+
+        @if (RightsHelper.HasRight(UserRights.ServiceProviders_Rooms_Beds_Edit))
+        {
+            using (Html.BeginForm("EditShelterRoom", "Organization", FormMethod.Post, null))
+            {
+                @Html.AntiForgeryToken()
+                <div>
+                    @Html.Partial("_ShelterRooms", Model)
+                </div>
+                <div>
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "ShelterRoomsList", "Organization", new { id = Model.OrganizationID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                </div>
+            }
+        }
+
+    </div>

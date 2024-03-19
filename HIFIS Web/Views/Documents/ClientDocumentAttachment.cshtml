@@ -1,0 +1,37 @@
+﻿@model IdentificationAttachmentViewModel 
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientDocumentAttachment;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("UpdateDocumentAttachment", "Documents", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+{
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientDocAttachmentID) 
+    @Html.HiddenFor(model => model.ClientID)
+                 
+    <div>
+        @if (ViewBag.OnlyImages != null && ViewBag.OnlyImages != true)
+        {
+            @Html.HifisEditorFor(model => model.UploadFile, "File")
+        }
+        else
+        {
+            @Html.HifisEditorFor(model => model.UploadFile, "File", new { accept = "image/*" })
+        }
+            
+    </div>
+    
+    <div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="saveButton  ">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, "DisplayVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>
+	</div> 
+}
+

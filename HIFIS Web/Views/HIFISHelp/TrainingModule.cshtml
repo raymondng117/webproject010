@@ -1,0 +1,43 @@
+﻿@model ELearningModuleModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Model.PlaylistName + " - " + (lang == english ? Model.NameE : Model.NameF);
+}
+@Html.Partial("Common/_TopArea")  
+<div class="row">
+    <div class="col-sm-3">         
+        @Html.Partial("eLearningPartials/_eLearningSidebar", Model)
+    </div>
+    <div class="col-sm-9">
+        @(lang == english ? Html.Raw(HttpUtility.HtmlDecode(Model.DescriptionE)) : Html.Raw(HttpUtility.HtmlDecode(Model.DescriptionF)))  
+        @foreach(var top in Model.ModuleTopics)
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    <strong>
+                        @Html.ActionLink(lang == english ? top.NameE : top.NameF, "TrainingTopic", "HIFISHelp", new { id = top.TopicID, playlistId =  Model.PlaylistID }, new { alt = lang == english ? top.NameE : top.NameF, aria_label = lang == english ? top.NameE : top.NameF})
+                    </strong>
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-sm-9">
+                    @Html.Raw((lang == english ? top.DescriptionE : top.DescriptionF))
+                </div>
+            </div>                
+        }    
+        <div class="row">
+           
+                @if (ViewBag.PreviousTopicID != null)
+                { 
+                    @Html.ActionLink(Labels.HIFISHelp_PrevTop, "TrainingTopic", "HIFISHelp", new { id = ViewBag.PreviousTopicID, playlistId =  Model.PlaylistID }, new { @class = "btn btn-default", alt = Labels.HIFISHelp_PrevTop, aria_label = Labels.HIFISHelp_PrevTop , @role = "button"})  
+                }                
+            
+                @if (Model.ModuleTopics.Count != 0)
+                { 
+                    @Html.ActionLink(Labels.HIFISHelp_StartCourse, "TrainingTopic", "HIFISHelp", new { id = Model.ModuleTopics.First().TopicID, playlistId =  Model.PlaylistID }, new { @class = "pull-right btn btn-default", alt = Labels.HIFISHelp_StartCourse, aria_label = Labels.HIFISHelp_StartCourse, @role = "button" })  
+                }               
+           
+        </div> 
+    </div>
+</div>

@@ -1,0 +1,150 @@
+﻿@model ClientFamilyMembersViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayFamily;
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    string family1Url = "";
+    
+    if(Model.Family1Members != null)
+    {
+        family1Url = Url.Content("~/ClientTombstone/GetClientFamily/" + Model.Family1Members.GroupID + "?getFullHistory=" + false + "&clientID=" + Model.ReadOnlyVitals.ClientID);
+    }
+}
+
+<div class="row">
+
+    <div class="col-sm-12">
+        <div class="table-responsive">
+            <table id="family1MembersTable" class="wb-tables table table-striped table-hover" 
+                   data-wb-tables='{ "columns": [
+                                       { "width": "20%", "data": "isactive", "type": "string"},
+                                       { "width": "25%", "data": "name", "type": "string"},
+                                       { "width": "15%", "data": "dob", "type": "string"},
+                                       { "width": "15%", "data": "role", "type": "string"},
+                                       { "width": "10%", "data": "relationship", "type": "string"},
+                                       { "width": "15%", "data": "actions", "type": "string"}
+                                   ],
+                                   "order": [ [0, "asc"] ],
+                                   "ajax": "@family1Url"}'>
+                <thead>
+                    <tr>
+                        <th>@Labels.Status</th>
+                        <th>@Labels.FullName</th>
+                        <th>@Labels.DOB</th>
+                        <th>@Labels.Role</th>
+                        <th>@Labels.Relationship</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.Family1Members != null)
+        {
+            <div class="row">
+                @if (RightsHelper.HasRight(UserRights.Client_Family_Add))
+                {
+                    <div class="col-sm-12">
+                        @Html.ActionLink(Labels.AddFamilyMember, "GetNewMemberForm", "ClientTombstone", new { groupID = Model.Family1Members.GroupID, clientID = Model.ReadOnlyVitals.ClientID }, new { @class = "wb-lbx lbx-modal addButton", alt=Labels.AddFamilyMember, aria_label = Labels.AddFamilyMember, @role = "button"  })
+                        @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add))
+                        {
+                            @Html.ActionLink(Labels.CreateAndAddMember, "CreateFamilyMember", "ClientTombstone", new { groupID = Model.Family1Members.GroupID, familyHeadID = Model.Family1Members.FamilyHeadID, clientID = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton mrgn-lft-sm checkConsent", alt=Labels.CreateAndAddMember, aria_label = Labels.CreateAndAddMember, @role = "button"  })
+                        }
+                        @*Need to create some space after this because we don't know where its position will be on the page based on conditionals*@<br /><br />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (Model.Family2Members != null)
+    {
+        <div class="col-sm-12">
+            <div class="table-responsive">
+                <table id="family2MembersTable" class="wb-tables table table-striped table-hover" 
+                       data-wb-tables='{ "columns": [
+                                           { "width": "20%", "data": "isactive", "type": "string"},
+                                           { "width": "25%", "data": "name", "type": "string"},
+                                           { "width": "15%", "data": "dob", "type": "string"},
+                                           { "width": "15%", "data": "role", "type": "string"},
+                                           { "width": "10%", "data": "relationship", "type": "string"},
+                                           { "width": "15%", "data": "actions", "type": "string"}
+                                       ],
+                                       "order": [ [0, "asc"] ],
+                                       "ajax": "@Url.Content("~/ClientTombstone/GetClientFamily/" + Model.Family2Members.GroupID + "?getFullHistory=" + false + "&clientID=" + Model.ReadOnlyVitals.ClientID)"}'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.Status</th>
+                            <th>@Labels.FullName</th>
+                            <th>@Labels.DOB</th>
+                            <th>@Labels.Role</th>
+                            <th>@Labels.Relationship</th>
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row">
+                @if (RightsHelper.HasRight(UserRights.Client_Family_Add))
+                {
+                    <div class="col-sm-12">
+                        @Html.ActionLink(Labels.AddFamilyMember, "GetNewMemberForm", "ClientTombstone", new { groupID = Model.Family2Members.GroupID, clientID = Model.ReadOnlyVitals.ClientID }, new { @class = "wb-lbx lbx-modal addButton", alt=Labels.AddFamilyMember, aria_label = Labels.AddFamilyMember, @role = "button"  })
+                        @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add))
+                        {
+                            @Html.ActionLink(Labels.CreateAndAddMember, "CreateFamilyMember", "ClientTombstone", new { groupID = Model.Family2Members.GroupID, familyHeadID = Model.Family2Members.FamilyHeadID, clientID = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton mrgn-lft-sm checkConsent", alt=Labels.CreateAndAddMember, aria_label = Labels.CreateAndAddMember, @role = "button"  })
+                        }
+                        @*Need to create some space after this because we don't know where its position will be on the page based on conditionals*@<br /><br />
+                    </div>
+                }
+            </div>
+
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-sm-12">
+
+            @if (RightsHelper.HasRight(UserRights.Client_Family_Add) && ViewBag.CanCreate)
+            {
+                @Html.ActionLink(Labels.StartFamily, "CreateFamily", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", title = @Labels.StartFamily, alt=Labels.StartFamily, aria_label = Labels.StartFamily, @role = "button"  })
+            }
+
+            @if (RightsHelper.HasRight(UserRights.Client_Family_Group_Memberships_Join) && ViewBag.CanJoin)
+            {
+                @Html.ActionLink(Labels.JoinFamily, "JoinGroupMembership", "ClientTombstone", new { pClientID = Model.ReadOnlyVitals.ClientID, pCurrentClientID = Model.ReadOnlyVitals.ClientID }, new { @class = "moveRightButton mrgn-lft-sm", title = @Labels.JoinFamily, alt=Labels.JoinFamily, aria_label = Labels.JoinFamily , @role = "button"  })
+            }
+
+        </div>
+    </div>
+
+</div>
+
+@using(Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $('.table').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+
+                $('[data-checkConsent]').each(function () {
+                    interceptClick($(this));
+                });
+            });
+
+            $(document).on("familyTable:change", function () {
+                $('#family1MembersTable').DataTable().ajax.reload();
+
+                if ($('#family2MembersTable').length)
+                    $('#family2MembersTable').DataTable().ajax.reload();
+            });
+            
+        </script>
+    );
+}

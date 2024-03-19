@@ -1,0 +1,121 @@
+﻿@model IncidentViewModel
+           
+<div class="col-sm-12">
+    <div class="@(ViewBag.clientID == null ? "" : "") displayView"> 
+        <div class="row">
+            @Html.HifisLabelFor(model => model.OrganizationID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.OrganizationID,
+                                List = ViewBag.orgList as SelectList
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EmergencyServiceTypes, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                            new MultipleItemSelectList
+                            {
+                                IDs = Model.EmergencyServiceTypes.Select(l => l.ToString()).ToList(),
+                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_EmergencyServiceTypes, Culture, Model.EmergencyServiceTypes.Select(l => l.ToString()).ToList())
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.IncidentType, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.IncidentType,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_IncidentTypes, Culture, Model.IncidentType)
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.IncidentDateAndTime, new { @class = "autowidth" })
+            @Html.HifisDisplayFor(model => model.IncidentDateAndTime, null, true, "DateAndTime")
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Location, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.Location)
+        </div>
+
+        <div>
+            @if (Model.EmergencyServiceTypes.Contains((int)EmergencyServiceTypes.Police))
+            {
+                <div class="row">
+                    <div id="ChargesLaidID">
+                        @Html.HifisLabelFor(model => model.ChargesLaidYN, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ChargesLaidYN)
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div id="PoliceBadgeID">
+                        @Html.HifisLabelFor(model => model.PoliceBadge, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.PoliceBadge)
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div id="PoliceReportNoID">
+                        @Html.HifisLabelFor(model => model.PoliceReportNo, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.PoliceReportNo)
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.DispositionType, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.DispositionType,
+                                List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_DispositionTypes, Culture, Model.DispositionType)
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.PeopleWitnessPersonIDs, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_DisplayListStrings",
+                            Model.PeopleWitnesses.Select(pw => pw.PeopleWitnessFullName).ToList())
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.PeopleInvolvedPersonIDs, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_DisplayListStrings",
+                            Model.PeopleInvolved.Select(pi => pi.PeopleInvolvedFullName).ToList())
+        </div>
+    
+        <div class="row">
+            <div class="col-sm-12">
+                <label class="control-label wdth-strct-200">@Labels.Comment</label>
+                @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="btn-group">
+                    @if (RightsHelper.HasRight(UserRights.Incidents_Edit, Model.OrganizationID))
+                    {
+                        @Html.ActionLink(Labels.Edit, "Edit", "Incident", new { incidentID = Model.IncidentID }, new { @class = "editButton mrgn-rght-sm", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                    }
+
+                    @if (ViewBag.clientID != null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "ClientList", "Incident", new { id = ViewBag.clientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "List", "Incident", new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>

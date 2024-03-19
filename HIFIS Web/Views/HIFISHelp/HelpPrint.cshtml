@@ -1,0 +1,38 @@
+﻿@model HelpPrintModel
+@{
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Labels.HifisHelp_PrintHIFISHelp;
+}
+@Html.AntiForgeryToken()
+<ol class="breadcrumb mrgn-tp-sm">
+    <li><a class="ui-link" href='@Url.Action("HelpIndex", "HIFISHelp", new { category = HIFISHelp_CategoryTypes.All })'>@Labels.HifisHelp_BrowseHelpModules</a></li>
+    <li>@Labels.HifisHelp_PrintHIFISHelp</li>
+</ol>
+
+@foreach (var mod in Model.ModuleList)
+{
+    if (Model.DisplayModuleDesc)
+    { 
+        <h2 class="mrgn-tp-sm">@mod.ModuleName</h2>
+        @Html.Raw(mod.ModuleDescription) 
+    }
+    else
+    { 
+        <h2 class="mrgn-tp-sm">@mod.ModuleName</h2>
+    }
+    
+    foreach (var top in mod.TopicList)
+    {     
+        <h4 class="mrgn-tp-sm">@top.TopicName</h4>
+        <div>
+            @foreach (var mat in top.TopicMaterals)
+            {         
+                @Html.Partial("HelpPartials/_DisplayHelpMaterial", mat.HelpMaterial as HelpMaterialModel) 
+            }
+        </div>
+    }
+    if (Model.ModuleList.Count != 1)
+    { 
+        <hr />
+    }
+}

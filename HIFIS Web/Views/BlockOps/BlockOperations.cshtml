@@ -1,0 +1,25 @@
+﻿@model BlockOpsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_BlocOperations;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("Plugins/_jstree")
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active">
+        <a class="tabButton" href="#BlockBookout" role="tab" data-toggle="tab">@Labels.BlockBookout</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane active" id="BlockBookout">
+                @Html.Partial("_Bookout", Model)
+            </div>
+        </div>
+    </div>
+</div>

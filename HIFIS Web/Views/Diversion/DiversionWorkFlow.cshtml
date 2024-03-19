@@ -1,0 +1,271 @@
+﻿@model DiversionViewModel
+@{
+    ViewBag.ViewTitle = Labels.DiversionWorkFlow;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+    TempData["culture"] = Culture;  //this is use for contributing factors
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@using (Html.BeginForm("DiversionWorkFlow", "Diversion", new { returnUrl = "DiversionWorkFlow" }, FormMethod.Post, new { @class = "form-horizontal" }))
+{
+
+    @Html.AntiForgeryToken();
+
+
+    <div id="ProgressNodes" class="modal-body">
+
+        @{
+            var i = 0;
+        }
+
+        @foreach (var step in Model.WorkFlowSteps)
+        {
+            var pageMarkerClass = "pending";  //pending btn btn-default
+            var pageMarkerStyle = "background-color: silver";
+
+            if (i == (int)Model.CurrentStepID - 1)
+            {
+                pageMarkerClass = "current";
+                pageMarkerStyle = "background-color: #2572b4 color: white";
+            }
+
+            var buttonLabel = step.StepID.ToString();
+            var buttonID = "BntNode_" + step.StepID.ToString();
+            var buttontitle = Model.WorkFlowSteps[step.StepID - 1].Title;
+
+            i++;
+            // Get the answered value of the screening question by GUID
+            if (Model.CurrentStepID == 0)
+            {
+                <a class="@pageMarkerClass">@buttonLabel</a>
+
+            }
+            else
+            {
+                <button type="submit" id="@buttonID" name="submitBtn" title="@buttontitle" class="@pageMarkerClass" style="@pageMarkerStyle" tabindex=@(i)>@buttonLabel</button>
+            }
+
+        }
+
+        <div class="pull-right">
+            <button type="submit" id="EndButton1" name="submitBtn" value="end" class="btn-danger">@Labels.DiversionEnd</button>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="mrgn-bttm-xs alert alert-info">
+                <h4>@Model.WorkFlowSteps[Model.CurrentStepID - 1].Title</h4>
+                <div style="margin-left:20px;">
+                    @Html.Raw(Model.WorkFlowSteps[Model.CurrentStepID - 1].Description)
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="form-group">
+
+        <form id="stepcontent" class="form-horizontal">
+            @Html.Partial("_DiversionWorkFlow")
+        </form>
+
+
+        <div class="col-sm-offset-3 col-sm-9">
+            <button type="submit" id="backButton" name="submitBtn" value="back" class="backButton">@Labels.Back</button>
+            <button type="submit" id="nextButton" name="submitBtn" value="next" class="nextButton">@Labels.Next</button>
+            @Html.ActionLink(Labels.Cancel, "CancelDiversion", "Diversion"
+                    , new { diversionID = Model.DiversionID, clientid = Model.PrimaryClientID, returnurl = Model.returnUrl, bDelDiversion = false}
+                    , new { @class = "cancelButton", @role = "button", @id = "clxButton" })
+            <button type="submit" id="EndButton2" name="submitBtn" value="end" class="btn-danger">@Labels.DiversionEnd</button>
+
+        </div>
+
+    </div>
+}
+
+
+
+@using (Html.BeginScriptContext())
+{
+
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+
+    //const caseworkersList = document.getElementById("caseworkerID").innerHTML;
+
+    $(document).ready(function () {
+        $('#IsClient').val(true);
+        //Get everything to display correctly
+        init_hifis();
+
+        updateform(@Model.CurrentStepID);
+
+
+        //creates all Progress node button click event
+        for (i = 1; i <= 7; i++) {
+
+            $("#BntNode_" + i).on("click", function (e) {
+                $('#NextStepID').val($(this).attr("tabindex"));
+            });
+        }
+    });
+
+    function updateform(currentstep) {
+        console.log("FD - updateform called for step " + currentstep);
+        if (currentstep == 7)
+        {
+            $('#nextButton').hide();
+            $('#backButton').show();
+            $('#EndButton2').show();
+            $('#EndButton1').hide();
+        }
+        else if (currentstep > 1)
+        {
+            $('#nextButton').show();
+            $('#backButton').show();
+            $('#EndButton2').hide();
+            $('#EndButton1').show();
+        }
+        else
+        {
+            $('#nextButton').show();
+            $('#backButton').hide();
+            $('#EndButton2').hide();
+            $('#EndButton1').show();
+        }
+
+        for (i = 1; i <= 7; i++)
+        {
+            $('#step'+i).hide();
+        }
+
+        $('#step' + currentstep).show();
+
+        if (currentstep >= 2 && currentstep <= 6)
+            $('#divStory').show();
+        else
+            $('#divStory').hide();
+    };
+
+
+
+    function GetNextStepID(e, btn)
+    {
+
+        var stepid = $('#CurrentStepID').val();
+        console.log("FD - GetNextStepID called from " + btn.attr("id") + " for step " + stepid);
+        let nextstepid;
+
+        if (btn.attr("id") == "nextButton")
+        {
+            nextstepid = parseInt(stepid) + 1;
+        }
+        else if (btn.attr("id") == "backButton")
+        {
+            nextstepid = parseInt(stepid) - 1;
+        }
+        return nextstepid;
+
+    };
+
+
+    /*-----------------------------
+      NExt button
+     -----------------------------*/
+        $("#nextButton").on("click", function (e)
+        {
+            $('#NextStepID').val(GetNextStepID(e, $(this))) ;
+
+        });
+
+    /*-----------------------------
+    Back button
+     -----------------------------*/
+    $("#nextButton").on("click", function (e) {
+        $('#NextStepID').val(GetNextStepID(e, $(this)));
+
+    });
+        $("#backButton").on("click", function (e) {
+
+            $('#NextStepID').val(GetNextStepID(e, $(this)));
+        });
+    /*-----------------------------
+      Cancel button
+     -----------------------------*/
+    $("#clxButton").on("click", function (e) {
+
+        console.log("FD - $('#ddlDivStatus').val() --> " + $('#ddlDivStatus').val());
+
+
+        //check if we are dealing with a new or existing Diversion
+        var diversionid = $('#DiversionID').val();
+        var isExistingDiversion = (diversionid != "" && diversionid != null);
+        var curStatus = $('#DiversionStatusTypeID').val();
+        console.log("FD - curStatus --> " + curStatus);
+
+        if ((isExistingDiversion) && ($('#ddlDivStatus').val() != 6) && (curStatus != '@DiversionStatusTypes.Abandoned'))
+        {
+
+            if (confirm('@Labels.DiversionClxMsg'))
+            {
+                console.log('FD - sets status to Abandoned');
+                @*$('#DiversionStatusTypeID').val(@DiversionStatusTypes.Abandoned);*@
+
+            }
+            else
+            {
+                console.log('FD - Cancel the Cancel button');
+                e.preventDefault();
+            }
+        }
+    });
+
+    function EndDiversion(e)
+    {
+
+            if ($('#WorkFlowCompletedYN').val() == 'True')
+            {
+                $('#NextStepID').val(7);
+            }
+            else if ($('#CurrentStepID').val() == 7)
+            {
+                $('#WorkFlowCompletedYN').val(true);
+                $('#NextStepID').val(7);
+            }
+            else
+            {
+                //if (confirm("This will take you to the last step of the Diversion Workflow. From this step, you can exit by pressing End Diversion again.  Would you like to continue?"))
+
+                if (confirm('@Labels.DiversionEndMsg'))
+                {
+                    $('#NextStepID').val(7);
+                }
+                else
+                {
+                    e.preventDefault();
+                }
+            }
+    }
+        /*-----------------------------
+          End Diversion button
+         -----------------------------*/
+        $("#EndButton1").on("click", function (e)
+        {
+            EndDiversion(e);
+        });
+
+        $("#EndButton2").on("click", function (e) {
+            EndDiversion(e);
+        });
+
+
+</script>
+);
+}

@@ -1,0 +1,85 @@
+﻿@model ClientStorageListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_Storage;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div> 
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        @{ string classlink1 = (!ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Current, "List", new { showAll = false }, new { @class = classlink1, alt=Labels.Current, aria_label = Labels.Current, @role = "button" })
+
+        @{ string classlink2 = (ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.All, "List", new { showAll = true }, new { @class = classlink2, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+        
+        <div class="clearfix"></div>
+    </div>            
+    
+    @* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view. *@
+    @Html.Partial("_DateFilterList", Model.DateFilter)
+    <div class="clearfix"></div>
+    <br />
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Client</th>
+                    <th>@Labels.Item</th>
+                    <th>@Labels.Location</th>
+                    <th>@Labels.StartDate</th>
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.ServiceProvider</th>
+                    <th>@Labels.StorageOutcome</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.ClientStorage != null && Model.ClientStorage.Count > 0)
+                {
+                    foreach (ClientStorageViewModel item in Model.ClientStorage)
+                    {
+                        <tr>
+                            <td class="col-xs-2">@item.ClientLastName, @item.ClientFirstName</td>
+                            <td class="col-xs-3">@item.ItemDescription</td>
+                            <td class="col-xs-2">@item.ItemLocation</td>
+                            <td class="col-xs-1">@Html.DisplayFor(model => item.DateStart)</td>
+                            <td class="col-xs-1">@Html.DisplayFor(model => item.DateEnd)</td>                           
+                            <td class="col-xs-2">@item.OrganizationName</td>
+                            <td class="col-xs-2">@item.StorageOutcomeStatus</td>
+                            <td class="col-xs-1">
+                                @if (RightsHelper.HasRight(UserRights.Storage_Display))
+                                {
+                                    @Html.ActionLink(Labels.Display, "Display", new { id = item.ClientID, itemID = item.StoredItemID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Storage_Edit))
+                                {
+                                    @Html.ActionLink(Labels.Edit, "Edit", new { id = item.ClientID, itemID = item.StoredItemID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>   
+       
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Storage_Add))
+        {
+            @Html.ActionLink(Labels.NewStorageItem, "New", "Storage", null, new { @class = "addButton", alt=Labels.NewStorageItem, aria_label = Labels.NewStorageItem, @role = "button" }) 
+        }        
+    </div>
+</div>
+
+
+
+
+
+

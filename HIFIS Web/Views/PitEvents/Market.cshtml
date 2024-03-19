@@ -1,0 +1,125 @@
+﻿@model List<NHIS.Models.PITMarketQuestion>
+@{
+    ViewBag.Title = "PIT Question Market";
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    HIFIS.WEB.ViewModels.PitQuestionnaireViewModel pitEvent = 
+        (HIFIS.WEB.ViewModels.PitQuestionnaireViewModel)Session["PITEvent"];
+
+    
+
+}
+
+<h2>@Labels.PiTMarketplace</h2>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Labels.Origin</th>
+                <th>@Labels.Number</th>
+                <th>@Labels.Question</th>
+                <th>@Labels.InputTypeExample</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @* JLD on 2019/08/28. Added clause .Where(q => q.Approved != null && q.Approved == true) to show only questions approved by HPS *@
+
+            @*@foreach (var item in Model.Where(q => q.Approved != null && q.Approved == true).OrderBy(q => q.Origin).ThenBy(q => q.QNumber))
+                {
+                    <tr>
+                        <td>@item.Origin</td>
+                        <td>@item.QNumber</td>
+                        <td>
+                            <div class="form-group">
+                                <label class="control-label col-sm-8">
+                                    <label for="QlabelE">@item.QlabelE</label>
+                                    <span class="hlp-QlabelE custom-help" data-fieldlabelkey="QlabelE"></span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <div class="input-group">
+                                        @{
+                                            switch (item.QType.Trim())
+                                            {
+                                                case "Yes / No":
+                                                    item.Approved = true;
+                                                    @Html.EditorFor(i => item.Approved, "YesNoNullable", null)
+                                                    break;
+                                                case "Numeric":
+                                                    @Html.TextBox("Number", "12", new { @class = "form-control" })
+                                                    break;
+                                                case "Text":
+                                                    @Html.TextBox("Text", "abc", new { @class = "form-control" })
+                                                    break;
+                                                case "Date":
+                                                    @Html.TextBoxFor(i => item.dtStamp, new { type = "date", @class = "form-control" })
+                                                    break;
+                                                case "Picklist - One Choice":
+                                                    @Html.DropDownList(item.QlabelE, new SelectList(item.ListEng.Split('~')), "DropDownList", new { data_loader = true })
+                                                    break;
+                                                case "Picklist - Multiple Choice":
+                                                    @Html.DropDownList(item.QlabelE, new SelectList(item.ListEng.Split('~')), "DropDownList", new { data_loader = true })
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @Html.ActionLink("Import", "Import", new { questionGuid = item.Guid, pitQuestionnaireID = ViewBag.Event }, new { @class = "btn btn-default" })
+                        </td>
+                    </tr>
+                }*@
+
+            @foreach (var item in Model.Where(q => q.Approved != null && q.Approved == true).OrderBy(q => q.Origin).ThenBy(q => q.QNumber))
+            {
+                <tr>
+                    <td>@item.Origin</td>
+                    <td>@item.QNumber</td>
+                    <td>
+                        <label class="control-label">
+                            <label for="QlabelE">@item.QlabelE</label>
+                            <span class="hlp-QlabelE custom-help" data-fieldlabelkey="QlabelE"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <div class="input-group">
+                            @switch (item.QType.Trim())
+                            {
+                                case "Yes / No":
+                                    item.Approved = true;
+                                    @Html.EditorFor(i => item.Approved, "YesNoNullable", null)
+                                    break;
+                                case "Numeric":
+                                    @Html.TextBox("Number", "12", new { @class = "form-control" })
+                                    break;
+                                case "Text":
+                                    @Html.TextBox("Text", "abc", new { @class = "form-control" })
+                                    break;
+                                case "Date":
+                                    @Html.TextBoxFor(i => item.dtStamp, new { type = "date", @class = "form-control" })
+                                    break;
+                                case "Picklist - One Choice":
+                                    @Html.DropDownList(item.QlabelE, new SelectList(item.ListEng.Split('~')), "DropDownList", new { data_loader = true })
+                                    break;
+                                case "Picklist - Multiple Choice":
+                                    @Html.DropDownList(item.QlabelE, new SelectList(item.ListEng.Split('~')), "DropDownList", new { data_loader = true })
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        @Html.ActionLink("Import", "Import", new { questionGuid = item.Guid, pitQuestionnaireID = ViewBag.Event }, new { @class = "btn btn-default", alt="Import", aria_label = "Import", @role = "button" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<hr />
+
+@Html.ActionLink(Labels.ReturnToEventSettings, "EditPitQuestionnaire", new { pitQuestionnaireID = ViewBag.Event }, new { @class = "btn btn-default", alt=Labels.ReturnToEventSettings, aria_label = Labels.ReturnToEventSettings, @role = "button" })

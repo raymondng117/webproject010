@@ -1,0 +1,36 @@
+﻿@model ClientVitalsReadOnlyWrapperViewModel
+
+
+<div class="module-alert mrgn-bttm-lg">
+    <h3>
+        <span class="color-dark">YIKES! WHERE DID CLIENT TOMBSTONE GO!?</span>
+    </h3>
+    <h4>
+        @(((System.Web.Mvc.BuildManagerCompiledView)(ViewContext.View)).ViewPath)
+    </h4>
+
+    <p class="wet-boew-prettify">
+        The client tombstone has been moved to a layout. If you wish to display the new client profile you must explicitly set the layout in your view.
+    </p>
+    <p>
+        Edit the view listed above and replace the old reference to the client vitals partial:
+        <pre class="prettyprint">
+            @@Html.Partial("_ClientVitalsRO", new ClientVitalsReadOnlyWrapperViewModel(Model.ROVitals))
+        </pre>
+    </p>
+    <p>
+        with this statement to explicitly use the layout that includes the new client profile:
+        <pre class="prettyprint">
+            @@{
+                ViewBag.LayoutView = LayoutPage.Client;
+            }
+        </pre>
+    </p>
+    <p>
+        <strong>Important</strong><br />
+        Your ViewBag or view model must have a property called <span class="color-accent">ReadOnlyVitals</span> of type <span class="color-accent">ClientVitalsReadOnlyViewModel</span> that stores the details of the selected client.
+    </p>
+</div>
+
+<div class="clearfix">
+</div>

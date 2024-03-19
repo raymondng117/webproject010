@@ -1,0 +1,60 @@
+﻿@model CaseSearchFilterViewModel
+
+<form id="caseFilterForm" class="form-horizontal">
+    <div>
+
+        @* Housing types sought *@
+        <div>
+            @Html.HifisListBoxFor(model => model.CGs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+        </div>
+        
+        @* Status Type ID *@
+        <div>
+            @Html.HifisListBoxFor(Model => Model.CSs, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CaseStateTypes, Culture), new { @class = "fixedContainer", style = "width:250px;" })
+        </div>
+        
+        <div>
+            @Html.HifisEditorFor(model => model.FromDate)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.ToDate)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.PTD, "YesNo")
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.UTD, "YesNo")
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-11">
+                <button type="button" id="filterListButton" class="filterButton pull-right">@Labels.ApplyFilters</button>
+            </div>
+        </div>
+    </div>
+</form>
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+    
+            $("#filterListButton").click(function () {
+                if ($("#caseFilterForm").valid()) {
+                    var btn = $(this);
+
+                    $('#casesTable').DataTable().ajax.url('@Url.Content("~/CaseManagement/GetCasesJson/?")' + $("#caseFilterForm").serialize() + '').load(null, false);
+
+                    btn.attr("disabled", true);
+                    
+                    $('#casesTable').on('xhr.dt', function () {
+                        btn.attr("disabled", false);
+                        $('#filter-panel').trigger('close.wb-overlay');
+                    });
+                }
+            });
+            
+        </script>);
+}

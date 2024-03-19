@@ -1,0 +1,67 @@
+﻿@model TurnawayListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientTurnAwaysList;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+    @* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+        Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values
+    @Html.Partial("_DateFilterList", Model.DateFilter)
+    <div class="clearfix"></div>
+    <br />
+    *@
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th class="col-xs-2">@Labels.ServiceProvider</th>
+                    <th class="col-xs-2">@Labels.DateAndTimeOfTA</th>
+                    <th class="col-xs-2">@Labels.ReasonForTA</th>
+                    <th class="col-xs-2">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (TurnawayViewModel item in Model.Turnaways.ToList())
+                {
+                    <tr>
+                        <td>@item.OrganizationName</td>
+                        <td class="align-center">@DateHelper.DateTimeFormaterENFR(item.EffectiveDT, Labels.CurrentCulture)</td>
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReasonsForTurnawayTypes, Culture, item.ReasonsForTurnawayTypeID)</td>
+                        <td class="align-center">
+
+                            @if (RightsHelper.HasRight(UserRights.Turnaways_Display, item.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Display, "Display", "Turnaways", new { id = item.PrimaryClientID, turnawayID = item.TurnawayID }, new { @class = "displayButton noText", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.Turnaways_Edit, item.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Edit, "Edit", "Turnaways", new { id = item.PrimaryClientID, turnawayID = item.TurnawayID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.Turnaways_Delete, item.OrganizationID))
+                            {
+                                @Html.ActionLink(Labels.Delete, "Delete", "Turnaways", new { id = item.PrimaryClientID, turnawayID = item.TurnawayID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                            }
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Turnaways_Add))
+        {
+            @Html.ActionLink(Labels.AddTurnAway, "New", "Turnaways", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton mrgn-rght-xs", alt=Labels.AddTurnAway, aria_label = Labels.AddTurnAway, @role = "button" })
+        }
+    </div>
+</div>

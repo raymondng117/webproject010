@@ -1,0 +1,157 @@
+﻿@model ClientQuestionnaireViewModel
+@{
+    ViewBag.ViewTitle = Labels.Edit;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    <h3>@Model.Questionnaire.QuestionnaireName</h3>
+
+
+    @using (Html.BeginForm("EditClientQuestionnaire", "Questionnaires", FormMethod.Post, null))
+    {
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ClientID)
+        @Html.HiddenFor(m => m.QuestionnaireID)
+        @Html.HiddenFor(m => m.ClientQuestionnaireID)
+        @Html.HiddenFor(m => m.Questionnaire.QuestionnaireID)
+        @Html.HiddenFor(m => m.Questionnaire.Name)
+        @Html.HiddenFor(m => m.Questionnaire.NameF)
+        @Html.HiddenFor(m => m.Questionnaire.SelectedOrganizationIDs)
+        @Html.HiddenFor(m => m.OrganizationID)
+        
+
+        <div class="row mrgn-bttm-md">
+            @Html.HifisEditorFor(model => model.DateAnswered)
+        </div>
+
+        <div class="table-responsive mrgn-bttm-md">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false  }'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>@Labels.Question</th>
+                        <th>@Labels.Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Questionnaire.Questions.Count; i++)
+                    {
+                        <tr>
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].QuestionTypeID)
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].QuestionID)
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].QuestionNo)
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].Question)
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].QuestionF)
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].ClientAnswer.QuestionAnsweredID)
+                            @Html.HiddenFor(n => n.Questionnaire.Questions[i].ClientAnswer.ClientQuestionnaireID)
+                            <input type="hidden" value="@Model.Questionnaire.Questions[i].QuestionID" name="Questionnaire.Questions[@i].ClientAnswer.QuestionID" />
+                            <td>
+                                @Model.Questionnaire.Questions[i].QuestionNo
+
+                            </td>
+                            @{
+                              
+
+                                switch ((QuestionTypes)Model.Questionnaire.Questions[i].QuestionTypeID)
+                                {
+                                    case QuestionTypes.YesNo:
+                                        <td>
+                                            @Html.LabelFor(model => model.Questionnaire.Questions[i].ClientAnswer.YNValue, Model.Questionnaire.Questions[i].QuestionName)
+                                        </td>
+                                        <td>
+                                            @Html.EditorFor(model => model.Questionnaire.Questions[i].ClientAnswer.YNValue, "YesNo", new { @name = "model.Questionnaire.Questions[" + i + "].ClientAnswer.YNValue.Value" })
+                                        </td>
+                                        break;
+                                    case QuestionTypes.Numeric:
+                                        <td>
+                                            @Html.LabelFor(model => model.Questionnaire.Questions[i].ClientAnswer.NumericValue, Model.Questionnaire.Questions[i].QuestionName)
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                @Html.TextBoxFor(model => model.Questionnaire.Questions[i].ClientAnswer.NumericValue, new { type = "number", @class = "form-control" })
+                                                @Html.ValidationMessageFor(model => model.Questionnaire.Questions[i].ClientAnswer.NumericValue)
+                                            </div>
+                                        </td>
+                                        break;
+                                    case QuestionTypes.Text:
+                                        <td>
+                                            @Html.LabelFor(model => model.Questionnaire.Questions[i].ClientAnswer.TextValue, Model.Questionnaire.Questions[i].QuestionName)
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                @Html.TextAreaFor(model => model.Questionnaire.Questions[i].ClientAnswer.TextValue, new { @class = "wdth-strct-400 hght-strct-50 form-control" })
+                                                @Html.ValidationMessageFor(model => model.Questionnaire.Questions[i].ClientAnswer.TextValue)
+                                            </div>
+                                        </td>
+                                        break;
+                                    case QuestionTypes.Date:
+                                        <td>
+                                            @Html.LabelFor(model => model.Questionnaire.Questions[i].ClientAnswer.DateValue, Model.Questionnaire.Questions[i].QuestionName)
+                                        </td>
+                                        <td>
+                                            @Html.EditorFor(model => model.Questionnaire.Questions[i].ClientAnswer.DateValue, "dateonly")
+                                            @Html.ValidationMessageFor(model => model.Questionnaire.Questions[i].ClientAnswer.DateValue)
+                                        </td>
+                                        break;
+                                    case QuestionTypes.DropdownSingle:
+                                        <td>
+                                            @Html.LabelFor(model => model.Questionnaire.Questions[i].ClientAnswer.SingleDropdownValue, Model.Questionnaire.Questions[i].QuestionName)
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                @Html.DropDownListFor(model => model.Questionnaire.Questions[i].ClientAnswer.SingleDropdownValue, Utilities.ConvertToSelectList(Model.Questionnaire.Questions[i].DropdownSelectList, false, Model.Questionnaire.Questions[i].ClientAnswer.SingleDropdownValue), new { @class = "wdth-strct-200 form-control" })
+                                                @Html.ValidationMessageFor(model => model.Questionnaire.Questions[i].ClientAnswer.SingleDropdownValue)
+                                            </div>
+                                        </td>
+                                        break;
+                                    case QuestionTypes.DropdownMultiple:
+                                        <td>
+                                            @Html.LabelFor(model => model.Questionnaire.Questions[i].ClientAnswer.MultipleDropdownValue, Model.Questionnaire.Questions[i].QuestionName)
+                                        </td>
+                                        <td>
+                                            @Html.QuestionnaireListBoxFor(model => model.Questionnaire.Questions[i].ClientAnswer.MultipleDropdownValue, Utilities.ConvertToMultiSelectListInt(Model.Questionnaire.Questions[i].DropdownSelectList, Model.Questionnaire.Questions[i].ClientAnswer.MultipleDropdownValue), null, true, false, null, true)
+                                            @Html.ValidationMessageFor(model => model.Questionnaire.Questions[i].ClientAnswer.MultipleDropdownValue)
+                                        </td>
+                                        break;
+                                }
+                            }
+                        </tr>
+                                }
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <div>
+                <button type="submit" class="saveButton" id="editClientQuestionnaire">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "ClientList", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+                                }
+</div>
+
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $(".saveButton").on("submit", function () {
+
+                alert("hi");
+
+            });
+        </script>
+    );
+}

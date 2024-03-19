@@ -1,0 +1,8 @@
+﻿@model PlaceViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PlaceDetails;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Places/_EditPlace.cshtml"), ViewModel = Model })

@@ -1,0 +1,36 @@
+﻿@model SessionCommentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_SessionCommentDisplay;
+}
+
+<div>
+    <label class="control-label wdth-strct-200" >@Labels.CreatedByName</label>
+    @Html.DisplayFor(model => model.UserName)
+</div>
+
+<div>
+    <label class="control-label wdth-strct-200" >@Labels.DateCreated</label>
+    @Html.DisplayFor(model => model.DateCreated)
+</div>
+
+<div>
+    <label class="control-label wdth-strct-200" >@Labels.Subject</label>
+    @Html.DisplayFor(model => model.Subject)
+</div>
+
+<br />
+
+<div>
+    <label class="control-label wdth-strct-200" >@Labels.Comment</label>
+    @Html.EditorFor(model => model.CommentBody, "TinyMCE_Print")
+</div>
+
+<div class="mrgn-tp-sm">
+    @if (RightsHelper.HasRight(UserRights.CaseManagement_Sessions_Comment_Display, Model.OrganizationID))
+    { 
+        @Html.ActionLink(Labels.Edit, "EditMeetingComment", "CaseManagement", new { sessionCommentID = Model.SessionCommentID, caseID = Model.CaseID, goalID = Model.GoalID, id = Model.ReadOnlyVitals.ClientID }, new { @class = "editButton", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+    }
+
+    @Html.ActionLink(Labels.Cancel, "EditMeeting", "CaseManagement", new { caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID, goalID = Model.GoalID, sessionID = Model.SessionID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+</div>

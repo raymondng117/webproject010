@@ -1,0 +1,90 @@
+﻿@model FoodBanksListViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_FoodBankList; 
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+    Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values *@
+@Html.Partial("_DateFilterList", Model.DateFilter)
+<div class="clearfix"></div>
+<br />
+
+<div>
+    <div class="form-color-white module-form-block">
+       <div id="FoodBankItemsTableDiv">      
+            <div class="table-responsive">
+                <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.ClientFullName</th>
+                            <th>@Labels.ReasonForService</th>
+                            @*<th>@Labels.ServiceProvider</th>*@
+                            <th>@Labels.Date</th>
+                            <th>@Labels.NumberOfPeople</th>
+                            <th>@Labels.Action</th>         
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.ClientFoodBankRecords.Count > 0)
+                        {  
+                            for (int i = 0; i < Model.ClientFoodBankRecords.Count; i++)
+                            {   
+                                <tr>
+                                    <td>@Html.DisplayFor(m => m.ClientFoodBankRecords[i].ClientLastName), @Html.DisplayFor(m => m.ClientFoodBankRecords[i].ClientFirstName)</td>
+                                    <td>@if (Model.ClientFoodBankRecords[i].ReasonType != null)
+                                        {@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReasonForServiceTypes, Culture, Model.ClientFoodBankRecords[i].ReasonType)} else{ @Labels.NA}</td>
+                                    @*<td>@Html.DisplayFor(m => m[i].OrganizationName)</td>*@
+                                    <td class="align-text-center">@Html.DisplayFor(m => m.ClientFoodBankRecords[i].DateStart, "DateOnly")</td>
+                                    <td class="align-text-center">@Html.DisplayFor(m => m.ClientFoodBankRecords[i].NumberOfPeople)</td>
+                                    <td class="align-text-center">
+
+                                        @if (RightsHelper.HasRight(UserRights.FoodBanks_Display, Model.ClientFoodBankRecords[i].OrganizationID))
+                                        {
+                                            @Html.ActionLink(Labels.Display, "DisplayTransaction", "FoodBanks", new { id = Model.ClientFoodBankRecords[i].ClientID, transactionID = Model.ClientFoodBankRecords[i].ServiceID }, new { @class = "displayButton noText", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                        }
+
+                                        @if (RightsHelper.HasRight(UserRights.FoodBanks_Edit, Model.ClientFoodBankRecords[i].OrganizationID))
+                                        {
+                                            @Html.ActionLink(Labels.Edit, "EditTransaction", "FoodBanks", new { id = Model.ClientFoodBankRecords[i].ClientID, transactionID = Model.ClientFoodBankRecords[i].ServiceID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label=Labels.Edit, @role = "button" })
+                                        }
+                            
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>@*End of <div id="FoodBankItemsTableDiv">*@   
+    </div>
+        
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md"> 
+
+        @if (RightsHelper.HasRight(UserRights.FoodBanks_Add))
+        {
+            @Html.ActionLink(Labels.NewFoodBank, "NewTransaction", "FoodBanks", new { @class = "addButton  ", title = @Labels.New, alt=Labels.NewFoodBank, aria_label = Labels.NewFoodBank, @role = "button" }) 
+        }
+
+        @if (RightsHelper.HasRight(UserRights.ExportToExcelButton))
+        {                        
+            <span class="float-right">@Html.ActionLink(Labels.ExportToExcel, "GetDefaultParamForm", "Excel", new { ActionName = "FoodBanks", DataSetName = "List" }, new { @class = "excelButton no-print noText wb-lbx lbx-modal", aria_controls="Modal_Excel", alt=Labels.ExportToExcel, aria_label = Labels.ExportToExcel, @role = "button" })</span>
+        }  
+            
+    </div>
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             table.on('draw.dt', function () {
+                init_hifis();
+             });
+        </script>
+    );
+}

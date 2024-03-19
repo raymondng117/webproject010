@@ -1,0 +1,120 @@
+﻿@Html.Partial("_ValidationSummaryOuter")
+
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_Landlordlist;
+    string ajaxUrl = Url.Content("~/HousingUnit/LandlordSearchResultsJson/?SP=true");
+
+    if (ViewBag.IsGeoRegionEnabled)
+    {
+        ajaxUrl += "&GeoID=" + ViewBag.CurrentGeoRegionID;
+    }
+}
+
+<div>
+    <p>
+        <a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+    </p>
+    <div class="clearfix"></div>
+    <div class="table-responsive">
+        <table id="landlordsTable" class="wb-tables table table-striped table-hover" 
+               data-wb-tables='{ "columns": [
+                                            { "width": "20%", "data": "fullname", "orderable": false, "type": "string"},
+                                            { "width": "14%", "data": "huCount", "orderable": false, "type": "string"},
+                                            { "width": "11%", "data": "workphone", "orderable": false, "type": "string"},
+                                            { "width": "11%", "data": "homephone", "orderable": false, "type": "string"},
+                                            { "width": "11%", "data": "mobilephone", "orderable": false, "type": "string"},
+                                            { "width": "11%", "data": "workemail", "orderable": false, "type": "string"},
+                                            { "width": "11%", "data": "personalemail", "orderable": false, "type": "string"},
+                                            { "width": "11%", "data": "actions", "orderable": false, "type": "string"}
+                                            ],
+                                "order": [[0, "desc"]],
+                                "serverSide": true,
+                                "processing": true,
+                                "bFilter": false,
+                                "ajax": "@ajaxUrl"}'>
+            <thead>
+                <tr>
+                    <th>@Labels.FullName</th>
+                    <th>@Labels.HousingUnitCount</th>
+                    <th>@Labels.WorkPhone</th>
+                    <th>@Labels.HomePhone</th>
+                    <th>@Labels.MobilePhone</th>
+                    <th>@Labels.WorkEmail</th>
+                    <th>@Labels.PersonalEmail</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <!-- Overlay Panel -->
+    <section id="filter-panel" class="wb-overlay modal-content overlay-def /*wb-panel-l*/ outside-off filtersSidePanel">
+        <header class="modal-header">
+            <h2 class="modal-title">@Labels.FilterOptions</h2>
+        </header>
+        <div class="modal-body">
+            @Html.Partial("_LandlordSearchFilters", new UnitSearchFilterViewModel() { SP = true, GeoID = ViewBag.CurrentGeoRegionID })
+        </div>
+    </section>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            @*$(function () {
+                $.ajax({
+                    url: "@Url.Action("GetUsedHousingTypes", "HousingUnit")",
+                    type: "POST"
+                }).done(function (result) {
+                    $('#HTS').append(makeOptions(result.data));
+                }).always(function () {
+                    reinitSelect2($('#HTS'));
+                });
+            });*@
+
+            //open the filter panel
+            $('#openFilters').on('click', function () {
+                if ($("#filter-panel").hasClass('open'))
+                    $('#filter-panel').trigger('close.wb-overlay');
+                //else
+                //    reinitSelect2($('#HTS'));
+                $('#filter-panel').trigger('open.wb-overlay');
+            });
+
+            //when the filter panel opens reinit select2s
+            $(document).on('open.wb-overlay', function (event) {
+                doSelect2Init();
+            });
+
+            //on list redraw reinit hifis scripts and reinit lightboxes
+            $('#landlordsTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+            });
+
+            //close filter panel
+            $('#closeFilters').on('click', function () {
+                $("#filter-panel").trigger("close.wb-overlay");
+            });
+
+            //reapplies container class to the large select2 drop downs
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                select2InitFunctions.push(function () {
+                    selector.select2(
+                    {
+                        allowClear: true,
+                        placeholder: $("#DropdownPlaceholder").val(),
+                        dropdownAutoWidth: true,
+                        containerCssClass: "custom-select2-container"
+                    });
+                });
+                doSelect2Init();
+            }
+
+        </script>);
+}

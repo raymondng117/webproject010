@@ -1,0 +1,115 @@
+﻿@model ClientHealthViewModel
+
+<div class="displayView mrgn-tp-md">
+
+	<div class="row">
+        @Html.HifisLabelFor(model => model.HealthIssueName, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="HealthIssueName" name="HealthIssueName"
+                   value="@Html.DisplayFor(model => model.HealthIssueName)" readonly />
+        </div>
+	</div>
+	
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateFrom, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="DateFrom" name="DateFrom"
+                   value="@Html.DisplayFor(model => model.DateFrom)" readonly />
+        </div>
+    </div>
+		   
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DateTo, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <input type="text" class="inputTextOnly" id="DateTo" name="DateTo"
+                   value="@Html.DisplayFor(model => model.DateTo)" readonly />
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.Description, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            <textarea class="commentBoxSize" id="Description" name="Description" style="width: 100%;"
+                      readonly>@Html.DisplayFor(model => model.Description)</textarea>
+        </div>
+    </div>
+
+	<div class="row">
+		@Html.HifisLabelFor("Status", Labels.Status, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @{
+                List<string> status = new List<string>();
+                string statusFormated = "";
+
+                if (Model.SelfReportedYN)
+                {
+                    status.Add(Labels.SelfIdentified);
+                }
+                if (Model.SuspectedYN)
+                {
+                    status.Add(Labels.Suspected);
+                }
+                if (Model.DiagnosedYN)
+                {
+                    status.Add(Labels.Diagnosed);
+                }
+                if (Model.ContagiousYN)
+                {
+                    status.Add(Labels.Contagious);
+                }
+
+                for (int i = 0; i < status.Count(); i++)
+                {
+                    if (i < status.Count() - 1)
+                    {
+                        statusFormated += @status[i] + ", ";
+                    }
+                    else
+                    {
+                        statusFormated += @status[i];
+                    }
+                }
+            }
+
+            <input type="text" class="inputTextOnly" id="Status" name="Status"
+                   value="@statusFormated" style="width: 100%;" readonly />
+        </div>
+	</div>
+
+    <div class="row">
+        @Html.HifisLabelFor("Symptoms", Labels.Symptoms, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.EditorFor(model => model.Symptoms, "TinyMCE_Print")
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor("Medication", Labels.Medication, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.EditorFor(model => model.Medication, "TinyMCE_Print")
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor("Treatment", Labels.Treatment, new { @class = "col-xs-3 control-label" })
+        <div class="col-xs-9">
+            @Html.EditorFor(model => model.Treatment, "TinyMCE_Print")
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-offset-3 col-sm-9">
+            <div class="form-group">
+                @if (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID || Model.EditableYN)
+                {
+                    if (RightsHelper.HasRight(UserRights.Veterans_Edit))
+                    {
+                        @Html.ActionLink(Labels.Edit, "EditHealth", "Health", new { id = Model.ClientID, healthIssueID = Model.HealthIssueID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                    }
+                }
+
+                @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    </div>
+</div>

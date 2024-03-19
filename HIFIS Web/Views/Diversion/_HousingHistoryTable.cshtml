@@ -1,0 +1,43 @@
+﻿@model DiversionViewModel
+@{
+
+    string fullHistoryUrlDefault = Url.Content("~/Diversion/GetHousingHistoryList/?clientID=" + Model.PrimaryClientID + "&includeStay=false");
+
+}
+
+<div class="table-responsive">
+    <table id="HousingHistoryTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                { "width": "20%", "data": "HouseType", "orderable": true, "type": "string", "name" : "Category_En"},
+                                                                { "width": "25%", "data": "Address", "orderable": false, "type": "string", "name" : "Address"},
+                                                                { "width": "10%", "data": "DateStart", "orderable": true, "type": "string", "name": "DateStart"},
+                                                                { "width": "10%", "data": "DateEnd", "orderable": true, "type": "string", "name": "DateEnd"},
+                                                                { "width": "25%", "data": "actions", "orderable": false, "type": "string", "name": "actions"}
+                                                            ],
+                                                            "order": [ [2, "desc"] ],
+                                                            "serverSide": true,
+                                                            "processing": true,
+                                                            "bFilter" : false,
+                                                            "ajax": {
+                                                                "url": "@fullHistoryUrlDefault",
+                                                                "type": "GET",
+                                                                "datatype": "json"
+                                                            } }'>
+        <thead>
+            <tr>
+                <th class="col-xs-2">@Labels.HousingType</th>
+                <th class="col-xs-3">@Labels.Address</th>
+                <th class="col-xs-1">@Labels.DateStart</th>
+                <th class="col-xs-1">@Labels.DateEnd</th>
+                <th class="col-xs-3">@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<p>
+    @if (RightsHelper.HasRight(UserRights.Client_Housing_Add))
+    {
+        @Html.ActionLink(Labels.AddHousingHistory, "HousingHistoryNew", "Diversion", new { id = Model.PrimaryClientID }
+                                                                , new { @class = "wb-lbx lbx-modal addButton", title = @Labels.HousingHistory, @role = "button" })
+    }
+</p>

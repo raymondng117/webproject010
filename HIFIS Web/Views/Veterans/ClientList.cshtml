@@ -1,0 +1,120 @@
+﻿@model VeteransListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_VeteranList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+    <div>
+        @if (!ViewBag.IsClientUnderMinimumVeteranAge && (ViewBag.VetStatID == null || ViewBag.VetStatID == (short)VeteranStatus.NotVeteran || ViewBag.VetStatID == (short)VeteranStatus.Unknown))
+        {
+            <h6>@Labels.NotVeteranMessage </h6>
+
+            <div>
+                @using (Html.BeginForm("NewVeteran", "Veterans", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.ClientID)
+
+                    @Html.HifisEditorFor(m => m.VeteranStateID, CachedTableTypes.HIFIS_VeteranStatesTypes)
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <button type="submit" class="saveButton">@Labels.Save</button>
+                            @Html.ActionLink(Labels.Cancel, "DisplayVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt = Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                        </div>
+                    </div>
+
+                }
+            </div>
+        }
+        else
+        {
+            if (ViewBag.IsClientUnderMinimumVeteranAge)
+            {
+                <div class="row mrgn-tp-sm">
+                    <div class="col-md-12 col-lg-12">
+                        <div class="alert alert-info" role="alert">
+                            <p>@Labels.VeteranMinimumAgeInfo @Constants.ClientMinimumVeteranAge @Labels.YearsOther</p>
+                            @*<p class="mrgn-bttm-0" style="margin-left:20px;">@Labels.msgAdminEmailAutoExport</p>
+                            <p class="mrgn-bttm-0" style="margin-left:20px;">
+                                @Html.Raw(String.Format(Labels.msgExportSetAdminEmail, !String.IsNullOrEmpty(Model.AdminId) ? Html.ActionLink(Labels.UserProfile, "AdminUserDashboard", "Users", new { id = Model.AdminId }, new { @class = "" }).ToString() : Labels.UserProfile))
+                            </p>*@
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div>
+                <div class="table-responsive">
+                    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                        <thead>
+                            <tr>
+                                <th>@Labels.VeteranService</th>
+                                <th>@Labels.DateStart</th>
+                                <th>@Labels.DateEnd</th>
+                                <th>@Labels.Role</th>
+                                <th>@Labels.Injured</th>
+                                <th>@Labels.PTSD</th>
+                                <th>@Labels.Benefits</th>
+                                <th>@Labels.Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (VeteransViewModel item in Model.ArmyServicePeriodList)
+                            {
+                                <tr>
+                                    <td class="align-text-center">@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ArmedConflictsTypes, Culture, item.ArmedConflictID) </td>
+                                    <td class="align-text-center">@item.DateStart.ToString("yyyy-MM-dd")</td>
+                                    <td class="align-text-center">@item.DateEnd.ToString("yyyy-MM-dd")</td>
+                                    <td class="align-text-center">@item.ArmyRoleTypeName</td>
+                                    <td class="align-text-center">
+                                        @if (item.Attributes.Count != 0 && item.Attributes.Contains((byte)VeteranAttributeTypes.Injuries))
+                                        {<span class="glyphicon glyphicon-ok" title="@Labels.Injured" class="hide">&nbsp; </span>}
+                                    </td>
+                                    <td class="align-text-center">
+                                        @if (item.Attributes.Count != 0 && item.Attributes.Contains((byte)VeteranAttributeTypes.PTSD))
+                                        {<span class="glyphicon glyphicon-ok" title="@Labels.PTSD" class="hide">&nbsp; </span>}
+                                    </td>
+                                    <td class="align-text-center">
+                                        @if (item.Attributes.Count != 0 && item.Attributes.Contains((byte)VeteranAttributeTypes.Benefits))
+                                        {<span class="glyphicon glyphicon-ok" title="@Labels.Benefits" class="hide">&nbsp; </span>}
+                                    </td>
+                                    <td class="align-text-center">
+
+                                        @if (RightsHelper.HasRight(UserRights.Veterans_Display))
+                                        {
+                                            @Html.ActionLink(Labels.Display, "Display", "Veterans", new { id = Model.ClientID, armyServicePeriodID = item.ArmyServicePeriodID }, new { @class = "noText displayButton", alt = Labels.Display, aria_label = Labels.Display })
+                                        }
+
+                                        @if (RightsHelper.HasRight(UserRights.Veterans_Edit))
+                                        {
+                                            @Html.ActionLink(Labels.Edit, "Edit", "Veterans", new { id = Model.ClientID, armyServicePeriodID = item.ArmyServicePeriodID }, new { @class = "noText editButton", alt = Labels.Edit, aria_label = Labels.Edit })
+                                        }
+
+                                        @if (RightsHelper.HasRight(UserRights.Veterans_Delete))
+                                        {
+                                            @Html.ActionLink(Labels.Delete, "Delete", "Veterans", new { id = Model.ClientID, armyServicePeriodID = item.ArmyServicePeriodID }, new { @class = "noText deleteButton", alt = Labels.Delete, aria_label = Labels.Delete })
+                                        }
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="mrgn-tp-md">
+                @if (RightsHelper.HasRight(UserRights.Veterans_Add) && !ViewBag.IsClientUnderMinimumVeteranAge)
+                {
+                    @Html.ActionLink(Labels.NewVeteranService, "New", new { id = Model.ClientID }, new { @class = "addButton", alt = Labels.NewVeteranService, aria_label = Labels.NewVeteranService })
+                }
+            </div>
+        }
+    </div>

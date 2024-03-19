@@ -1,0 +1,194 @@
+﻿@model ClientListHealthViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientHealthList;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+
+    TempData["redirectToDisplay"] = null;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<ul class="nav nav-tabs" role="tablist">
+    @if (RightsHelper.HasRight(UserRights.Health_Client_List))
+    {
+        <li class="active">
+            <a class="tabButton" href="#Health" role="tab" data-toggle="tab">@Labels.HealthIssue</a>
+        </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.Health_Medication_Client_List))
+    {
+        <li>
+            <a class="tabButton" href="#Medication" role="tab" data-toggle="tab">@Labels.Medication</a>
+        </li>
+    }
+    @if (RightsHelper.HasRight(UserRights.Diet_List))
+    {
+        <li>
+            <a class="tabButton" href="#Diet" role="tab" data-toggle="tab">@Labels.DietaryRequirements</a>
+        </li>
+    }
+
+</ul>
+
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+
+            @if (RightsHelper.HasRight(UserRights.Health_Client_List))
+            {
+                <!-- Tab Pane #1: Health -->
+                <div class="tab-pane active" id="Health">
+                    <div class="table-responsive">
+                        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                            <thead>
+                                <tr>
+                                    <th style="width:15%">@Labels.HealthIssue</th>
+                                    <th style="width:15%">@Labels.Status</th>
+                                    <th style="width:15%">@Labels.DateStart</th>
+                                    <th style="width:15%">@Labels.DateEnd</th>
+                                    @if (appSettings.EnableSharing())
+                                    {
+                                        <th style="width:13%">@Labels.OwnerOrg</th>
+                                        <th style="width:10%">@Labels.Visibility</th>
+                                    }
+                                    else
+                                    {
+                                        <th style="width:23%">@Labels.OwnerOrg</th>
+                                    }
+                                    <th style="width:17%">@Labels.Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var health in Model.ClientHealth)
+                                {
+                                    <tr>
+                                        <td>@health.HealthIssueName</td>
+
+                                        <td>
+                                            <ul>
+                                                @if (health.SelfReportedYN)
+                                                {
+                                                    <li>@Labels.SelfIdentified</li>
+                                                }
+                                                @if (health.SuspectedYN)
+                                                {
+                                                    <li>@Labels.Suspected</li>
+                                                }
+                                                @if (health.DiagnosedYN)
+                                                {
+                                                    <li>@Labels.Diagnosed</li>
+                                                }
+                                                @if (health.ContagiousYN)
+                                                {
+                                                    <li>@Labels.Contagious</li>
+                                                }
+                                            </ul>
+                                        </td>
+
+                                        <td>
+                                            @if (health.DateFrom != null)
+                                            {
+                                                @health.DateFrom.Date.ToString("yyyy-MM-dd")
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @if (health.DateTo == null)
+                                            {
+                                                @Labels.Ongoing
+                                            }
+                                            else
+                                            {
+                                                @health.DateTo.Value.ToString("yyyy-MM-dd")
+                                            }
+                                        </td>
+
+                                        <td>@health.OwnerOrgName</td>
+
+                                        @if (appSettings.EnableSharing())
+                                        {
+                                            <td>
+                                                @if (health.ShareYN)
+                                                {
+                                                    <span>@Labels.Shareable</span>@(health.EditableYN ? ", " : "")
+                                                }
+                                                @if (health.EditableYN)
+                                                {
+                                                    <span>@Labels.Editable</span>
+                                                }
+                                            </td>
+                                        }
+
+                                        <td>
+
+                                        @if (RightsHelper.HasRight(UserRights.Health_Display) && (health.OwnerOrganizationID == null || health.OwnerOrganizationID == ViewBag.CurrentOrgID || health.ShareYN))
+                                        {
+                                            @Html.ActionLink(Labels.Display, "DisplayHealth", new { controller = "Health", id = health.ClientID, healthIssueID = health.HealthIssueID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                        }
+
+                                        @if (RightsHelper.HasRight(UserRights.Health_Edit) && (health.OwnerOrganizationID == null || health.OwnerOrganizationID == ViewBag.CurrentOrgID || health.EditableYN))
+                                        {
+                                            @Html.ActionLink(Labels.Edit, "EditHealth", new { controller = "Health", id = health.ClientID, healthIssueID = health.HealthIssueID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                        }
+
+                                        @if (RightsHelper.HasRight(UserRights.Health_Delete) && (health.OwnerOrganizationID == null || health.OwnerOrganizationID == ViewBag.CurrentOrgID || health.EditableYN))
+                                        {
+                                            @Html.ActionLink(Labels.Delete, "DeleteHealth", new { controller = "Health", id = health.ClientID, healthIssueID = health.HealthIssueID }, new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+
+                                        }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <div class="mrgn-tp-md">
+
+                        @if (RightsHelper.HasRight(UserRights.Health_Add))
+                        {
+                            @Html.ActionLink(Labels.AddHealthIssue, "NewHealth", "Health", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.AddHealthIssue, aria_label = Labels.AddHealthIssue, @role = "button" })
+                        }
+
+                    </div>
+                </div>
+            }
+
+
+            <!-- Tab Pane #2: Medication -->
+            <div class="tab-pane" id="Medication">
+                <div>
+                    @if (RightsHelper.HasRight(UserRights.Health_Medication_Client_List))
+                    {
+                        @Html.Partial("_MedicationList", Model)
+                    }
+                </div>
+            </div>
+
+
+            <!-- Tab Pane #3: DietRequirements -->
+            <div class="tab-pane" id="Diet">
+                <div>
+                    @if (RightsHelper.HasRight(UserRights.Diet_List))
+                    {
+                        @Html.Partial("_DietList", Model)
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).on('draw.dt', function () {
+        init_hifis();
+    });
+</script>

@@ -1,0 +1,92 @@
+﻿@model CallsVisitsLogViewModel
+@{
+    if(Model.ClientID == null){
+        ViewBag.ViewTitle = Labels.viewTitle_CallsVisitsLogNewMainMenu;
+    }
+    else{
+        ViewBag.ViewTitle = Labels.viewTitle_CallsVisitsLogNew;
+    }
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@* TODO: I'm sure this can be done differently(if its doing anything at all) -JdV *@
+<div class="row">    
+    <div class="col-sm-offset-2 mrgn-bttm-md"></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="row">
+    <div id="NewCallsVisitsLog_Form" class="col-sm-12">
+
+        @using (Html.BeginForm("New", "CallsVisitsLog", FormMethod.Post, new { @class = "form-horizontal" }))
+        {
+            if (Model.ReadOnlyVitals == null || Model.ClientID == null)
+            {
+                <div class="row">
+                    @Html.HifisAutocompleteFor(
+                        model => model.ClientID
+                        , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                        , Model.ReadOnlyVitals.ClientFullName
+                        , new AutocompleteViewModelOptions()
+                        {
+                            OnSelect = "callGetROVitals();",
+                            HiddenValue = true
+                        })
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+                </div>
+            }
+
+            @Html.Partial("_CallsVisitsLog")
+
+            <div class="row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-9" style="padding-left:10px;">
+                    <div class="btn-group">
+                        <button type="submit" class="saveButton">@Labels.Save</button>
+                        @if (Model.ReadOnlyVitals == null || Model.ClientID == null)
+                        {
+                            @Html.ActionLink(Labels.Cancel, "List", "CallsVisitsLog", new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink(Labels.Cancel, "ClientList", "CallsVisitsLog", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role="button" })
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             function callGetROVitals() {
+                 getROVitals($('#ClientID').val());
+             }
+
+            function OnTheFlyCallBack(objectID, formData) {
+
+                if ($("#ClientID").val() == "" || $("#ClientID").val() == " ") {
+                    getROVitals($("#ClientID").val());
+                }
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#ClientID").val(objectID);
+
+                getROVitals(objectID);
+            }
+        </script>   
+    );
+}

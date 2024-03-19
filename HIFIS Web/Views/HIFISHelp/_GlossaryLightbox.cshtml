@@ -1,0 +1,20 @@
+﻿@model HIFISGlossaryModel 
+@{
+    Layout = null;
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+}
+
+<div class="panel panel-primary" style="min-width:300px; max-width:60%; margin-left:20% !important;">
+    <h3 class="panel-title panel-heading">
+        <strong>@(lang == english ? Model.WordE + ":" : Model.WordF + ":" )</strong> 
+        <button title="@Labels.Close" type="button" class="wet-lightbox-close-fix mfp-close">x</button>   
+    </h3>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-12">  
+                @(lang == english ? Html.DisplayFor(item => Model.DefinitionE) : Html.DisplayFor(item => Model.DefinitionF)) 
+            </div>
+        </div>
+    </div>
+</div>

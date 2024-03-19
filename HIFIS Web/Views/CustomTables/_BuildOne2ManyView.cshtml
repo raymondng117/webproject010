@@ -1,0 +1,163 @@
+﻿@model CustomTableViewModel
+
+@{
+    var displayFieldTypesList = new[] { (int)CustomTableFieldTypes.Header1, (int)CustomTableFieldTypes.Header2, (int)CustomTableFieldTypes.Header3, (int)CustomTableFieldTypes.Description, (int)CustomTableFieldTypes.LineBreak, (int)CustomTableFieldTypes.HorizontalRule }.ToList();
+    var ShowCol2 = "true"; var ShowCol3 = "true";
+}
+
+@if (Model.Records != null && Model.Records.RecordsList.Count() > 0 && Model.Records.RecordsList[0].CustomTableFields.Count() == 0)
+{
+    <section class="alert alert-info">
+        <h5>@Labels.NoCustomFields</h5>
+        @Labels.ThereAreNoCustomFields
+    </section>
+}
+else
+{
+    if (Model.Records != null && Model.Records.RecordsList.Count() > 0)
+    {
+
+        foreach (var customTableRecordList in Model.Records.RecordsList)
+        {
+            if (customTableRecordList.CustomTableFields.Count() == 2)
+            {
+                ShowCol3 = "false";
+            }
+            else if (customTableRecordList.CustomTableFields.Count() == 1)
+            {
+                ShowCol2 = "false"; ShowCol3 = "false";
+            }
+
+
+            <div class="table-responsive">
+                <table class="wb-tables table table-striped table-hover" data-wb-tables='{"columns": [
+                                {"width": "25%",  "data": "cdata1","orderable": true, "type": "string","name": "cname1"},
+                                {"width": "25%",  "data": "cdata2","orderable": true, "visible" : @ShowCol2,"type": "string","name": "cname2"},
+                                {"width": "25%",  "data": "cdata3","orderable": true, "visible" : @ShowCol3,"type": "string","name": "cname3"},
+                                { "width": "20%",  "data": "action","orderable": false }
+                                ],
+                                "order": [ [0, "asc"] ],
+                                "serverSide": true,
+                                "processing": true,
+                                "ajax": "@Url.Action("GetCustomTableListPaginated", "CustomTables", new {
+                                        customtableID = Model.CustomTableID,
+                                        moduletypeID = Model.ModuleTypeID,
+                                        recordID = Model.ReferenceID,
+                                        clientID = Model.ClientID,
+                                        fPosList = Model.Records.RecordsList[0].CustomTableFields.Aggregate<CustomTableFieldDisplayViewModel, string>(
+                                          "", (x, ft) => x = x + ft.CustomTableFieldPosition.ToString() + "|"),
+                                        ftList = Model.Records.RecordsList[0].CustomTableFields.Aggregate<CustomTableFieldDisplayViewModel, string>(
+                                          "", (x, ft) => x = x + ft.CustomTableFieldTypeID.ToString() + "|")
+                                    })"
+                                }'>
+
+
+                    <thead>
+                        <tr>
+                            @{
+                                int icol = 0;
+                                foreach (var header in customTableRecordList.CustomTableFields)
+                                {
+                                    if (!displayFieldTypesList.Contains(header.CustomTableFieldTypeID))
+                                    {
+                                        <th>@header.CustomTableFieldDisplayName</th>
+                                        icol++;
+                                    }
+                                }
+                                //we need to have any header for the hidden column, othewise we can stuck in "Processing"
+                                if (icol <= 2)
+                                {
+                                    for (int i = 1; i <= (3 - icol); i++)
+                                    {
+                                        <th>NULL</th>
+
+                                    }
+                                }
+                            }
+
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+
+
+                    @*<tbody>
+                            @foreach (var record in customTableRecordList.RecordData)
+                            {
+                            //record.Data = record.Data.OrderBy(d => d.CustomTableFieldID).ToList();
+                            <tr>
+                                @foreach (var field in customTableRecordList.CustomTableFields)
+                                {
+                                    var data = record.Data.FirstOrDefault(rd => rd.CustomTableFieldID == field.CustomTableFieldID);
+                                    if (!displayFieldTypesList.Contains(field.CustomTableFieldTypeID))
+                                    {
+                                        if (data != null)
+                                        {
+                                            <td>@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableFieldDataDisplay.cshtml"), data)</td>
+                                        }
+                                        else
+                                        {
+                                            <td>-</td>
+                                        }
+                                    }
+                                }
+
+                                <td>
+                                    @Html.ActionLink(Labels.Display, "DisplayCustomTableRecord", "CustomTables", new { id = record.CustomTableLinkID, clientID = Model.ClientID }, new { @class = "displayButton wb-lbx lbx-modal noText", aria_controls = "Modal_DisplayCustomTableRecord", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                    @if (canEditCT)
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "EditCustomTableRecord", "CustomTables", new { id = record.CustomTableLinkID, clientID = Model.ClientID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                    }
+
+                                    @if (canDeleteCT)
+                                    {
+                                        @Html.ActionLink(Labels.Delete, "AjaxDeleteCustomTableRecord", "CustomTables", new { id = record.CustomTableLinkID, clientID = Model.ClientID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button"})
+                                    }
+
+                                </td>
+                            </tr>
+                            }
+                        </tbody>*@
+
+                </table>
+            </div>
+        }
+    }
+    else
+    {
+        <div id="NoResultsDiv" class="row">
+            <section class="col-md-12">
+                <div class="well well-sm mrgn-tp-sm">
+                    <h5 class="mrgn-tp-0">
+                        @Labels.NoRecords
+                    </h5>
+                    @Labels.NoCustmTableRecords
+                </div>
+            </section>
+        </div>
+    }
+
+    if (RightsHelper.HasRight(UserRights.CustomTables_Records_Add))
+    {
+        @Html.ActionLink(Labels.AddANewRecordFor + " " + Model.DisplayName, "NewCustomTableRecord", "CustomTables", new { id = Model.ReferenceID, CustomTableID = Model.CustomTableID, clientID = Model.ClientID }, new { @class = "addButton", alt = Labels.AddANewRecordFor + " " + Model.DisplayName, aria_label = Labels.AddANewRecordFor + " " + Model.DisplayName, @role = "button" })
+    }
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+
+     // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+     //$(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+     //    //initButtons();
+     //    //console.log("FD - initButtons called");
+     //});
+
+     $('.wb-tables').on('draw.dt', function () {
+         init_hifis();
+         $(".wb-lbx").trigger("wb-init.wb-lbx");
+     })
+</script>
+);
+}

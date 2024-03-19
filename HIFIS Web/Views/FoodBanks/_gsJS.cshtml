@@ -1,0 +1,79 @@
+﻿@*
+        This is used in Goods & Services and Food Banks to dynamically
+    update the case sessions in the case management activity field.
+        There are slight differences such as ClientID(s).
+*@
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+
+            $(document).ready(function () {
+                $('#datePicker1').on('dp.change', function () {
+                    $('#DateStart').trigger('change');
+                });
+
+
+                $('#DateStart').on('change', function () {
+                    var date = $('#DateStart').val();
+                    if (date.match(/^\d{4}-((0\d)|(1[012]))-(([012]\d)|3[01])$/) && !!$('#ClientID').val())
+                    {
+                        $('#SessionSelectionLoader').show();
+                        getSessions();
+                    }
+                });
+
+            }); //$(document).ready(function 
+            
+            
+            $('#SessionID').append('<option value=""/>');
+            var cID;
+            var badName = "";
+            if (!!document.getElementById("ClientID")) {
+                $("#ClientID").on("select2:select", function (e) {
+                    cID = $('#ClientID').val();
+                    getSessions();
+                });
+                cID = $('#ClientID').val();
+            } else {
+                cID = $('#HiddenClientID').val();
+            }
+
+             
+            //Appending data to Case Management Activity dropdown
+            function getSessions() {
+                $.ajax({
+                    url: "@Url.Action("getDropDownListAjax", "OnTheFly")",
+                    type: "POST",
+                data: { functionName: "getSessionList", functionParameters: { 0 : cID, 1: $("#DateStart").val()} },
+                }).done(function (data) {
+                    $('#SessionID').empty();
+                    $('#SessionID').append(makeCaseOptions(data.Result));
+                }).always(function () {
+                    reinitSelect2($('#SessionID'));
+                    $('#SessionSelectionLoader').hide('slow');
+                });
+            };
+
+            function makeCaseOptions(res) {
+                var str = "";
+                if (res.length > 0) {
+                    for (i = 0; i < res.length; i++) {
+                        str += '<option value="' + res[i].Value + '">' + res[i].Text + '</option>';
+                    }
+                }
+                else {
+                    str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                }
+                return str;
+            };
+
+            function reinitSelect2(selector) {
+                selector.select2('destroy');
+                selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+            }
+            </script>
+    );
+
+}

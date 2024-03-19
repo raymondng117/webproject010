@@ -1,0 +1,235 @@
+﻿.bedsPanel {
+    padding: 10px;
+    margin: 20px 0px 20px 0px;
+    width: 100%;
+    min-width: 400px;
+}
+
+.bedsPanel .body {
+    display: inline;
+}
+
+.legend {
+    width: 35px;
+    height: 30px;
+    color: #335075;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    pointer-events: none;
+}
+
+.bed {
+    width: 35px;
+    height: 30px;
+    margin: 1px;
+    float: left;
+    background-color: rgba(151, 168, 190, 0.5);
+    color: #335075;
+}
+
+.bedsPanel .body .room {
+    padding: 10px;
+    margin: 0px;
+    height: 100%;
+    border-color: #000;
+    border: thin;
+    border-radius: 5px;
+    display: inline;
+    float: left;
+}
+
+#toolbar {
+    width: 100%;
+}
+
+#clientToolBar {
+    padding: 10px 15px 10px 15px;
+    z-index: 95;
+}
+
+.clientButton {
+    float: left;
+    max-width: 150px;
+    height: 58px;
+    overflow-y: auto;
+    cursor: pointer;
+    margin: 2px;
+    padding: 2px;
+    font-size: 14px;
+    z-index: 100;
+}
+
+.clientButton_reserved {
+    float: left;
+    max-width: 150px;
+    height: 58px;
+    overflow-y: auto;
+    cursor: pointer;
+    margin: 2px;
+    padding: 2px;
+    font-size: 14px;
+}
+
+.clientButton_booked {
+    float: left;
+    max-width: 150px;
+    height: 58px;
+    overflow-y: auto;
+    cursor: pointer;
+    margin: 2px;
+    padding: 2px;
+    font-size: 14px;
+}
+
+.selected-client {
+    background-color: rgba(255, 106, 0, 0.8) !important;
+}
+
+.selected-booked {
+    background-color: rgba(255, 106, 0, 0.8) !important;
+}
+
+.activeBed {
+    background-color: rgba(25, 143, 182, 0.25) !important;
+    cursor: pointer;
+}
+
+.activeBed:hover {
+    background-color: rgba(25, 143, 182, 0.60) !important;
+}
+
+.overflowBed {
+    background-color: rgba(255, 203, 58, 0.25) !important;
+    cursor: pointer;
+}
+
+.overflowBed:hover {
+    background-color: rgba(255, 203, 58, 0.60) !important;
+}
+
+.requested-bed {
+    background-color: rgba(77, 187, 70, 0.80) !important;
+    cursor: pointer;
+}
+
+.requested-bed:hover {
+    background-color: rgba(77, 187, 70, 1) !important;
+}
+
+.booked-bed {
+    background-color: rgba(2, 15, 56, 0.50) !important;
+    cursor: default;
+}
+
+.booked-bed:hover {
+    background-color: rgba(2, 15, 56, 0.70) !important;
+}
+
+.booked-bed-res {
+    background-color: rgba(2, 15, 56, 0.50) !important;
+    cursor: pointer;
+}
+
+.booked-bed-res:hover {
+    background-color: rgba(2, 15, 56, 0.70) !important;
+}
+.inactiveBed {
+    background-color: rgba(79, 0, 0, 0.35);
+    cursor: not-allowed;
+}
+
+.glyphicon-flag {
+    color: rgba(255, 106, 0, 0.8) !important;
+}
+
+.glyphicon-exclamation-sign {
+    color: rgba(199, 22, 22, 0.80) !important;
+}
+
+.modal-dialog {
+    top: 50%;
+    margin-top: -250px;
+}
+
+.modal {
+    /*display: none;*/
+}
+
+input[placeholder] { 
+    width: 100% !important;
+}
+
+.cd-top {
+    /*display: none;*/
+    position: fixed;
+    bottom: 10%;
+    right: 5%;
+    text-decoration: none;
+    background-color: rgba(235, 106, 0, 0.7) !important;
+    color: #335075;
+    z-index: 100;
+}
+
+.cd-top:hover {
+    background-color: rgba(235, 106, 0, 0.9) !important;
+    color: #335075;
+}
+
+#search-box {
+    max-width: 200px;
+}
+
+.bookinControlPanel {
+    width: 280px;
+    height: 575px;
+    border: ridge;
+    border-left: none;
+    border-color: gray;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background-color: #F8F8F8;
+    box-shadow: lightgray 1px 2px 2px 2px; 
+    margin-top: -275px;
+    top: 50%;
+    left: -250px;
+    position: fixed;
+    z-index: 1000;
+}
+
+.bookinControlPanel > h5 {
+    text-align:center;
+    margin-bottom:-15px;
+    margin-top: 10px;
+}
+
+#availabilityTable > tbody > tr > td:not(:first-child) {
+    text-align: center;
+}
+
+#bookedInTable > tbody > tr > td:nth-child(5) {
+    text-align: center;
+}
+
+#reservationsTable > tbody > tr > td:nth-child(5) {
+    text-align: center;
+}
+
+.popover.styled {
+    background-color: rgba(0, 0, 0, 0.75);/*rgba(255, 106, 0, 0.75);*//*rgba(89, 63, 177, 0.80);*//*rgba(11, 40, 66, 0.7);*/
+}
+
+.popover-content.styled div{
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    margin: 3px;
+    color: rgba(80, 80, 80, 0.9);
+}
+
+.popover-content.styled {
+    padding: 4px;
+}
+
+.popover-title.styled {
+    background-color: rgba(11, 40, 66, 0);
+    color: rgba(255, 255, 255, 0.9);
+}

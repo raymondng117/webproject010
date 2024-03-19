@@ -1,0 +1,114 @@
+﻿@model AutocompleteViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.Image(Url.Content("~/Content/images/Loaders/loader-30.gif"), new { id = "loader-" + Model.InputId, @class = "autocompleteLoadingGif", alt = "field is loading results" })
+
+@* The scripts in the template won't run if called from a modal. The code is rendered but not executed
+    You will need to add the " class = autocomplete" to the htmlAttributes of the element, and then copy the initialization
+    function to the modals <script> section.
+*@
+@{ 
+//var test = ViewBag.inputNamePrependStringFull;
+//var test3 = Model;
+//Model.InputId = test + test3.InputId;
+////Model.InputName = test + test3.InputId;
+//var test4 = "";
+}
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            // So, here we are binding to the ajaxComplete event at the global level.
+            select2InitFunctions.push(
+                function () {
+                    $('select#@Model.InputName').addClass("autocomplete");
+
+                    if ($('#MinimumCharacterInput').val()) {
+                        initAutocomplete(parseInt($('#MinimumCharacterInput').val()));
+                    }
+                    else {
+                        initAutocomplete(parseInt(@System.Web.Configuration.WebConfigurationManager.AppSettings["DefaultMinCharInput"]));
+                    }
+
+                    function initAutocomplete(minInputLength) {
+
+                        if (minInputLength <= 0) {
+                            minInputLength = 1;
+                        }
+
+                        $('select#@Model.InputName').select2({
+                            @if(Model.AllowClear)
+                            {
+                                <text>
+                                    allowClear: true,
+                                    placeholder: "@Model.Placeholder",
+                                </text>
+                            }
+                            minimumInputLength: minInputLength,
+                            ajax: {
+                                type: "POST",
+                                url: "@Url.Content(Model.Url)",
+                                dataType: 'json',
+                                delay: 250,
+                                data: function (params) {
+                                    return {
+                                        @(Model.SearchStringParameterName + ": params.term,")
+                                        @("resultsToReturn: " + Model.MaxResultsToReturn + " ,")
+                                        @(!String.IsNullOrEmpty(Model.AdditionalData) ? ", " + Model.AdditionalData : "")
+                                    };
+                                },
+                                processResults: function (data, page) {
+                                    // parse the results into the format expected by Select2.
+                                    // since we are using custom formatting functions we do not need to
+                                    // alter the remote JSON data
+                                    var result = [];
+                                    $.each(data.Result, function (index, item) {
+                                        result.push({ "id": item.value, "text": item.label });
+                                    });
+                                    return {
+                                        results: result
+                                    };
+                                },
+                                cache: true
+                            },
+                        });
+                        @*$('select#@Model.InputName').on('select2:select', function (e) {
+                            @Html.Raw(Model.OnSelect)
+                        });*@
+                    }
+                });
+        </script>
+);
+}
+
+@if (!(Model.SelectClientFieldType == SelectClientFieldTypes.Other) && appSettings.IsAttestationEnabled() && ViewBag.AvoidAttestation != true)
+{
+    <div id="@Model.InputName-attestation-result" class="pull-left"></div>
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            $('select#@Model.InputName').on('select2:select', function (e) {
+                @if (!(Model.SelectClientFieldType == SelectClientFieldTypes.Other) && appSettings.IsAttestationEnabled() && ViewBag.AvoidAttestation != true)
+                {
+                    <text>
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                    { FieldType: '@Model.SelectClientFieldType', ID: e.params.data.id, InputName: '@Model.InputName', Callback: '@Model.OnSelect' },
+                    function (data) {
+                        $("#@Model.InputName-attestation-result").html(data);
+                    }
+                );
+                </text>
+                }
+                else {
+                    @Html.Raw(Model.OnSelect)
+                }
+            });
+        </script>
+);
+}

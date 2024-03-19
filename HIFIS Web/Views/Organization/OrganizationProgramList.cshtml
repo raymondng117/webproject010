@@ -1,0 +1,94 @@
+﻿@model List<ProgramViewModel>
+@{
+    if(ViewBag.orgID != null){
+        ViewBag.ViewTitle = Labels.ServiceProviderPrograms + " " + ViewBag.orgName;
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.ServiceProviderPrograms;
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+    
+    int j = 1;
+}
+
+<div class="table-responsive">
+    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th class="align-text-center">@Labels.ProgramName (@Labels.HifisHelp_Default)</th>
+                <th class="align-text-center">@Labels.Services</th>
+                <th class="align-text-center">@Labels.StartDate</th>
+                <th class="align-text-center">@Labels.EndDate</th>
+                <th class="align-text-center">@Labels.TimeUnit</th>
+                <th class="align-text-center no-print">@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ProgramViewModel program in Model)
+            { 
+                <tr>
+                    <td>
+                        @program.Name
+                        @if (program.DefaultYN == true)
+                        {
+                            <span class="glyphicon glyphicon-ok"></span>
+                        }
+                    </td>
+                    <td>                        
+                        @if (program.ServiceTypeIDs != null)
+                        {
+                            if (program.ServiceTypeIDs.Count() > 1)
+                            {
+                                <div class="panel-default">
+                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                        <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;"> 
+                                            @program.ServiceTypeIDs.Count() @Labels.Services 
+                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                        </a>
+                                    </div>
+                                    <div id="@j" class="panel-collapse collapse">
+                                        <ul class="pddng-lft-md">
+                                            @foreach (var st in program.ServiceTypeIDs)
+                                            {
+                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, st)</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                j++;
+                            }
+                            else
+                            {
+                                foreach (var st in program.ServiceTypeIDs)
+                                {
+                                    @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceTypes, Culture, st)
+                                }
+                            }
+                        }
+                    </td>
+                    <td>@Html.DisplayFor(model => program.DateStart)</td>
+                    <td>@Html.DisplayFor(model => program.DateEnd)</td>
+                    <td>@program.TimeUnitTypeName</td>
+                    <td class="align-text-center no-print">
+                        @if (RightsHelper.HasRight(UserRights.Programs_Display))
+                        {
+                            @Html.ActionLink(Labels.Manage, "Display", "Programs", new { programID = program.ProgramID }, new { @class = "manageButton noText", alt=Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                        }              
+                    </td>
+                </tr>
+            }                      
+        </tbody>
+    </table>
+
+    <div class="mrgn-tp-md no-print">
+        @if (RightsHelper.HasRight(UserRights.Programs_Add))
+        {
+            @Html.ActionLink(Labels.AddProgram, "New", "Programs", new { }, new { @class = "addButton  ", title = Labels.AddProgram, alt=Labels.AddProgram, aria_label = Labels.AddProgram, @role = "button" })
+        }
+    </div>
+</div>
+
+

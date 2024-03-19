@@ -1,0 +1,162 @@
+﻿@model GoodsAndServices_ServiceListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_GoodsAndServicesList;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    int j = 1;
+    string prop = "";
+}
+
+<div>
+    @* To use datefilter add datefilterviewmodel to the vm being used, then copy section below and paste at top of list view.
+        Then copy the commented js from _DateFilterList.cshtml and change controller names to appropriate values *@
+    @Html.Partial("_DateFilterList", Model.DateFilter)
+    <div class="clearfix"></div>
+    <br />
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.Client</th>
+                    @*Removed fields from table until they are implemented*@
+                    @*<th>@Labels.Family</th>*@
+                    @*<th>@Labels.ServiceProvider</th>*@
+                    <th>@Labels.DateStart - @Labels.DateEnd</th>
+                    <th>@Labels.Details</th>
+                    <th>@Labels.GeoRegion</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Service != null && Model.Service.Count > 0)
+                {
+                    foreach (var item in Model.Service)
+                    {
+                <tr>
+                    <td>@item.ClientName</td>
+                    @*Removed fields from table until they are implemented*@
+                    @*<td>NOT YET INCLUDED</td>*@
+                    @*<td>@item.OrganizationName</td>*@
+                    <td>@Html.DisplayFor(model => item.DateStart) - @Html.DisplayFor(model => item.DateEnd)</td>
+                    <td>
+                        @if ((item.ClientGoodList.Count + item.ClientActivityList.Count) > 1)
+                        {
+                            <div class="panel-default">
+                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                    <a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+                                        @(item.ClientGoodList.Count() + item.ClientActivityList.Count)  @Labels.Goods / @Labels.Services
+                                        <span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </div>
+                                <div id="@j" class="panel-collapse collapse">
+                                    <ul class="pddng-lft-md">
+                                        <li>
+                                            @Labels.Goods
+                                            <ul class="pddng-lft-md">
+                                                @foreach (var st in item.ClientGoodList)
+                                                {
+                                                    <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GoodsTypes, Culture, st.GoodTypeID)</li>
+                                                }
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            @Labels.Services
+                                            <ul class="pddng-lft-md">
+                                                @foreach (var st in item.ClientActivityList)
+                                                {
+                                                    <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ActivitiesTypes, Culture, st.ActivitiesTypeID)</li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            j++;
+                        }
+                        else
+                        {
+                            foreach (var st in item.ClientGoodList)
+                            {
+                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GoodsTypes, Culture, st.GoodTypeID)
+                            }
+                            foreach (var st in item.ClientActivityList)
+                            {
+                                @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ActivitiesTypes, Culture, st.ActivitiesTypeID)
+                            }
+                        }
+                    </td>
+
+                    <td>
+                        @if (item.OutReachAddress != null && item.OutReachAddress.GeoIDs != null && item.OutReachAddress.GeoIDs.Count > 2)
+                        {
+                            prop = @Model.Service.IndexOf(item).ToString() + "prop";
+                            <div class="panel-default">
+                                <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                    <a data-toggle="collapse" role="button" data-parent="#accordion" href=@String.Format("#{0}", prop) class="btn btn-default btn-xs btn-block collapsed" style="text-align: left;" aria-expanded="false">
+                                        @item.OutReachAddress.GeoIDs.Count() - @Labels.Attributes<span class="caret pull-right mrgn-tp-sm"></span>
+                                    </a>
+                                </div>
+
+                                <div id=@prop class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
+                                    <ul class="pddng-lft-md">
+                                        @foreach (var geoID in item.OutReachAddress.GeoIDs)
+                                        {
+                                            <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture, geoID)</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            foreach (var geoID in item.OutReachAddress.GeoIDs)
+                            {
+                                <ul class="pddng-lft-md">
+                                    <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture, geoID)</li>
+                                </ul>
+                            }
+                        }
+                    </td>
+
+
+                    <td class="align-text-center">
+                        @if (RightsHelper.HasRight(UserRights.Goods_Services_Display, item.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Display, "Display", "GoodsAndServices", new { id = item.ClientIDs.First(), serviceID = item.ServiceID, GoodActivityID = item.GoodsActivitiesID }, new { @class = "displayButton noText", alt = Labels.Display, aria_label = Labels.Display, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.Goods_Services_Edit, item.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.Manage, "Manage", "GoodsAndServices", new { id = item.ClientIDs.First(), serviceID = item.ServiceID, GoodActivityID = item.GoodsActivitiesID }, new { @class = "manageButton noText", alt = Labels.Manage, aria_label = Labels.Manage, @role = "button" })
+                        }
+
+                        @if (RightsHelper.HasRight(UserRights.Goods_Services_Edit, item.OrganizationID))
+                        {
+                            @Html.ActionLink(Labels.EditGoodsServicesDetails, "Edit", "GoodsAndServices", new { returnTo = "List", id = item.ClientIDs.First(), serviceID = item.ServiceID, GoodActivityID = item.GoodsActivitiesID }, new { @class = "editButton noText", alt = Labels.EditGoodsServicesDetails, aria_label = Labels.EditGoodsServicesDetails, @role = "button" })
+                        }
+                    </td>
+                </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Goods_Services_Add))
+        {
+            @Html.ActionLink(Labels.NewGoodsAndService, "New", "GoodsAndServices", new { @class = "addButton  ", alt=Labels.NewGoodsAndService, aria_label = Labels.NewGoodsAndService, @role = "button" })
+        }
+        @if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Good_Add))
+        {
+            @Html.ActionLink(Labels.AddExpressGood, "NewExpressGoods", "GoodsAndServices", new { returnTo = "List" }, new { @class = "addButton  ", alt=Labels.AddExpressGood, aria_label = Labels.AddExpressGood, @role = "button" })
+        }
+
+        @if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Service_Add))
+        {
+            @Html.ActionLink(Labels.AddExpressService, "NewExpressServices", "GoodsAndServices", new { returnTo = "List" }, new { @class = "addButton  ", alt=Labels.AddExpressService, aria_label = Labels.AddExpressService, @role = "button" })
+        }
+    </div>
+</div>

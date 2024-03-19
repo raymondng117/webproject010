@@ -1,0 +1,8 @@
+﻿@model ELearningModuleModel
+
+@using (Html.BeginForm("ChangeModuleSequence", "HIFISHelp", FormMethod.Post))
+{ 
+    @Html.HiddenFor(model => model.ModuleID)
+    @Html.DropDownListFor(model => model.ModSequence, Model.SequenceList, new { @class="ModSequenceOrder",  data_Id = Model.PlaylistID,  data_ModId = Model.ModuleID})
+    @*<button type="submit" class="saveButton noText topicRankSave">@Labels.Save</button>*@
+}

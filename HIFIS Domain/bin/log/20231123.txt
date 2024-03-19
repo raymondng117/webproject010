@@ -1,0 +1,45 @@
+4:12 PM ReportManager: Updating database connection information for report: 
+4:12 PM ReportManager: SQL Client configured in web.config: SQLClient=SQLNCLI10
+4:12 PM ReportManager: Current Provider=SQLNCLI11
+4:12 PM ReportManager: The specified database driver was found on this server, proceeding to reconfigure the report's connection information...
+4:12 PM ReportManager: ConnBuilder.ConnectionString= Connection string updated to the ReportCon connection string found in the Domain Web.config.
+4:12 PM ReportManager: Report.Subreports.Count=0
+4:12 PM ReportManager: Report.DataSourceConnections.Count=1
+4:12 PM ReportManager: ConnBuilder.IntegratedSecurity=False
+4:12 PM ReportManager: Report.VerifyDatabase...was skipped this time
+4:13 PM ReportManager: Updating database connection information for report: 
+4:13 PM ReportManager: SQL Client configured in web.config: SQLClient=SQLNCLI10
+4:13 PM ReportManager: Current Provider=SQLNCLI11
+4:13 PM ReportManager: The specified database driver was found on this server, proceeding to reconfigure the report's connection information...
+4:13 PM ReportManager: ConnBuilder.ConnectionString= Connection string updated to the ReportCon connection string found in the Domain Web.config.
+4:13 PM ReportManager: Report.Subreports.Count=0
+4:13 PM ReportManager: Report.DataSourceConnections.Count=1
+4:13 PM ReportManager: ConnBuilder.IntegratedSecurity=False
+4:13 PM ReportManager: Report.VerifyDatabase...was skipped this time
+4:13 PM ReportManager: Updating database connection information for report: 
+4:13 PM ReportManager: SQL Client configured in web.config: SQLClient=SQLNCLI10
+4:13 PM ReportManager: Current Provider=SQLNCLI11
+4:13 PM ReportManager: The specified database driver was found on this server, proceeding to reconfigure the report's connection information...
+4:13 PM ReportManager: ConnBuilder.ConnectionString= Connection string updated to the ReportCon connection string found in the Domain Web.config.
+4:13 PM ReportManager: Report.Subreports.Count=0
+4:13 PM ReportManager: Report.DataSourceConnections.Count=1
+4:13 PM ReportManager: ConnBuilder.IntegratedSecurity=False
+4:13 PM ReportManager: Report.VerifyDatabase...was skipped this time
+4:14 PM ReportManager: Updating database connection information for report: 
+4:14 PM ReportManager: SQL Client configured in web.config: SQLClient=SQLNCLI10
+4:14 PM ReportManager: Current Provider=SQLNCLI11
+4:14 PM ReportManager: The specified database driver was found on this server, proceeding to reconfigure the report's connection information...
+4:14 PM ReportManager: ConnBuilder.ConnectionString= Connection string updated to the ReportCon connection string found in the Domain Web.config.
+4:14 PM ReportManager: Report.Subreports.Count=0
+4:14 PM ReportManager: Report.DataSourceConnections.Count=1
+4:14 PM ReportManager: ConnBuilder.IntegratedSecurity=False
+4:14 PM ReportManager: Report.VerifyDatabase...was skipped this time
+4:14 PM ReportManager: Updating database connection information for report: 
+4:14 PM ReportManager: SQL Client configured in web.config: SQLClient=SQLNCLI10
+4:14 PM ReportManager: Current Provider=SQLNCLI11
+4:14 PM ReportManager: The specified database driver was found on this server, proceeding to reconfigure the report's connection information...
+4:14 PM ReportManager: ConnBuilder.ConnectionString= Connection string updated to the ReportCon connection string found in the Domain Web.config.
+4:14 PM ReportManager: Report.Subreports.Count=0
+4:14 PM ReportManager: Report.DataSourceConnections.Count=1
+4:14 PM ReportManager: ConnBuilder.IntegratedSecurity=False
+4:14 PM ReportManager: Report.VerifyDatabase...was skipped this time

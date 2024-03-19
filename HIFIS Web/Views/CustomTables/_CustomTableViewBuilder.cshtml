@@ -1,0 +1,39 @@
+﻿@model CustomTableViewBuilder
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@if (ViewBag.CustomTables.CustomTableList.Count <= 0)
+{ 
+    @Html.Partial(Model.PartialName, Model.ViewModel)
+}
+else
+{
+    <div class="mrgn-tp-md">    
+        <ul class="nav nav-tabs" role="tablist">
+		    <li class="active">
+			    <a class="tabButton" href="#CustomTables_Details" role="tab" data-toggle="tab">@Labels.Details</a>
+		    </li>           
+            <li>
+			    <a class="tabButton" href="#CustomTables_CustomTables" role="tab" data-toggle="tab">
+                    @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+                </a>
+		    </li>
+	    </ul>
+
+	    <!-- Tab panes -->
+	    <div class="panel panel-default border-top-fix-tabs">
+		    <div class="panel-body">
+			    <div class="tab-content">
+				    <div class="tab-pane active" id="CustomTables_Details">
+                        @Html.Partial(Model.PartialName, Model.ViewModel)
+                    </div>	
+                    <div class="tab-pane" id="CustomTables_CustomTables">
+                        @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                    </div>					    
+			    </div>
+		    </div>
+	    </div>
+    </div>     
+}
+

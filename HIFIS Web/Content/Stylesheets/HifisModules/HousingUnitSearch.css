@@ -1,0 +1,53 @@
+﻿.infoBoxHeader
+{
+    min-width:300px;
+    position:relative;
+    top:-45px; right:-5px;
+    background-color:white;
+    padding:5px;
+    border: thin solid black;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+}
+
+.legendBox
+{
+    display:inline-block;
+    width:10px;
+    height:10px;
+    border: thin solid black;
+    vertical-align:middle;
+}
+
+.secured { background-color: Pink; }
+.shareable { background-color: Orange; }
+.occupied { background-color: Red; }
+.tempUnavailable { background-color: Yellow; }
+.availableStandard { background-color: Black; }
+.availableMap { background-color: Blue; }
+
+.securedText { color: Pink; }
+.shareableText { color: Orange; }
+.occupiedText { color: Red; }
+.availableStandardText { color: Black; }
+.availableMapText { color: Blue; }
+
+#MapView
+{
+    width:850px;
+    height:600px;
+    margin: 10px auto 5px auto;
+    border: thin solid black;
+    display:none;
+}
+
+#MapContainer
+{
+    width:850px;
+    height:600px;
+}
+
+.legendLabel
+{
+    margin-right:3px;
+}

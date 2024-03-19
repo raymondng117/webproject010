@@ -1,0 +1,82 @@
+﻿
+@model PagingListViewModel
+           
+@* To display or not display *@
+<div class ="mrgn-tp-md pull-right">
+@if (Model.PagingList.Count > 1)
+{        
+    @Html.Raw("<ul class=\"btn-toolbar list-inline\" role=\"toolbar\"><li class=\"btn-group\">")
+    
+    int offSet = 4;
+    
+    @* first page *@
+    if (Model.CurrentPageIndex == 0)
+    {
+        @Html.Raw("<a class=\"btn btn-primary disabled\">1</a>")
+    }
+    else
+    {
+        @* previous page *@
+        
+        @Html.ActionLink(Labels.alPrevious, Model.GetMethodName, new { controller = Model.ControllerName, pSearchString = Model.SearchString, pOrderBy = Model.OrderBy, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PrevPageIndex }, new { @class = "btn btn-default", alt=Labels.alPrevious, aria_label = Labels.alPrevious, @role = "button" })
+        
+        @Html.ActionLink("1", Model.GetMethodName, new { controller = Model.ControllerName, pSearchString = Model.SearchString, pOrderBy = Model.OrderBy, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.FirstPageIndex }, new { @class = "btn btn-default", alt="1", aria_label = "1", @role = "button" })
+      
+        if (Model.CurrentPageIndex > offSet + 1)
+        {
+            @Html.Raw("<a class=\"btn btn-default disabled\">...</a>")
+        }
+    }
+
+    
+
+    @* show only 10 pages at a time - 5 below and 5 above the current *@ 
+
+    @* *@
+    
+
+    
+    foreach (int selectedPageIndex in Model.PagingList)
+    {
+        if ((Model.CurrentPageIndex <= selectedPageIndex + offSet) && (Model.CurrentPageIndex >= selectedPageIndex - offSet) && selectedPageIndex > 0 && selectedPageIndex < Model.PagingList.Count - 1)
+        {
+
+            if (Model.CurrentPageIndex == selectedPageIndex)
+            {
+                @Html.Raw("<a class=\"btn btn-primary disabled\">" + (selectedPageIndex + 1).ToString() + "</a>");
+            }
+            else
+            {
+               
+                    @Html.ActionLink((selectedPageIndex + 1).ToString(), Model.GetMethodName, new { controller = Model.ControllerName, pSearchString = Model.SearchString, pOrderBy = Model.OrderBy, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = selectedPageIndex }, new { @class = "btn btn-default", alt=(selectedPageIndex + 1).ToString(), aria_label = (selectedPageIndex + 1).ToString(), @role = "button" }) 
+                
+            }
+        }
+    }
+        
+    @* last page  *@  
+    if (Model.CurrentPageIndex == Model.PagingList.Count - 1)
+    {
+        @Html.Raw("<a class=\"btn btn-primary disabled\">" + (Model.PagingList.Count).ToString() + "</a>");
+    }
+    else
+    {
+
+        if (Model.CurrentPageIndex < Model.PagingList.Count - offSet - 2)
+        {
+            @Html.Raw("<a class=\"btn btn-default disabled\">...</a>")
+        }
+        
+        
+            @Html.ActionLink((Model.PagingList.Count).ToString(), Model.GetMethodName, new { controller = Model.ControllerName, pSearchString = Model.SearchString, pOrderBy = Model.OrderBy, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.LastPageIndex }, new { @class = "btn btn-default", alt=(Model.PagingList.Count).ToString(), aria_label = (Model.PagingList.Count).ToString(), @role = "button" })
+        
+        @* next page *@
+        
+            @Html.ActionLink(Labels.alNext, Model.GetMethodName, new { controller = Model.ControllerName, pSearchString = Model.SearchString, pOrderBy = Model.OrderBy, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.NextPageIndex }, new { @class = "btn btn-default", alt=Labels.alNext, aria_label = Labels.alNext, @role = "button" })
+        
+    }
+
+    @Html.Raw("</li></ul>")
+}
+
+</div>

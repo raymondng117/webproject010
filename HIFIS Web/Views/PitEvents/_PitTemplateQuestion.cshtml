@@ -1,0 +1,34 @@
+﻿@model PitQuestionViewModel
+
+<tr>
+    <td>@Model.QuestionNo</td> 
+    <td align="center">@Model.SequenceNo</td>
+    <td>@(Culture.Equals(Constants.Eng) ? @Model.Question : @Model.QuestionF)</td>
+    <td>@Model.SequenceLabel</td>
+    <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionCategoryTypes, Culture, Model.QuestionCategoryTypeID)</td>
+    <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionTypes, Culture, Model.QuestionTypeID)</td>
+    <td>
+        @if (Model.IsDropdown())
+        {
+            foreach (var dropdown in Model.DropdownValues)
+            {
+                @:- @(Culture.Equals(Constants.Eng) ? @dropdown.NameE: @dropdown.NameF)
+                if (dropdown != @Model.DropdownValues.Last())
+                {
+                    <br/>
+                }
+            }
+        }
+    </td>
+    <td class="align-text-center">@(Model.ActiveYN? Labels.Yes : Labels.No)</td>
+    <td class="align-text-center">@(Model.InitiallyEnabledYN ? Labels.Yes : Labels.No)</td>
+    <td class="align-text-center"> @((Model.QuestionActionTypeID) != null? WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_PiTQuestionActionTypes, Culture, Model.QuestionActionTypeID) : null )</td>
+    <td>
+        @Html.ActionLink(Labels.EditQuestion, "EditPitTemplateQuestion", "PitEvents", new { questionID = @Model.QuestionID }, new { id = @Model.QuestionID, @class = "editButton noText", alt=Labels.EditQuestion, aria_label = Labels.EditQuestion, @role = "button" })
+    
+        @Html.ActionLink(Labels.DeletePitQuestion, "DeletePitQuestion", "PitEvents", new { questionID = @Model.QuestionID }, new { id = @Model.QuestionID, @class = "deleteButton noText", alt=Labels.DeletePitQuestion, aria_label = Labels.DeletePitQuestion, @role = "button" })
+       
+        @((@Model.QuestionTypeID == (byte)PitQuestionTypes.DropdownSingle || Model.QuestionTypeID == (byte)PitQuestionTypes.DropdownMultiple || @Model.QuestionTypeID == (byte)PitQuestionTypes.DropdownMultipleAddition) ?
+             Html.ActionLink(Labels.EditDropdown, "EditPitDropdowns", "PitEvents", new { questionID = @Model.QuestionID }, new { @class = "editDDButton noText", alt=Labels.EditDropdown, aria_label = Labels.EditDropdown, @role = "button" }) : null)
+    </td>
+</tr>

@@ -1,0 +1,317 @@
+﻿@model ClientVitalsViewModel
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active"><a class="tabButton" href="#Vitals" role="tab" data-toggle="tab">@Labels.Vitals</a></li>
+    <li><a class="tabButton" href="#Comments" role="tab" data-toggle="tab">@Labels.Comments</a></li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+            <!-- Tab Pane #1: Vitals -->
+			<div class="tab-pane active" id="Vitals">
+                <div class="displayView">
+                    <div>
+                        <label id="fullNameLabel" class="autowidth">@Labels.FullName</label>
+                        @Html.DisplayFor(model => model.FirstName)
+                        @Html.DisplayFor(model => model.MiddleName)
+                        @Html.DisplayFor(model => model.LastName)
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.GenderID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                        new SingleItemSelectList
+                                        {
+                                            ID = Model.GenderID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, ViewBag.CurrentCulture, Model.GenderID)
+                                        })
+                    </div>
+                    @if (Model.Aka1 == null && Model.Aka2 == null)
+                    {
+                        <div>
+                            <label id="akaLabel" class="autowidth">@Labels.Aka</label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            @Html.HifisLabelFor(model => model.Aka1, new { @class = "autowidth" })
+                            @Html.DisplayFor(model => model.Aka1)
+                        </div>
+                        <div>
+                            @Html.HifisLabelFor(model => model.Aka2, new { @class = "autowidth" })
+                            @Html.DisplayFor(model => model.Aka2)
+                        </div>
+                    }
+                    <br />
+
+                    <!-- Date of Birth/Age fields -->
+                    <div>
+                        @Html.HifisLabelFor(model => model.FileNumber, new { @class = "autowidth" })
+                        @Html.DisplayFor(model => model.FileNumber)
+                    </div>
+                    <div>
+                        <span id="DOBFlag">
+                            @Html.HifisLabelFor(model => model.DOB, new { @class = "autowidth" })
+                            @Html.DisplayFor(model => model.DOB)
+                        </span>
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.DOBDateFirmYNbool, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.DOBDateFirmYNbool)
+                    </div>
+                    <div>
+                        <span id="AgeFlag">
+                            @Html.HifisLabelFor(model => model.AproximativeAge, new { @class = "autowidth" })
+                            @Html.DisplayFor(model => model.AproximativeAge)
+                        </span>
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.InfoVerifiedYN, new { @class = "autowidth" })
+                        @if (Model.InfoVerifiedYN)
+                        {
+                            @Labels.Yes
+                        }
+                        else
+                        {
+                            @Labels.No
+                        }
+                    </div>
+                    <br />
+
+                    <!-- Secondary info -->
+                    <div>
+                        @Html.HifisLabelFor(model => model.DisabilityYN, new { @class = "autowidth" })
+                        @if (Model.DisabilityYN)
+                        {
+                            @Labels.Yes
+                        }
+                        else
+                        {
+                            @Labels.No
+                        }
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.MedicAlertYN, new { @class = "autowidth" })
+                        @if (Model.MedicAlertYN)
+                        {
+                            @Labels.Yes
+                        }
+                        else
+                        {
+                            @Labels.No
+                        }
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.VeteranStateID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                        new SingleItemSelectList
+                                        {
+                                            ID = Model.VeteranStateID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_VeteranStatesTypes, ViewBag.CurrentCulture, Model.VeteranStateID)
+                                        })
+                        @if (Model.VeteranStateID == (short)1)
+                        {
+                            <a class="mrgn-lft-sm" href="http://www.veterans.gc.ca" rel="nofollow" target="_blank">www.veterans.gc.ca</a>
+                        }
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.CitizenshipTypeID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                        new SingleItemSelectList
+                                        {
+                                            ID = Model.CitizenshipTypeID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CitizenshipTypes, ViewBag.CurrentCulture, Model.CitizenshipTypeID)
+                                        })
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.AboriginalIndicatorID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                        new SingleItemSelectList
+                                        {
+                                            ID = Model.AboriginalIndicatorID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_AboriginalIndicatorTypes, ViewBag.CurrentCulture, Model.AboriginalIndicatorID)
+                                        })
+                    </div>
+                    <div>
+                        @Html.HifisLabelFor(model => model.GeoRegionTypeID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                        new SingleItemSelectList
+                                        {
+                                            ID = Model.GeoRegionTypeID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, ViewBag.CurrentCulture, Model.GeoRegionTypeID)
+                                        })
+                    </div>
+                    <br />
+
+                    <!-- Client state and visibility -->
+                    <div>
+                        @Html.HifisLabelFor(model => model.ClientStateTypeID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                        new SingleItemSelectList
+                                        {
+                                            ID = Model.ClientStateTypeID,
+                                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ClientStateTypes, ViewBag.CurrentCulture, Model.ClientStateTypeID)
+                                        })
+                    </div>
+
+                    <div>
+                        @Html.HifisLabelFor(model => model.IsStealth, new { @class = "autowidth" })
+                        @if (Model.IsStealth)
+                        {
+                            @Labels.Hidden
+                        }
+                        else
+                        {
+                            @Labels.Visible
+                        }
+                    </div>
+
+
+                    @* We only use the following if the lookup table is editable *@
+                    @*@if (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_ClientStateTypes, Model.ClientStateTypeID) == (short)ClientStateTypes.Deceased)*@
+                    @if (Model.ClientStateTypeID == (short)ClientStateTypes.Deceased)
+                    {
+                        <div>
+                            @Html.HifisLabelFor(model => model.CauseOfDeathTypeID, new { @class = "autowidth" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.CauseOfDeathTypeID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_CauseOfDeathTypes, ViewBag.CurrentCulture, Model.CauseOfDeathTypeID)
+                                            })
+                        </div>
+
+                        <div>
+                            @Html.HifisLabelFor(model => model.DODApproxYN, new { @class = "autowidth" })
+                            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.DODApproxYN)
+                        </div>
+
+                        <div>
+                            @Html.HifisLabelFor(model => model.DOD, new { @class = "autowidth" })
+                            @Html.DisplayFor(model => model.DOD)
+                        </div>
+                    }
+                    <div class="align-left">
+                        @if (RightsHelper.HasRight(UserRights.Client_Vitals_Edit))
+                        {
+                            @Html.ActionLink(Labels.Edit, "UpdateVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role="button" })
+                        }
+                    </div>
+                </div>
+            </div>
+            <!-- Tab Pane #2: Comments -->
+                       
+            <div class="tab-pane" id="Comments">
+                @*@if (RightsHelper.HasRight(UserRights.Client_Comments_Add))
+                {
+                    <div class="row">    
+                        <div class="mrgn-lft-md mrgn-bttm-md">
+                            @Html.Partial("_OnTheFlyButton",
+                                new OnTheFlyButtonViewModel()
+                                {
+                                    ButtonName = Labels.NewComment,
+                                    Title = Labels.NewComment,
+                                    ActionName = "AjaxAddClientVitalsComment",
+                                    ControllerName = "ClientTombstone",
+                                    PartialName = "~/Views/Comments/_Comments.cshtml",
+                                    CallBackFunction = "OnTheFlyCallBack",
+                                    ViewModel = new CommentViewModel()
+                                    {
+                                        CommentTypeID = (int)ClientCommentTypes.Vitals,
+                                        ClientID = Model.ClientID
+                                    }
+                                }
+                            )
+                        </div>
+                    </div>
+                }*@
+                @if (RightsHelper.HasRight(UserRights.Client_Comments_List))
+                {
+                    <table id="commentsTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "columns": [
+                                                                                                    { "width": "15%", "data": "date"},
+                                                                                                    { "width": "25%", "data": "author"},
+                                                                                                    { "width": "55%", "data": "subject"},
+                                                                                                    { "width": "1.5%", "data": "replies"},
+                                                                                                    { "width": "1.5%", "data": "review"}
+                                                                                                ],
+                                                                                                "order": [ [0, "desc"] ],
+                                                                                                "ajax": "@Url.Content("~/ClientTombstone/CommentListJson?id=" + Model.ClientID)"                         
+                                                                                            }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.DateCreated</th>
+                                <th class="align-text-center">@Labels.Author</th>
+                                <th class="align-text-center">@Labels.Subject</th>
+                                <th class="align-text-center">@Labels.Replies</th>
+                                <th class="align-text-center">@Labels.Review</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-sm-12">
+			                <div class="alert exception-panel">
+				                <div class="mrgn-bttm-sm align-center">                                   
+					                <h3 class="panel-title">@Labels.UserRightsException</h3>
+				                </div>
+				                <div>
+					                <p>@Labels.RightsCommentsWarning</p>
+				                </div>
+			                </div>
+		                </div>
+	                </div>                   
+                }
+            </div>           
+        </div>
+    </div>
+</div>
+
+<style>
+    td {
+        text-align: left;
+    }
+    #commentsTable {
+        table-layout: fixed;
+    }
+</style>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             function OnTheFlyCallBack(objectID, formData) {
+                 var table = $('#commentsTable');
+                 table.DataTable().ajax.reload();
+             }
+
+             $(function () {
+                 //$('#commentsTable').dataTable().fnAddData(data);
+                 //$("tr .child").slideUp();
+
+                 $("#commentsTable tbody").on("click", "td.align-text-center", function (e) {
+                     var nextTR = $(this).parent("tr").next();
+                     
+                     if (nextTR.children("td").children(".parent").length < 1) {
+                         var nextRow = nextTR.nextUntil().find(".parent").first().parent("td").parent("tr");
+                         var rowList = nextTR.nextUntil(nextRow).add(nextTR);
+
+                         if (rowList.length > 1)
+                             rowList.stop(true, true).slideToggle("swing");
+                     }
+
+                     console.log(nextTR, nextRow, nextRow.prev());
+                     e.preventDefault();
+                 });                                 
+             });
+
+        </script>
+);
+}

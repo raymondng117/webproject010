@@ -1,0 +1,254 @@
+﻿@model HousingUnitViewModel
+
+@{
+    ViewBag.LayoutView = LayoutPage.SecNav;
+    ViewBag.ViewTitle = Labels.EditUnit;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+@using (Html.BeginForm("Edit", "HousingUnit", FormMethod.Post, new { @class = "form-horizontal", id = "HousingUnitForm" }))
+{
+    @Html.AntiForgeryToken()
+    <ul class="nav nav-tabs" role="tablist">
+	    <li class="active">
+		    <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details @Html.Partial("_MandatoryTab")</a>
+	    </li>
+	    <li>
+		    <a class="tabButton" href="#Address" role="tab" data-toggle="tab">@Labels.Address @Html.Partial("_MandatoryTab")</a>
+	    </li>
+	    <li>
+		    <a class="tabButton" href="#Photos" role="tab" data-toggle="tab">@Labels.Photos</a>
+	    </li>
+	    <li>
+		    <a class="tabButton" href="#Maintenance" role="tab" data-toggle="tab">@Labels.Maintenance</a>
+	    </li>
+        @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+        {
+            <li>
+                <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                    @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+                </a>
+            </li>
+        }
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+	    <div class="panel-body">
+		    <div class="tab-content">
+			    <div class="tab-pane active" id="Details">
+				        <div>@Html.Partial("_HousingUnit")</div>
+				    			
+				        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+                    @*}*@
+			    </div>
+			    <div class="tab-pane" id="Address">
+                        <div><span id="AddressFormFields">@Html.Partial("_AddressSearch", Model.Address, "Address.")</span></div>
+			        @*@using (Html.BeginForm("EditAddress", "HousingUnit", FormMethod.Post, new { @class = "form-horizontal", id = "HousingUnitForm" }))
+			        {  
+				        @*<div>@Html.Partial("_AddressSearch")</div>*@
+                    @*}*@
+					    @*<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "filter": false }'>
+						    <thead>
+							    <tr>
+								    <th>@Labels.Address</th>
+								    <th>@Labels.Province</th>
+								    <th>@Labels.City</th>
+								    <th>@Labels.PostalCode</th>
+								    <th>@Labels.Action</th>
+							    </tr>
+						    </thead>
+						    <tbody>
+							    <tr>
+								    <td>@(Model.Address.Unit == null ? "" : Model.Address.Unit.ToString() + " - ") @Model.Address.AddressLn1</td>
+								    <td>@Model.Address.Province</td>
+								    <td>@Model.Address.City</td>
+								    <td>@Model.Address.PostalCode</td>
+								    <td class="align-text-center wdth-10">
+                                        @if (RightsHelper.HasRight(UserRights.HousingUnits_Address_Set, Model.OrgID))
+					                    {
+										    @Html.ActionLink(Labels.ChangeAddress, "EditAddress", "HousingUnit", new { AddressID = Model.AddressID, HouseUnitID = Model.HouseID }, new { @class = "editButton noText" })
+                                        }
+								    </td>
+							    </tr>
+						    </tbody>
+					    </table>*@
+			    </div>
+			    <div class="tab-pane" id="Photos">
+				    @if (Model.Photos.Count != 0)
+					    {
+						    <div id="photos">
+							    <table id="photoTable" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "filter": false }'>
+								    <thead>
+								    <tr>
+									    @*<th class="align-text-center">@Labels.Thumbnail</th>*@
+									    <th class="align-text-center">@Labels.Name</th>
+									    <th class="align-text-center">@Labels.Date</th>
+									    <th class="align-text-center">@Labels.Action</th>
+								    </tr>
+								    </thead>
+								    <tbody>
+								    @foreach (HousePhotoViewModel photo in Model.Photos)
+								    {
+									    <tr>
+										    @*<td class="align-text-center">
+											    <div class="wet-boew-lightbox">
+												    <a href="@Url.Content("~/HousingUnit/GetPhoto/")@photo.HousePhotoID?.jpg" class="lb-item">
+													    <img alt="@photo.Name" class="thumb" src="@Url.Content("~/HousingUnit/GetPhoto/")@photo.HousePhotoID" /><br />
+													    <span class="glyphicon glyphicon-zoom-in"></span><span class="font-xsmall color-accent">@Labels.Enlarge</span>
+												    </a>
+											    </div>
+										    </td>*@
+										    <td class="align-text-center">@Html.ActionLink(photo.Name, "GetPhoto", new { id = photo.HousePhotoID }, new { alt = photo.Name, aria_label = photo.Name })</td>
+										    <td class="align-text-center">@Html.DisplayFor(m => photo.PhotoDate)</td>
+										    <td class="align-text-center wdth-10">
+
+											    @if (RightsHelper.HasRight(UserRights.HousingUnits_Photo_Delete, Model.OrganizationID))
+											    {
+												    @Html.ActionLink(Labels.Delete, "DeletePhoto", "HousingUnit", new { HousePhotoID = photo.HousePhotoID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+											    }
+													
+										    </td>
+									    </tr>
+								    }  
+								    </tbody>                  
+							    </table>                        
+						    </div>
+					    }
+					    else
+					    {
+						    <strong>@Labels.NoPhotos</strong>
+					    }
+
+				    @if (RightsHelper.HasRight(UserRights.HousingUnits_Photo_Upload, Model.OrganizationID))
+				    {
+                        <div>
+					        @Html.ActionLink(Labels.Photo, "UploadPhoto", "HousingUnit", new { id = Model.HouseID }, new { @class = "addButton mrgn-tp-md", id = "NewPhoto", alt=Labels.Photo, aria_label = Labels.Photo, @role = "button" }) 
+                        </div>
+				    }
+			    </div>
+			    <div class="tab-pane" id="Maintenance">
+				    @if (!Model.MaintenanceWork.IsEmptyOrNull())
+				    {
+					    decimal? x = 0.0m;                
+					    <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false, "filter": false }'>
+						    <thead>
+							    <tr>
+								    <th>@Labels.MaintenanceWork</th>
+								    <th>@Labels.Description</th>
+								    <th>@Labels.ScheduledDate</th>
+								    <th>@Labels.Contractor</th>
+								    <th>@Labels.ActualCost</th>
+								    <th>@Labels.Action</th>
+							    </tr>
+						    </thead>
+						    <tbody>
+							    @foreach (HousingMaintenanceViewModel item in Model.MaintenanceWork)
+							    {
+								    if (item.ActualCost != null)
+								    {
+									    x += item.ActualCost;
+								    }
+								    <tr>
+									    <td class="align-text-center">@item.MaintenanceTypeName</td>
+									    <td class="align-text-center">@item.Description</td>
+									    <td class="align-text-center">@Html.DisplayFor(m => item.ScheduledFrom)</td>
+									    <td class="align-text-center">@item.ContractorPersonName</td>
+									    <td class="align-text-center">@{if (item.ActualCost != null)
+																	    {<text>$</text>}@item.ActualCost}</td>
+									    <td class="align-text-center wdth-10">
+
+										    @if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Edit, Model.OrganizationID))
+										    {
+											    @Html.ActionLink(Labels.Edit, "EditMaintenance", "HousingUnit", new { id = item.HouseMaintenanceID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+										    }
+												
+										    @if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Delete, Model.OrganizationID))
+										    {
+											    @Html.ActionLink(Labels.Delete, "DeleteMaintenance", new { id = item.HouseMaintenanceID }, new { @class = "deleteButton noText", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+										    }
+												
+									    </td>
+								    </tr>
+							    }  
+						    </tbody>    
+					    </table>
+                    if (x != 0.0m)
+                    {
+					    <span class="align-right mrgn-rght-xl"><strong>@Labels.Total: $@x</strong></span>
+                    }
+				    }
+				    else
+				    {
+					    <strong>@Labels.NoRecords</strong>
+				    }
+
+				    @if (RightsHelper.HasRight(UserRights.HousingUnits_Maintenance_Add, Model.OrganizationID))
+				    {
+                        <div>
+					        @Html.ActionLink(Labels.AddMaintenanceWork, "NewMaintenance", "HousingUnit", new { id = Model.HouseID }, new { @class = "addButton mrgn-tp-md", alt=Labels.AddMaintenanceWork, aria_label = Labels.AddMaintenanceWork, @role = "button" })
+                        </div>
+				    }
+			    </div>
+
+                @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+                {
+                    <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                        @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                    </div>
+                }
+		    </div>	
+	    </div>
+    </div>
+	<div class="form-group">
+		<div class="col-sm-offset-4 col-sm-8">
+				<button type="submit" class="saveButton">@Labels.Save</button>
+            @Html.ActionLink(Labels.Cancel, (string)ViewBag.ReturnAction, "HousingUnit", new { id = Model.HouseID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>
+	</div>  
+}
+@*<div class="mrgn-tp-md">
+    @Html.ActionLink(Labels.Cancel, (string)ViewBag.ReturnAction, "HousingUnit", new { id = Model.HouseID }, new { @class = "cancelButton" })
+</div>*@
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            var targetURL;
+            var hasChanged;
+            var housingFormFields = $('#HousingUnitForm').find('input,select');
+
+
+            //sets the status of the checkbox after the initial load of the table
+            //
+            var table = $('#photoTable');
+            table.on('draw.dt', function () {
+                if (table.DataTable().rows()[0].length < 10) {
+                    $('#NewPhoto').show();
+                }
+                else {
+                    $('#NewPhoto').hide();
+                }
+            });
+        //    $(function () {
+        //        housingFormFields.change(function()
+        //            {
+        //                hasChanged = true;
+        //                housingFormFields.unbind('change');
+        //            });
+
+        //        $('#AreaSqM').val(function (e) {
+        //            var value = parseFloat($("#AreaSqFt").val());
+        //            value = (value * 9.2903040 * 0.01).toFixed(2);
+        //            return value;
+        //        });
+        //        if (isNaN($('#AreaSqM').val()))
+        //            $('#AreaSqM').val(null);
+        //   });
+        </script>);
+}
+

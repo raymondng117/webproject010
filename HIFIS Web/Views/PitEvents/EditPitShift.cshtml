@@ -1,0 +1,32 @@
+﻿@model PitShiftViewModel
+@{
+    ViewBag.ViewTitle = @Labels.EditPitShift;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@Html.Hidden("FormSubmitted", "false")
+
+                   
+<div>
+    @using (Html.BeginForm("EditPitShift", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+        
+        <div id="Shift_FormPortion">
+            @Html.Partial("_EditPitShift", Model)
+        </div>
+        
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "PitShiftsList", "PitEvents", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    }
+</div>
+
+
+

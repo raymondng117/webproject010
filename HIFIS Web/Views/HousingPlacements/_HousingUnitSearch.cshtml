@@ -1,0 +1,111 @@
+﻿@*@model HIFIS.WEB.ViewModels.HousingUnitSearchViewModel
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            var SearchForm;
+
+            //Clear search form values
+            function ClearSearchValues () {
+                SearchForm
+                    .val(null)
+                    .filter('select')
+                    .find('option')
+                    .removeAttr('selected');
+
+                SearchForm.trigger('change');
+            }
+
+        //Onload
+            $(function () {
+                SearchForm = $('#SearchForm').find('input,select');
+
+                $('#clearForm').click(ClearSearchValues);
+
+                
+                //if ($('#ShowAdvancedSearch').val() == "True") {
+                //    $("#AdvancedSearch").show();
+                //    $('#ToggleAdvancedSearch').button('option', 'label', '@Labels.HideAdvancedSearch');
+                //}
+                //else {
+                //    $("#AdvancedSearch").hide();
+                //    $('#ToggleAdvancedSearch').button('option', 'label', '@Labels.AdvancedSearch');
+                //}
+                //
+                //$('#ToggleAdvancedSearch').click(ToggleAdvancedSearch);
+
+                $('#MinArea').change(
+                    function (e) {
+                        var value = parseFloat($("#MinArea").val());
+                        $('#AreaSqM').val((value * 9.2903040 * 0.01).toFixed(2));
+                        if (isNaN($('#AreaSqM').val()))
+                            $('#AreaSqM').val(null);
+                    });
+
+                $('#AreaSqM').change(
+                    function (e) {
+                        var value = parseFloat($("#AreaSqM").val());
+                        $('#MinArea').val((value * 10.764).toFixed(2));
+                        if (isNaN($('#MinArea').val()))
+                            $('#MinArea').val(null);
+                    });
+            });
+        </script>);
+}
+
+<div class="row mrgn-bttm-md" id="AdvancedSearch">
+    <div class="col-md-4 width-50-percent">
+        <div class="form-group">
+			@Html.HifisLabelFor(model => model.HousingTypes, new { @class = "" })
+		    <div class="clearfix"></div>
+		    @Html.HifisListBoxFor(model => model.HousingTypes, CachedTableTypes.HIFIS_HouseTypes, null, excludeLabel:true)
+	    </div>
+        <div class="clearfix"></div>
+        <div class="form-group">
+			@Html.HifisLabelFor(model => model.UnitStatuses, new { @class = "" })
+		    <div class="clearfix"></div>
+            @Html.HifisListBoxFor(model => model.UnitStatuses, CachedTableTypes.HIFIS_HouseStatusTypes, null, excludeLabel:true)
+		    
+	    </div>
+        <div class="clearfix"></div>
+        <div class="form-group">
+			@Html.HifisLabelFor(model => model.Attributes, new { @class = "" })
+		    <div class="clearfix"></div>
+            @Html.HifisListBoxFor(model => model.Attributes, CachedTableTypes.HIFIS_HouseAttributeTypes, null, excludeLabel:true)
+		    
+	    </div>
+    </div>
+    <div class="col-md-4 width-25-percent">
+        <div class="form-group">
+            @Html.HifisLabelFor(model => model.MinNumBedrooms)
+            <div class="clearfix"></div>
+            @Html.TextBoxFor(model => model.MinNumBedrooms, new { @class="form-control", type="number" })
+        </div>
+        <div class="form-group">
+            @Html.HifisLabelFor(model => model.MinNumFloors)
+            <div class="clearfix"></div>
+            @Html.TextBoxFor(model => model.MinNumFloors, new { @class = "form-control", type = "number" })
+        </div>
+        <div class="form-group">
+
+            @Html.HifisEditorFor(model => model.MaxRent, "Money", new { @class="money wdth-strct-100" })<p class="help-block align-left">&nbsp /@Labels.Month </p>          
+        </div>
+    </div>
+    <div class="col-md-4 width-25-percent">
+        <div class="form-group">
+            <div>
+                @Html.HifisLabelFor(model => model.MinArea)
+            </div>
+            <div>
+                @Html.TextBoxFor(model => model.MinArea, new { @class="form-control wdth-strct-100 align-left", type="number", step = "any" }) <p class="help-block align-left">&nbsp @Labels.Sqft </p>
+            </div>
+            <div class="clearfix"></div>
+            <div>
+                <span class="wdth-strct-50">&nbsp;</span><input id="AreaSqM" type="text" class="form-control wdth-strct-100 align-left" type="number" /> <p class="help-block align-left">&nbsp @Labels.M2 </p>
+            </div>
+        </div>
+    </div>  
+</div>
+
+*@

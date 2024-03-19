@@ -1,0 +1,103 @@
+﻿@model LookupTableViewModel
+
+<script type="text/javascript" src="@Url.Content("~/Scripts/Hifis/jquery-ui.custom/jquery-ui.min.js")"></script>
+
+<section id="Modal_NewLookupValue" class="modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@(Labels.SortLookupTableValues + " - " + Model.KeyName)</h2>
+	</header>
+	<div class="modal-body">
+        <form id="sortLookupTableValuesForm" class="form-horizontal">
+		    <button type="submit" class="orderButton mrgn-bttm-lg">@Labels.AlphaOrder</button>
+        
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.LookupTablesID)
+            @Html.HiddenFor(model => model.ModuleUsedIn)
+            @Html.HiddenFor(model => model.KeyName)
+            @Html.HiddenFor(model => model.IsOrderOnly)
+
+            <ol id="lookupValues" class="mrgn-lft-xs" style="overflow:hidden; list-style-position:inside;">
+                @for (int i = 0; i < Model.Lookups.Count; ++i)
+                {
+                    <li class="mrgn-bttm-sm sortableItem">
+                        @Model.Lookups[i].NameE : @Model.Lookups[i].NameF
+                        @Html.Partial("_LookupHiddenValues", Model.Lookups[i], "Lookups[" + i + "].")
+                    </li>
+                }
+            </ol>
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="sortLookupTableValuesSaveBtn" class="saveButton">@Labels.Save</button>
+		<button id="sortLookupTableValuesCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    var form = $("#sortLookupTableValuesForm");
+
+    $(function () {
+        form.hifisValidation();
+        $('#lookupValues').sortable({ items: "li" });
+    });
+
+    $("#sortLookupTableValuesSaveBtn").click(function () {
+
+        if (form.valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $('#lookupValues li').each(function (index, element) {
+                $(element).find('[name$=Sequence]').val(index);
+            });
+
+            $.ajax({
+
+                url: "@Url.Content("~/LookupTables/EditLookupTableOrder")",
+                type: "POST",
+                data: form.serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#existingLookups').DataTable().ajax.reload(
+                        function () {
+                            $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        }
+                    ); // Re-load the datatable
+
+                    $("#sortLookupTableValuesCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+    //Sorts the list in a-z order
+    $(".orderButton").on("click", function (e) {
+        var orderList = $("ol#lookupValues");
+
+        orderList
+            .children("li")
+            .sort(function (a, b) {
+                var upA = $(a).text().toUpperCase();
+                var upB = $(b).text().toUpperCase();
+
+                return (upA < upB) ? -1 : (upA > upB) ? 1 : 0;
+            }).appendTo(orderList);
+
+        e.preventDefault();
+    });
+
+</script>
+

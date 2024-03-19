@@ -1,0 +1,33 @@
+﻿@model StaysEditViewModel
+
+<div id="graphical-bookin" class="whiteBackground">
+    <div id="stays-dock" class="client-container"></div>
+    <div id="RoomsBeds" ></div>
+
+    <div id="room-add-dialog" title="@Labels.AddRoom">
+        <form>
+            <fieldset>
+                <label for="name">@Labels.Name</label>
+                <input type="text" name="name"/>
+            </fieldset>
+        </form>
+    </div>
+    <div id="room-delete-dialog" title="@Labels.DisableRoom">
+        @Labels.DeleteConfirmation
+    </div>
+
+    <div id="bed-add-dialog" title="@Labels.AddBed">
+        <form>
+            <fieldset>
+                <label for="name">@Labels.Name</label>
+                <input type="text" name="name"/>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="bed-delete-dialog" title="@Labels.DisableBed">
+        @Labels.DeleteConfirmation
+    </div>
+
+    <div class="clearfix"></div>
+</div>

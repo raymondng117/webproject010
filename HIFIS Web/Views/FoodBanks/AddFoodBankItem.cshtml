@@ -1,0 +1,113 @@
+﻿@model ClientFoodBankItemViewModel
+
+
+@using (Html.BeginForm("AddFoodBankItem", "FoodBanks", FormMethod.Post, new { @class = "form-horizontal", data_FunctionName = "AddFoodBankItem", id = "FoodBankItemAddForm" }))
+{        
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.FoodBankID)
+    @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+    @Html.HiddenFor(model => model.ServiceID)
+    @Html.HiddenFor(model => model.HifisRowVersion)
+    @Html.HiddenFor(model => model.LastUpdatedBy) 
+    @Html.HiddenFor(model => model.UnitCost)
+
+    @Html.HifisEditorFor(model => model.FoodBankItemID, ViewBag.FoodBankItemList as SelectList)
+
+    @Html.HifisEditorFor(model => model.ProductCode)
+
+    @Html.HifisEditorFor(model => model.Quantity)
+    
+    <div class="form-group">
+			@Html.HifisLabelFor(model => model.UnitCost, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-9">
+            <div class="input-group wdth-">
+                @Html.TextBox("UnitValueDisplay", null, new { id = "UnitValueDisplay", disabled = "disabled", @class = "money wdth-40 form-control" })
+
+            </div>
+        </div>
+	</div>    
+
+    <div class="form-group">
+		<div class="col-sm-offset-3 col-sm-9">
+			<button id="AddFoodBankItem" type="submit" class="saveButton  ">@Labels.Save</button>
+		</div>
+	</div>    
+}  
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+       @<script type="text/javascript">
+
+           function checkSelected() {
+
+               if ($('#FoodBankItemID').val() == "") {
+                   $('#ProductCode').parent('.input-group').parent().parent('.form-group').removeClass("hide").addClass("show");
+
+               }
+               else {
+                   $('#ProductCode').parent('.input-group').parent().parent('.form-group').removeClass("show").addClass("hide");
+
+               }
+               if ($('#ProductCode').val() == "") {
+                   $('#FoodBankItemID').parent('.input-group').children(".glyphicon-star").removeClass("hide").addClass("show");
+                   return true;
+               }
+               else {
+                   $('#FoodBankItemID').parent('.input-group').children(".glyphicon-star").removeClass("show").addClass("hide");
+                   return false;
+               }
+
+
+           }
+           // $(function () { $("#FoodBankItemAddForm").hifisValidation(); });
+
+           $(document).ready(function () {
+
+               $("#FoodBankItemID").change(function () {
+                   if ($('#FoodBankItemID').val() != "") {
+                       $('#ProductCode').val('');
+                       @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/FoodBanks/GetUnitCost") + "'",
+                            OnSuccess = "$('#UnitValueDisplay').val(data); $('#UnitCost').val(data);",
+                            Data = "{ id: $('#FoodBankItemID').val() }",
+                            Type = "POST"
+                        });
+                   }
+                   checkSelected();
+               });
+
+               $("#ProductCode").change(function () {
+                   if ($('#ProductCode').val() != "") {
+                       var code = $('#ProductCode').val();
+                       $.ajax({
+                           url: "@Url.Content("~/FoodBanks/existsItemByProductCode")",
+                           type: "POST",
+                           data: { 'productCode': code },
+                       }).done(function (data) {
+                           if (data.Success) {
+                               displayNotification("info", "<p>" + data.Result.toString() + "</p>");
+                           } else {
+                               displayNotification("error", "<p>" + data.Result.toString() + "</p>");
+                               $('#ProductCode').val('');
+                           }
+                           checkSelected();
+                       });
+                   }
+               });
+
+           });
+
+           //Will fire after _AjaxFormSubmit
+           function AddFoodBankItem(data) {
+               $("#ProductCode").val("");
+
+               $("#FoodBankItemsTableDiv").html(data);
+
+               pe.fn['tables']._exec($('#FoodBankItemsTableDiv table'));
+               $('#FoodBankItemsTableDiv table').addClass("rowzebra rowhover");
+           }
+</script>
+);
+}

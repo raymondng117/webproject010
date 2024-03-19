@@ -1,0 +1,101 @@
+﻿@model LiabilityViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.LiabilityOrAssetID)
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LiabilityTypeID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.LiabilityTypeID, CachedTableTypes.HIFIS_LiabilityTypes,  new { @class = "max_width_90" }, true, null)
+        </div>
+    </div>
+
+    <div class="form-input-prepend form-input-append row">
+        @Html.HifisLabelFor(model => model.LiabilityAmount, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.LiabilityAmount, "Money", new { @class = "money wdth-strct-150", min = "0" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor("ddlLiabilityCountryType", Labels.ContactCountry, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.CountryID, CachedTableTypes.HIFIS_CountryTypes, new { id = "ddlLiabilityCountryType" }, true, null)
+        </div>
+    </div>
+
+    <div class="LiabilityProvince row">
+        @Html.HifisLabelFor(model => model.ProvinceID, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.ProvinceID, CachedTableTypes.HIFIS_ProvinceTypes, new { style = "width: 100%;" }, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LiabilityDateStart, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.LiabilityDateStart, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LiabilityDateEnd, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.LiabilityDateEnd, null, null, true, null)
+        </div>
+    </div>
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.LiabilityDescription, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisTextAreaFor(model => model.LiabilityDescription, new { @class = "max_width_90" }, true)
+        </div>
+    </div>
+
+    @if (appSettings.EnableSharing() && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.ShareYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(model => model.ShareYN, "YesNo", null, true, null)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.EditableYN, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(model => model.EditableYN, "YesNo", null, true, null)
+            </div>
+        </div>
+    }
+</div>
+
+
+<script type="text/javascript">
+
+        $(function () {
+            ShowHideLiabilityProvince();
+        });
+
+        $('#ddlLiabilityCountryType').change(ShowHideLiabilityProvince);
+    
+        function ShowHideLiabilityProvince() {
+            var LiabilityCountryTypeID = parseInt($('#ddlLiabilityCountryType').val());
+
+            $(".LiabilityProvince").hide();
+
+            if (@((byte)CountryTypes.Canada) == LiabilityCountryTypeID)
+                $(".LiabilityProvince").show();
+            else
+                $('.LiabilityProvince option:eq(0)').attr('selected','selected');
+        }
+    </script> 
+

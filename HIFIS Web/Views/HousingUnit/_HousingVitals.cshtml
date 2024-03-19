@@ -1,0 +1,286 @@
+﻿@model HousingUnitVitalsWrapper
+
+@if (!Model.Housing.Photos.IsEmptyOrNull())
+{
+	<text>
+        @using (Html.BeginScriptContext())
+        {
+            Html.AddScriptBlock(
+		        @<script type="text/javascript">
+			var source,
+				imgDisplay,
+				enlargeImage,
+				photos,
+				photoDates,
+				nextButton,
+				prevButton,
+				lastPhotoIndex,
+				currentPhoto,
+				photoDateDisplay;
+
+			function UpdatePhoto()
+			{
+				if(currentPhoto == 0)
+					prevButton.hide();
+				else if(!prevButton.is(":visible"))
+					prevButton.css('display', 'inline-block');
+
+				if(currentPhoto == lastPhotoIndex)
+					nextButton.hide();
+				else if(!nextButton.is(":visible"))
+					nextButton.css('display', 'inline-block');
+
+				imgDisplay.attr('src', source + photos[currentPhoto]);
+				enlargeImage.attr('href', sourceEnlarge + photos[currentPhoto] + '?.jpg');
+
+				photoDateDisplay.html(photoDates[currentPhoto]);
+			}
+
+			$(function()
+			{
+				imgDisplay = $('#HousingPhoto');
+				enlargeImage = $('#EnlargeImage');
+				photoDateDisplay = $('#PhotoDate');
+				source = '@Url.Content("~/HousingUnit/GetPhoto/")';
+				sourceEnlarge = '@Url.Content("~/HousingUnit/GetPhoto/")';
+
+				photos = [@foreach (var att in Model.Housing.Photos)
+              {
+							@:@att.HousePhotoID,
+						}];
+
+				photoDates = [@foreach (var att in Model.Housing.Photos)
+                  {
+									@:'@att.PhotoDate.ToString("yyyy-MM-dd")',
+								}];
+				nextButton = $('#NextPhoto');
+				prevButton = $('#PrevPhoto');
+				lastPhotoIndex = @Model.Housing.Photos.Count - 1;
+				currentPhoto = 0;
+
+				UpdatePhoto();
+
+				nextButton.click(function(){
+					++currentPhoto;
+					UpdatePhoto();
+				});
+
+				prevButton.click(function(){
+					--currentPhoto;
+					UpdatePhoto();
+				});
+			});
+		</script>);
+        }
+	</text>
+}
+
+ @Html.HiddenFor(model => model.Housing.HouseID)
+ @Html.HiddenFor(model => model.Housing.OrganizationID)
+
+<ul class="nav nav-tabs" role="tablist">
+	<li class="active">
+		<a class="tabButton" href="#Details_HV" role="tab" data-toggle="tab">@Labels.Details</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Address" role="tab" data-toggle="tab">@Labels.Address</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Landlord" role="tab" data-toggle="tab">@Labels.Landlord</a>
+	</li>
+	<li>
+		<a class="tabButton" href="#Photos" role="tab" data-toggle="tab">@Labels.Photos</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+	<div class="panel-body">
+		<div class="tab-content">
+			<div class="tab-pane active" id="Details_HV">
+                <div class=" ">@*displayView*@
+                    <div>
+                        @Html.HifisLabelFor(model => model.Housing.HouseTypeID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.Housing.HouseTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseTypes, ViewBag.CurrentCulture, Model.Housing.HouseTypeID)
+                        })
+                    </div>
+        
+                    <div>
+                        @Html.HifisLabelFor(model => model.Housing.StatusTypeID, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.Housing.StatusTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseStatusTypes, ViewBag.CurrentCulture, Model.Housing.StatusTypeID)
+                        })
+                    </div>
+                    <div>
+						@Html.HifisLabelFor(model => model.Housing.Rent, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Housing.Rent)
+					</div>
+                    <div>
+						@Html.HifisLabelFor(model => model.Housing.NoOfFloors, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Housing.NoOfFloors)
+					</div>
+                    <div>
+						@Html.HifisLabelFor(model => model.Housing.Floor, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Housing.Floor)
+					</div>
+                    <div>
+						@Html.HifisLabelFor(model => model.Housing.NoOfBedrooms, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Housing.NoOfBedrooms)
+					</div>
+                    <div>
+						@Html.HifisLabelFor(model => model.Housing.YearOfBuilt, new { @class = "autowidth" })
+						@Html.DisplayFor(model => model.Housing.YearOfBuilt)
+					</div>
+                    <div>
+						@Html.HifisLabelFor(model => model.Housing.Attributes, new { @class = "autowidth" })
+                        @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+                        new MultipleItemSelectList 
+                        {
+                            IDs = Model.Housing.Attributes.Select(l => l.ToString()).ToList(),
+                            List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_HouseAttributeTypes, Culture, Model.Housing.Attributes.Select(l => l.ToString()).ToList())
+                        })
+					</div>
+
+                </div>
+			</div>
+			<div class="tab-pane" id="Address">
+				@if (Model.Housing.Address != null)
+				{
+                    <div class=" ">@*displayView*@
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.Building, new { @class = "autowidth" })
+						    @Html.DisplayFor(model => model.Housing.Address.Building)
+					    </div>
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.AddressLn1, new { @class = "autowidth" })
+                            @if(Model.Housing.Address.Unit != null)
+                            {
+                                @(Html.DisplayFor(model => model.Housing.Address.Unit) + " - " + @Html.DisplayFor(model => model.Housing.Address.AddressLn1))
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(model => model.Housing.Address.AddressLn1)
+                            }
+						    
+					    </div>
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.AddressLn2, new { @class = "autowidth" })
+						    @Html.DisplayFor(model => model.Housing.Address.AddressLn2)
+					    </div>
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.PostalCode, new { @class = "autowidth" })
+						    @Html.DisplayFor(model => model.Housing.Address.PostalCode)
+					    </div>
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.City, new { @class = "autowidth" })
+						    @Html.DisplayFor(model => model.Housing.Address.City)
+					    </div>
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.Province, new { @class = "autowidth" })
+						    @Html.DisplayFor(model => model.Housing.Address.Province)
+					    </div>
+                        <div>
+						    @Html.HifisLabelFor(model => model.Housing.Address.Country, new { @class = "autowidth" })
+						    @Html.DisplayFor(model => model.Housing.Address.Country)
+					    </div>
+                    </div>
+				}
+				else
+				{
+                    <div>
+					    <strong>@Labels.NoAddress</strong>
+                    </div>
+				}
+			</div>
+			<div class="tab-pane" id="Landlord">
+				@if (Model.Housing.Landlord != null)
+				{
+                    <div class=" ">@*displayView*@
+                        @foreach (DigitalContactViewModel dc in Model.Housing.Landlord.ContactInfo)
+                        {
+                        <div>
+                            @switch ((short)(DigitalContactTypes)Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_DigitalContactTypes, (short)dc.DigitalContactTypeID))
+                            {
+                                case (short)DigitalContactTypes.Fax:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.Fax, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.HomePhone:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.HomePhone, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.WorkPhone:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.WorkPhone, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.PersonalEmail:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.PersonalEmail, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.Web:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.Web, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.WorkEmail:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.WorkEmail, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.Pager:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.Pager, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.MobilePhone:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.MobilePhone, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.Telephone1:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.Telephone1, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                                case (short)DigitalContactTypes.Telephone2:
+                                    @Html.HifisLabelFor("DigitalContactValue", Labels.Telephone2, new { @class = "autowidth mrgn-rght-md" })
+                                    break;
+                            }
+                            @Html.DisplayFor(m => dc.DigitalContactValue)
+                            @if (dc.DigitalContactExt.HasValue)
+                            {
+                                @Labels.Ext
+                                @Html.DisplayFor(m => dc.DigitalContactExt)
+                            }
+                        </div>
+                        }
+                        
+                    </div>
+				}
+				else
+				{
+                    <div>                            
+                        <strong>@Labels.NoLandlord</strong>
+					</div>
+				}
+			</div>
+			<div class="tab-pane" id="Photos">
+				<div>
+					@if (!Model.Housing.Photos.IsEmptyOrNull())
+					{
+                        <div class="align-text-center">
+						    <div class="wet-boew-lightbox">
+							    <a id="EnlargeImage" href="@Url.Action("GetPhoto", "HousingUnit", new { id = 3 })?.jpg" class="lb-item">
+								    <img id="HousingPhoto" src="" class="align-text-center align-vertical-middle" /><br />
+								    <span class="glyphicon glyphicon-zoom-in" style="cursor:pointer"></span><span class="font-xsmall color-accent" style="cursor:pointer">@Labels.Enlarge</span>
+							    </a>
+						    </div>
+						    <p id="PhotoDate" class="align-text-center"></p>
+						    <a id="PrevPhoto" class="prevButton noText hide">@Labels.Previous</a>
+						    <a id="NextPhoto" class="forwardButton noText hide">@Labels.Next</a>
+                        </div>
+					}
+					else
+					{
+                        <div>                            
+                            <strong>@Labels.NoPhotos</strong>
+					    </div>
+					}
+				</div>
+			</div>
+		</div>	
+	</div>
+</div>

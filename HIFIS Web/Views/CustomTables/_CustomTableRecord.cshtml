@@ -1,0 +1,47 @@
+﻿@model CustomTableRecordViewModel
+
+@Html.HiddenFor(model => model.CustomTableID)
+@Html.HiddenFor(model => model.RecordID)
+@Html.HiddenFor(model => model.CustomTableLinkID)
+@Html.HiddenFor(model => model.CustomTable.NameE)
+@Html.HiddenFor(model => model.CustomTable.NameF)
+@Html.HiddenFor(model => model.CustomTable.AutoWidth)
+@Html.HiddenFor(model => model.CustomTable.CustomTableID)
+@Html.HiddenFor(model => model.CustomTable.DisplayName)
+@Html.HiddenFor(model => model.CustomTable.LayoutTypeID)
+@Html.HiddenFor(model => model.CustomTable.ModuleTypeID)
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(function () {
+                @if (Model.CustomTable.AutoWidth)
+                {<text>
+                    //$('#CustomTableFieldsLayoutDiv label').addClass('autowidth');
+                    //autoWidth();
+                </text>
+                }
+                else
+                {<text>
+                    //$('#CustomTableFieldsLayoutDiv label').css('padding-right', 20);
+                </text>
+                }
+            });
+        </script>);
+}
+
+@{
+    this.ViewData.Add("InputNamePrependString", "CustomTable.Fields");
+    this.ViewData.Add("HiddenInputIndex", "-1");
+    this.ViewData.Add("AutoCompleteSelectID", "");
+}
+
+<div id="CustomTableFieldsLayoutDiv" class="">
+    @switch ((LayoutTypes)Model.CustomTable.LayoutTypeID)
+    {
+       case LayoutTypes.Linear:
+            @Html.Partial("_LayoutLinear", Model.CustomTable.Fields, this.ViewData)
+       break;
+    }
+</div>

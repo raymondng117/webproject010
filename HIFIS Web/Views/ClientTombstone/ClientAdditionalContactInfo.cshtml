@@ -1,0 +1,55 @@
+﻿@model ClientVitalsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientAdditionalContactInfo + (ViewBag.personName == null ? String.Empty : " - " + ViewBag.personName);
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div id="ClientAdditionalContactInfo_Form"> 
+    <div class="col-sm-12">
+
+        @if (RightsHelper.HasRight(UserRights.Client_Contacts_Add))
+        {
+            <h4 class="mrgn-tp-sm">@Labels.NewContactInfo</h4>
+
+            using (Html.BeginForm("AdditionalContactInfo", "PeopleTombstone", FormMethod.Post, new { @class = "form-horizontal", id = "contactForm" }))
+            {
+                <div class="col-sm-12">
+                    @Html.Hidden("ClientID", Model.ReadOnlyVitals.ClientID as object)
+
+                    @Html.Partial("_DigitalContact", new DigitalContactViewModel { PersonID = ViewBag.personID ?? ViewBag.ReadOnlyVitals.PersonID, ClientID = ViewBag.ReadOnlyVitals.ClientID })
+
+                    <div class="row">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-9">
+                            <div class="form-group">
+                                <button class="addButton" type="submit">@Labels.Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+
+        <div class="clearfix"></div>
+
+        <div class="mrgn-tp-lg">
+            <h4>@Labels.ExistingContactInfo</h4>
+            @Html.Partial("_DigitalContactTable", Model.ClientContactVM)
+        </div>
+
+        @if (ViewBag.personID != null)
+        {
+            <div class="row">
+                <div class="col-sm-12">
+                    @Html.ActionLink(Labels.Cancel, "EmergencyContacts", "ClientTombstone", new { id = ViewBag.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

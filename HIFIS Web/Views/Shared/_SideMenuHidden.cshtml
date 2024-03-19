@@ -1,0 +1,28 @@
+﻿@model SideMenuViewModelList 
+                 
+            
+@for (int i = 0; i < Model.SideMenuList.Count; i++)
+{
+    @*
+    <input type="hidden" name="SideMenuViewModelList.SideMenuList" value="@i" />
+    *@
+    @Html.HiddenFor(ModelItem => ModelItem.SideMenuList[i].ActionName)
+    @Html.HiddenFor(ModelItem => ModelItem.SideMenuList[i].ControllerName)     
+    @Html.HiddenFor(ModelItem => ModelItem.SideMenuList[i].HasParamsYN)
+    @Html.HiddenFor(ModelItem => ModelItem.SideMenuList[i].MVCViewMenuItemID)
+    @Html.HiddenFor(ModelItem => ModelItem.SideMenuList[i].ParrentItemID)     
+    @Html.HiddenFor(ModelItem => ModelItem.SideMenuList[i].Position)
+
+    if (Model.SideMenuList[i].RouteValues != null)
+    {
+        foreach (KeyValuePair<string, object> route in Model.SideMenuList[i].RouteValues)
+        {
+            @Html.HiddenFor(ModelItem => route.Key)
+            @Html.HiddenFor(ModelItem => route.Value)
+        }
+    }
+    
+    @Html.HiddenFor(ModelItem => Model.SideMenuList[i].Title)        
+
+}
+

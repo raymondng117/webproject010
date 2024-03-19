@@ -1,0 +1,56 @@
+﻿@model CaseCommentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    ViewBag.ViewTitle = Labels.viewTitle_CaseCommentEdit;
+    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+    <div>
+        @using (Html.BeginForm("EditCaseComment", "CaseManagement", FormMethod.Post, new { @class = "form-horizontal" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.CaseCommentID)
+            @Html.HiddenFor(model => model.CommentsID)
+            @Html.HiddenFor(model => model.CaseID)
+            @Html.HiddenFor(model => model.UserName)
+            @Html.HiddenFor(model => model.HifisRowVersion)
+            @Html.HiddenFor(model => model.LastUpdatedBy)
+            @Html.HiddenFor(model => model.CreatedBy)
+            @Html.HiddenFor(model => model.CreatedDate)
+            @Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+
+            <div class="row">
+                <div class="col-xs-2">
+                    <div class="pull-right mrgn-bttm-sm">
+                        @Html.HifisLabelFor(model => model.UserName)
+                    </div>
+                </div>
+                <div class="col-xs-10">
+                    @Html.DisplayFor(model => model.UserName)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-2">
+                    <div class="pull-right mrgn-bttm-sm">
+                        @Html.HifisLabelFor(model => model.DateCreated)
+                    </div>
+                </div>
+                <div class="col-xs-10">
+                    @Html.DisplayFor(model => model.DateCreated)
+                </div>
+            </div>
+
+            @Html.Partial("_CaseComments", Model)
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    @Html.ActionLink(Labels.Cancel, "Edit", "CaseManagement", new { caseID = Model.CaseID, id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+                </div>
+            </div>
+        }
+    </div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

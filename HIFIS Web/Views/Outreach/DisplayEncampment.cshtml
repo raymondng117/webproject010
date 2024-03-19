@@ -1,0 +1,109 @@
+﻿@model EncampmentViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.DisplayEncampment;
+}
+
+@Html.HiddenFor(model => model.DateEnd, new { id = "EncampmentDateEnd" })
+
+<div class="mainDisplay">
+    <div id="displayForm" style="padding: 20px; padding-bottom:0px;">
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.EncampmentName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.EncampmentName)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.EncampmentLocationTypeID, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.EncampmentLocationTypeID,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_EncampmentLocationTypes, ViewBag.CurrentCulture, Model.EncampmentLocationTypeID)
+                                    })
+                </div>
+                <div class="row" id="reasonForDisbandedDiv">
+                    @Html.HifisLabelFor(model => model.ReasonForDisbandedTypes, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                    new SingleItemSelectList
+                                    {
+                                        ID = Model.ReasonForDisbandedTypes,
+                                        List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForDisbandedTypes, ViewBag.CurrentCulture, Model.ReasonForDisbandedTypes)
+                                    })
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateStart, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.DateStart)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DateEnd, new { @class = "autowidth" })
+                    @Html.DisplayFor(model => model.DateEnd)
+                </div>
+
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md col-sm-4" })
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+        </div>
+
+        <div class="no-print">
+            @Html.ActionLink(Labels.Edit, "EditEncampment", "Outreach", new { encampmentID = Model.EncampmentID, returnView = "Display" }, new { @class = "editButton ", title = Labels.Edit, id = "edit-btn", @role = "button" })
+            @Html.ActionLink(Labels.Back, "EncampmentList", "Outreach", new { }, new { @class = "backButton  ", title = Labels.Back, @role = "button" })
+        </div>
+    </div>
+
+    @if (RightsHelper.HasRight(UserRights.GroupActivities_ClientList))
+    {
+        <div class="row">
+            <h4>@Labels.viewTitle_Clients</h4>
+            @Html.Partial("_Attendees", Model)
+        </div>
+    }
+
+    <div class="row">
+        <h4>@Labels.Location</h4>
+    </div>
+
+    <div class="row">
+        <h4>@Labels.Demographics</h4>
+        @Html.Partial("_Demographics", Model)
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            @Html.HiddenFor(model => model.EncampmentID)
+        </div>
+        <div class="col-sm-6">
+            <br />
+            @Html.Partial("_BaseFooter", Model)
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+</div>
+
+
+<div class="no-print">
+    @Html.ActionLink(Labels.Back, "EncampmentList", "Outreach", new { }, new { @class = "backButton  ", title = Labels.Back, @role = "button" })
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script>
+
+     $(function () { // hides the reason for disbanded on page load if dateEnd is not provided
+         var encampmentDateEnd = $("#EncampmentDateEnd").val();
+         if ((encampmentDateEnd == null || encampmentDateEnd == "")) {
+             $('#reasonForDisbandedDiv').hide();
+         }
+     });
+
+</script>
+);
+}

@@ -1,0 +1,58 @@
+﻿@model ClientRisksViewModel
+
+<section id="Modal_EditRisk" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditClientRisk</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editRiskForm" class="form-horizontal">
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+            @Html.Partial("_RiskFactor", Model)
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="editRiskSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editRiskCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+
+    $('input[id=ClientID]').val($('#HiddenClientID').val());
+
+    $("#editRiskSaveBtn").click(function () {
+
+        if ($("#editRiskForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/ClientFactors/EditRisk")",
+                type: "POST",
+                data: $("#editRiskForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#risksTable').DataTable().ajax.reload();
+                    $("#editRiskCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>
+
+

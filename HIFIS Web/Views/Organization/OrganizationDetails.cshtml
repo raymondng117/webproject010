@@ -1,0 +1,338 @@
+﻿@model OrganizationViewModel
+@{
+    if (Model.OrganizationID != null)
+    {
+        ViewBag.ViewTitle = Labels.OrganizationDetailsTitle + ": " + Model.Name;
+        ViewBag.LayoutView = LayoutPage.SecNav;
+    }
+    else
+    {
+        ViewBag.ViewTitle = Labels.OrganizationDetailsTitle;
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("OrganizationDetails", "Organization", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+    @Html.HiddenFor(model => model.OrganizationID)
+    @Html.HiddenFor(model => model.TopParentOrganizationID)
+    @Html.HiddenFor(model => model.CanSeeMale)
+    @Html.HiddenFor(model => model.CanSeeFemale)
+    @Html.HiddenFor(model => model.CanSeeYouth)
+    @Html.HiddenFor(model => model.CanSeeChildren)
+    @Html.HiddenFor(model => model.ChildhoodAge)
+    @Html.HiddenFor(model => model.YouthAge)
+    @Html.HiddenFor(model => model.SeniorAge)
+    @Html.HiddenFor(model => model.FamilyHeadAgeMin)
+    @Html.HiddenFor(model => model.CustomTablesName)
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a class="tabButton" href="#Details" role="tab" data-toggle="tab">@Labels.Details</a>
+        </li>
+        <li>
+            <a class="tabButton" href="#Address" role="tab" data-toggle="tab">@Labels.Address</a>
+        </li>
+        @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+        {
+            <li>
+                <a class="tabButton" href="#CustomTables" role="tab" data-toggle="tab">
+                    @(Session["CurrentOrgCustomTableLabel"] != null ? Session["CurrentOrgCustomTableLabel"].ToString() : Labels.CustomTables)
+                </a>
+            </li>
+        }
+    </ul>
+
+	<!-- Tab panes -->
+    <div class="panel panel-default border-top-fix-tabs">
+        <div class="panel-body">
+            <div class="tab-content">
+                <div class="tab-pane active" id="Details">
+                    <div class="displayView" style="padding: 10px;">
+                        
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Name)
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.ClusterName)
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.ServiceProviderTypeID, new { @class = "autowidth" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.ServiceProviderTypeID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServiceProviderTypes, ViewBag.CurrentCulture, Model.ServiceProviderTypeID)
+                                            })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.ParentOrganizationName, new { @class = "autowidth" })
+                        </div>
+
+                        <div class="row">
+                            @if (Model.GendersServed.Count() > 1) { 
+                                <div class="panel-default">
+                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                        <a data-toggle="collapse" data-parent="#accordion" href="#tester" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+                                            @(Model.GendersServed.Count())  @Labels.GendersServed
+                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                        </a>
+                                    </div>
+                                    <div id="tester" class="panel-collapse collapse">
+                                        <ul class="pddng-lft-md">
+                                            @foreach (var g in Model.GendersServed)
+                                            {
+                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_GenderTypes, ViewBag.CurrentCulture, g)</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    @Html.HifisLabelFor(model => model.GendersServed, new { @class = "autowidth" })
+                                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                            new MultipleItemSelectList
+                                            {
+                                                IDs = Model.GendersServed.Select(l => l.ToString()).ToList(),
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture, Model.GendersServed.Select(l => l.ToString()).ToList())
+                                            })
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row">
+                            @if (Model.Attributes.Count() > 1)
+                            {
+                                <div class="panel-default">
+                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                        <a data-toggle="collapse" data-parent="#accordion" href="#tester2" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+                                            @(Model.Attributes.Count())  @Labels.OtherAttributes
+                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                        </a>
+                                    </div>
+                                    <div id="tester2" class="panel-collapse collapse">
+                                        <ul class="pddng-lft-md">
+                                            @foreach (var att in Model.Attributes)
+                                            {
+                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_OrgAttributeTypes, ViewBag.CurrentCulture, att)</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    @Html.HifisLabelFor(model => model.Attributes, new { @class = "autowidth" })
+                                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",        
+                                            new MultipleItemSelectList
+                                            {
+                                                IDs = Model.Attributes.Select(l => l.ToString()).ToList(),
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_OrgAttributeTypes, Culture, Model.Attributes.Select(l => l.ToString()).ToList())
+                                            }) 
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row">
+                            @if (Model.ServicesOffered.Count() > 1)
+                            {
+                                <div class="panel-default">
+                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                        <a data-toggle="collapse" data-parent="#accordion" href="#tester3" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+                                            @(Model.ServicesOffered.Count())  @Labels.ServicesOffered
+                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                        </a>
+                                    </div>
+                                    <div id="tester3" class="panel-collapse collapse">
+                                        <ul class="pddng-lft-md">
+                                            @foreach (var ser in Model.ServicesOffered)
+                                            {
+                                                <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServicesOfferedTypes, ViewBag.CurrentCulture, ser)</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    @Html.HifisLabelFor(model => model.ServicesOffered, new { @class = "autowidth" })
+                                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                             new MultipleItemSelectList
+                                             {
+                                                 IDs = Model.ServicesOffered.Select(l => l.ToString()).ToList(),
+                                                 List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ServicesOfferedTypes, Culture, Model.ServicesOffered.Select(l => l.ToString()).ToList())
+                                             })            
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisLabelFor(model => model.TargetClienteleTypeID, new { @class = "autowidth" })
+                            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                            new SingleItemSelectList
+                                            {
+                                                ID = Model.TargetClienteleTypeID,
+                                                List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_TargetClienteleTypes, ViewBag.CurrentCulture, Model.TargetClienteleTypeID)
+                                            })
+                        </div>
+
+                        <div class="row">
+                            @if (Model.OrganizationID == null)
+                            {
+                                <div>
+                                    @Html.HifisLabelFor(model => model.ReferrerCategTypeID, new { @class = "autowidth" })
+                                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                                new SingleItemSelectList
+                                                {
+                                                    ID = Model.ReferrerCategTypeID,
+                                                    List = (SelectList)WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReferrerCategTypes, ViewBag.CurrentCulture, Model.ReferrerCategTypeID)
+                                                })
+                                </div>
+                                <div>
+                                    @Html.HifisDisplayFor(model => model.ReferrerCategTypeID, CachedTableTypes.HIFIS_ReferrerCategTypes)
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.AllowConcurrentStays, "YesNo")
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Active, "YesNo")
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.CutOffTime, new { @class = "autowidth" })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Telephone, new { type = "tel" })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Extension, new { @class = "autowidth" })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Fax, new { type = "tel" })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Email, new { @class = "autowidth" })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Web, new { @class = "autowidth" })
+                        </div>
+
+                        <div class="row">
+                            @Html.HifisDisplayFor(model => model.Comments, new { @class = "autowidth" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="Address">
+                    @Html.HiddenFor(model => model.Address.AddressID)
+                    <div id="AddressFormFields">
+                        @Html.HiddenFor(model => model.Address.Country)
+                        @Html.HiddenFor(model => model.Address.City)
+                        @Html.HiddenFor(model => model.Address.Province)
+                        @Html.HiddenFor(model => model.Address.AddressID)
+                        @Html.HiddenFor(model => model.Address.isAddressRequired)
+                        @*@Html.HiddenFor(model => model.Address.isCountryRequired)*@
+                        @Html.HiddenFor(model => model.Address.isGeoRegionEnforced)
+
+                        <div class="displayView" style="padding: 10px;">
+                            <div class="row">
+                                @Html.HifisDisplayFor(model => model.Address.Building, new { @class = "autowidth" })
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisDisplayFor(model => model.Address.AddressLn1, new { @class = "autowidth" })
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisDisplayFor(model => model.Address.AddressLn2, new { @class = "autowidth" })
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisDisplayFor(model => model.Address.Unit, new { @class = "autowidth" })
+                            </div>
+
+                            <div class="row">
+                                @Html.HifisLabelFor(model => model.Address.CountryID, new { @class = "autowidth" })
+                                @Html.DisplayFor(model => model.Address.Country)
+                            </div>
+
+                            <div id="DIV_CANADA">
+                                <div class="row">
+                                    @Html.HifisLabelFor(model => model.Address.ProvinceID, new { @class = "autowidth" })
+                                    @Html.DisplayFor(model => model.Address.Province)
+                                </div>
+                                <div class="row">
+                                    @Html.HifisLabelFor(model => model.Address.CityID, new { @class = "autowidth" })
+                                    @Html.DisplayFor(model => model.Address.City)
+                                </div>
+                                <div class="row">
+                                    @Html.HifisDisplayFor(model => model.Address.PostalCode, new { @class = "autowidth" })
+                                </div>
+                            </div>
+
+                            <div class="hide" id="DIV_INTERNATIONAL">
+                                <div class="row">
+                                    @Html.HifisDisplayFor(model => model.Address.InternationalProvinceName, new { @class = "autowidth" })
+                                </div>
+
+                                <div class="row">
+                                    @Html.HifisDisplayFor(model => model.Address.InternationalCityName, new { @class = "autowidth" })
+                                </div>
+
+                                <div class="row">
+                                    @Html.HifisDisplayFor(model => model.Address.InternationalPostalCode, new { @class = "autowidth" })
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+			                    @Html.HifisLabelFor(model => model.Address.GeoIDs, new { @class = "autowidth" })
+			                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList", 
+							                    new MultipleItemSelectList 
+                                                {
+                                                    IDs = Model.Address.GeoIDs.Select(a => a.ToString()).ToList(),
+								                    List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_GeoRegionTypes, Culture)
+                                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Custom Tables -->
+                @if (ViewBag.CustomTables.CustomTableList.Count > 0)
+                {
+                    <div class="tab-pane" id="CustomTables" style="padding: 10px;">
+                        @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableTabBuilder.cshtml"), ViewBag.CustomTables as CustomTablesListViewModel)
+                    </div>
+                } 
+            </div>
+        </div>
+    </div>
+    <div class="mrgn-bttn-md">
+        @Html.ActionLink(Labels.Edit, "OrganizationEdit", "Organization", new { id = Model.OrganizationID }, new { @class = "editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+    </div>
+
+    <div class="clearfix"></div>
+
+    <br />
+}
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

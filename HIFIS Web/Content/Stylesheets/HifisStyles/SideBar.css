@@ -1,0 +1,12 @@
+﻿#vitalsSidebarLink
+{
+    background: none !important;
+    background-image: none !important;
+    padding-left: 0 !important;
+    font-weight: normal !important;
+}
+.btn-group, .btn-group-vertical-sidebar {
+    position: relative;
+    display: block;
+    vertical-align: middle;
+}

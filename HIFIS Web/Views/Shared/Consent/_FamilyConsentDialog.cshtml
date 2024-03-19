@@ -1,0 +1,287 @@
+﻿@model FamilyConsentViewModel
+
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div id="familyConsentDialog" class="modal mrgn-tp-10 attestation-modal">
+    <div class="modal-dialog whiteBackground" style="width:50%;">
+        <div id="consentModalContent" class="modal-content">
+            <div class="modal-header alert alert-danger">
+                <h2 class="modal-title">@Labels.ConsentDialogTitle</h2>
+            </div>
+            <div class="modal-body condensed-modal">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <p>@Labels.ConsentModalText</p>
+                    </div>
+                </div>
+                <div class="row mrgn-tp-sm">
+                    <div class="mrgn-rght-lg mrgn-lft-lg">
+                        <table class="table table-striped table-condensed table-bordered table-hover ">
+                            <colgroup>
+                                <col class="col-xs-2">
+                                <col class="col-xs-8">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>@Labels.FamilyMemberName</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (ConsentMember member in Model.Members.OrderBy(m => m.FirstName).OrderByDescending(o => o.IsReadOnly))
+                                {
+                                    @Html.Partial("Consent/_ConsentFamilyMemberRow", member)
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="cancelFamilyConsentBtn" class="btn btn-default" data-dismiss="modal">@Labels.Cancel</button>
+                <button type="button" id="saveFamilyConsentBtn" class="btn btn-primary">@Labels.Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    //function createSwitches() {
+    //    $("input[name='IsReadOnly']").each(function () {
+    //        var yesnoInput = $(this).siblings(".form-group").find("input[name='IsConfirmed'].YesAndNo");
+    //        yesnoInput.parent().removeClass("form-control");
+    //        if ($(this).val() == 'True') {
+    //            yesnoInput.bootstrapSwitch({
+    //                disabled: true
+    //            });
+    //        } else {
+    //            yesnoInput.bootstrapSwitch();
+    //        }
+    //    });
+    //}
+
+    function fixWidth() {
+        var $elements = $('.modal-body label.col-sm-2');
+        $elements.each(function () {
+            $(this).removeClass("col-sm-2").addClass("col-sm-4")
+                .parent().find(".col-sm-10").removeClass("col-sm-10").addClass("col-sm-8");
+        });
+
+        $(".modal-body select").parent().attr('style', 'width: 85% !important');
+    }
+
+    $(function () {
+        //Get everything to display correctly
+        init_hifis();
+        autoWidthBoot('.modal-body');
+        fixWidth();
+        //createSwitches();
+
+        $('#familyConsentDialog').modal({
+            backdrop: 'static',
+            keyboard: false,
+            show: false
+        });
+
+        $('#familyConsentDialog').modal('toggle');
+
+        $('#saveFamilyConsentBtn').on('click', function () {
+            $("#familyConsentDialog").modal('toggle');
+
+            var familyMembersArray = [];
+
+            $("#familyConsentDialog form").each(function () {
+                var memberObject = serializeFormToObject($(this));
+                if (memberObject.IsReadOnly == 'False') {
+                    familyMembersArray.push(memberObject);
+                }
+            });
+
+            var familyMembersJSON = JSON.stringify({ 'familymembers': familyMembersArray });
+
+            if (ValidatePath('Admissions'))
+            {
+                for (var index in familyMembersArray) {
+
+                    var attestedClientID = familyMembersArray[index];
+                    delete family[attestedClientID];
+                }
+            }
+
+            //go ahead and save the consents
+            $.ajax({
+                url: "@Url.Action("SaveFamilyConsent", "Master", null)",
+                dataType: 'json',
+                contentType: 'application/json',
+                type: "POST",
+                data: familyMembersJSON
+
+            }).done(function (data) {
+
+                if (data.Success) {
+
+                    if (familyMembersArray.length != data.Result.length) {
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                    }
+
+                    if ('@Model.InputName' !== '') {
+
+                        //disable the ones that were not attested
+                        $('#@Model.InputName option').each(function () {
+
+                            if (data.Result.includes($(this).val())) {
+                                $(this).prop("selected", false).parent().trigger("change");
+                            }
+                        });
+                    }
+
+                    //Admission use global variable that need to be reset/adjust depending on the selection.
+                    if (ValidatePath('Admissions'))
+                    {
+                        for (var index in data.Result) {
+                            
+                            var attestedClientID = data.Result[index].ClientID;
+                            delete family[attestedClientID];
+                        }
+                    }
+
+                    //then continue with normal flow
+                    @Html.Raw(Model.Callback)
+
+                }
+                //MPT: 626624, 643963
+                else {
+
+                    //Display the set error message in the toast popup
+                    if (data.Result.ValidationMessages.length > 0) {
+
+                        for (var i = 0; i < data.Result.ValidationMessages.length; i++) {
+
+                            displayNotification('error', '', "<p>" + data.Result.ValidationMessages[i] + "</p>");
+                        }                        
+                    }
+                    else {
+
+                        displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                    }
+
+                    //Reset the selected option to only have the valide family members
+                    familyMembersArray = [];
+
+                    $("#familyConsentDialog form").each(function () {
+
+                        var memberObject = serializeFormToObject($(this));
+                        if (memberObject.IsReadOnly.toLowerCase() == 'false') {
+                            familyMembersArray.push(memberObject.ClientID);
+                        }
+                    });
+
+                    if ('@Model.InputName' !== '') {
+
+                        //disable the ones that were not consented
+                        $('#@Model.InputName option').each(function () {
+                            if (familyMembersArray.includes($(this).val())) {
+                                $(this).prop("selected", false).parent().trigger("change");
+                            }
+                        });
+                    }
+                    
+                    
+                    //force :/
+                    //Have to delete the ones that were previously added and not consented
+                    if ('@Model.Callback'.indexOf('familyAttestationCallback') != -1) {
+
+                        if (ValidatePath('Admissions')) {
+
+                            HIFIS_Admissions.BookInView.Utility_Functions.familyAttestationCallback(familyMembersArray);
+                        }
+                        else {
+
+                            familyAttestationCallback(familyMembersArray);
+                        }
+                    }
+
+                    //MPT: 626624, 643963
+                    //This form will be append in the family-attestation-result section with the Javascript 
+                    //included so it need to be clean to avoid duplicate event triggers if the user 
+                    //reopen the form with the family button
+                    $("#family-attestation-result").html('');
+
+                }
+                
+            });
+        });
+
+        $('#cancelFamilyConsentBtn').on('click', function () {
+            $("#familyConsentDialog").modal('toggle');
+
+            var familyMembersArray = [];
+
+            $("#familyConsentDialog form").each(function () {
+                var memberObject = serializeFormToObject($(this));
+                if (memberObject.IsReadOnly.toLowerCase() == 'false') {
+                    familyMembersArray.push(memberObject.ClientID);
+                }
+            });
+
+            if ('@Model.InputName' !== '') {
+                //disable the ones that were not consented
+                $('#@Model.InputName option').each(function () {
+                    if (familyMembersArray.includes($(this).val())) {
+                        $(this).prop("selected", false).parent().trigger("change");
+                    }
+                });
+            }
+
+            //force :/
+            //Have to delete the ones that were previously added and not consented
+            if ('@Model.Callback'.indexOf('familyAttestationCallback') != -1) {
+                @*@Html.Raw(Model.Callback)*@
+
+                if (ValidatePath('Admissions')) {
+
+                    HIFIS_Admissions.BookInView.Utility_Functions.familyAttestationCallback(familyMembersArray);
+                }
+                else {
+
+                    familyAttestationCallback(familyMembersArray);
+                }
+
+            }
+        });
+
+        function serializeFormToObject(formToSerialize) {
+            var arrayData, objectData;
+            arrayData = formToSerialize.serializeArray();
+            objectData = {};
+
+            $.each(arrayData, function () {
+                var value;
+
+                if (this.value != null) {
+                    value = this.value;
+                } else {
+                    value = '';
+                }
+
+                //if it is not an object itself
+                if (objectData[this.name] != null) { //if the name exists, this is a new value for the same name(property)
+                    //for now, dont do anything...
+                    /*if (!objectData[this.name].push) {
+                        //if is not an array already, convert it to an array and add the values
+                        objectData[this.name] = [objectData[this.name]];
+                    }
+                    objectData[this.name].push(value);*/
+                } else {
+                    objectData[this.name] = value;
+                }
+            });
+
+            return objectData;
+        };
+
+    });
+</script>

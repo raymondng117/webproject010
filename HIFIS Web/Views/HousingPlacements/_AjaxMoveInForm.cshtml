@@ -1,0 +1,211 @@
+﻿@model MoveInViewModel
+
+<section id="Modal_NewItem" class="modal-dialog modal-content overlay-def" style="width: 500px;">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.MoveIn</h2>
+	</header>
+	<div class="modal-body">
+        @if (Model.ActiveHousingExists)
+        {
+            <section class="alert alert-warning">
+                <h3>@Labels.Warning</h3>
+                <p>
+                    @Labels.MoveInHousingHistoryConflict
+                    @if (RightsHelper.HasRight(UserRights.Client_Housing_Display))
+                    {
+                        @Html.ActionLink(Labels.GoToActiveClientHousing, "DisplayHousingHistory", "ClientTombstone", new { id = Model.ClientID, clientHouseID = ViewBag.ActiveClientHousingHistoryID }, new { id = "closeHistory", target = "_blank", @class = "alert-link", alt=Labels.GoToActiveClientHousing, aria_label = Labels.GoToActiveClientHousing })
+                    }
+                </p>
+            </section>
+            @*@Html.HiddenFor(model => model.ActiveHousingStartDate)*@
+            @Html.HiddenFor(model => model.ActiveHousingExists)
+        }
+        <form id="newMoveInForm" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.HouseID)
+            @Html.HiddenFor(model => model.PlacementID)
+            @Html.HiddenFor(model => model.ClientID)
+
+            @if(Model.ActiveHousingExists)
+            {
+                <div class="asdasdsd">
+                    @* Hiddenfor will render the date in a way that cannot be used to make a JS Date object. *@                    
+                    @Html.HiddenFor(model => model.ActiveHousingStartDate, new { @Value = Model.ActiveHousingStartDate.Value.ToString("yyyy-MM-dd") })
+                    @Html.HifisEditorFor(model => model.ActiveHousingEndDate)
+                </div>
+            }
+            <div>
+                @Html.HifisEditorFor(model => model.Rent, "Money", new { @class = "money" })    
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.DateMoveIn)
+            </div>
+
+            <div>
+                @Html.HifisTextBoxFor(model => model.Telephone1, new { type = "tel" })
+            </div>
+
+            <div>
+                @Html.HifisTextBoxFor(model => model.Telephone2, new { type = "tel" })
+            </div>
+
+            <div>
+                @Html.HifisTextBoxFor(model => model.Mobile, new { type = "tel" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.Email)
+            </div>
+    
+            <div>
+                @Html.HifisEditorFor(model => model.UseExactFollowUpDate, "YesNo")
+            </div>
+    
+            <div id="exactDateDiv">
+                @Html.HifisEditorFor(model => model.ExactFollowUpDate)
+            </div>
+    
+            <div id="numMonthsDiv">
+                @Html.HifisEditorFor(model => model.MonthsTillFollowUp)
+            </div>
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="newMoveInSaveBtn" class="saveButton">@Labels.MoveIn</button>
+		<button id="newMoveInCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script>
+
+    function checkActiveEndDateRequired() {
+        if ($('#ActiveHousingExists').val() == 'True') {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $('input[name=UseExactFollowUpDate]').on('switchChange.bootstrapSwitch', function (event, state) {
+        if (state) {
+            $('#exactDateDiv').show();
+            $('#numMonthsDiv').hide();
+        }
+        else {
+            $('#exactDateDiv').hide();
+            $('#numMonthsDiv').show();
+        }
+    });
+
+    $(function () {
+        $("#newMoveInForm").hifisValidation();
+        $('#exactDateDiv').hide();
+    });
+
+    $("#newMoveInSaveBtn").click(function () {
+        //remove any previous custom validation
+        $('#DateMoveIn-customerror').parent("span").remove();
+                
+        if ($("#newMoveInForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            validMoveInDates();
+        }
+    });
+
+    function insertMoveIn(result)
+    {
+        //if there are no move in date conflicts result will be true, see getMoveInDateConflicts(cID, date, callback);
+        if (result) {
+            $.ajax({
+
+                url: "@Url.Content("~/HousingPlacements/MoveIn")",
+                type: "POST",
+                data: $('#newMoveInForm').serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                $("#newMoveInSaveBtn").removeAttr("disabled"); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $("#newMoveInCloseBtn").click(); //Close the modal window on success
+
+                    var url = '@Url.Action("Display", "HousingPlacements", new { id = "__id__", placementID = "__placementID__"})';
+                    url = url.replace("__id__", '@Model.ClientID');
+                    url = url.replace("__placementID__", '@Model.PlacementID.ToString()');
+                    window.location.href = url;
+                }
+            });
+        }
+        else {
+            $("#newMoveInSaveBtn").removeAttr("disabled"); //Enable the button incase there was an error
+        }
+    }
+
+    function validMoveInDates() {
+        //check that you are not starting move in during another inactive housing history
+        if (!checkActiveEndDateRequired()) {
+            getMoveInDateConflicts($('#HiddenClientID').val(), $('#DateMoveIn').val(), function (result) {
+                insertMoveIn(result);
+            });
+        }
+        else {
+            //if there is an active housing we need to check date against the given active end date
+            if (greaterThanActiveDate($('#DateMoveIn').val())) {
+                //if its greater than active end date proceed with checking for date conflicts
+                //check that you are not starting move in during another inactive housing history
+                getMoveInDateConflicts($('#HiddenClientID').val(), $('#DateMoveIn').val(), function (result) {
+                    insertMoveIn(result);
+                });
+            }
+            else {
+                $('#DateMoveIn').parent('.input-group').parent('.input-group').append('<span class="align-left field-validation-error"><span id="DateMoveIn-customerror">@Labels.MoveInNotGreater</span></span>');
+                $("#newMoveInSaveBtn").removeAttr("disabled"); //Enable the button incase there was an error
+            }
+        }
+    }
+    
+    function GetMoveInDateConflictsCallback() {
+
+    }
+    function getMoveInDateConflicts(cID, date, callback) {
+        $.ajax({
+            url: "@Url.Content("~/ClientTombstone/GetHousingAroundDate")",
+            type: "POST",
+            data: { "clientID": cID, "date": date }
+        }).done(function (data) {
+            if (data.Result !== null) {
+                displayNotification('alert', null, '@Labels.MoveInDuringHistoryMsg' + data.Result.dateStart + ' - ' + data.Result.dateEnd);
+                $('#DateMoveIn').parent('.input-group').parent('.input-group').append('<span class="align-left field-validation-error"><span id="DateMoveIn-customerror">@Labels.HousingHistoryDateConflict</span></span>');
+                callback(false);
+            }
+            else {
+                callback(true);
+            }
+        });
+    }
+
+    //manual check if the move in date is greater than the active date, because the active date may not always require validation.
+    function greaterThanActiveDate(dateString) {
+        var formattedDateString = dateString.replace(/-/g, "/");
+        var date = new Date(formattedDateString);
+
+        var activeDateString = $('#ActiveHousingEndDate').val();
+        var formattedActiveDateString = activeDateString.replace(/-/g, "/");
+        var activeDate = new Date(formattedActiveDateString);
+
+        return (isEmptyDateValue(date) || date >= activeDate);
+    }
+</script>
+
+

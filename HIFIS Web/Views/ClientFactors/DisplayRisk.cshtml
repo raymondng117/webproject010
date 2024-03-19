@@ -1,0 +1,34 @@
+﻿@model ClientRisksViewModel
+<section id="Modal_NewRisk" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_AddClientRisk</h2>
+    </header>
+    <div class="modal-body">
+
+        @Html.HiddenFor(model => model.ClientID)
+        @Html.HiddenFor(model => model.RiskOfHomelessnessID)
+
+        <div>
+            @Html.HifisLabelFor(model => model.AtRiskStatusTypeID, new { @class = "autowidth" })
+            @Html.DisplayFor(m => m.RiskName)
+        </div>
+
+        <div>
+            @Html.HifisDisplayFor(model => model.DateOfChange)
+        </div>
+
+        <div>
+            @Html.HifisLabelFor(model => model.CaseWorkerID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.CaseWorkerID,
+                            List = ViewBag.CaseWorkerList
+                        })
+        </div>
+
+    </div>
+    <div class="modal-footer" style="background-color: white;">
+        <button id="newRiskCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>

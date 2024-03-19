@@ -1,0 +1,89 @@
+﻿@model GoodsAndServicesViewModel
+
+<div class="displayView">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.OrganizationID, new { @class = "mrgn-rght-md col-sm-5" })
+                @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.ClientService.OrganizationID,
+                            List = ViewBag.Orgs as SelectList
+                        })
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.ProgramServiceProviderID, new { @class = "mrgn-rght-md" })
+                @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.ClientService.ProgramIDs,
+                            List = ViewBag.ProgramList as SelectList
+                        })
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.ReasonForGoodsActivityTypeID, new { @class = "mrgn-rght-md col-sm-6" })
+                @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.ClientService.ReasonForGoodsActivityTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_ReasonForGoodsActivityTypes, ViewBag.CurrentCulture, Model.ClientService.ReasonForGoodsActivityTypeID)
+                        })
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.SessionID, new { @class = "mrgn-rght-md col-sm-8" })
+                @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                        new SingleItemSelectList
+                        {
+                            ID = Model.ClientService.SessionID,
+                            List = ViewBag.SessionList as SelectList
+                        })
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.NumberOfPeople, new { @class = "mrgn-rght-md col-sm-7" })
+                @Html.DisplayFor(model => model.ClientService.NumberOfPeople)
+            </div>
+
+            @*<div class="col-md-6"></div>*@
+        </div>
+        <div class="col-sm-6">
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.DateStart, new { @class = "mrgn-rght-md col-sm-6" })
+                @Html.HifisDisplayFor(model => model.ClientService.DateStart, null, true, "DateAndTime")
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.DateEnd, new { @class = "mrgn-rght-md col-sm-6" })
+                @DateHelper.DateTimeFormaterENFR((DateTime)Model.ClientService.DateEnd, Labels.CurrentCulture)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.ReferredByName, new { @class = "mrgn-rght-md col-sm-4" })
+                @Html.DisplayFor(model => model.ClientService.ReferredByName)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.FromReferrerPlaceID, new { @class = "mrgn-rght-md col-sm-5" })
+                @Html.DisplayFor(model => model.ClientService.FromReferrerPlaceName)
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientService.ToReferrerPlaceID, new { @class = "mrgn-rght-md col-sm-4" })
+                @Html.DisplayFor(model => model.ClientService.ToReferrerPlaceName)
+            </div>
+        </div>
+        @*<div>
+            @Html.ActionLink(Labels.Edit, "Edit", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID, serviceID = Model.ServiceID, GoodActivityID = Model.GoodsActivitiesID }, new { @class = "editButton" })
+            @Html.ActionLink(Labels.Cancel, "ClientList", "GoodsAndServices", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton" })
+        </div>*@
+    </div>
+    <div class="row">
+        @Html.HifisLabelFor(model => model.ClientService.Comments, new { @class = "mrgn-rght-md" })
+        @Html.DisplayFor(model => model.ClientService.Comments)
+    </div>
+</div>

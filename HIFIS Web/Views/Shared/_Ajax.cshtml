@@ -1,0 +1,119 @@
+﻿@* This $.ajax expects the Action to return AjaxResult(); *@ 
+@* Returns AjaxResultViewModel *@   
+
+@model AjaxViewModel
+
+var JQXHR;
+$.ajax({ 
+    @if (!String.IsNullOrEmpty(Model.Url)) { <text>url: @Html.Raw(Model.Url),</text> } 
+    @if (!String.IsNullOrEmpty(Model.Data)) { <text>data: @Html.Raw(Model.Data),</text> } 
+    @if (!String.IsNullOrEmpty(Model.ContentType)) { <text>contentType: "@Html.Raw(Model.ContentType)",</text> }
+    async: @Model.Async.ToString().ToLower(), 
+    type: "@Model.Type", 
+    dataType: "@Model.DataType", 
+    traditional: true,
+    beforeSend: function(jqXHR, settings) {
+        
+         $.xhrPool.push(jqXHR);
+
+        @if (Model.LoaderGif) 
+        { 
+            <text> 
+            if (typeof window.hifis_numAjaxCalls === 'undefined') { window.hifis_numAjaxCalls = 0; } 
+            window.hifis_numAjaxCalls += 1; 
+
+            if ($('#overlay-div').length < 1) { 
+                $('<div id="overlay-div"><div id="inner-overlay" style="text-align:center;"><img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="@Labels.AnimatedActivityIndicatorImage" /> <p>@Labels.Loading</p><p style="width:300px;"><span style="display:none;" class="closeText">@Labels.Takingtolong <a href="#" class="cancelAjax" style="color:white;">@Labels.Here</a> @Labels.ToCancel</span></p></div></div>').appendTo('body');
+            }            
+
+            JQXHR = jqXHR;
+            </text>            
+        } 
+
+        setTimeout(function(){ $(".closeText").show(); }, 15000);
+        
+        @Html.Raw(Model.BeforeSend) 
+    }, 
+    success: function(data, textStatus, jqXHR) {
+        
+        @if(Model.ShowValidationSummary)
+        {
+            <text> 
+                if(typeof(validationSummary) == "function")
+                {
+                    validationSummary(data.ValidationSummary, @(Model.IsOnTheFly ? "true" : "false")); 
+                } 
+            </text>
+        }
+
+        @if (String.Compare(Model.DataType, "html", true) != 0)
+        {
+            <text>
+            if (data.Success) { // i.e. there is no validation summary 
+                if(data.ShowDataSaveSuccessfully || @(Model.ShowDataSuccessfully ? "true" : "false")) 
+                    displayNotification('success', null, data.DataSavedMessage || '@Labels.DefaultDataSavedMessage');
+
+                data = data.Result; 
+                @Html.Raw(Model.OnSuccess) 
+            }
+            else
+            {
+                @Html.Raw(Model.OnFailure)
+            } 
+            </text>
+        }
+        else
+        {
+            @Html.Raw(Model.OnSuccess)
+        }
+    }, 
+    error: function(jqXHR, textStatus, errorThrown) { // if the ajax call fails, not necessarily the service operation 
+        @Html.Raw(Model.OnFailure)
+
+        @*if (jqXHR.status == 200) { 
+            location.reload(true); @* if the reply we receive is malformatted, assume we are not logged in 
+                                      if we are not logged in, doing so should boot us to the login page *@ 
+        @*}*@ 
+        @*alert(textStatus + ' ' + jqXHR.status + ':\n' + errorThrown); *@
+    }, 
+    complete: function (jqXHR, textStatus) { 
+        
+        var index = $.xhrPool.indexOf(jqXHR);
+        if (index > -1) {
+            $.xhrPool.splice(index, 1);
+        }
+
+		try { 
+			if($.magnificPopup != null){
+				if($.magnificPopup.instance.items != null){
+					
+					if($.magnificPopup.instance.items[0].src == "#waiting-overlay"){ 
+                       
+                        $.magnificPopup.close(); 
+                       
+                    }     
+				}
+               
+			}
+		}
+		catch(err){}
+
+        @if (Model.LoaderGif)
+        { 
+            <text> 
+            window.hifis_numAjaxCalls -= 1; 
+        
+            if (window.hifis_numAjaxCalls <= 0) { 
+                $('#overlay-div').remove(); 
+            } 
+            </text> 
+        } 
+
+        @Html.Raw(Model.OnComplete)
+    } 
+});
+
+$(".cancelAjax").click(function(){
+    $('#overlay-div').remove();
+    JQXHR.abort();
+});

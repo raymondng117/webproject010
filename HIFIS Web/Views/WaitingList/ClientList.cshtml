@@ -1,0 +1,81 @@
+﻿@model ClientWaitingListViewModelList
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientWaitingLists;
+    
+    ViewBag.LayoutView = LayoutPage.Client; 
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div>
+    @using (Html.BeginForm("ClientList", "WaitingList", FormMethod.Post, new { @class = "form-horizontal" }))
+    {      
+        @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+        
+        @Html.HiddenFor(model => model.ClientID)
+
+        <div class="form-color-white module-form-block">    
+            <div class="table-responsive">
+                <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+                    <thead>
+                        <tr>
+                            <th>@Labels.WaitingListName</th>
+                            <th>@Labels.WaitingListType</th>
+                            <th>@Labels.DateJoined</th>
+                            <th>@Labels.Days</th>
+                            <th>@Labels.Status</th>
+                            <th>@Labels.StatusDate</th>
+                            <th>@Labels.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>                    
+                        @foreach (var viewModelItem in Model.WaitingLists)
+                        {
+                            string clientWaitingListID = viewModelItem.ClientWaitingLists.Where(m => m.ClientID == Model.ClientID).FirstOrDefault().ClientWaitingListID;
+                            <tr>
+                                <td>@Html.DisplayFor(ModelItem => viewModelItem.WaitingListName)</td>
+                                <td class="align-text-center">@Html.DisplayFor(ModelItem => viewModelItem.WaitingListTypeName)</td>
+                                <td class="align-text-center">@Html.DisplayFor(ModelItem => viewModelItem.ClientWaitingLists.Where(m => m.ClientID == Model.ClientID).Last().DateStart)</td>
+                                <td class="align-text-center">@Html.DisplayFor(ModelItem => viewModelItem.ClientWaitingLists.Where(m => m.ClientID == Model.ClientID).Last().NumberOfDaysOnList)</td>
+                                <td class="align-text-center">@Html.DisplayFor(ModelItem => viewModelItem.ClientWaitingLists.Where(m => m.ClientID == Model.ClientID).Last().WaitingRequestStatusName)</td>
+                                <td class="align-text-center">@Html.DisplayFor(ModelItem => viewModelItem.ClientWaitingLists.Where(m => m.ClientID == Model.ClientID).Last().StatusDate)</td>
+                                <td class="align-text-center">
+                                    @if (RightsHelper.HasRight(UserRights.WaitingList_Display, viewModelItem.OrganizationIDs))
+                                    {
+                                        @Html.ActionLink(Labels.Display, "DisplayClientWaitingListDetails", "WaitingList", new { id = Model.ClientID,  ClientWaitingListID = clientWaitingListID, returnToMain = false}, new { @class = "noText displayButton", alt = Labels.Display, aria_label = Labels.Display, @role = "button" }) 
+                                    }
+                                    @*Changed UserRights.WaitingLis_Edit to UserRights.WaitingList_Clients_Edit*@
+                                    @if (RightsHelper.HasRight(UserRights.WaitingList_Clients_Edit, viewModelItem.OrganizationIDs))
+                                    {
+                                        @Html.ActionLink(Labels.Edit, "EditClient", "WaitingList", new { id = Model.ClientID,  ClientWaitingListID = clientWaitingListID, returnToMain = false }, new { @class = "noText editButton", alt = Labels.Edit, aria_label = Labels.Edit, @role = "button" }) 
+                                    }
+                                
+                                    @if (RightsHelper.HasRight(UserRights.WaitingList_Clients_List, viewModelItem.OrganizationIDs))
+                                    {
+                                        @Html.ActionLink(Labels.ManageClients, "ManageClients", "WaitingList", new { WaitingListID = viewModelItem.WaitingListID }, new { @class = "noText clientButton", alt = Labels.ManageClients, aria_label = Labels.ManageClients , @role = "button"}) 
+                                    }  
+                                </td>                                
+                            </tr>
+                        }     
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="clearfix"></div>
+        
+        <div class="mrgn-tp-md">
+            @if (RightsHelper.HasRight(UserRights.WaitingList_Clients_Add))
+            {
+                @Html.ActionLink(Labels.AddToWaitingList, "AddClient", "WaitingList", new { id = Model.ClientID }, new { @class = "addButton", alt = Labels.AddToWaitingList, aria_label = Labels.AddToWaitingList, @role = "button" }) 
+            }            
+        </div>
+    }
+</div>
+
+
+
+
+
+

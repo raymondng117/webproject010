@@ -1,0 +1,155 @@
+﻿@*@model MoveInViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_MoveIn;
+
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#_PlacementVitals">
+          @Labels.PlacementDetails
+        </a>
+      </h4>
+    </div>
+    <div id="_PlacementVitals" class="panel-collapse collapse">
+      <div class="panel-body">
+            @Html.Partial("_PlacementVitals", ViewBag.placementVitals as HousingPlacementVitalsViewModel)
+      </div>
+    </div>
+  </div>
+
+    <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#_HousingUnit">
+          @Labels.HousingUnit
+        </a>
+      </h4>
+    </div>
+    <div id="_HousingUnit" class="panel-collapse collapse">
+      <div class="panel-body">
+            @Html.Partial(Url.Content("~/Views/HousingUnit/_HousingVitals.cshtml"), new HousingUnitVitalsWrapper(ViewBag.HousingUnit as HousingUnitViewModel))
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (ViewBag.ActiveHousingPlacement)
+{
+    <section class="alert alert-danger">
+	    <h3>@Labels.HousingPlacementConflict</h3>
+	    <p>@Labels.ActiveHousingPlacementMessage 
+            @if (RightsHelper.HasRight(UserRights.HousingPlacements_FollowUp_Add, ViewBag.ActiveHousingPlacementOrgID))
+            {
+                @Html.ActionLink(Labels.GoToActiveHousingPlacement, "Display", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = ViewBag.ActiveHousingPlacementID }, new { target = "_blank", @class = "alert-link" })
+            }
+            else
+            {
+                @Labels.ActiveHousingPlacementEditMessage @Html.ActionLink(Labels.viewTitle_PlacementList, "ClientList", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID }, new { target = "_blank", @class = "alert-link" })
+            }            
+        </p>
+    </section>
+}
+
+@if (ViewBag.ActiveClientHousingHistory)
+{
+    <section class="alert alert-warning">
+	    <h3>@Labels.ClientHistoryHouseConflict</h3>
+	    <p>@Labels.ActiveClientHousingHistoryMessage 
+            @if (RightsHelper.HasRight(UserRights.Client_Housing_Edit))
+            {
+                @Html.ActionLink(Labels.GoToActiveClientHousing, "ClientHousingHistoryEdit", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID, clientHouseID = ViewBag.ActiveClientHousingHistoryID }, new { target = "_blank", @class = "alert-link" })
+            }
+            else
+            {
+                @Labels.ActiveClientHousingEditMessage
+            }            
+        </p>
+    </section>
+}
+
+@using (Html.BeginForm("MoveIn", "HousingPlacements", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.HiddenFor(model => model.HouseID)
+    @Html.HiddenFor(model => model.PlacementID)
+
+    <div>
+        @Html.HifisEditorFor(model => model.Rent, "Money", new { @class = "money" })    
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.DateMoveIn)
+    </div>
+
+    <div>
+        @Html.HifisTextBoxFor(model => model.Telephone1, new { type = "tel" })
+    </div>
+
+    <div>
+        @Html.HifisTextBoxFor(model => model.Telephone2, new { type = "tel" })
+    </div>
+
+    <div>
+        @Html.HifisTextBoxFor(model => model.Mobile, new { type = "tel" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.Email)
+    </div>
+    
+    <div>
+        @Html.HifisEditorFor(model => model.UseExactFollowUpDate, "YesNo")
+    </div>
+    
+    <div id="exactDateDiv">
+        @Html.HifisEditorFor(model => model.ExactFollowUpDate)
+    </div>
+    
+    <div id="numMonthsDiv">
+        @Html.HifisEditorFor(model => model.MonthsTillFollowUp)
+    </div>
+    
+    <div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+            @if (ViewBag.ActiveHousingPlacement == false)
+            {
+			    <button type="submit" class="saveButton">@Labels.Save</button>
+            }
+            else
+            {
+                <button type="submit" class="saveButton" disabled>@Labels.Save</button>
+            }
+            @Html.ActionLink(Labels.Cancel, "Display", new { id = Model.ReadOnlyVitals.ClientID, placementID = Model.PlacementID, houseID = Model.HouseID }, new { @class = "cancelButton" })
+		</div>
+	</div>  
+    
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            
+             $(document).ready(function () {
+                 $('#exactDateDiv').hide();
+             });
+
+             $('input[name=UseExactFollowUpDate]').on('switchChange.bootstrapSwitch', function (event, state) {
+                 if (state) {
+                     $('#exactDateDiv').show();
+                     $('#numMonthsDiv').hide();
+                 }
+                 else {
+                     $('#exactDateDiv').hide();
+                     $('#numMonthsDiv').show();
+                 }
+             });
+        </script>
+);
+}*@

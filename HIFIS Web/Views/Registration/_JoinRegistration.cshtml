@@ -1,0 +1,32 @@
+﻿@model JoinRegistrationViewModel
+
+<section id="Modal_JoinReg" class="mfp-hide modal-dialog modal-content overlay-def">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.JoinRegistration</h2>
+	</header>
+	@using (Html.BeginForm("JoinRegistration", "Registration", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+		<div class="modal-body">
+			@Html.HiddenFor(model => model.RegID)
+			<div>
+				@Html.HifisEditorFor(model => model.SiteID)
+			</div>
+			<div>
+				@Html.HifisEditorFor(model => model.InstanceType)
+			</div>
+		</div>
+
+		<div class="modal-footer" style="background-color: white;">
+			<button type="submit" class="saveButton">@Labels.Save</button>
+			<button class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+		</div>
+	}
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+    initMCE();
+</script>

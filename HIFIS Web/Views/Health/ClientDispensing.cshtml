@@ -1,0 +1,314 @@
+﻿@model ClientDispensingViewModel          
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientMedication;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@*@Html.Partial("Plugins/_Notify")*@ 
+@Html.Partial("_ValidationSummaryOuter")
+@Html.Partial("_ConfirmAction", new ConfirmActionViewModel(ConfirmActionTypes.Undo))
+
+@*@using (Html.BeginForm("Dispensing", "Health", FormMethod.Post, new { @class = "form-horizontal", id = "dispensingForm" }))
+{
+    @Html.Partial("_DispensingHiddenFields", new DispensingViewModel
+   {
+       OrganizationID = ViewBag.ServiceProvider,
+       DispensingDate = DateTime.Now,
+       OnBehalfOfPersonID = ViewBag.PersonID,
+       ClientID = ViewBag.ClientID
+   })
+   
+}*@
+
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="#Today" role="tab" data-toggle="tab">@Labels.ClientMedicationDispensing</a></li>
+  <li><a href="#DispensingHistory" role="tab" data-toggle="tab">@Labels.DispensingHistory</a></li>
+</ul>
+
+<!-- Tab panes -->
+<div class="panel panel-default border-top-fix-tabs">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane active" id="Today">
+                @using (Html.BeginForm("Dispensing", "Health", FormMethod.Post, new { @class = "form-horizontal", id = "dispensingForm" }))
+                {
+                    @Html.Partial("_DispensingHiddenFields", new DispensingViewModel
+                    {
+                        OrganizationID = ViewBag.ServiceProvider,
+                        DispensingDate = DateTime.Now,
+                        OnBehalfOfPersonID = ViewBag.PersonID,
+                        OnBehalfOfFullName = ViewBag.Fullname,
+                        ClientID = ViewBag.ClientID
+                    })
+
+                }
+            <div>
+                <div class="table-responsive">
+                    <table id="dispensingTodayTable" class="wb-tables table table-striped table-hover dispensing-table"
+                           data-wb-tables='{   "columns": [
+                                                { "width": "30%", "data": "medicationName", "sClass" : "text-left"},
+                                                { "width": "20%", "data": "dosage", "sClass" : "text-center"},
+                                                { "width": "20%", "data": "dispensedToday", "sClass" : "text-center"},
+                                                { "width": "40%", "data": "dispensing", "sClass" : "text-left"}
+                                            ],
+                                            "columnDefs": [
+                                                { "type": "date", "targets": 1 }
+                                            ],
+                                            "processing": true,
+                                            "order": [ [1, "desc"] ],
+                                            "ajax": "@Url.Action("GetMedicationDispensingListJson", "Health", new { id = Model.ReadOnlyVitals.ClientID})"
+                                        }'>
+                        <thead>
+                            <tr>
+                                <th class="align-text-center">@Labels.MedicationName</th>
+                                <th class="align-text-center">@Labels.Dosage</th>
+                                <th class="align-text-center">@Labels.DispensedToday</th>
+                                <th class="align-text-center">@Labels.Dispensing</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+	        </div>
+	        <div class="tab-pane" id="DispensingHistory">
+		        <div id="radio" class="btn-group" class="mrgn-bttm-lrg">
+			        <ul class="list-unstyled">
+				        <li class="btn-group btn-group-sm mrgn-bttm-lrg">
+					        @{ string classlink1 = (ViewBag.numOfDays == 7 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+					        @Html.ActionLink(Labels.Radio1w, "ClientDispensing", "Health", new { id = Model.ReadOnlyVitals.ClientID, numOfDays = 7 }, new { @class = classlink1, alt=Labels.Radio1w, aria_label = Labels.Radio1w, @role = "button" })
+
+					        @{ string classlink2 = (ViewBag.numOfDays == 30 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+					        @Html.ActionLink(Labels.Radio1m, "ClientDispensing", "Health", new { id = Model.ReadOnlyVitals.ClientID, numOfDays = 30 }, new { @class = classlink2, alt=Labels.Radio1m, aria_label = Labels.Radio1m, @role = "button" })
+
+					        @{ string classlink3 = (ViewBag.numOfDays == 90 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+					        @Html.ActionLink(Labels.Radio3m, "ClientDispensing", "Health", new { id = Model.ReadOnlyVitals.ClientID, numOfDays = 90 }, new { @class = classlink3, alt=Labels.Radio3m, aria_label = Labels.Radio3m, @role = "button" })
+
+					        @{ string classlink4 = (ViewBag.numOfDays == 180 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+					        @Html.ActionLink(Labels.Radio6m, "ClientDispensing", "Health", new { id = Model.ReadOnlyVitals.ClientID, numOfDays = 180 }, new { @class = classlink4, alt=Labels.Radio6m, aria_label = Labels.Radio6m, @role = "button" })
+
+					        @{ string classlink5 = (ViewBag.numOfDays == 365 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+					        @Html.ActionLink(Labels.Radio1y, "ClientDispensing", "Health", new { id = Model.ReadOnlyVitals.ClientID, numOfDays = 365 }, new { @class = classlink5, alt=Labels.Radio1y, aria_label = Labels.Radio1y, @role = "button" })
+
+					        @{ string classlink6 = (ViewBag.numOfDays == 0 ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+					        @Html.ActionLink(Labels.RadioAll, "ClientDispensing", "Health", new { id = Model.ReadOnlyVitals.ClientID, numOfDays = 0 }, new { @class = classlink6, alt=Labels.RadioAll, aria_label = Labels.RadioAll, @role = "button" })
+				        </li>
+			        </ul>							
+		        </div>  
+                
+                <a class="no-print btn btn-primary pull-right" href="/Health/ClientDispensing/@Model.ReadOnlyVitals.ClientID?numofdays=@ViewBag.numOfDays"><span class="glyphicon glyphicon-refresh"></span>&nbsp;@Labels.Refresh</a>
+           
+		        <br /><br />
+		        <div class="clearfix"></div>
+                <div class="panel-group" id="accordion">            
+			        @{
+                        //TODO: This shouldn't be done here -JdV
+				        var groupedDate = Model.ClientDispensingHistory
+										        .GroupBy(cdh => cdh.DispensingDate)
+										        .OrderByDescending(cdh => cdh.Key);
+                        int i = 1;
+				        foreach (var groupDate in groupedDate)
+				        {
+                            i++;
+						
+	                        <div class="panel panel-default">
+		                        <div class="panel-heading">
+			                        <h4 class="panel-title">
+				                        <a class="center-block clearfix" data-toggle="collapse" data-parent="#accordion" href="#collapse@(i)">
+					                        @{ var dateString = String.Format("{0:MMMM d, yyyy}", groupDate.Key); }
+
+					                        @dateString
+                                            <span class="glyphicon glyphicon-chevron-down pull-right"></span>
+				                        </a>
+			                        </h4>
+		                        </div>
+		                        <div id="collapse@(i)" class="panel-collapse collapse">
+			                        <div class="panel-body">
+				                        @{ var groupMeds = groupDate.GroupBy(med => med.MedicationID); }
+								        @{var todayID = (dateString == String.Format("{0:MMMM d, yyyy}", DateTime.Today)) ? "todayTable": "";}
+				                        <table id="@todayID" class="wb-tables table table-striped" data-wb-tables='{ "info": false, "searching": false, "paging": false, "ordering": false }'>
+					                        <thead>
+						                        <tr>
+							                        <th>@Labels.MedicationName</th>
+							                        <th>@Labels.StaffDispensed</th>
+							                        <th>@Labels.MedicationDispensed</th>
+						                        </tr>
+					                        </thead>
+					                        <tbody>
+						                        @foreach (var meds in groupMeds)
+						                        {
+							                        <tr>
+								                        <td>@meds.FirstOrDefault().MedicationName </td>
+								                        <td>
+                                                        @{
+                                                            foreach(var med in meds){
+                                                              @med.OnBehalfOfFullName
+                                                            <br />}
+                                                        }
+                                                        </td>
+                                                        <td id="@{if(todayID != ""){
+                                                                         @meds.FirstOrDefault().MedicationID
+                                                                    }
+                                                            }">
+                                                            @foreach (var recurrence in meds)
+									                        {
+                                                                if(recurrence.RecurrenceTypeID != null){
+                                                                    <span class="glyphicon glyphicon-ok"></span>
+                                                                    //TODO: This shouldn't be done here -JdV
+										                            switch ((MedicationRecurrenceTypes)recurrence.RecurrenceTypeID)
+										                            {
+											                            case MedicationRecurrenceTypes.Morning:
+                                                                            @Labels.Morning
+											                            break;
+											                            case MedicationRecurrenceTypes.Noon:
+                                                                        @Labels.Noon
+											                            break;
+											                            case MedicationRecurrenceTypes.Bedtime:
+                                                                        @Labels.Bedtime
+											                            break;
+											                            case MedicationRecurrenceTypes.Evening:
+                                                                        @Labels.Evening
+											                            break;
+											                            case MedicationRecurrenceTypes.PRN:
+                                                                        @Labels.PRNClient @:(@meds.FirstOrDefault().NumberOfPills)
+											                            break;
+										                            }
+                                                                    <br />
+                                                                }
+									                        }
+                                                        </td>
+							                        </tr>
+                                                }
+					                        </tbody>
+				                        </table>
+			                        </div>
+		                        </div>
+	                        </div>
+                        }
+                    }
+                </div>
+	        </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             // Onload
+             var rowToUpdate;
+             var updatednumber = 0;
+             init_hifis();
+
+            // Set Dispensing
+             $('#dispensingTodayTable').on('draw.dt', function () {
+                 init_hifis();
+                 $('.wb-lbx').trigger("wb-init.wb-lbx");
+
+                 $('input[type=checkbox]').change(function (e) {
+                     $(this).attr('disabled', true);
+
+                     $('#MedicationID').val($(this).attr('data-medid'));
+                     $("#RecurrenceTypeID").val($(this).attr('data-rType'));
+                     $('#NumberOfPills').val(e.target.value);
+                     saveDispensing(e, $(this));
+                 });
+
+                 $('.prnInput').change(function (e) {
+                     $(this).attr('disabled', true);
+
+                     $('#MedicationID').val($(this).attr('data-medid'));
+                     $("#RecurrenceTypeID").val($(this).attr('data-rType'));
+                     $('#NumberOfPills').val(e.target.value);
+
+                     saveDispensing(e, $(this));
+                     $('#NumberOfPills').val();
+
+                 });
+
+             });
+            
+            function saveDispensing(e, btn) {
+                formData = $("#dispensingForm").serialize();
+                $.ajax({
+
+                    url: "@Url.Content("~/Health/AjaxNewDispensing")",
+                    type: "POST",
+                    data: formData
+
+                }).done(function (data) {
+                    //defaultNotify(data.Success); //display the default error or success message
+
+                    if (data.Success) {
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                        $('#dispensingTodayTable').DataTable().ajax.reload(function () {
+                            $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        }); // Re-load the datatable
+
+                        if ($("#" + $(btn).attr('data-medid')).length) {//checks if the row exists, table/panel wont be check as there will always be a panel and table for the current date(TODO).
+                            $("#" + $(btn).attr('data-medid')).append("<span class='glyphicon glyphicon-ok'></span>&nbsp;" + $(btn).attr('data-name') + "<br />");//if exists it will populate the row with the appended data
+                        } else {//if doesn't exist it will make a new row for that medication
+
+                            var medName = $(btn).parent().parent().children('td:first-child').html();
+                            var userName = "@Model.ReadOnlyVitals.ClientFullName";
+                            $("#todayTable tbody").append("<tr><td>" + medName + "</td><td>" + userName + "</td><td id='" + $(btn).attr('data-medid') + "'></td></tr>");
+                            $("#" + $(btn).attr('data-medid')).append("<span class='glyphicon glyphicon-ok'></span>&nbsp;" + $(btn).attr('data-name') + "<br />");
+                        }
+
+                    }
+                    else {
+                        for (var i = 0; i < data.Result.ValidationMessages.length; i++) {
+                            if (data.Result.ValidationMessages[i] =="Dispensing date can not be a future date")
+                                displayNotification('error', '', "<p>@Labels.FutureDateError</p>");
+                            else if (data.Result.ValidationMessages[i] == "Already dispensed")
+                                displayNotification('error', '', "<p>@Labels.AlreadyDispensed</p>");
+                            else if (data.Result.ValidationMessages[i] == "Invalid stay or medication")
+                                displayNotification('error', '', "<p>@Labels.InvalidStayOrMedication</p>");
+                            else if (data.Result.ValidationMessages[i] == "Maximum number of pills per day limit is reached")
+                                displayNotification('error', '', "<p>@Labels.MaxNoOfPillsPerDayLimit</p>");
+                            else
+                                displayNotification('error', '', "<p>" + data.Result.ValidationMessages[i] + "</p>");
+                            btn.attr("disabled", false);//Enable the button incase there was an error
+                        }
+
+
+
+                    } });
+
+                @*.fail(function (data) {
+                    displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                      btn.attr("disabled", false);
+
+
+                })*@
+
+            }
+
+            function gotoSummary(e, opt) {
+                e.preventDefault();
+
+                var summaryID = '#' + opt.item.value;
+
+                $('.open').children('summary').click();
+
+                $(this).val(opt.item.label);
+
+                document.location = summaryID;
+
+                $(summaryID).click();
+            }
+        </script>
+    );
+}
+
+
+
+

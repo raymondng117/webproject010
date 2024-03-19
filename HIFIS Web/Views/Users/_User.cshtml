@@ -1,0 +1,50 @@
+﻿@model UserProfileViewModel
+
+@Html.Partial("_BaseHiddenFor", Model)
+    
+@Html.HiddenFor(model => model.UserID)
+@Html.HiddenFor(model => model.PersonID)
+
+<div>
+    @Html.HifisEditorFor(model => model.UserName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.UserFirstName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.UserLastName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Email)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.GenderTypeID, CachedTableTypes.HIFIS_GenderTypes)
+</div>
+
+<div>
+
+    @Html.HifisEditorFor(model => model.CultureTypeID, CachedTableTypes.HIFIS_UserCultureTypes)
+</div>
+
+<div>
+    @Html.HifisListBoxFor(model => model.OrganizationIDs, ViewBag.SPList as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.DefaultOrganizationId, ViewBag.SPList as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.SelectedRoles, CachedTableTypes.HIFIS_PeopleRoleTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ConcurrentYN, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Comments)
+</div>

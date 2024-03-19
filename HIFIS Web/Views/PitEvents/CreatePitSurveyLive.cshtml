@@ -1,0 +1,185 @@
+﻿@model PitSurveyViewModel
+@{
+    ViewBag.ViewTitle = Labels.CreatePitSurveyLive;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<section id="popup-screen" class="wb-overlay modal-content overlay-def wb-popup-full">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.Info</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Raw(Model.PitQuestionnaire.QuickInfo)
+    </div>
+</section>
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="form-horizontal" id="PitSurveyLiveID">
+    <div id="geolocation-info" class="alert alert-info alert-dismissible hide" role="alert">
+        <a href="#" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </a>
+        <p id="geo-info-text"></p>
+    </div>
+
+    @*<div class="panel row sticky-bar-top" style="z-index: 99;">
+        <div class="col-xs-10 mrgn-tp-xs mrgn-bttm-sm">
+            <div>
+                <progress id="questionnaireProgress" value="0" max="100"></progress>
+            </div>
+        </div>
+        <div class="col-xs-2 lead text-center"><span id="progressValue">0</span>%</div>
+    </div>*@
+
+    <div class="clearfix"></div>
+
+    <div class="pull-left">
+        <a href="#popup-screen" aria-controls="popup-screen" class="overlay-lnk listButton" role="button">
+            @Labels.Info
+        </a>
+    </div>
+
+    <div class="pull-right">
+        <a class="closeButton wb-lbx align-right btn-danger" href="#Modal_AbandonSurvey" role="button">
+            @Labels.AbandonSurvey
+        </a>
+    </div>
+    
+    <div class="clearfix"></div>
+
+    <div class="panel panel-default mrgn-tp-md">
+        <div class="panel-heading" role="tab" id="sDetails">
+            <h2 class="panel-title">
+                <a data-toggle="collapse" class="accordionStyle" data-parent="#accordion" href="#surveyDetails" aria-expanded="true" aria-controls="surveyDetails">
+                    @Labels.SurveyDetails
+                    <span class="caret pull-right mrgn-tp-sm"></span>
+                </a>
+            </h2>
+        </div>
+        <div id="surveyDetails" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="sDetails">
+            <div class="panel-body">
+                <form id="Survey_FormPortion">
+                    @Html.Partial("SurveyPartials/_EditPitSurvey", Model)
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="SurveyQuestions_FormPortion">
+        <form>
+            @Html.Partial("SurveyPartials/_EditPitSurveyQuestions", Model)
+        </form>
+    </div>
+    <div>
+        <div class="clearfix"></div>
+        @*<button type="submit" class="editDDButton ">@Labels.PitSurveyList</button>*@
+        @Html.ActionLink(Labels.Save, "SurveyEndMessage", "PitEvents", new { surveyID = Model.PitSurveyID }, new { @class = "addButton", alt=Labels.Save, aria_label = Labels.Save, @role = "button" })
+        @Html.ActionLink(Labels.PitSurveyList, "PitSurveysList", "PitEvents", null, new { @class = "editDDButton", alt=Labels.PitSurveyList, aria_label = Labels.PitSurveyList, @role = "button" })
+    </div>
+
+</div>
+
+@Html.Partial("_AbandonSurvey", Model)
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(@<script type="text/javascript">
+
+        function SurveyModel() {
+            var self = this;
+            self.PitSurveyID = $("#PitSurveyID").val();
+            self.PitQuestionnaireID = $("#PitQuestionnaireID").val();
+            self.PitScreenedIN = $("#PitScreenedIN").val();
+            self.IsLive = $("#IsLive").val();
+            self.Longitude = $("#Longitude").val();
+            self.Latitude = $("#Latitude").val();
+            self.SurveyNo = $("#SurveyNo").val();
+            self.Location = $("#Location").val();
+            self.Comment = $("#Comment").val();
+            self.ShiftTime = $("#ShiftTime").val();
+            self.ShiftID = $("#ShiftID").val();
+            self.IsComplete = $("#IsComplete").val();
+            self.SurveyIdentifier = $("#SurveyIdentifier").val();
+            self.SurveyDate = $("#SurveyDate").val();
+        }
+
+        function getLocation() {
+            var timeoutVal = 10 * 1000 * 1000;
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError, { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 75000 });
+            } else {
+                showGeoLocationAlert("@Labels.GeolocationNotSupported");
+            }
+        }
+
+        function showPosition(position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+            // alert('Found location: ' + lat + ', ' + long);
+            $("#Latitude").val(lat);
+            $("#Longitude").val(long);
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    showGeoLocationAlert("@Html.Raw(Labels.GeolocationUserDeniedRequest)");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    showGeoLocationAlert("@Html.Raw(Labels.GeolocationUnavailable)");
+                    break;
+                case error.TIMEOUT:
+                    showGeoLocationAlert("@Html.Raw(Labels.GeolocationTimedOut)");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    showGeoLocationAlert("@Html.Raw(Labels.GeolocationUnknownError)");
+                    break;
+            }
+        }
+
+        function showGeoLocationAlert(errorText) {
+            $("#geolocation-info").removeClass("hide");
+            $("#geo-info-text").text(errorText);
+            $("#geolocation-info").addClass("show");
+        }
+
+		$(function () {
+			$('[pit-fam-button="true"]').attr('href', $('[pit-fam-button="true"]').attr('href')
+				+ '&shiftID=' + $('#ShiftID').val()
+				+ '&surveyNo=' + $('#SurveyNo').val());
+
+			getLocation();
+
+            $(".panel-collapse:not([id='surveyDetails'])").each(function () {
+                $(this).on('show.bs.collapse', function () {
+
+                    var isValid = ($("#Location").valid() && $("#ShiftID").valid());
+                    if (!isValid) {
+                        $('html, body').animate({
+                            scrollTop: $("#PitSurveyLiveID").offset().top
+                        }, 500);
+                        $("#ShiftID").valid()
+                        return false;
+                    }
+                })
+            });
+
+            $('#Survey_FormPortion :input, #Survey_FormPortion [class*="date"]').on('change dp.change', function () {
+                var survey = new SurveyModel();
+
+                $.ajax({
+                    url: "@Url.Content("~/PitEvents/SaveSurveyAttr")",
+                    type: 'POST',
+                    async: true,
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(survey)
+                });
+            });
+        });
+
+    </script>);
+}

@@ -1,0 +1,39 @@
+﻿@model PitLiveVoulunteersUploader
+@{
+    ViewBag.ViewTitle = Labels.CreatePitLiveVolunteers;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("CreatePitLiveVolunteers", "PitEvents", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+{
+     <div>
+         <div class="form-group">
+             <div class="control-label col-sm-3">
+                 <label> @Labels.ExcelTemplate </label>
+             </div>
+             <div class="col-sm-9 ">
+                 @Html.ActionLink(Labels.Download, "DownloadVolunteerTemplateFile", "PitEvents", null, new { @class = "downloadButton", alt=Labels.Download, aria_label = Labels.Download, @role = "button" })
+             </div>
+         </div>
+             <br>
+             <div>
+                 @*@Html.HifisTextBoxFor(model => model.UploadFile, new { @class = "wdth-strct-250", type = "file" })*@
+                 @Html.HifisEditorFor(model => model.UploadFile, "File")
+             </div>
+             <br>
+             <div>
+                 @Html.HifisEditorFor(m => m.TemplateRightsID, ViewBag.TemplateRightsList as SelectList, "DropDownList", new { data_loader = true })
+             </div>
+         <br>          
+    </div>
+    
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="saveButton ">@Labels.Save</button>            
+            @Html.ActionLink(Labels.Cancel, "List", "Users", null, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+    @ViewBag.Message
+    @Html.Partial("_PitVolunteersResult")
+}

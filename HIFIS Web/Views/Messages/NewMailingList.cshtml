@@ -1,0 +1,23 @@
+﻿@model MailingListViewModel
+
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_NewMailingList;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewMailingList", "Messages", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.Partial("_MailingList")
+
+        <div class="form-group">
+            <div class="col-sm-offset-5 col-sm-7">
+                <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "List", "Messages", new { }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,38 @@
+﻿@model EducationViewModel
+@{
+    ViewBag.ViewTitle = Labels.EditEducation;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="mrgn-0">
+    @using (Html.BeginForm("Edit", "Education", new { id = Model.ClientID, educationID = Model.ClientEducationLevelID }, FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        <div class="col-sm-12">
+            @Html.HiddenFor(model => model.ClientID)
+            @Html.HiddenFor(model => model.Place.isPlaceRequired)
+
+            <div class="row">
+                @Html.Partial("_Education")
+            </div>
+
+            <div class="row">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <div class="form-group">
+                        <button type="submit" class="saveButton">@Labels.Save</button>
+                        @Html.ActionLink(Labels.Cancel, "ClientList", "Education", new { id = Model.ClientID }, new { @class = "cancelButton mrgn-lft-sm", alt=Labels.Cancel, aria_label=Labels.Cancel, @role = "button" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="mrgn-lft-sm mrgn-tp-lg">
+                @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+            </div>
+        </div>
+    }
+</div>
+
+
+

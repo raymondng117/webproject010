@@ -1,0 +1,563 @@
+﻿@model DiversionViewModel
+
+@{ //Html.Partial("_BaseHiddenFor", (BaseViewModel)Model);
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+@Html.HiddenFor(model => model.DiversionID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.vmGoodService.ServiceID)
+
+@Html.HiddenFor(model => model.DiversionID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.NumOfAdults)
+@Html.HiddenFor(model => model.NumOfChildren)
+@Html.HiddenFor(model => model.IsClient)
+@Html.HiddenFor(model => model.IsAnonymous)
+@Html.HiddenFor(model => model.WorkFlowCompletedYN)
+@Html.HiddenFor(model => model.NextStepID)
+@Html.HiddenFor(model => model.CurrentStepID)
+@Html.HiddenFor(model => model.returnUrl)
+
+<div id=step1>
+
+    <div id="clientsection">
+        <div>
+            @Html.HifisAutocompleteFor(
+                model => model.PrimaryClientID
+                , Url.Content("~/ClientTombstone/AjaxGetClientList")
+                , Model.ReadOnlyVitals.ClientFullName
+                , new AutocompleteViewModelOptions
+                {
+                    OnSelect = "GetClientInfo();"
+                    ,
+                            HiddenValue = true
+                })
+        </div>
+
+        <div id="familyInputs">
+            @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList)
+        </div>
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.DiversionDateTime, "DateAndTime")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorker as SelectList)
+    </div>
+
+    @if (Model.WorkFlowCompletedYN == false)
+    {
+        <div>
+            @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.ProgramList as SelectList)
+        </div>
+    }
+    else
+    {
+        <div>
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "control-label col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                        new MultipleItemSelectList
+                        {
+                            IDs = Model.AssociatedProgramIDs,
+                            List = ViewBag.ProgramList as SelectList
+                        })
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div id=step2>
+    <div>
+        @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes)
+    </div>
+
+    @if (Model.isGeoRegionEnforced)
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+        </div>
+    }
+    else
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+        </div>
+    }
+
+</div>
+
+<div id=step3>
+    @if (RightsHelper.HasRight(UserRights.Client_Housing_List))
+    {
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+                @Html.Partial("_HousingHistoryTable")
+            </div>
+        </div>
+    }
+</div>
+
+<div id=step4>
+    @if (Model.PrimaryClientID != null && Model.IsAnonymous == false && (RightsHelper.HasRight(UserRights.Client_Contacts_Details)))
+    {
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+                @Html.Partial("_ContactTable")
+            </div>
+        </div>
+    }
+</div>
+
+<div id=step5>
+    @if (Model.PrimaryClientID != null && Model.IsAnonymous == false && (RightsHelper.HasRight(UserRights.ClientFactors_Contributing_List)))
+    {
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+
+                @Html.Partial("_ContributingFactorsTable")
+            </div>
+        </div>
+    }
+</div>
+
+<div id=step6>
+    @if (Model.FinancialsVM != null && (RightsHelper.HasRight(UserRights.Financials_Display)))
+    {
+        @Html.Partial("~/Views/Financials/Display.cshtml", Model.FinancialsVM)
+    }
+</div>
+
+<div id=step7>
+    <div>
+        @Html.HifisEditorFor(model => model.ExpectedDestinationTypeID, CachedTableTypes.HIFIS_DiversionDestinationTypes)
+    </div>
+    @if (Model.isGeoRegionEnforced)
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+        </div>
+    }
+    else
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+        </div>
+    }
+
+    @if (Model.ReasonForServiceTypeID != null && Model.IsAnonymous == false && (RightsHelper.HasRight(UserRights.Goods_Services_Client_List)))
+    {
+        <div class="panel col-sm-12">
+            <div class="panel-body">
+
+                @Html.Partial("_GoodsServices")
+            </div>
+        </div>
+
+    }
+
+    <div id="FinancialAssistance_section">
+        <div>
+            @Html.HifisEditorFor(model => model.FinancialAssistanceProvidedYN, "YesNo", true)
+        </div>
+
+        @if (RightsHelper.HasRight(UserRights.Client_Housing_List) && RightsHelper.HasRight(UserRights.HousingRetention_Add))
+        {
+            <div class="form-group" id="hlpLink">
+                <div class="col-sm-offset-3 col-sm-3">
+                    @Html.ActionLink(Labels.AddHousingRetention, "ClientHousingHistory", "ClientTombstone", new { id = "" }, new { @class = "nextButton no-print", id = "clientHHBtn", @role = "button", target = "_blank" })
+                </div>
+            </div>
+        }
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.DiversionNextSteps, "TextArea", new { @style = "width:520px;min-height: 75px;" })
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.ScheduledFollowUpDate)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.Minutes)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.Comments, "TextArea", new { @class = "commentBoxSize" })
+    </div>
+
+
+
+    <div>
+        @Html.HifisEditorFor(model => model.DiversionStatusTypeID, CachedTableTypes.HIFIS_DiversionStatusTypes, new { id = "ddlDivStatus" })
+    </div>
+</div>
+
+
+<div id="divStory">
+    @Html.HifisEditorFor(model => model.DiversionStory, "TextArea", new { @class = "commentBoxSize", id = "DS_step2" })
+</div>
+
+
+
+<div id="family-attestation-result"></div>
+<div id="ClientsFamilyIDs-attestation-result"></div>
+
+
+@using (Html.BeginScriptContext())
+{
+
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+            $(document).ready(function ()
+                {
+
+                //GetClientInfo();
+                //var bIsAnonymous = $("#IsAnonymous").bootstrapSwitch("state");
+                var bIsAnonymous = false;
+                //check if we are dealing with a new or existing Diversion
+                var diversionid = $('#DiversionID').val();
+                var isExistingDiversion = (diversionid != "" && diversionid != null);
+
+
+                ShowClientInfo(bIsAnonymous, isExistingDiversion);
+
+
+                });
+
+            function ShowClientInfo(bIsAnonymous, bisExistingDiversion) {
+
+                var clientID = $('#PrimaryClientID').val();
+                if (bIsAnonymous) {
+                    $('#clientsection').hide();
+                    if (isClientFound(clientID)) {
+
+                        if (bisExistingDiversion == false)
+                        {
+
+                            var select = document.getElementById('PrimaryClientID');
+                            select.options.length = 0;
+
+                            var select = document.getElementById('ClientsFamilyIDs');
+                            select.options.length = 0;
+
+                            getROVitals('');
+                        }
+
+                    }
+                    ShowHousing(false);
+                    ShowHHLink(false);
+                    ShowAnonymousfields(true);
+                    $('#IsClient').val(false);
+                }
+                else
+                {
+
+                    $('#clientsection').show();
+                    var bIsHoused = $("#HousedSafelyLastNight").bootstrapSwitch("state");
+                    ShowHousing(bIsHoused);
+                    var bIsFinAssProv = $("#IsFinancialAssistanceProvided").bootstrapSwitch("state");
+                    ShowHHLink(bIsFinAssProv);
+                    ShowAnonymousfields(false);
+                    $('#IsClient').val(true);
+                }
+
+
+
+            }
+
+            function GetClientInfo()
+            {
+                var id = $('#PrimaryClientID').val();
+                console.log("FD - GetClientInfo for " + id)
+
+                    if (isClientFound(id))
+                        {
+                            getROVitals(id);
+                            GetFamilyList(id);
+                            ShowClientInfo(false,false);
+                        }
+                }
+
+            function PopulateFamilyList(data)
+            {
+                console.log(data);
+                var select = document.getElementById('ClientsFamilyIDs');
+                var familyBox = $('#ClientsFamilyIDs');
+
+                select.options.length = 0; // clear out existing items
+
+                if(data.length < 1)
+                    {
+                        $('#familyInputs').hide();
+                        $('#SelectAllFamilyButton').hide();
+                        familyBox.prop('disabled', true);
+                        familyBox.trigger('change');
+                        return;
+                    }
+
+                for (var i = 0; i < data.length; i++)
+                    {
+                        var d = data[i];
+                        select.options.add(new Option(d.Text, d.Value))
+                    }
+
+                $('#familyInputs').show();
+                $('#SelectAllFamilyButton').show();
+                familyBox.prop('disabled',false);
+                familyBox.trigger('change');
+            }
+
+        function GetFamilyList(id)
+        {
+            @Html.Partial("_Ajax", new AjaxViewModel()
+                    {
+                        Url = "'" + Url.Content("~/ClientTombstone/AjaxGetClientsFamilyList") + "'",
+                        Data = "{clientID: id}",
+                        OnSuccess = "PopulateFamilyList(data);",
+                    });
+        }
+
+
+        function SelectAllClients()
+            {
+            var familyInput = $('#ClientsFamilyIDs');
+
+            familyInput.children('option').each(function (index, element) {
+                if (element.value != "") {
+                    element.selected = true;
+                }
+            });
+
+        familyInput.trigger('change');
+    }
+
+    //[Is Anonymous] state change
+     //$('input[name=IsAnonymous]').on('switchChange.bootstrapSwitch', function (event, state) {
+     //    ShowClientInfo(state,false);
+     //});
+
+    //[Housed Safely Last Night] state change
+    $('input[name=HousedSafelyLastNight]').on('switchChange.bootstrapSwitch', function (event, state) {
+        ShowHousing(state);
+    });
+
+    $('input[name=IsFinancialAssistanceProvided]').on('switchChange.bootstrapSwitch', function (event, state) {
+        ShowHHLink(state);
+    });
+
+    function ShowHHLink(bShow) {
+
+        var id = $('#PrimaryClientID').val();
+
+        if (bShow && isClientFound(id)) {
+            $('#hlpLink').show();
+            $("#clientHHBtn").attr("href", "@Url.Content("~/ClientTombstone/ClientHousingHistory?id=")" + id); // sets the client url to the right client id
+        }
+        else {
+            $('#hlpLink').hide();
+        }
+
+    }
+
+
+    function ShowAnonymousfields(bShow) {
+
+        if (bShow) {
+            $('#AnonymousFields_Section').show();
+            reinitSelect2($('#ddlAgeCat'));
+            reinitSelect2($('#ddlGender'));
+        }
+        else {
+            $('#AnonymousFields_Section').hide();
+        }
+
+    }
+
+    function isClientFound(id)
+    {
+        console.log("FD - Entering isClientFound " + id);
+        return (id != "" && id != null && id != 1)
+    }
+
+
+    function ShowHousing(bIsHoused)
+    {
+
+        var id = $('#PrimaryClientID').val();
+
+        if (bIsHoused && isClientFound(id))
+        {
+            $('#housingDetails').show();
+            reinitSelect2($('#ddlHouseType'));
+            reinitSelect2($('#ddlCountry'));
+        }
+        else
+        {
+            $('#housingDetails').hide();
+        }
+
+    }
+
+    var requiredIfStep = function (stepid) {
+
+        var value = ($("#CurrentStepID").val() == stepid);
+
+        return (value);
+
+    }
+
+
+    var requiredIf1 = function () {
+
+        //var value = $("#IsAnonymous").bootstrapSwitch("state");
+        var value = false;
+        return value === false;
+
+    }
+
+
+    var requiredIf2 = function () {
+
+        //var value = $("#IsAnonymous").bootstrapSwitch("state");
+        var value = false;
+        return value === true;
+    }
+
+    var housingRequiredIf = function () {
+        var value = $("#HousedSafelyLastNight").bootstrapSwitch("state");
+
+        return value === true;
+    }
+
+    //reinitializes select2 after modifying the options.
+    function reinitSelect2(selector) {
+        selector.select2('destroy');
+        selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+    };
+
+
+</script>
+);
+}
+
+<div id="family-attestation-result"></div>
+<div id="ClientsFamilyIDs-attestation-result"></div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+            function OnTheFlyCallBack(objectID, formData) {
+
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#ClientIDSearchBox").val(Name);
+                $("#PrimaryClientID").val(objectID);
+
+                getROVitals(objectID);
+            }
+
+            function autoCompleteCallBack() {
+                getROVitals($('#PrimaryClientID').val());
+                GetFamilyList($('#PrimaryClientID').val());
+            }
+
+            @if (appSettings.IsAttestationEnabled())
+            {
+                <text>
+            $('#ClientsFamilyIDs').on("select2:select", function (e) {
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                        {
+                            FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                            ID: e.params.data.id,
+                            InputName: 'ClientsFamilyIDs',
+                            Callback: ''
+                        },
+                    function (data) {
+                        $("#family-attestation-result").html(data);
+                    });
+            });
+
+            $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function () {
+
+                var id = $('#PrimaryClientID').val();
+
+                if (isClientFound(id))
+                {
+
+                var select = document.getElementById('ClientsFamilyIDs');
+
+                var familyArray = [];
+                for (var key in select.options) {
+                    if (select.options.hasOwnProperty(key)) {
+                        familyArray.push(select.options[key].value);
+                    }
+                }
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: ''
+                }
+
+                $.post('@Url.Action("FamilyAttestation", "Master")',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                    });
+
+                }
+            });
+            </text>
+            }
+            else if (appSettings.EnforceConsent())
+            {
+                <text>
+            $('#ClientsFamilyIDs').on("select2:select", function (e) {
+                $.post('@Url.Action("ConfirmAccessToClient", "Master")',
+                        {
+                            FieldType: '@SelectClientFieldTypes.FamilyMemberClientID',
+                            ID: e.params.data.id,
+                            InputName: 'ClientsFamilyIDs',
+                            Callback: ''
+                        },
+                    function (data) {
+                        $("#family-attestation-result").html(data);
+                    });
+            });
+
+            $('button[name="ClientsFamilyIDs_SelectAllBtn"]').on('click', function () {
+                var select = document.getElementById('ClientsFamilyIDs');
+
+                var familyArray = [];
+                for (var key in select.options) {
+                    if (select.options.hasOwnProperty(key)) {
+                        familyArray.push(select.options[key].value);
+                    }
+                }
+
+                var postData = {
+                    FamilyMembers: familyArray,
+                    InputName: 'ClientsFamilyIDs',
+                    Callback: ''
+                };
+
+                $.post('@Url.Action("FamilyConsent", "Master")',
+                        $.param(postData, true),
+                        function (data) {
+                            $("#family-attestation-result").html(data);
+                        });
+            });
+            </text>
+            }
+</script>
+);
+}
+

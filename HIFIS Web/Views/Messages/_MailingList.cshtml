@@ -1,0 +1,35 @@
+﻿@model MailingListViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@Html.AntiForgeryToken()
+
+@Html.HiddenFor(model => model.MailListID)
+
+<div>
+    @Html.HifisEditorFor(model => model.MailListName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.isActive, "YesNo")
+</div>
+
+@if (ViewBag.Edit == true)
+{
+    <div>
+        @Html.HifisListBoxFor(model => model.MembersPersonIDs,
+                                  ViewBag.UserList as SelectList,
+                            new { id = "ddMembers" })
+    </div>
+}
+else
+{
+<div>
+    @Html.HifisListBoxFor(model => model.MembersPersonIDs,
+                                  ViewBag.UserList as SelectList,
+                                  String.Format("<a href=\"{0}\" class=\"wb-lbx lbx-modal multipleSelectFilterButton noText align-left \" aria-controls='Modal_EditItem' role='button'>{1}</a>",
+                                        Url.Action("UsersFilter", new { fieldName = "Members" }),
+                                        Labels.Filter),
+                            new { id = "ddMembers" })
+</div>
+}

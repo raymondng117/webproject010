@@ -1,0 +1,321 @@
+﻿@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+		     /* */
+            function noMatchFound(ed){
+                alert("@Labels.HifisHelp_RichText_GlossaryNoMatchFound" + ": " + ed.selection.getContent() + ".");
+            }
+
+            /* */     
+            function wrapGlossaryText(ed){
+                var url = '[$HIFISBasePath]/HIFISHelp/FindWord?Word=';
+                ed.focus();
+                ed.selection.setContent('<strong><a class="wb-lbx" href="' + url + ed.selection.getContent() + '">' + ed.selection.getContent() + '</a></strong> '); 
+            }
+
+		     /* */
+		    function wrapTopicLink(ed, e) {
+		        var str = e.data.topicID;
+		        var res = str.split(",");
+
+		        var url = '[$HIFISBasePath]/HIFISHelp/TrainingTopic/' + res[0] + '?playlistId=' + res[1];
+		        ed.focus();
+		        ed.selection.setContent('<strong><a href="' + url + '">' + e.data.linkText + '</a></strong> ');
+		    }
+
+            /* Initalizes the TinyMCE editor. */
+            function initTinyMCE(){
+                tinyMCE.init({
+                    mode: "specific_textareas",
+                    editor_selector: "mceEditor_Help",
+                    theme: "modern",
+                    valid_elements: '*[*]',
+                    relative_urls: true,
+                    entity_encoding: "raw",
+                    plugins: "advlist,textcolor,table,hr,link,insertdatetime,preview,searchreplace,print,contextmenu,paste,visualchars,wordcount,code",
+                    menubar: "hifis edit format insert view table",
+                    menu: {
+                        // hifis is a custom menubar in the editor window.
+                        hifis: { title: 'HIFIS', items: 'wrapglossarybutton insertglossarybutton | insertmodulearea insertExpanderButton | quizlink demolink simlink relatedhelplink | demovideo simvideo' },
+                        edit   : {title : 'Edit'  , items : 'undo redo | cut copy paste pastetext | selectall'},
+                        insert : {title : 'Insert', items : 'link hr'},
+                        view   : {title : 'View'  , items : 'code preview '},
+                        format : {title : 'Format', items : 'bold italic underline strikethrough superscript subscript | formats removeformat'},
+                        table  : { title: 'Table' , items : 'inserttable tableprops deletetable | cell row column' },
+                    },
+                    toolbar: "wrapglossarybutton | undo redo | forecolor backcolor | bold italic underline strikethrough | outdent alignleft aligncenter alignright alignjustify indent | bullist numlist hr |",
+                    contextmenu: "undo redo | cut copy paste | link |",
+                    language: "@ViewBag.CurrentCulture",
+                    height: 500,
+                    setup: function (ed) {
+                        /* Adds a menu item to wrap gloassy words in the HIFIS dropdown. */
+                        ed.addMenuItem('wrapglossarybutton', {
+                            text: '@Labels.HifisHelp_RichText_GlossaryWrapText',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                @Html.Partial("_Ajax", new AjaxViewModel()
+                                {
+                                    Url = "'" + Url.Content("~/HIFISHelp/AjaxFindWord") + "'",
+                                    Data = "{ word: ed.selection.getContent() }",
+                                    OnSuccess = "wrapGlossaryText(ed);",
+                                    OnFailure = "noMatchFound(ed);",
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a module placeholder area in the HIFIS dropdown. */
+                        ed.addMenuItem('insertmodulearea', {
+                            text: '@Labels.HifisHelp_RichText_ModulePlace',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.selection.setContent('[$HIFISModuleListPlaceholder]');
+                            }
+                        });
+
+                        /* Adds a menu item to insert a demonstration video in the HIFIS dropdown. */
+                        ed.addMenuItem('demovideo', {
+                            text: '@Labels.HifisHelp_RichText_InsertDemoVideo',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertDemoVideo',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'videoURL',
+                                            label: 'choose a vid - not a label',
+                                            'values': [
+                                                @foreach (var link in ViewBag.DemoVideos)
+                                                {
+                                                    @:{ text: '@link.Text', value: '@link.Value' },
+                                                }
+                                            ]
+                                        },
+                                    ],
+                                    onsubmit: function (e) {
+                                        ed.focus();
+                                        ed.selection.setContent('<div class="row"><div class="col-sm-12"><div class="videoWrapper"><video controls><source src="[$HIFISBasePath]' + e.data.videoURL + '"type="video/mp4"/></video></div></div></div>');
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a simulation video in the HIFIS dropdown. */
+                        ed.addMenuItem('simvideo', {
+                            text: '@Labels.HifisHelp_RichText_InsertSimVideo',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertSimVideo',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'videoURL',
+                                            label: '@Labels.HifisHelp_RichText_ChooseAVid',
+                                            'values': [
+                                                @foreach (var link in ViewBag.SimVideos)
+                                                {
+                                                    @:{ text: '@link.Text', value: '@link.Value' },
+                                                }
+                                            ]
+                                        },
+                                    ],
+                                    onsubmit: function (e) {
+                                        ed.focus();
+                                        ed.selection.setContent('<a href="[$HIFISBasePath]' + e.data.videoURL + '" target="_blank"><img class="img-responsive" alt="@Labels.HifisHelp_RichTexh_SimAltText" src="[$HIFISBasePath]/HelpVideos/simulation_placeholder.png" /></a>');
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a link to a demonstration topic in the HIFIS dropdown. */
+                        ed.addMenuItem('demolink', {
+                            text: '@Labels.HifisHelp_RichText_InsertDemo',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertDemo',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'topicID',
+                                            label: '@Labels.HifisHelp_RichText_ChooseATopic',
+                                            'values': [
+                                                @foreach(var link in ViewBag.DemoLinks)
+                                                {
+                                                    @:{ text: '@link.Label', value: '@link.Value' },
+                                                }
+                                             ]
+                                        },
+                                        { type: 'textbox', name: 'linkText', label: '@Labels.HifisHelp_LinkText', id: 'linkText' }
+                                    ],
+                                    onsubmit: function (e) {
+                                        wrapTopicLink(ed, e);
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a link to a simulation topic in the HIFIS dropdown. */
+                        ed.addMenuItem('simlink', {
+                            text: '@Labels.HifisHelp_RichText_InsertSim',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertSim',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'topicID',
+                                            label: '@Labels.HifisHelp_RichText_ChooseATopic',
+                                             'values': [
+                                                @foreach(var link in ViewBag.SimLinks)
+                                                {
+                                                    @:{ text: '@link.Label', value: '@link.Value' },
+                                                }
+                                             ]
+                                         },
+                                        { type: 'textbox', name: 'linkText', label: '@Labels.HifisHelp_LinkText', id: 'linkText' }
+		                             ],
+                                    onsubmit: function (e) {
+                                        wrapTopicLink(ed, e);
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a link to a knowledge check topic in the HIFIS dropdown. */
+                        ed.addMenuItem('quizlink', {
+                            text: '@Labels.HifisHelp_RichText_InsertQuiz',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertQuiz',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'topicID',
+                                            label: '@Labels.HifisHelp_RichText_ChooseATopic',
+                                            'values': [
+                                                @foreach(var link in ViewBag.QuizLinks)
+                                                {
+                                                    @:{ text: '@link.Label', value: '@link.Value' },
+                                                }
+                                             ]
+                                        },
+                                        { type: 'textbox', name: 'linkText', label: '@Labels.HifisHelp_LinkText', id: 'linkText' }
+                                    ],
+                                    onsubmit: function (e) {
+                                        wrapTopicLink(ed, e);
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a glossary word from a list in the HIFIS dropdown. */
+                        ed.addMenuItem('insertglossarybutton', {
+                            text: '@Labels.HifisHelp_RichText_GlossaryInsertText',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_GlossaryInsertText',
+                                    height: 100,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'glossaryID',
+                                            label: '@Labels.HifisHelp_RichText_ChooseAWord',
+                                            'values': [
+                                                @foreach (var glos in ViewBag.GlossaryList)
+                                                {
+                                                    @:{ text: '@glos.Label', value: '@glos.Label' },
+                                                }
+                                            ]
+                                        },
+                                    ],
+                                    onsubmit: function (e) {
+                                        ed.focus();
+                                        ed.selection.setContent('<strong><a class="wb-lbx" href="[$HIFISBasePath]/HIFISHelp/FindWord?Word=' + e.data.glossaryID + '">' + e.data.glossaryID + '</a></strong> ');
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a help topic as a link from a list in the HIFIS dropdown. */
+                        ed.addMenuItem('relatedhelplink', {
+                            text: '@Labels.HifisHelp_RichText_InsertHIFISLinkText',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertHIFISLinkText',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        {
+                                            type: 'listbox',
+                                            name: 'topicID',
+                                            label: '@Labels.HifisHelp_RichText_InsertHelpLink',
+                                            'values': [
+                                            @foreach(var link in ViewBag.TopicLinks)
+                                            {
+                                                @:{ text: '@link.Label', value: '@link.Value' },
+                                            }
+                                        ]
+                                        },
+                                    { type: 'textbox', name: 'linkText', label: '@Labels.HifisHelp_LinkText', id: 'linkText' }
+		                            ],
+                                    onsubmit: function (e) {
+                                        ed.focus();
+                                        ed.selection.setContent('<strong><a href="[$HIFISBasePath]/HIFISHelp/HelpTopic/' + e.data.topicID + '">' + e.data.linkText + '</a></strong> ');
+                                    }
+                                });
+                            }
+                        });
+
+                        /* Adds a menu item to insert a details/summary expander in the HIFIS dropdown. */
+                        ed.addMenuItem('insertExpanderButton', {
+                            text: '@Labels.HifisHelp_RichText_InsertExpanderText',
+                            context: 'hifis',
+                            onclick: function () {
+                                ed.focus();
+                                ed.windowManager.open({
+                                    title: '@Labels.HifisHelp_RichText_InsertExpanderText',
+                                    height: 200,
+                                    width: 500,
+                                    body: [
+                                        { type: 'textbox', name: 'summaryText', label: '@Labels.HifisHelp_RichText_SummaryText', id: 'summaryText' },
+                                        { type: 'textbox', multiline: true, name: 'displayText', label: '@Labels.HifisHelp_RichText_DisplayText', id: 'displayText' }
+		                            ],
+                                    onsubmit: function (e) {
+                                        ed.focus();
+                                        ed.selection.setContent('<details><summary>' + e.data.summaryText + '</summary>' + e.data.displayText + '</details>');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });   
+            } 
+        </script>
+    );
+}

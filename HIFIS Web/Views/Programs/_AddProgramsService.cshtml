@@ -1,0 +1,59 @@
+﻿@model ProgramListViewModel
+
+@*<section id="Modal_NewProgramService" class="modal-dialog modal-content overlay-def">*@
+    <header class="modal-header">
+        <button type="button" class="mfp-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2 class="modal-title" id="myModalLabel">@Labels.ChangePrograms</h2>
+    </header>
+
+<div class="modal-body" style="background-color:white; min-height: 65px;"> 
+        
+    <form id="ChangeProgramsSaveForm">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ServiceID)
+
+        <div>
+            @Html.HifisListBoxFor(model => model.ProgramIDs, ViewBag.programsList as SelectList)
+        </div>
+        <br />
+        <br />
+    </form>
+
+</div>
+
+<div class="modal-footer" style="background-color:white;">
+    <button id="AddProgramsSaveButton" type="button" class="saveButton">@Labels.AddPrograms</button>
+    <button id="AddProgramsCloseButton" type="button" class="cancelButton" data-dismiss="modal">@Labels.Close</button>            
+</div>        
+@*</section>*@
+<script type="text/javascript">
+    init_hifis();
+
+    $("#AddProgramsSaveButton").click(function () {
+
+        var data_serialized = $('#ChangeProgramsSaveForm').serialize();
+
+        $("#AddProgramsSaveButton").attr("disabled", true);
+
+        $.ajax({
+
+            url: "@Url.Content("~/Programs/AddServicePrograms")",
+            type: 'POST',
+            dataType: 'json',
+            data: data_serialized
+
+        }).done(function (data) {
+            $('#programListTable').DataTable().ajax.reload();
+            $("#AddProgramsCloseButton").click();
+
+            if (data.Success) {
+                displayNotification('success', null, '@Labels.DefaultDataSavedMessage');                
+            }
+            else {
+                displayNotification('error', null, '@Labels.FailedToSave');
+            }
+
+            $("#AddProgramsSaveButton").attr("disabled", false);
+        });
+    });
+</script>

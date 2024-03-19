@@ -1,0 +1,301 @@
+﻿@model HousingUnitSearchListViewModel
+
+@{ 
+    var unitsPerPage = 8;
+    var count = Model.UnitList.Count;
+    var units = Model.UnitList;
+    var getPhotoSource = Url.Content("~/HousingUnit/getPhoto/");
+    var centerLatitude = Model.UnitList.Average(hu => hu.Address != null ? hu.Address.Latitude : null);
+    var centerLongtitude = Model.UnitList.Average(hu => hu.Address != null ? hu.Address.Longitude : null);
+    var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+}
+<link href="@Url.Content("~/Content/Stylesheets/HifisModules/HousingUnitSearch.css")" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="http://dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            var getPhotoSource = '@getPhotoSource',
+                gender = {
+                    @foreach (var Gender in WebHelper.RetrieveFromCache(CachedTableTypes.HIFIS_GenderTypes, Culture, false))
+                            {
+                                @:@Gender.Value: '@Gender.Text',
+                                                }
+                };
+
+            /******* Map view *******/
+
+            var map,
+                prevPin,
+                housingUnitList,
+                infoBoxHeader = function(title){
+                    return '<div class="infoBoxHeader"> ' +
+                    '<p><span class="color-accent"><strong>' + title + '</strong></span>' +
+                    '<a class="glyphicon glyphicon-remove align-right" href="javascript:void(0)" onClick="DeselectPrevPin()"></a></p><hr />';
+                },
+                infoBoxFooter = function(unit){
+                    return (unit.IsOccupied ?
+                    '<a class="viewButton btn btn-default btn-sm" target="_blank" href="@Url.Action("HousingDetails", "HousingUnit")/' + unit.HouseID + '"><span class=\"glyphicon glyphicon-picture\"></span> @Labels.Details</a>' +
+                    '<a class="editButton btn btn-default btn-sm" href="@Url.Action("Edit", "HousingUnit")/' + unit.HouseID + '"><span class=\"glyphicon glyphicon-pencil\"></span> @Labels.Edit</a></div>'
+                    :
+                    '<p>' +
+                    '<a class="viewButton btn btn-default btn-sm" href="@Url.Action("HousingDetails", "HousingUnit")/' + unit.HouseID + '"><span class=\"glyphicon glyphicon-picture\"></span> @Labels.Details</a>' +
+                    '<a class="selectHousing btn btn-default btn-sm" href="@Url.Content("~/HousingPlacements/SecureHousingUnit/" + Model.ReadOnlyVitals.ClientID + "?placementID=" + ViewBag.placementVitals.PlacementID) &' + 'houseID=' + unit.HouseID + '"><span class=\"glyphicon glyphicon-plus\"></span> @Labels.SecureUnit</a></p></div>');
+                },
+                attributes = {
+                    @foreach (var att in WebHelper.RetrieveFromCache(CachedTableTypes.HIFIS_HouseAttributeTypes, Culture, false))
+                            {
+                                @:@att.Value: '@att.Text',
+                                                }
+                };
+
+            //Closes infobox
+            function DeselectPrevPin()
+            {
+                if(prevPin)
+                    prevPin.getInfobox().setOptions({visible: false});
+            }
+
+            //Pin click event handler
+            function SelectPin(e){
+                var curPin = e.target;
+                var curInfoBox = curPin.getInfobox();
+
+                if(prevPin)
+                    DeselectPrevPin();
+
+                curInfoBox.setOptions({ visible:true });
+                map.setView({center: curPin.getLocation(), centerOffset: { x: -70, y: 100}});
+
+                //Re-add things that weren't attached on body load
+                var viewOccupants = $('#MapContainer .viewOccupants');
+                var unitPhotos = $('#MapContainer .unitPhotos');
+
+                //$('#MapContainer .selectHousing')
+                //    .addClass("btn btn-default")
+                //    .append("<span class=\"glyphicon glyphicon-plus\"></span>");
+                //    //.button({ icons: { primary: "glyphicon glyphicon-plus"} });
+
+                //$('#MapContainer .editButton')
+                //    .button({ icons: { primary: "glyphicon glyphicon-pencil"} });
+
+                @*Hackish, but I was having trouble attaching lightbox - Andre*@
+                //$('#MapContainer .viewButton')
+                //    .click(function(e){
+                //        e.preventDefault();
+
+                //        $('#emptyDetails')
+                //            .find('a')
+                //            .attr('href', this.href)
+                //            .click();
+                //    });
+                //.button({ icons: { primary: "glyphicon glyphicon-picture" } });
+
+                @*if(viewOccupants.get())
+                    viewOccupants.click(function(e){
+                        @Html.Partial("_Ajax", new AjaxViewModel()
+                        {
+                            Url = "'" + Url.Content("~/HousingUnit/AjaxGetOccupants") + "'",
+                            Data = @"{ houseID: e.target.getAttribute('data-houseID') }",
+                            OnSuccess = @"ShowOccupants(e.target, data);"
+                        })
+                    });*@
+
+                if(unitPhotos.get())
+                    unitPhotos.tooltip({ content: PhotoSlideShow, items: '.unitPhotos'});
+
+                curPin.setOptions({state:Microsoft.Maps.EntityState.highlighted});
+                prevPin = curPin;
+            }
+
+            function GetPhoto(unit)
+            {
+                if(!unit.Photos || unit.Photos.length == 0)
+                    return '';
+
+                var photos = '';
+
+                for(var i = 0; i < unit.Photos.length; ++i){
+                    photos += unit.Photos[i].HousePhotoID + ',';
+                }
+
+                return  '<span class="glyphicon glyphicon-picture unitPhotos lb-item-gal"' +
+                        'data-photos="' + photos + '"class="align-inline-block">' +
+                        '<img src="@getPhotoSource' + unit.Photos[0].HousePhotoID + '" style="display:none; max-width:250px; max-height:250px;" />' +
+                        '</span>';
+            }
+
+            //Returns icon based on unit status
+            function GetIcon(unit)
+            {
+                if (unit.IsOccupied ||
+                    unit.OccupanyStatus == @((short)OccupancyStatusTypes.OccupiedByOther) ||
+                    unit.OccupanyStatus == @((short)OccupancyStatusTypes.OccupiedByClient))
+                {
+                    return '@Url.Content("~/Content/images/Icons/iconRed.png")';
+                }
+            else if (unit.IsSecured)
+            return '@Url.Content("~/Content/images/Icons/iconPink.png")';
+
+            return '@Url.Content("~/Content/images/Icons/iconBlue.png")';
+            }
+
+            //Returns unit properties
+            function GetProperties(unit)
+            {
+                var propsHeader = '<ul class="mrgn-0" style=\"list-style: none;\">' ;
+                var props = "";
+                if (unit.IsOccupied)
+                {
+                    props += '<li>@Labels.Occupied</li>'; @*+ '@Labels.Occupied' + '<a class="viewOccupants glyphicon glyphicon-home" style="cursor:pointer;" data-houseID="' + unit.HouseID + '" title="' + '@Labels.ViewOccupants' + '">&nbsp;</a></li>'*@;
+                }
+                @*else if (unit.IsSecured)
+                    {
+                        props += '<li>' + '@Labels.Secured' + '</li>';
+                    }
+                    if (unit.IsShareable.Value)
+                    {
+                        props += '<li>' + '@Labels.Shareable' + '</li>';
+                    }*@
+                for (var i = 0; i < unit.Attributes.length; ++i)
+                {
+                    props += '<li>' + attributes[unit.Attributes[i]] + '</li>';
+                }
+
+                return props && (propsHeader + props + '</ul>');
+            }
+
+            //Initialize map view
+            function InitMap()
+            {
+                var mapView = document.getElementById('MapView');
+                var mapOptions = {
+                    credentials:'@ViewBag.Key',
+                    //credentials:"AhcLAnlg4N0MjquRxIvPRFV-1mSgqqKHXKsovCuzUY5lG4jp62jAmXxgggiJE3Ol",
+                    enableSearchLogo: false,
+                    zoom: 10,
+                    center: new Microsoft.Maps.Location(@(centerLatitude ?? 0), @(centerLongtitude ?? 0)),
+                    height: 550,
+                    width: 820
+                };
+                var pin;
+                var pinOptions;
+                var infoBox;
+                var infoBoxOptions;
+                var selectUnitLink;
+                map = new Microsoft.Maps.Map(mapView, mapOptions);
+                housingUnitList = @Html.Raw(serializer.Serialize(Model.UnitList));
+
+                for(var i = 0; i < housingUnitList.length; ++i)
+                {
+                    if(housingUnitList[i].Address && housingUnitList[i].Address.Latitude && housingUnitList[i].Address.Longitude)
+                    {
+                        infoBoxOptions = {
+                            visible: false,
+                            htmlContent: infoBoxHeader(housingUnitList[i].Address.AddressLn1 + (GetPhoto(housingUnitList[i]) || '')) +
+                                        ' <table class="wdth-100"><tbody> ' +
+                                        ' <tr><th>@Labels.HousingType</th><td>' + housingUnitList[i].HousingTypeName + '</td></tr> ' +
+                                        ' <tr><th>@Labels.UnitStatus</th><td>' + housingUnitList[i].StatusName + ' (' + housingUnitList[i].StatusDateAsString + ')</td></tr> ' +
+                                        ' <tr><th>@Labels.FloorCount</th><td>' + (housingUnitList[i].NoOfFloors || '@Labels.NA') + '</td></tr>' +
+                                        ' <tr><th>@Labels.Bedrooms</th><td>' + (housingUnitList[i].NoOfBedrooms || '@Labels.NA') + '</td></tr>' +
+                                        ' <tr><th>@Labels.Rent/@Labels.Month</th><td>' + (housingUnitList[i].Rent || '@Labels.NA') + '</td></tr> ' +
+                                        ' <tr><th>@Labels.Properties</th><td>' + (GetProperties(housingUnitList[i]) || '@Labels.NA') + '</td></tr> ' +
+                                        ' </tbody></table>' +
+                                        infoBoxFooter(housingUnitList[i])
+                        };
+                        infoBox = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(housingUnitList[i].Address.Latitude, housingUnitList[i].Address.Longitude), infoBoxOptions);
+                        pinOptions = {
+                            draggable: false,
+                            visible: true,
+                            htmlContent: '<img src="' + GetIcon(housingUnitList[i]) + '" class="pinIcon" style="cursor:pointer;" />',
+                            infobox: infoBox
+                        };
+                        pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(housingUnitList[i].Address.Latitude, housingUnitList[i].Address.Longitude), pinOptions);
+
+                        Microsoft.Maps.Events.addHandler(pin, 'click', SelectPin);
+                        map.entities.push(pin);
+                        map.entities.push(infoBox);
+                    }
+                }
+
+                $('.addButton').button();
+            }
+            //Show/hide map/standard view
+            function ToggleMapView(){
+                @if (centerLatitude == null || centerLongtitude == null)
+                {
+                    @:alert('@Labels.MapViewNotAvailable');return;
+                                }
+
+                var mapView = $('#MapContainer');
+
+                if(mapView.is(':visible')){
+                    mapView.hide();
+                    $('#StandardView').show();
+                    $('#ToggleViewButton').html("@Labels.MapView");
+                }
+                else{
+                    $('#StandardView').hide();
+                    mapView.show();
+                    $('#ToggleViewButton').html("@Labels.StandardView");
+                    if(!map)
+                        Microsoft.Maps.loadModule('Microsoft.Maps.Themes.BingTheme', { callback: InitMap });
+                }
+            }
+
+            /******* End Map view *******/
+
+            @*//Attempt at slideshow failed. Maybe someone else can get it to work?*@
+            function PhotoSlideShow(display){
+                display($(this).children('img').clone().show());
+            }
+
+            @*No longer concerned with occupied units
+        //Dispaly occupants
+            function ShowOccupants(target, data)
+            {
+                var occupants = "<div>";
+                var t = $(target);
+                for(var i = 0; i < data.length; ++i)
+                {
+                    occupants += '<p><a href="@Url.Content("~/ClientTombstone/DisplayVitals/") ' + data[i].ClientID + '" style="cursor:pointer">' + data[i].LastName + ', ' + data[i].FirstName + '</a>';
+                    occupants += ' (' + gender[data[i].GenderID] + ', ' + data[i].AproximativeAge + ')</p>';
+                }
+                occupants += '</div>';
+                $(occupants).dialog({
+                    autoOpen: true,
+                    draggable: false, //TODO: There's a bug with Jquery dialog dragging with the offset. Update jquery??
+                    modal: false,
+                    resizable: false,
+                    width: 260,
+                    title: '@Labels.Occupants',
+                    buttons: {
+                        '@Labels.Close': function () {
+                            $(this).dialog("close");
+                        }}
+                    });
+            }*@
+
+            //Onload
+            $(function () {
+                currentPageNum = 0;
+                numPages = parseInt(@count/@unitsPerPage) + 1;
+
+                $('.unitPhotos').tooltip({ content: PhotoSlideShow, items: '.unitPhotos'});
+
+                @*
+                $('.viewOccupants').click(function(e){
+                    @Html.Partial("_Ajax", new AjaxViewModel()
+                       {
+                           Url = "'" + Url.Content("~/HousingUnit/AjaxGetOccupants") + "'",
+                           Data = @"{ houseID: e.target.getAttribute('data-houseID') }",
+                           OnSuccess = @"ShowOccupants(e.target, data);"
+                       })
+                });*@
+
+                $('#emptyDetails').hide();
+            });
+        </script>);
+}

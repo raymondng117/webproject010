@@ -1,0 +1,100 @@
+﻿@model BarredFilterViewModel
+@{
+
+}
+
+<form class="form-horizontal SRListFilters">
+    <div class="col-sm-12">
+
+        <div class="row">
+            @* Client Name *@
+            @Html.HifisLabelFor(model => model.ClientID, new { @class = "col-sm-3" })
+            <div class="col-sm-9">
+                @if (Model.ClientID.IsEmptyOrNull())
+                {
+                    @Html.HifisAutocompleteFor(model => model.ClientID,
+                        Url.Content("~/ClientTombstone/AjaxGetClientList"),
+                        null,
+                        new AutocompleteViewModelOptions
+                        {
+                            HiddenValue = true,
+                            SelectClientFieldType = SelectClientFieldTypes.Other,
+                            AllowClear = true,
+                            Placeholder = Labels.SearchForAClient,
+                            ExcludeLabel = true
+                        })
+                }
+                else
+                {
+                    @Html.HiddenFor(model => model.ClientID)
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            @* Service Providers *@
+            @Html.HifisLabelFor(model => model.SelectedOrganizationIDs, new { @class = "col-sm-3" })
+            @Html.HifisListBoxFor(model => model.SelectedOrganizationIDs, ViewBag.Orgs as SelectList, false, new { @class = "col-sm-9" }, true, true, true)
+        </div>
+
+        <div class="row">
+            @* Modules *@
+            @Html.HifisLabelFor(model => model.SelectedModules, new { @class = "col-sm-3" })
+            @Html.HifisListBoxFor(model => model.SelectedModules, CachedTableTypes.HIFIS_ServiceRestrictionsModuleTypes, new { @class = "col-sm-9" }, true, true, true)
+        </div>
+
+        <div class="row">
+            @* Start Date *@
+            @Html.HifisLabelFor(model => model.FromDate, new { @class = "col-sm-3" })
+            @Html.HifisEditorFor(model => model.FromDate, "DateOnly", new { @class = "col-sm-9" }, true, null)
+        </div>
+
+        <div class="row">
+            @* End Date *@
+            @Html.HifisLabelFor(model => model.ToDate, new { @class = "col-sm-3" })
+            @Html.HifisEditorFor(model => model.ToDate, "DateOnly", new { @class = "col-sm-9" }, true, null)
+        </div>
+
+        <div class="row">
+            @* Reason for Restriction *@
+            @Html.HifisLabelFor(model => model.ReasonBarredTypeID, new { @class = "col-sm-3" })
+            @Html.HifisListBoxFor(model => model.ReasonBarredTypeID, CachedTableTypes.HIFIS_ReasonBarredTypes, new { @class = "col-sm-9" }, true, true, true)
+        </div>
+
+        <div class="row mrgn-bttm-md">
+            <button type="submit" class="filterButton pull-right filterListButton">@Labels.ApplyFilters</button>
+        </div>
+        
+    </div>
+</form>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+
+            $(document).on('click', '.filterListButton', function (event) {
+
+                if ($(".SRListFilters").valid()) {
+                    var btn = $(this);
+
+                    $('.serviceRestrictionTable').DataTable().ajax
+                        .url('@Url.Content("~/ServiceRestrictions/GetServiceRestrictionsFilteredJson/?")' + $(".SRListFilters").serialize() + '')
+                        .load(null, true)
+
+                    
+                    btn.attr("disabled", true);
+
+                    $(document).on('xhr.dt', '.serviceRestrictionTable', function () {
+                        btn.attr("disabled", false);
+                        $('#filter-panel').trigger('close.wb-overlay');
+                    });
+
+                }
+
+            });
+
+</script>);
+}

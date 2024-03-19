@@ -1,0 +1,49 @@
+﻿@model ELearningTopicModel
+@{
+    string lang = ViewBag.CurrentCulture;
+    string english = Constants.Eng;
+    ViewBag.LayoutView = LayoutPage.Help;
+    ViewBag.ViewTitle = Model.ModuleName + " - " + (lang == english ? Model.NameE : Model.NameF);
+}
+@Html.Partial("Common/_TopArea")  
+<div class="row">
+    <div class="col-sm-3">         
+        @Html.Partial("eLearningPartials/_eLearningSidebar", Model)
+    </div>
+    <div class="col-sm-9">
+        <div>
+            @foreach (var mat in Model.TopicMaterals.OrderBy(ob => ob.LayoutOrder))
+            {
+                @Html.Partial("eLearningPartials/_DisplayLearningMaterial", mat.ELearningMaterial) 
+            }
+        </div>
+        <div class="row">
+           
+                @if(Model.PreviousTopicID != null)
+                {
+                    @Html.ActionLink(Labels.HIFISHelp_PrevTop, "TrainingTopic", "HIFISHelp", new { id = Model.PreviousTopicID, playlistId =  Model.PlaylistID }, new { @class = "btn btn-default", alt = Labels.HIFISHelp_PrevTop, aria_label = Labels.HIFISHelp_PrevTop, @role = "button" })                                                              
+                }
+                else
+                {
+                    if (ViewBag.PreviousModuleID != null)
+                    { 
+                        @Html.ActionLink(Labels.HIFISHelp_PrevMod, "TrainingModule", "HIFISHelp", new { id = ViewBag.PreviousModuleID, playlistId = Model.PlaylistID }, new { @class = "btn btn-default", alt = Labels.HIFISHelp_PrevMod, aria_label = Labels.HIFISHelp_PrevMod, @role = "button" })                               
+                    }                    
+                }
+          
+                @if (Model.NextTopicID != null)
+                {
+                    @Html.ActionLink(Labels.HIFISHelp_NextTop, "TrainingTopic", "HIFISHelp", new { id = Model.NextTopicID, playlistId = Model.PlaylistID }, new { @class = "pull-right btn btn-default", alt = Labels.HIFISHelp_NextTop, aria_label = Labels.HIFISHelp_NextTop, @role = "button" })
+                }
+                else
+                {
+                    if (ViewBag.NextModuleID != null)
+                    {
+                        @Html.ActionLink(Labels.HIFISHelp_NextMod, "TrainingModule", "HIFISHelp", new { id = ViewBag.NextModuleID, playlistId = Model.PlaylistID }, new { @class = "pull-right btn btn-default", alt = Labels.HIFISHelp_NextMod, aria_label = Labels.HIFISHelp_NextMod, @role = "button" })
+                    }
+                }
+            
+
+        </div>        
+    </div>
+</div>

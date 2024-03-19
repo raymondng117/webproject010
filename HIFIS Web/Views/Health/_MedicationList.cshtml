@@ -1,0 +1,56 @@
+﻿@model ClientListHealthViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div>    
+     <div class="table-responsive">
+         <table id="medicationsTable" data-hello="@appSettings.EnableSharing().ToString()" class="wb-tables table table-striped table-hover" 
+                data-wb-tables='{  "columns": [
+                     { "width": "14%" , "data": "Name" },
+                     { "width": "5%" , "data": "Dosage" },
+                     { "width": "3%" , "data": "Morning", "bSortable": false },
+                     { "width": "3%" , "data": "Noon", "bSortable": false },
+                     { "width": "3%" , "data": "Evening", "bSortable": false },
+                     { "width": "3%" , "data": "Bed", "bSortable": false },
+                     { "width": "3%" , "data": "PRN", "bSortable": false },
+                     { "width": "14%" , "data": "StartDate" },
+                     { "width": "12%" , "data": "EndDate" },
+                     { "width": "12.5%" , "data": "Owner" },
+                     { "width": "5%" , "data": "Visibility", "bSortable": false, "visible" : @appSettings.EnableSharing().ToString().ToLower() },
+                     { "width": "7.5%" , "data": "Action", "bSortable": false }
+                     ],
+                     "order": [ [0, "desc" ] ],
+                     "ajax": "@Url.Content("~/Health/GetMedicationListJson?id=" + Model.ReadOnlyVitals.ClientID)"
+                     }'>
+
+             <thead>
+                 <tr>
+                     <th class="align-text-center">@Labels.MedicationName</th>
+                     <th class="align-text-center">@Labels.Dosage</th>
+                     <th title="@Labels.Morning">@Labels.MorningLetter</th>
+                     <th title="@Labels.Noon">@Labels.NoonLetter</th>
+                     <th title="@Labels.Evening">@Labels.EveningLetter</th>
+                     <th title="@Labels.Bedtime">@Labels.BedtimeLetter</th>
+                     <th title="@Labels.PRN">@Labels.PRNLetter</th>
+                     <th>@Labels.DateStart</th>
+                     <th>@Labels.DateEnd</th>
+                     <th>@Labels.OwnerOrg</th>
+                     <th>@Labels.Visibility</th>
+                     <th class="align-text-center">@Labels.Action</th>
+                 </tr>
+             </thead>
+             <tbody></tbody>
+         </table>
+     </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Health_Medication_Add))
+        {
+            @Html.ActionLink(Labels.NewMedication, "NewMedication", "Health", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewMedication, aria_label = Labels.NewMedication, @role = "button" })
+        }
+    </div>
+</div>
+

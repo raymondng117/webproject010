@@ -1,0 +1,11 @@
+﻿@model TurnawayViewModel          
+@{  
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayTurnAway;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Turnaways/_DisplayTurnaway.cshtml"), ViewModel = Model })
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

@@ -1,0 +1,10 @@
+﻿@model ChoreViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayChore;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Chores/_DisplayChore.cshtml"), ViewModel = Model })
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

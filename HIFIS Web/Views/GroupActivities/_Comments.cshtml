@@ -1,0 +1,56 @@
+﻿@model GroupActivityViewModel
+
+<div class="col-sm-12">
+    @if (ViewBag.Display == false && (Model.OwnerOrganizationID == null || Model.OwnerOrganizationID == ViewBag.CurrentOrgID))
+    {
+            <div>
+                @Html.Partial("Plugins/_TinyMCEScript")
+                @Html.TextAreaFor(model => model.Comments, new { @class = "mceEditor_Messaging" })
+                @Html.ValidationMessageFor(model => model.Comments, null, new { @class = "align-center" })
+            </div>
+            <div class="saveButtonCommentBox">
+        <button type="submit" id="commentButton" class="saveButton" style="align-content:center">@Labels.Save</button>
+    </div>
+    }
+    else
+    {
+        <div>
+            <label class="control-label wdth-strct-200">@Labels.Comment</label>
+            @Html.Partial("Plugins/_TinyMCEScript")
+            @Html.EditorFor(model => model.Comments, "TinyMCE_Print")
+        </div>
+    }
+</div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+             $(function () {
+                 $("#commentButton").on("click", function (e) {
+                     tinyMCE.triggerSave();
+                     var comment;
+                     var aID;
+
+                     aID = $('input[id=GroupActivityID]').val();
+                     comment = tinymce.get('Comments').getContent();
+
+                     $.ajax({
+                         url: "@Url.Action("UpdateComments", "GroupActivities")",
+                         type: "POST",
+                         data: { "comment": comment, "activityID": aID},
+                     }).done(function (data) {
+                         if(data.Success){
+                             displayNotification("success", "", "<p>@Labels.DefaultDataSavedMessage</p>");
+                         }
+                         else{
+                             displayNotification("error", "", "<p>@Labels.FailedToSave</p>");
+                         }
+                     });
+                 });
+             });
+        </script>
+    );
+}

@@ -1,0 +1,634 @@
+﻿/* Application version number */
+#appversion {
+    color: black;
+    margin-top: 10px;
+    float: right;
+    text-align: right;
+}
+
+/* HIFIS 4 logo */
+#wet-title OBJECT
+{
+    height: 56px;
+    width: 64px;
+}
+
+#wet-title img
+{
+    height: 56px;
+    width: 64px;
+}
+
+#wet-title span
+{
+    padding-left: 75px;
+}
+
+.ui-icon, .ui-icon-searchfield:after {
+    background-color: transparent;
+}
+
+ #wb-sec .ui-menu { width: 100%; }
+
+.menu {
+    text-shadow: none !important;
+}
+
+/*  change size and color of footer */
+.wetFooter
+{
+    font-size:small;
+	color:#000000;
+    background-color:#d3d3d3;
+}
+
+/*  Smaller menu button size    */
+.megaNavAnchors
+{
+    padding:5px !important;
+    padding-left:10px !important;
+    padding-right:10px !important;
+}
+
+.menu-panel {
+    background-color: #f8f8f8 !important;
+    border: thin !important;
+    box-shadow: rgba(14, 65, 100, 0.5) 2px 2px 2px 2px !important;
+    border-color: #0e4164 !important;
+    color: #0e4164 !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb{
+    font-size: 12px;
+	padding:8px 15px;
+	margin-bottom:0px;
+	list-style:none;
+	background-color:#f5f5f5;
+	border-radius:4px
+}
+
+.nav > li > a {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+.btn {
+    border: 1px solid #dcdee1;
+    border-style: solid;
+}
+
+.input-group .form-control {
+    width: auto;
+}
+
+.input-group-addon, .input-group-btn {
+  width: auto;
+}
+
+#wb-bar{
+	border-bottom:1px solid #fff !important;
+	color:#fff;
+	min-height:2.2em;
+	z-index:1;
+}
+
+#wb-bnr{
+    background: #2b4d6f !important;
+    background: linear-gradient(#2b4d6f,#65768f) !important;
+}
+
+#wb-bnr.landing #wb-bar{
+	display:none;
+}
+
+#wb-bnr.landing .container{
+	margin:0px auto;	
+}
+
+#wb-bnr.landing .container .row #wb-sttl{
+	/*min-width:680px;*/
+	margin:0px auto;
+	float:none !important;
+}
+
+#wb-bnr.EULALanding #wb-bar {
+	display: block;
+}
+
+/* Override the Organization text color for the dark background */
+.eulaLabel {
+	color: #fff;
+	font-weight: 400;
+}
+
+#wb-bar .inside {
+}
+
+
+/* tinyMCE, on init, likes to take up the entire width of its parent element.
+   This sizes the editor to just below the parent size so the mandatory flag can fit beside the editor
+    as opposed to below it.
+
+    The float setting removes the automatic line break after the containing div elements.
+*/
+.mce-float{
+    max-width: 90% !important;
+    float:left !important;
+}
+
+/* When option groups are used in Select2 control, the group headers will render with this style
+*/
+.select2-results__group {
+    background-color: #0e4164;
+    color: white;
+}
+
+#wb-sttl span span#bannerTitle{	
+	  font-size: 72px;
+	  background: -webkit-linear-gradient(#576B87, #A8B6C4);
+	  -webkit-background-clip: text;
+	  -webkit-text-fill-color: transparent;
+}
+
+
+/*-- New design v59 2020 --*/
+
+#wb-srch .form-group{
+	min-width: 230px;
+}
+
+footer .footerNav{
+	min-height:100px;
+	background:url("../../../Content/wet-boew/assets/bg_houses_footer.png");
+	background-repeat:no-repeat;
+	background-position: bottom right;
+}
+
+#wb-bnr.inside .inside .row{	
+	background:url("../../../Content/wet-boew/assets/inside_houses_header.png");
+	background-repeat:no-repeat;
+	background-position: bottom right;
+}
+
+#wb-srch {
+    padding-top: 2.2em;
+}
+
+.landing *, .landing *:before,
+.landing *:after {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box; 
+}
+
+
+	.landing #wb-sttl{
+		width:100%;
+		margin:0px auto;
+		padding-top:10px;		
+	}
+
+    .landing #wb-sttl h1, .landing #wb-sttl span{
+        font-family:TradeGothicLT20,Helvetica Neue,Helvetica,Arial;
+        font-size:65pt;
+          background: -webkit-linear-gradient(#9faebd, #63758f);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        letter-spacing:-6px;
+        line-height:1.0em;
+        margin: 0px 0px 0px 0px;
+        padding: 0px 5px 0px 0px;
+        text-align:right;
+    }
+			
+	.landing #wb-sttl div.logo_alternate h1{
+		letter-spacing:-3px;
+		line-height:1.0em;
+		margin: 0px 0px 0px 0px;
+		padding: 0px 0px 0px 0px;
+	}
+	
+	.landing #wb-sttl small{		
+		font-family:TradeGothicLT20,Helvetica Neue,Helvetica,Arial;
+		font-size:13pt;
+		line-height:1.05em;
+		
+		margin: 0px 0px 0px 0px;
+		padding: 0px 0px 0px 0px;
+		text-align:left;
+	}
+	
+	
+	.landing #wb-sttl .en,	
+	.landing #wb-sttl .fr{
+		width:40%;
+		min-width:40%;
+	}		
+	
+    
+	.landing #wb-sttl .en,
+	.landing #wb-sttl .fr{
+		padding:0px 0px 0px 0px;
+		height:140px;
+		float:left;
+    }
+
+    .landing #wb-sttl .en span{
+        float: right;
+    }
+
+    .landing #wb-sttl .en h1{
+            margin: 0px right;
+            text-align:right;
+        }
+	
+	.landing #wb-sttl .fr h1{
+		margin: 0px left;
+		text-align:left;
+	}
+	
+	.landing #wb-sttl .en small{
+		color:#fff;
+		margin: 0px right;
+		text-align:right;
+	}
+	
+	.landing #wb-sttl .fr small{
+		color:#fff;
+		margin: 0px left;
+		text-align:left;
+	}	
+	
+	.landing #wb-sttl div{
+		float:left;
+	}
+	
+	.landing #wb-sttl .logo img{
+		width:83.5px;
+		height:63.5px;
+		margin: 45px 0px 0px 0px;
+		padding:0px 0px 0px 0px;	
+	}
+	
+		.landing #wb-sttl div.logo{
+			display:inline;	
+		}	
+		
+		.landing #wb-sttl div.logo_alternate{
+			width:40px;
+			display:none;			
+			overflow:hidden;
+		}
+	
+	
+	.landing #wb-sttl a{
+		display:inline;
+		text-shadow:none;
+	}	
+	
+
+	.inside #wb-sttl{
+		margin:0px auto;
+		padding:10px 0px 0px 0px;
+	}
+	
+	.inside #wb-glb-mn img{		
+		float:left;
+		padding-top:8px;
+	}
+	
+	.inside #wb-glb-mn .pnl-btn li{
+		padding:10px 15px;
+	}
+	
+	#mb-pnl .modal-body li{
+		line-height: 1em;
+	}
+
+    .inside #wb-sttl h1, .inside #wb-glb-mn h1, .inside #wb-sttl span{
+        font-family:TradeGothicLT20,Helvetica Neue,Helvetica,Arial;
+        font-size:65pt;
+          background: -webkit-linear-gradient(#9faebd, #63758f);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        letter-spacing:-5px;
+        line-height:1.0em;
+        margin: 0px 0px 0px 0px;
+        padding: 0px 5px 0px 0px;
+        text-align:left;
+        float:left;
+}
+	
+	.inside #wb-glb-mn h1{
+		font-size:45pt;
+		  background: -webkit-linear-gradient(#9faebd, #63758f);
+		  -webkit-background-clip: text;
+		  -webkit-text-fill-color: transparent;
+		letter-spacing:-5px;
+		line-height:1.0em;
+		margin: 0px 0px 0px 5px;
+		padding: 0px 5px 0px 0px;
+		text-align:left;
+		float:left;
+	}
+	
+	.inside #wb-sttl small{
+		font-family:TradeGothicLT20,Helvetica Neue,Helvetica,Arial;
+		font-size:13pt;
+		line-height:1.05em;
+		
+		margin: 0px 0px 0px 0px;
+		padding: 0px 0px 0px 0px;
+		text-align:left;
+	}
+	
+	.inside #wb-sttl{
+		height:108px;
+		float:left;
+		text-align:middle;
+	}	
+		
+	.inside #wb-sttl .en, 	
+	.inside #wb-sttl .fr{
+		position:relative;
+		width:75%;
+	}
+	
+	.inside #wb-sttl h1{
+		margin: 0px left;
+		text-align:left;
+	}
+	
+	.inside #wb-sttl .en h1,
+	.inside #wb-sttl .fr h1{
+		margin: 0px left;
+		text-align:left;
+	}
+	
+	.inside #wb-sttl small{		
+		color:#fff;
+		margin: 0px left;
+		padding-top:35px;
+		text-transform: uppercase;
+		display:block;
+		vertical-align:bottom;
+	}
+	
+	.inside #wb-sttl .en small,
+	.inside #wb-sttl .fr small{
+		width:40%:		
+	}	
+	
+	.inside #wb-sttl div{
+		float:left;
+	}
+	
+	.inside #wb-sttl div.logo{
+		padding:15px 5px 0px 0px;
+		vertical-align:bottom;
+		display:table-cell;
+	}
+	
+	.inside #wb-sttl div.logo img{
+		width:61.5px;
+		height:54.75px;
+		margin: 0px 0px 20px 0px;
+		padding:0px 0px 0px 0px;
+		vertical-align:bottom;
+		display:table-cell;
+	}
+	
+	.inside #wb-sttl a{
+		display:inline;
+		text-shadow:none;
+	}	
+
+	
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+     /* IE10+ CSS styles go here */
+	
+	.landing #wb-sttl{
+		width:auto;
+	}
+	
+	.landing #wb-sttl div.logo{
+		padding:15px 10px 0px 10px;
+	}	
+	
+	.landing #wb-sttl .fr small{
+		color:#fff;
+		margin: 0px left;
+		text-align:left;
+	}		 
+	
+	#wb-bnr.landing .container{
+		padding-right:0px;
+	}
+	 
+
+	.inside #wb-sttl .en h1,
+	.inside #wb-sttl .fr h1,
+	.inside #wb-sttl .en small,
+	.inside #wb-sttl .fr small{
+		width:auto;
+	}
+	
+	.inside #wb-sttl .en small{
+		margin-top:30px;
+	}
+	
+	.inside #wb-sttl .fr small{
+		margin-top:0px;
+	}
+
+	.inside #wb-sttl small{
+		padding-top: 10px;
+	}
+	 
+}
+
+#modalLoginForm label.control-label{
+	text-align:left !important;
+	padding-left:40px;
+}
+
+#login-banner:after {
+  clear: both; }
+
+
+#wb-bnr.landing .container .row #wb-sttl{
+	margin:0px auto;
+	float:none;
+}
+
+#wb-bnr.landing .container .row #wb-sttl #login-banner{
+	margin:0px auto;
+	float:none;
+}
+
+
+ @media (max-width: 768px) {
+	 
+	.landing #wb-sttl{		 
+		margin:0px 0px 0px 0px;
+		padding:0px 0px 0px 0px;
+			width:100%;
+	}
+	
+	.landing #wb-sttl .en,
+	.landing #wb-sttl .fr{
+		height:77px;	
+	}
+	
+	.landing #wb-sttl .en,
+	.landing #wb-sttl .fr{
+		width:45%;		
+	}
+	
+	.landing #wb-sttl .en small,
+	.landing #wb-sttl .fr small{
+		display:none;
+	}
+			
+	.landing #wb-sttl div.logo{
+		display:none;	
+	}	
+	
+	.landing #wb-sttl div.logo_alternate{
+		width:30px;
+		min-width:30px;
+		display:inline;
+	}		
+
+	.landing #wb-sttl div.logo_alternate h1{
+		width:20px;
+		min-width:20px;
+		padding:0px 0px 0px 0px;
+	}			
+	
+	.landing #wb-sttl .logo img{
+		position:relative;
+		display:none;
+	}
+
+		
+	.landing #wb-sttl h1{
+		font-size:55pt;
+		text-align:left;
+	}
+	
+	.landing #wb-sttl div.logo_alternate h1{
+		font-family:TradeGothicLT20,Helvetica Neue,Helvetica,Arial;
+		font-size:55pt;
+		  background: -webkit-linear-gradient(#9faebd, #63758f);
+		  -webkit-background-clip: text;
+		  -webkit-text-fill-color: transparent;
+		letter-spacing:0px;
+		line-height:1.0em;
+		margin: 0px 0px 0px 0px;
+		padding: 0px 2px 0px 2px;
+		display:inline;
+	}
+	
+	.landing #wb-sttl .en h1{
+		margin-right: 7px;			
+	}
+	
+	.landing #wb-sttl .logo img{
+		margin: 20px 0px 0px 0px;
+		padding:0px 0px 0px 0px;	
+		display:block;				
+	}			
+
+	#modalLoginForm label.control-label {
+		padding-left: 15px;
+	}
+	
+ }
+
+
+@media (min-width: 768px) {
+	#wb-bnr.landing .container .row #wb-sttl #login-banner{
+		
+	}
+	.landing #wb-sttl .en,
+	.landing #wb-sttl .fr{			
+			width:45%;
+			min-width:45%;
+	}
+			
+	.landing #wb-sttl div.logo{
+		display:none;	
+	}	
+	
+	.landing #wb-sttl div.logo_alternate{			
+		width:40px;
+		min-width:40px;
+		display:inline;	
+		margin:0px auto;
+	}				
+
+	.landing #wb-sttl div.logo_alternate h1{
+		font-family:TradeGothicLT20,Helvetica Neue,Helvetica,Arial;
+		font-size:65pt;
+		  background: -webkit-linear-gradient(#9faebd, #63758f);
+		  -webkit-background-clip: text;
+		  -webkit-text-fill-color: transparent;
+		letter-spacing:0px;
+		line-height:1.0em;
+		padding: 0px 2px 0px 7px;
+		display:inline;	
+		margin:0px auto;
+	}
+	
+}
+	
+	
+@media (min-width: 992px) {
+	#wb-bnr.landing .container .row #wb-sttl #login-banner{
+		
+	}
+	
+	.landing #wb-sttl .en,
+	.landing #wb-sttl .fr{			
+			width:40%;
+			min-width:40%;
+	}
+	
+	.landing #wb-sttl .en small,
+	.landing #wb-sttl .fr small{
+			margin:0px auto;
+			width:75%;
+			min-width:75%;
+			text-align:right;
+			valign:right;
+			float:right;
+	}
+	
+	.landing #wb-sttl .fr small{			
+			text-align:left;
+			float:left;
+	}
+	
+	.landing #wb-sttl div.logo{
+		display:inline;	
+	}	
+	
+	.landing #wb-sttl div.logo_alternate{
+		display:none;
+	}	
+	
+}
+	
+@media (min-width: 1200px) {
+	#wb-bnr.landing .container .row #wb-sttl #login-banner{
+		
+	}
+}
+
+/* 632376 - Update footer hyperlinks to meet contrast minimums */
+#wb-info li a {
+	color: #1b415a
+}

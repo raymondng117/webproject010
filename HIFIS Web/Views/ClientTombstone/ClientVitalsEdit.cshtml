@@ -1,0 +1,43 @@
+﻿@model ClientVitalsViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditClient;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+    
+@Html.Partial("_ValidationSummaryOuter")
+
+@if (ViewBag.wasRedirected != null && ViewBag.wasRedirected)
+{
+    <div id="validationWrapper">
+        <section id="validationSummary" class="alert alert-danger fade in" role="alert">
+            <button class="close" data-dismiss="alert" type="button">
+                <span aria-hidden="true">×</span>
+                <span class="sr-only">@Labels.Close</span>
+            </button>
+	        <div id="validationSummaryText">@Labels.FillMandatoryFieldsMsg</div>
+        </section>
+    </div>
+
+    <div class="clearfix"></div>
+}
+
+@using (Html.BeginForm("UpdateVitals", "ClientTombstone", FormMethod.Post, new { id = "ClientVitalsIntakeForm", @class = "form-horizontal" }))
+{
+    @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+    @Html.Hidden("returnPath", ViewBag.returnPath as string)
+
+    @Html.Partial("_ClientVitalsEdit", Model)
+        
+    <div class="row">
+        <div class="col-xs-4"></div>
+        <div class="col-xs-8">
+            <div class="form-group">
+                <button type="submit" class="saveButton">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "DisplayVitals", "ClientTombstone", new { id = Model.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+            </div>
+        </div>
+    </div>             
+}
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

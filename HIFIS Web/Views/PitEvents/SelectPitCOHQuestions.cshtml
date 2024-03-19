@@ -1,0 +1,56 @@
+﻿@model  PitEventOptionalQuestionViewModel
+@{
+	ViewBag.ViewTitle = Labels.SelectCOHQuestions;
+	
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@using (Html.BeginForm("SelectPitCOHQuestions", "PitEvents", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+	
+	@Html.HiddenFor(model => model.PitQuestionnaireID)
+
+    var currQuestionNo=0;
+    var prevQuestionNo=-1;
+    for (int i = 0; i < Model.Questions.Count; i++)
+    {       
+		@Html.HiddenFor(model => model.Questions[i].QuestionID)
+		@Html.HiddenFor(model => model.Questions[i].QuestionCategoryTypeID)
+		@Html.HiddenFor(model => model.Questions[i].QuestionNo)
+		@Html.HiddenFor(model => model.Questions[i].SequenceNo)
+		@Html.HiddenFor(model => model.Questions[i].EventSelectable)
+        currQuestionNo = Model.Questions[i].QuestionNo;
+
+        if (Model.Questions[i].EventSelectable)
+        {
+            //displays the first question in the sequence ('parent') to provide context for the following questions
+            if (prevQuestionNo != currQuestionNo)
+            {
+                var parentQuestion = Model.ParentQuestions.Find(a => a.QuestionNo == Model.Questions[i].QuestionNo);
+                if (parentQuestion.SequenceNo < Model.Questions[i].SequenceNo)
+                {
+                    <div>
+                        <span>@parentQuestion.QuestionNo-@parentQuestion.SequenceNo @parentQuestion.Question</span>
+                    </div>
+
+                }
+                prevQuestionNo = currQuestionNo;
+            }
+
+			<div>
+				<label class="pitsurveylivelabel">@Model.Questions[i].QuestionNo-@Model.Questions[i].SequenceNo @Model.Questions[i].Question</label> 
+				<span>@Html.HifisEditorFor(m => m.Questions[i].ActiveYN , "YesNo")</span>
+			</div>
+		}
+	}
+	
+
+	<div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="saveButton  ">@Labels.Save</button>
+			@Html.ActionLink(Labels.Cancel, "EditPitQuestionnaire", new { pitQuestionnaireID = Model.PitQuestionnaireID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+		</div>
+	</div>
+}

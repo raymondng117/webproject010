@@ -1,0 +1,161 @@
+﻿@model ErrorViewModel
+@{
+    ViewBag.ViewTitle = Labels.Error;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+<div>
+    <section>
+        <details class="alert alert-danger">
+            <summary>
+                @Response.StatusDescription
+            </summary>
+            <div>
+
+                @if (Model.Message != null && Model.Message.Trim() != "")
+                {
+                    <h5>@Labels.message</h5>
+                }
+
+                @if (HttpContext.Current.IsDebuggingEnabled)
+                {
+                    <p class="small">
+                        @Model.Message
+                    </p>
+                    <br />
+
+                    if (Model.HttpStatusCode == 500 && (!Model.Source.IsEmptyOrNull() || !Model.Stack.IsEmptyOrNull()))
+                    {
+                        <h4>@Labels.FullErrorInfo</h4>
+
+                        if (Model.Source != null && Model.Source.Trim() != "")
+                        {
+                            <p class="small">
+                                <h5>@Labels.ErrorSource</h5>
+                                @Model.Source
+                            </p>
+                        }
+
+                        <p class="small">
+                            <h5>@Labels.StackTrace</h5>
+                            @Model.Stack
+                        </p>
+
+                        if (Model.Server != null)
+                        {
+                            if (!Model.Server.Success)
+                            {
+                                <p class="small">
+                                    <h5>@Labels.Service</h5>
+                                    Domain: ✘ <br />
+                                    Server: ? <br />‎
+                                </p>
+                            }
+                            else
+                            {
+                                if (Model.Server.ValidationMessages.Count > 0)
+                                {
+                                    <p class="small">
+                                        <h5>@Labels.Service</h5>
+                                        Domain: ‎✔ <br />
+                                        Server: ✘<br />‎
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p class="small">
+                                        <h5>@Labels.Service</h5>
+                                        Domain: ‎✔ <br />
+                                        Server: ‎✔
+                                    </p>
+                                }
+
+                            }
+                        }
+
+                        if (Model.Server.ValidationMessages.Any())
+                        {
+                            foreach (var msg in Model.Server.ValidationMessages)
+                            {
+                                <p class="small">
+                                    @msg
+                                </p>
+                                <br />
+                            }
+                        }
+                    }
+
+
+                }
+                else
+                {
+                    <p>@Labels.ErrorLoggedInELMAH</p>
+                    
+                    if (Model.Server != null)
+                    {
+                        if (!Model.Server.Success)
+                        {
+                            <p class="small">
+                                <h5>@Labels.Service</h5>
+                                Domain: ✘ <br />
+                                Server: ? <br />‎
+                            </p>
+                        }
+                        else
+                        {
+                            if (Model.Server.ValidationMessages.Count > 0)
+                            {
+                                <p class="small">
+                                    <h5>@Labels.Service</h5>
+                                    Domain: ‎✔ <br />
+                                    Server: ✘<br />‎
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="small">
+                                    <h5>@Labels.Service</h5>
+                                    Domain: ‎✔ <br />
+                                    Server: ‎✔
+                                </p>
+                            }
+
+                        }
+                    }
+                }
+
+            </div>
+        </details>
+    </section>
+</div>
+<div class="row wb-eqht">
+    <div class="col-md-6">
+        <section class="panel panel-primary hght-inhrt">
+	        <header class="panel-heading">
+		        <h3 class="panel-title">@Labels.ProfessionalHelp</h3>
+	        </header>
+	        <div class="panel-body">
+		        <p>@Labels.ProfessionalHelpMessage</p>
+                <p>                    
+                    @*@Html.Mailto(@Labels.EmailHIFISSupportDesk, "support@hifis.ca", "HIFIS 4 Error: " + Model.Message, @Labels.ErrorMailIntro + Environment.NewLine + Model.Message + Environment.NewLine + Environment.NewLine + Model.Stack, "", "", null) <br />*@
+                    <a href="http://www.esdc.gc.ca/cgi-bin/edsc-esdc/contact/contact_us.asp?section=hifis_support" title=@Labels.ContactHIFISSupportDesk target="_blank">@Labels.ContactHIFISSupportDesk</a>
+                </p>
+
+	        </div>
+        </section>
+    </div>
+    <div class="col-md-6">
+        <section class="panel panel-primary hght-inhrt">
+	        <header class="panel-heading">
+		        <h3 class="panel-title">@Labels.SelfHelp</h3>
+	        </header>
+	        <div class="panel-body">
+                <p>@Labels.SelfHelpMessage</p>
+                <p>@Labels.LearningLinks</p>
+                @Html.ActionLink(@Labels.HIFISHelpCentre, "HelpIndex", "HIFISHelp", null, new { target="_blank", alt=Labels.HIFISHelpCentre, aria_label=Labels.HIFISHelpCentre })
+	        </div>
+        </section>
+    </div>
+</div>
+
+

@@ -1,0 +1,58 @@
+﻿@model HousingSubsidyViewModel
+
+<section id="Modal_editSubsidy" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.EditSubsidy</h2>
+    </header>
+    <div class="modal-body">
+        <form id="editSubsidyForm" class="form-horizontal">
+            @Html.Partial("_HousingSubsidy", Model)
+        </form>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="editSubsidySaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="editSubsidyCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () {
+        $("#editSubsidyForm").hifisValidation();
+        $('input[id=ClientID]').val($('#HiddenClientID').val());
+    });
+
+    $("#editSubsidySaveBtn").click(function () {
+
+        if ($("#editSubsidyForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/HousingUnit/UpdateHousingSubsidy")",
+                type: "POST",
+                data: $("#editSubsidyForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#subsidiesTable').DataTable().ajax.reload();
+                    $("#editSubsidyCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>
+
+

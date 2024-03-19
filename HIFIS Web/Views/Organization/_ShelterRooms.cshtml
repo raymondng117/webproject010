@@ -1,0 +1,15 @@
+﻿@model RoomViewModel
+
+@Html.Partial("_BaseHiddenFor", Model)
+
+@Html.HiddenFor(model => model.ID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.HiddenFor(model => model.ShelterName)
+
+<div>
+    @Html.HifisEditorFor(model => model.Name)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.ActiveYN, "YesNo")
+</div>

@@ -1,0 +1,37 @@
+﻿@model HousingSubsidyViewModel
+
+@Html.HiddenFor(model => model.HousingSubsidyID)
+@Html.HiddenFor(model => model.ClientHouseID)
+@Html.HiddenFor(model => model.ClientID)
+@Html.TextBoxFor(model => model.HousingStartDate, "{0:yyyy-MM-dd}", htmlAttributes: new { @type = "hidden" })
+@Html.HiddenFor(model => model.ServiceProviderID)
+@Html.HiddenFor(model => model.OrganizationID)
+@Html.Partial("_BaseHiddenFor", Model)
+
+<div>
+    @Html.HifisEditorFor(model => model.ProgramID, ViewBag.programs as SelectList,null, new { @class = "max_width_90" })
+    @Html.HiddenFor(model => model.ProgramName)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.StartDate)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes, new { @class = "max_width_90" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.EndDate)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.Amount, "Money", new { @class = "money" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.PaymentDate)
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.PayFrequencyType, CachedTableTypes.HIFIS_PayFrequencyTypes)
+</div>
+<div>
+    @Html.HifisTextAreaFor(model => model.Comment, new { @class = "max_width_90" })
+</div>
+
+

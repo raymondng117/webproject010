@@ -1,0 +1,197 @@
+﻿@model PeopleListViewModel
+@{
+	ViewBag.ViewTitle = Labels.viewTitle_PersonProfile + (ViewBag.PeopleRole != null ? " - " + ViewBag.PeopleRole : "");
+	
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+	
+	int j = 1;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+	@if (Model.PagingViewModel.SearchString != string.Empty) 
+	{ 
+		<div class="table-responsive">
+			<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "ordering": false }'>
+				<thead>
+					<tr>
+						<th>@Labels.FullName</th>
+						<th>@Labels.Gender</th>
+						@*<th>@Labels.Aka1</th>*@
+						@*<th>@Labels.DOB</th>*@
+						<th>@Labels.PersonRoles</th>  
+						@*<th>@Labels.Age</th>*@ 
+						<th style="width: 7%;">@Labels.ActiveYN</th>
+					</tr>
+				</thead>           
+				<tbody> 
+					@foreach (var viewModelItem in Model.PeopleViewModels)
+					{
+						<tr>
+							<td>@Html.ActionLink(viewModelItem.FullName, "DisplayVitals", new { controller = "PeopleTombstone", id = viewModelItem.PersonID }, new { alt = viewModelItem.FullName, aria_label = viewModelItem.FullName })</td>
+							<td>@Html.DisplayTextFor(ModelItem => viewModelItem.Gender)</td>
+							@*<td>@Html.DisplayTextFor(ModelItem => viewModelItem.Aka1)</td>*@
+							@*<td>@Html.DisplayFor(ModelItem => viewModelItem.DOB, "DateOnly")</td>*@
+							@*<td>@Html.DisplayFor(ModelItem => viewModelItem.Roles)</td>*@
+							@*<td>@Html.DisplayTextFor(ModelItem => viewModelItem.AproximativeAge)</td>*@
+
+							<td>
+								@if (!viewModelItem.Roles.IsEmptyOrNull())
+								{
+									if (viewModelItem.Roles.Count() > 1)
+									{
+										<div class="panel-default">
+											<div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+												<a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+													@viewModelItem.Roles.Count() @Labels.SelectRole
+													<span class="caret pull-right mrgn-tp-sm"></span>
+												</a>
+											</div>
+											<div id="@j" class="panel-collapse collapse">
+												<ul class="pddng-lft-md">
+													@foreach (var role in viewModelItem.Roles)
+													{
+														<li>@role</li>
+													}
+												</ul>
+											</div>
+										</div>
+													j++;
+									}
+									else
+									{
+										@viewModelItem.Roles.First()
+									}
+								}
+						</td>
+
+							<td style="text-align: center;">
+								@Html.Partial("DisplayViewTemplates/_YesNoDisplay", viewModelItem.ActiveYN)
+							</td>
+
+						</tr>
+					}                                         
+				</tbody>
+			</table>
+		</div>
+	}
+	else
+	{ 
+		//TODO: This hsouldn't be done here -JdV
+		OrderByDirection pToggleDirection = OrderByDirection.Ascending;
+		if (Model.LastOrderByDirection == OrderByDirection.Ascending) { pToggleDirection = OrderByDirection.Descending; }
+   
+		<div class="table-responsive">
+			<table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+				<thead>
+					<tr>
+						@*<th>
+							@if (Model.LastOrderByPeopleList == OrderByPeopleList.FullName)
+							{ 
+								@Html.ActionLink((string)Labels.FullName, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.FullName, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+							else
+							{
+								@Html.ActionLink((string)Labels.FullName, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.FullName, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+						</th>
+						<th>
+							@if (Model.LastOrderByPeopleList == OrderByPeopleList.Gender)
+							{ 
+								@Html.ActionLink((string)Labels.Gender, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Gender, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+							else
+							{
+								@Html.ActionLink((string)Labels.Gender, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Gender, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+						</th>
+						<th>
+							@if (Model.LastOrderByPeopleList == OrderByPeopleList.Aka1)
+							{ 
+								@Html.ActionLink((string)Labels.Aka1, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Aka1, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+							else
+							{
+								@Html.ActionLink((string)Labels.Aka1, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Aka1, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+						</th>
+						<th>
+							@if (Model.LastOrderByPeopleList == OrderByPeopleList.DOB)
+							{ 
+								@Html.ActionLink((string)Labels.DOB, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.DOB, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+							else
+							{
+								@Html.ActionLink((string)Labels.DOB, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.DOB, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex })
+							}
+						</th>   
+						<th>@Labels.Age</th>*@
+
+						<th>@Labels.FullName</th>
+						<th>@Labels.Gender</th>
+						<th>@Labels.PersonRoles</th> 
+						<th style="width: 7%;">@Labels.ActiveYN</th> 
+					</tr>
+				</thead>
+
+				@foreach (var viewModelItem in Model.PeopleViewModels)
+				{
+					<tr>
+						<td>@Html.ActionLink(viewModelItem.FullName, "DisplayVitals", new { controller = "PeopleTombstone", id = viewModelItem.PersonID, alt=viewModelItem.FullName, aria_label = viewModelItem.FullName })</td>
+						<td>@Html.DisplayTextFor(ModelItem => viewModelItem.Gender)</td>
+						@*<td>@Html.DisplayTextFor(ModelItem => viewModelItem.Roles)</td>*@
+
+						<td>@if(!viewModelItem.Roles.IsEmptyOrNull())
+							{ 
+								if (viewModelItem.Roles.Count() > 1)
+								{
+									<div class="panel-default">
+										<div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+											<a data-toggle="collapse" data-parent="#accordion" href="#@j" class="btn btn-default btn-xs btn-block" style="text-align:left;">
+												@viewModelItem.Roles.Count() @Labels.SelectRole
+												<span class="caret pull-right mrgn-tp-sm"></span>
+											</a>
+										</div>
+										<div id="@j" class="panel-collapse collapse">
+											<ul class="pddng-lft-md">
+												@foreach (var role in viewModelItem.Roles)
+												{
+													<li>@role</li>
+												}
+											</ul>
+										</div>
+									</div>
+									j++;
+								}
+								else
+								{
+									@viewModelItem.Roles.First()
+								}
+							}
+						</td>
+
+						<td style="text-align: center;">
+							@Html.Partial("DisplayViewTemplates/_YesNoDisplay", viewModelItem.ActiveYN)
+						</td>
+
+						@*<td>@Html.DisplayTextFor(ModelItem => viewModelItem.Aka1)</td>
+						<td>@Html.DisplayFor(ModelItem => viewModelItem.DOB, "DateOnly")</td>
+						<td>@Html.DisplayTextFor(ModelItem => viewModelItem.AproximativeAge)</td>*@
+					</tr>
+				}
+			</table>
+		</div>
+	
+		@Html.Partial("_PeoplePaging", Model.PagingViewModel) 
+	}
+</div>
+
+<div class="mrgn-tp-md">
+	@Html.ActionLink(Labels.NewSearch, "DisplayNewSearch", "PeopleTombstone", null, new { @class = "searchButton  ", title = @Labels.NewSearch, alt=Labels.NewSearch, aria_label = Labels.NewSearch, @role = "button" })
+
+	@if (RightsHelper.HasRight(UserRights.People_Vitals_Add))
+	{ 
+		@Html.ActionLink(Labels.NewPerson, "NewVitals", "PeopleTombstone", null, new { @class = "addButton  ", title = @Labels.NewPerson, alt=Labels.NewPerson, aria_label = Labels.NewPerson, @role = "button" })     
+	}       
+</div>

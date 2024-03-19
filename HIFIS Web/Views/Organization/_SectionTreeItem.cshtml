@@ -1,0 +1,107 @@
+﻿@model MandatorySectionViewModel
+
+<li data-section-id="@Model.sectionTypeID" data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-th-list"}'>
+        @Html.ActionLink(Model.SectionName, "UpdateMandatory", "Organization", new {  }, new { alt = Model.SectionName, aria_label = Model.SectionName, @role = "button" })
+        <img class="loaderImg hide hght-strct-15 mrgn-0" src="~/Content/images/Loaders/loader-20.gif" alt="@Labels.Loading" />
+        @if (Model.Mandatories != null)
+        {
+            <ul>
+                @foreach (MandatoryViewModel mandatory in Model.Mandatories)
+                {
+                    <li data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-th-list"}'>
+                        @mandatory.FieldName
+                        @if (!mandatory.MandatoryYN && mandatory.DisabledYN)
+                        {
+                            <text><i>    [@Labels.Disabled]</i></text> 
+                        }
+                        else if (mandatory.MandatoryYN && !mandatory.DisabledYN)
+                        { 
+                            <text><i>    [@Labels.Mandatory]</i></text>
+                        }
+                        
+                        <ul>
+                            @if (!mandatory.IsForcedDisabledYN) 
+                            {
+                                if (mandatory.IsForcedMandatoryYN)
+                                { 
+                                    <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-star"}' class="text-danger">
+                                        @Html.ActionLink(Labels.Mandatory + " [" + Labels.ForcedBy + " " + @mandatory.ForcedOrgName + "]", "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID }, new { @class = "jstree-clicked forced-opacity", alt = Labels.Mandatory + " [" + Labels.ForcedBy + " " + @mandatory.ForcedOrgName + "]", aria_label = Labels.Mandatory + " [" + Labels.ForcedBy + " " + @mandatory.ForcedOrgName + "]" })
+                                    </li>
+                                }
+                                else
+                                {
+                                    if (mandatory.MandatoryYN)
+                                    { 
+                                        <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-class-type="mandatory" data-jstree='{"icon" : "glyphicon glyphicon-star"}' class="text-danger">
+                                            @Html.ActionLink(Labels.Mandatory, "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID}, new { @class = "jstree-clicked", alt = Labels.Mandatory, aria_label = Labels.Mandatory })
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-class-type="mandatory" data-jstree='{ "icon" : "glyphicon glyphicon-star"}' class="text-danger">
+                                            @Html.ActionLink(Labels.Mandatory, "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID}, new { alt = Labels.Mandatory, aria_label = Labels.Mandatory })
+                                        </li>
+                                    }
+                                }
+                            }
+
+                            @if (mandatory.OrgList.Count() > 0)
+                            {
+                                <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-th-list"}'}'>
+                                    @Html.ActionLink(Labels.ForceMandatory, "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID }, new { alt = Labels.ForceMandatory, aria_label = Labels.ForceMandatory })
+                                    <ul>
+                                        @foreach (MandatoryViewModel org in mandatory.OrgList)
+                                        {
+                                            @Html.Partial("_MandatoryOrganizationTreeItem", org)
+                                        }
+                                    </ul>
+                                </li>                                  
+                            }
+                                
+
+                            @if (!mandatory.IsForcedMandatoryYN)
+                            {
+                                if (mandatory.IsForcedDisabledYN)
+                                { 
+                                    <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-jstree='{"disabled":true}' data-jstree='{ "icon" : "glyphicon glyphicon-ban-circle"}' class="text-danger">
+                                        @Html.ActionLink(Labels.Disabled + " [" + Labels.ForcedBy + " " + @mandatory.ForcedOrgName + "]", "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID }, new { @class = "jstree-clicked forced-opacity", alt = Labels.Disabled + " [" + Labels.ForcedBy + " " + @mandatory.ForcedOrgName + "]", aria_label = Labels.Disabled + " [" + Labels.ForcedBy + " " + @mandatory.ForcedOrgName + "]" })
+                                    </li>
+                                }
+                                else
+                                {
+                                    if (mandatory.DisabledYN)
+                                    {   
+                                        <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-class-type="disabled" data-jstree='{ "icon" : "glyphicon glyphicon-ban-circle"}' class="text-danger">
+                                            @Html.ActionLink(Labels.Disabled, "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID}, new { @class = "jstree-clicked", alt = Labels.Disabled, aria_label = Labels.Disabled })
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-class-type="disabled" data-jstree='{ "icon" : "glyphicon glyphicon-ban-circle"}' class="text-danger">
+                                            @Html.ActionLink(Labels.Disabled, "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID}, new { alt = Labels.Disabled, aria_label = Labels.Disabled })
+                                        </li>
+                                    }
+                                }
+                            }
+
+                            @if (mandatory.OrgList.Count() > 0)
+                            { 
+                                <li data-orgMandatory-id="@mandatory.OrganizationMandatoryID" data-class-type="forcedDisabledAll" data-jstree='{"disabled":true, "icon" : "glyphicon glyphicon-th-list"}'>
+                                    @Html.ActionLink(Labels.ForceDisabled, "UpdateMandatory", "Organization", new { id = mandatory.OrganizationMandatoryID }, new { alt = Labels.ForceDisabled, aria_label = Labels.ForceDisabled })
+                                    @if (mandatory.OrgList.Count >= 1)
+                                    { 
+                                        <ul>
+                                            @foreach (MandatoryViewModel org in mandatory.OrgList)
+                                            {
+                                                @Html.Partial("_DisabledOrganizationTreeItem", org)
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }   
+                        </ul>
+                    </li>
+                }
+            </ul>            
+        }
+</li>

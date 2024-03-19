@@ -1,0 +1,160 @@
+﻿@model List<UserProfileViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_UserProfileList;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+
+    if (ViewBag.filterType == null)
+    {
+        ViewBag.filterType = (short)UserListFilterTypes.All;
+    }
+}
+
+<div id="radio" class="btn-group">
+    <ul class="list-unstyled">
+        <li class="btn-group btn-group-sm mrgn-bttm-md">
+            @{ string classlink1 = (ViewBag.filterType == (short)UserListFilterTypes.All ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.All, "List", "Users", new { filterType = (short)UserListFilterTypes.All }, new { @class = classlink1, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+
+            @{ string classlink2 = (ViewBag.filterType == (short)UserListFilterTypes.Active ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.Active, "List", "Users", new { filterType = (short)UserListFilterTypes.Active }, new { @class = classlink2, alt=Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+            @{ string classlink3 = (ViewBag.filterType == (short)UserListFilterTypes.Inactive ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+            @Html.ActionLink(Labels.Inactive, "List", "Users", new { filterType = (short)UserListFilterTypes.Inactive }, new { @class = classlink3, alt=Labels.Inactive, aria_label = Labels.Inactive, @role = "button" })
+
+            @if (RightsHelper.HasRight(UserRights.Users_Complete_List))
+            {
+                string classlink4 = (ViewBag.filterType == (short)UserListFilterTypes.complete ? "btn btn-primary btn-sm" : "btn btn-default btn-sm");
+
+                @Html.ActionLink(Labels.Complete, "List", "Users", new { filterType = (short)UserListFilterTypes.complete }, new { @class = classlink4, alt=Labels.Complete, aria_label = Labels.Complete, @role = "button" })
+            }
+        </li>
+    </ul>
+</div>
+
+<div class="clearfix"></div>
+<div class="mrgn-tp-md">
+    <p>
+        <a id="openFilters" aria-controls="filter-options" class="overlay-lnk filterButton" role="button">@Labels.FilterOptions</a>
+    </p>
+</div>
+
+<div class="mrgn-tp-xl">
+    <div class="table-responsive">
+        <table id="usersTable" class="wb-tables table table-striped table-hover mrgn-tp-md" data-wb-tables='{"columns": [
+                            { "width": "35%",  "data": "name","orderable": true, "type": "string","name": "UserLastName"},
+                            { "width": "20%",  "data": "userName","orderable": true, "type": "string","name": "UserName"},
+                            { "width": "10%", "data": "active","orderable": false},
+                            { "width": "20%", "data": "lastLogin", "orderable": false},
+                            { "width": "15%",  "data": "action","orderable": false }
+                            ],
+                            "order": [ [0, "asc"] ],
+                            "serverSide": true,
+                            "processing": true,
+                            "ajax": "@Url.Action("GetUserListPaginated", "Users", new UserSearchFilterViewModel(){ FilterType = ViewBag.filterType })"
+                            }'>
+
+
+            <thead>
+                <tr>
+                    <th width="35%">@Labels.Name</th>
+                    <th width="20%">@Labels.UserName</th>
+                    @*<th>@Labels.AccountType</th>*@
+                    <th width="10%">@Labels.Active</th>
+                    <th width="20%">@Labels.LastLogin</th>
+                    <th width="15%">@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+
+    <!-- Overlay Panel -->
+    <section id="filter-panel" class="wb-overlay modal-content overlay-def outside-off filtersSidePanel">
+        <header class="modal-header">
+            <h2 class="modal-title">@Labels.FilterOptions</h2>
+        </header>
+        <div class="modal-body">
+            @Html.Partial("_UserSearchFilters", new UserSearchFilterViewModel() { FilterType = ViewBag.filterType })
+        </div>
+    </section>
+
+    <div class="clearfix"></div>
+    <p>
+        @if (RightsHelper.HasRight(UserRights.Users_Add))
+        {
+            @Html.ActionLink(Labels.NewUser, "New", "Users", null, new { @class = "addButton", alt=Labels.NewUser, aria_label = Labels.NewUser, @role = "button" })
+        }
+        @if (RightsHelper.HasRight(UserRights.PiT_Administrator))
+        {
+            if (ViewBag.hasPiTEvent == true)
+            {
+                @Html.ActionLink(Labels.AddPiTLiveVolunteers, "CreatePitLiveVolunteers", "PitEvents", null, new { @class = "addButton", alt=Labels.AddPiTLiveVolunteers, aria_label = Labels.AddPiTLiveVolunteers, @role = "button" })
+            }
+
+        }
+
+    </p>
+</div>
+@using (Html.BeginScriptContext())
+{
+        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+
+     // draw event for the datatables...Since the datatables loads after the javascript loads then the buttons within the tables need to be initialised.
+     $(document).on("wb-updated.wb-tables", ".wb-tables", function (event, settings) {
+         initButtons();
+
+     });
+
+
+     //open the filter panel
+     $('#openFilters').on('click', function () {
+         if ($("#filter-panel").hasClass('open'))
+             $('#filter-panel').trigger('close.wb-overlay');
+         else {
+             reinitSelect2($('#CGs')); //Case Goal dropdown
+             reinitSelect2($('#CCs')); //case status dropdown
+         }
+
+         $('#filter-panel').trigger('open.wb-overlay');
+     });
+
+
+     //when the filter panel opens reinit select2s
+     $(document).on('open.wb-overlay', function (event) {
+         doSelect2Init();
+     });
+
+     //close filter panel
+     $('#closeFilters').on('click', function () {
+         $("#filter-panel").trigger("close.wb-overlay");
+     });
+
+     //reapplies container class to the large select2 drop downs
+     function reinitSelect2(selector) {
+         selector.select2('destroy');
+         select2InitFunctions.push(function () {
+             selector.select2(
+                 {
+                     allowClear: true,
+                     placeholder: $("#DropdownPlaceholder").val(),
+                     dropdownAutoWidth: true,
+                     containerCssClass: "custom-select2-container"
+                 });
+         });
+         doSelect2Init();
+     }
+
+
+
+</script>
+);
+}

@@ -1,0 +1,19 @@
+﻿@model IncidentViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_DisplayIncident;  
+    
+    if (ViewBag.clientID != null)
+    { 
+        ViewBag.LayoutView = LayoutPage.Client; 
+    }
+    else
+    { 
+        ViewBag.LayoutView = LayoutPage.ContentOnly; 
+    }  
+}
+
+@Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"), new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Incident/_DisplayIncident.cshtml"), ViewModel = Model })
+
+<div class="@(ViewBag.clientID == null ? "" : "")"> 
+    @Html.Partial("_BaseFooter", (BaseViewModel)Model)
+</div>

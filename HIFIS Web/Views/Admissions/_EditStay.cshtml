@@ -1,0 +1,30 @@
+﻿@model StayViewModel
+
+
+<!-- This div contains the form in which a new book-in or reservation is processed. -->
+<div class="row">
+    <div class="col-sm-12">
+        @using (Html.BeginForm("Edit", "Admissions", FormMethod.Post, new { @class = "form-horizontal", id = "admissionsForm" }))
+        {
+            @Html.HiddenFor(model => model.PrimaryClientID)
+
+            <div class="form-horizontal ">
+                @Html.HifisTextBoxFor(model => model.PrimaryClientName, new { @class = "autowidth mrgn-bttm-sm mrgn-rght-md", disabled = true })
+            </div>
+
+            <div id="stayFormDiv">
+                @Html.Partial("_AdmissionsForm", Model)
+            </div>
+
+            <div class="form-group form-btns">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    <a class="cancelButton" href="@ViewBag.returnUrl" role = "button">@Labels.Cancel</a>
+                    @*@Html.ActionLink(Labels.Cancel, "ClientAdmissions", "Admissions", new { id = Model.PrimaryClientID }, new { @class = "cancelButton" })*@
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

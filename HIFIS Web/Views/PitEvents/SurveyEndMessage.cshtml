@@ -1,0 +1,115 @@
+﻿@model PitSurveyViewModel
+@{
+    ViewBag.ViewTitle = Labels.EndofSurvey;
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<section id="popup-screen" class="wb-overlay modal-content overlay-def wb-popup-full">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.Info</h2>
+    </header>
+    <div class="modal-body">
+        @Html.Raw(Session["PitQuickInfo"])
+    </div>
+</section>
+
+<div>
+	<div class="panel panel-default mrgn-tp-md">
+		<div class="panel-heading" style="text-align: center;">
+			<h1 class="panel-title">@Labels.EndofSurvey</h1>
+		</div>
+		
+       @*if survey is incomplete, displays a message with the question numbers of incomplete questions categorized and a link to edit the survey*@ 
+            @if (ViewBag.SurveyEndIncomplete != null)
+            {
+                PitSurveyViewModel pitSurvey = ViewBag.SurveyEndincomplete;
+                if (!pitSurvey.IsComplete)
+                {
+                    string currCategory = "";
+                    <div class="panel-body alert alert-warning" style="text-align: center;">
+                        @Labels.EndofSurveyMessage 
+                        <br />
+                        <p>@Labels.PiTincompleteSurveyEndMsg</p>
+
+                        @foreach (var q in pitSurvey.incompleteQs.GroupBy(c => c.QuestionCategoryTypeID))
+                        {
+                            switch (q.Key)
+                            {
+                                case (short)PitQuestionCategories.Screening:
+                                    currCategory = Labels.PitScreeningQuestions;
+                                    break;
+                                case (short)PitQuestionCategories.Core:
+                                    currCategory = Labels.PitCoreQuestions;
+                                    break;
+                                case (short)PitQuestionCategories.COHCoreRelated:
+                                    currCategory = Labels.PitCoreCOHQuestions;
+                                    break;
+                                case (short)PitQuestionCategories.COH:
+                                    currCategory = Labels.PitCOHQuestions;
+                                    break;
+                                case (short)PitQuestionCategories.Local:
+                                    currCategory = Labels.LocalQuestions + " (" + Labels.LocalOptional + ")";
+                                    break;
+                            }
+                            <p>@currCategory: @string.Join(",", q.Select(n => n.QuestionNo))</p>
+                        }
+                        <p class="align-text-center">
+                            @Html.ActionLink(@Labels.ReturnToPiTSurvey, "EditPitSurvey", new { pitSurveyID = pitSurvey.PitSurveyID }, new { @class = "editButton", alt=Labels.ReturnToPiTSurvey, aria_label = Labels.ReturnToPiTSurvey, @role = "button" })
+                        </p>
+                    </div>
+
+                }
+
+            }
+            else
+            {
+                <div class="panel-body" style="text-align: center;">
+                    @Labels.EndofSurveyMessage
+                </div>
+            }
+    </div>
+
+    <div class="mrgn-tp-md ">
+		@Html.ActionLink(Labels.PitSurveyList, "PitSurveysList", "PitEvents", null, new { @class = "listButton", alt=Labels.PitSurveyList, aria_label = Labels.PitSurveyList })
+
+
+        @if (ViewBag.isRegistryWeek && RightsHelper.HasRight(UserRights.PiT_ConductRegistryWeek))
+		{
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @Labels.ConductAssessment
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dLabel">
+                    <li>@Html.ActionLink(Labels.Adult, "PITVI", "SPDAT", new { intakeType = (short)SPDATTypes.spdat_vi2, PITSurveyID = ViewBag.SurveyID }, new { style = "text-decoration-line: none;", alt=Labels.Adult, aria_label = Labels.Adult })</li>
+                    <li>@Html.ActionLink(Labels.Family, "PITVI", "SPDAT", new { intakeType = (short)SPDATTypes.spdat_vi_f2, PITSurveyID = ViewBag.SurveyID }, new { style = "text-decoration-line: none;", alt=Labels.Family, aria_label = Labels.Family })</li>
+                    <li>@Html.ActionLink(Labels.Youth, "PITVI", "SPDAT", new { intakeType = (short)SPDATTypes.spdat_vi_tay, PITSurveyID = ViewBag.SurveyID }, new { style = "text-decoration-line: none;", alt=Labels.Youth, aria_label = Labels.Youth })</li>
+                </ul>
+            </div>
+		}
+	</div>
+	<div class="mrgn-tp-md btn-toolbar">
+
+        @if (RightsHelper.HasRight(UserRights.PiT_Live_Surveyor))
+		{
+			@Html.ActionLink(Labels.PiTAddSurveyScrolling, "CanCreatePitSurveyLive", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.PiTAddSurveyScrolling, aria_label = Labels.PiTAddSurveyScrolling, @role = "button" })
+			@Html.ActionLink(Labels.PiTAddSurveyPaging, "CanCreatePitSurveyLivePaging", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.PiTAddSurveyPaging, aria_label = Labels.PiTAddSurveyPaging, @role = "button" })
+		}
+
+        @if (RightsHelper.HasRight(UserRights.PiT_Data_Entry_Personnelle))
+		{
+			@Html.ActionLink(Labels.CreatePitSurveyDataEntry, "CanCreatePitSurveyDataEntry", "PitEvents", null, new { @class = "addButton alertInfo", alt=Labels.CreatePitSurveyDataEntry, aria_label = Labels.CreatePitSurveyDataEntry, @role = "button" })
+		}
+	</div>
+</div>
+@using (Html.BeginScriptContext())
+{
+	Html.AddScriptBlock(@<script type="text/javascript">
+		$(function () {
+		    $('#page-title').html("");		   
+		});       
+	
+</script>);
+}

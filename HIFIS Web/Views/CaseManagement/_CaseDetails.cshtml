@@ -1,0 +1,186 @@
+﻿@model CaseViewModel
+
+<div class="form-color-white module-form-block ">
+    <div class="row">
+        <div class="col-sm-12">
+
+            @Html.HiddenFor(model => model.ServiceID)
+            @Html.HiddenFor(model => model.ServiceTypeID)
+            @Html.HiddenFor(model => model.ReasonForServiceID)
+            @Html.HiddenFor(model => model.OrganizationID)
+
+            @if (Model.Sessions != null && Model.Sessions.Count > 0)
+            {
+                @Html.HiddenFor(model => Model.DesiredOutcomeTypeID)
+            
+                <div class="row">                    
+                    @Html.HifisLabelFor(@Labels.Goal, @Labels.Goal, new { @class = "col-sm-3" })
+                    
+                        <div class="col-sm-9">
+                            <div class="form-group">
+                                <input type="text" class="inputTextOnly" id="Goal" name="Goal"
+                                       value="@(WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_DesiredOutcomeTypes, Culture, Model.DesiredOutcomeTypeID))"
+                                       style="font-weight: bold;" readonly />
+                            </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @Html.HifisLabelFor(model => model.DesiredOutcomeTypeID, new { @class = "col-sm-3" })
+                    <div class="col-sm-9">
+                        @Html.HifisEditorFor(model => model.DesiredOutcomeTypeID, CachedTableTypes.HIFIS_DesiredOutcomeTypes, null, true, null)
+                    </div>
+                </div>
+            }
+
+            <div id="familyInputs" class="row">
+                @Html.HifisLabelFor(model => model.ClientsFamilyIDs, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisListBoxFor(model => model.ClientsFamilyIDs, ViewBag.clientFamilyList as SelectList, null, true, true, true, null)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.CaseWorkerID, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.CaseWorker as SelectList, null, null, true, null)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    <div class="form-group">
+                        @if (Model.AssociatedProgramIDs == null || Model.AssociatedProgramIDs.Count == 0)
+                        {
+                            <input type="text" class="inputTextOnly" id="AssociatedProgramIDs" name="AssociatedProgramIDs"
+                                   value="@Labels.NA" readonly />
+                        }
+                        else
+                        {
+                            @Html.Partial("DisplayViewTemplates/_DisplayStringList", new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.AssociatedProgramIDs).ToString() })
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.CaseStateTypeID, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisRollupEditorFor(model => model.CaseStateTypeID, CachedTableTypes.HIFIS_CaseStateTypes,
+                        new { id = "CaseStateTypeID" }, null, true, null)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.ClientFactors, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisListBoxFor(model => model.ClientFactors, ViewBag.Factors as SelectList, null, true, true, true)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.DateStart, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisEditorFor(model => model.DateStart, "DateAndTime", null, true, null)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor(model => model.TargetDate, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisEditorFor(model => model.TargetDate, "DateOnly", null, true, null)
+                </div>
+            </div>
+
+            <div id="caseClosed" class="row">
+                @Html.HifisLabelFor(model => model.DateEnd, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    @Html.HifisEditorFor(model => model.DateEnd, "DateAndTime", null, true, null)
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor("TotalExpendedTime", Labels.TotalExpendedTime, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    <div class="form-group">
+                        <input type="text" class="inputTextOnly" id="TotalExpendedTime" name="TotalExpendedTime"
+                               value="@(string.Format("{0} {1} {2} {3}", this.Model.Hours, (this.Model.Hours.Equals("01") ? Labels.Hour : Labels.Hours),
+                                        this.Model.Minutes, (this.Model.Minutes.Equals("01") ? Labels.Minute : Labels.Minutes)))"
+                               style="font-weight: bold; width: 100%;" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                @Html.HifisLabelFor("TotalElapsedTime", Labels.TotalElapsedTime, new { @class = "col-sm-3" })
+                <div class="col-sm-9">
+                    <div class="form-group">
+                        <input type="text" class="inputTextOnly" id="TotalElapsedTime" name="TotalElapsedTime"
+                               value="@(string.Format("{0} {1}", this.Model.TotalElapsedTime, @Labels.Days))"
+                               style="font-weight: bold;" readonly />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            function ShowHideDIV()
+            {
+                var selectedValue = getLookupOrRollup('#CaseStateTypeID');
+                switch (selectedValue)
+                {
+                case @((byte)CaseStateType.ClosedSuccess):
+                case @((byte)CaseStateType.ClosedGoalNotMet):
+                    $('#caseClosed').show();
+                    break;
+                case @((byte)CaseStateType.Open):
+                    $('#caseClosed').hide();
+                    break;
+                default:
+                    $('#caseClosed').hide();
+                }
+            }
+
+
+            $(document).ready(function(){
+
+                @{
+                    if(Model.CaseStateTypeID == null)
+                    {
+                        @:$('#caseClosed').hide();
+                    }
+                }
+
+                $('#CaseStateTypeID').ready(ShowHideDIV);
+                $('#CaseStateTypeID').change(ShowHideDIV);
+
+                $("#OrganizationID").change(function () {
+                    var data = { functionName: "getProgramListNonStayOrgID", functionParameters: $("#OrganizationID").val() };
+                }).change();
+            });
+
+            function getPrograms(data) {//jsonResultList is a list of jsonResults
+                //Initialize the dropdown list to defaults
+                $("#ProgramServiceProviderID").empty();
+
+                $.each(data, function () {//Appends all of the available options
+                    $("#ProgramServiceProviderID").append($("<option />").val(this.Value).text(this.Text));
+                });
+
+                $('#ProgramSelectionLoader').hide();
+            } //success
+
+</script>
+);
+}
+

@@ -1,0 +1,7 @@
+﻿@model System.DateTime?
+@{
+  DateTime? modelDate = (Model != null) ? Model.Value.Date : (DateTime?)null;
+  string dateString = Model.HasValue ? Model.Value.ToString("yyyy-MM-dd") : string.Empty;  
+}
+@Html.TextBox("", dateString, new { type = "date" })
+@*@Html.TextBoxFor(m => m, new { Name = ViewData["fieldName"], id = ViewData["fieldName"], type = "date", Value = dateString })*@

@@ -1,0 +1,83 @@
+﻿@model ClientEmergencyContactViewModel
+@{
+    ViewBag.LayoutView = LayoutPage.Client;
+    
+    ViewBag.ViewTitle = Labels.viewTitle_NewClientContact;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@*<div class="row">    
+    <div class="col-sm-offset-2 col-sm-10 mrgn-bttm-md">
+	    @if (RightsHelper.HasRight(UserRights.People_Vitals_Add) && RightsHelper.HasRight(UserRights.On_The_Fly_Button_Person_Add))
+        { 
+	        @Html.Partial("_OnTheFlyButton",
+                new OnTheFlyButtonViewModel()
+                {
+                    ButtonName = Labels.NewPerson,
+                    Title = Labels.NewPerson,
+                    ActionName = "NewVitals",
+                    ControllerName = "PeopleTombstone",
+                    PartialName = "~/Views/PeopleTombstone/_PeopleVitals.cshtml",
+                    CallBackFunction = "OnTheFlyCallBackNewPerson",
+                    ViewModel = new PeopleVitalsViewModel()
+                }
+            )
+        }
+    </div>
+</div>*@
+<div class="clearfix"></div>
+
+<div id="NewEmergencyContact_FormSection">
+    @using (Html.BeginForm("NewEmergencyContact", "ClientTombstone", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        <div class="col-sm-12">
+            @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ClientID)
+
+            <div class="row">
+                @Html.HifisAutocompleteFor(
+                    m => m.PersonID
+                    , Url.Content("~/PeopleTombstone/AjaxGetPList")
+                    , Model.PersonName
+                    , new AutocompleteViewModelOptions
+                    {
+                        HiddenValue = true
+                        ,
+                             SelectClientFieldType = SelectClientFieldTypes.PersonID
+                    })
+            </div>
+
+            <div class="row">
+                @Html.HifisEditorFor(model => model.ClientEmergencyRelationshipTypeID, CachedTableTypes.HIFIS_PeopleRelationshipTypes)
+            </div>
+
+            <div class="row">
+	            <div class="col-sm-offset-3 col-sm-9">
+                    <div class="form-group">
+                        <button id="btnAddSelectedContact" type="submit" value="@Labels.AddSelectedContact" name="btnAdd" class="saveButton mrgn-lft-sm">@Labels.Save</button>
+                        @Html.ActionLink(Labels.Cancel, "EmergencyContacts", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"  })
+                    </div>
+                </div>
+            </div>
+
+        </div>         
+    }
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            function OnTheFlyCallBackNewPerson(objectID, formData) {
+        
+                var Name = formData["LastName"] + ", " + formData["FirstName"];
+                $("#PersonIDSearchBox").val(Name);
+                $("#PersonID").val(objectID);
+            }
+        </script>
+    );
+}

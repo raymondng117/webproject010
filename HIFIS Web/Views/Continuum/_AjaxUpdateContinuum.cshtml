@@ -1,0 +1,73 @@
+﻿@model ContinuumViewModel
+
+<section id="Modal_UpdateContinuum" class="modal-dialog modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.HousingContinuum_Update - @Model.Name</h2>
+    </header>
+    <div class="modal-body">
+        @using (Html.BeginForm("UpdateContinuum", "Continuum", FormMethod.Post, new { @class = "form-horizontal", id="updateContinuumForm"}))
+        {
+            @Html.AntiForgeryToken()
+            @Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+            @Html.HiddenFor(m => m.ContinuumID)
+            
+            <div class="form-group">
+                <label for="SelectedHouseTypes" class="col-sm-4 control-label">
+                    @Labels.HousingContinuum_Name
+                </label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        @Html.HifisEditorFor(m => m.Name, "", new { style="margin-left:15px;" }, true)
+                    </div>
+                </div>
+            </div>              
+        }
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button id="updateContninuumSaveBtn" class="saveButton">@Labels.Save</button>
+        <button id="updateContninuumCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('.modal-body');
+
+    $(function () { $("#updateContinuumForm").hifisValidation(); });
+
+    $("#updateContninuumSaveBtn").click(function () {
+
+        if ($("#updateContinuumForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+
+            $.ajax({
+
+                url: "@Url.Content("~/Continuum/UpdateContinuum")",
+                type: "POST",
+                data: $("#updateContinuumForm").serialize()
+
+            }).done(function (data) {
+
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    $('#continuumTable').DataTable().ajax.reload(function () {
+                        $(".wb-lbx").trigger("wb-init.wb-lbx");
+                        $(".expandableSummary").trigger("wb-init.wb-details");
+                    }); // Re-load the datatable
+
+                    $("#updateContninuumCloseBtn").click(); //Close the modal window on success
+                }
+            });
+        }
+    });
+
+</script>

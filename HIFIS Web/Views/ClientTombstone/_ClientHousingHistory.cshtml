@@ -1,0 +1,115 @@
+﻿@model ClientHousingViewModel 
+
+@Html.Partial("_BaseHiddenFor", Model)
+@Html.Partial("_BaseHiddenFor", Model.HouseDetails, "HouseDetails.")
+@Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(m => m.ClientHouseID)
+@Html.HiddenFor(m => m.ClientID)
+@Html.HiddenFor(m => m.HouseID)
+@Html.HiddenFor(m => m.AddressID)
+@Html.HiddenFor(m => m.HouseDetails.IsNewHousingUnit)
+@Html.HiddenFor(m => m.HousePlacementID)
+@Html.HiddenFor(m => m.HouseRetentionID)
+
+@*@Html.HiddenFor(m => m.AddressDetails.isAddressRequired)
+@Html.HiddenFor(m => m.AddressDetails.isGeoRegionEnforced)*@
+
+@*@if (ViewBag.ActiveHousingPlacement)
+{
+    <section class="alert alert-danger">
+        <h3>@Labels.HousingPlacementConflict</h3>
+        <p>
+            @Labels.ActiveHousingPlacementMessage
+            @if (RightsHelper.HasRight(UserRights.HousingPlacements_Display, (string)ViewBag.ActiveHousingPlacementOrgID))
+            {
+                @Html.ActionLink(Labels.GoToActiveHousingPlacement, "Display", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID, placementID = ViewBag.ActiveHousingPlacementID }, new { target = "_blank", @class = "alert-link" })
+            }
+            else
+            {
+                @Labels.ActiveHousingPlacementEditMessage @Html.ActionLink(Labels.viewTitle_PlacementList, "ClientList", "HousingPlacements", new { id = Model.ReadOnlyVitals.ClientID }, new { target = "_blank", @class = "alert-link" })
+            }
+        </p>
+    </section>
+}*@
+
+@if (ViewBag.ActiveClientHousingHistory)
+{
+    <section class="alert alert-warning">
+        <h3>@Labels.ClientHistoryHouseConflict</h3>
+        <p>
+            @Labels.ActiveClientHousingHistoryMessage
+            @if (RightsHelper.HasRight(UserRights.Client_Housing_Edit))
+            {
+                @Html.ActionLink(Labels.GoToActiveClientHousing, "ClientHousingHistoryEdit", "ClientTombstone", new { id = Model.ReadOnlyVitals.ClientID, clientHouseID = ViewBag.ActiveClientHousingHistoryID }, new { target = "_blank", @class = "alert-link", alt=Labels.GoToActiveClientHousing, aria_label = Labels.GoToActiveClientHousing })
+            }
+            else
+            {
+                @Labels.ActiveClientHousingEditMessage
+            }
+        </p>
+    </section>
+}
+<div>
+    @Html.HifisEditorFor(model => model.HouseDetails.HouseTypeID, CachedTableTypes.HIFIS_HouseTypes)
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.DateStart)
+</div>
+
+@*@if(ViewBag.ActiveHousingPlacement == false || ViewBag.NewHousingHistory == true)
+{*@    
+    <div>
+        @Html.HifisEditorFor(model => model.DateEnd)
+    </div>
+@*}*@
+   
+<span id="AddressFormFields">@Html.Partial("_AddressSearch", Model.AddressDetails, "AddressDetails.")</span>
+
+
+<div>
+    @Html.HifisEditorFor(model => model.HouseDetails.LandlordPersonID, ViewBag.landlordList as SelectList)
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.Rent, "Money", new { @class = "money" })      
+</div>
+        
+<div>
+    @Html.HifisTextBoxFor(model => model.Telephone1, new { @class = "phone", type = "tel" })
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.Telephone1Ext)
+</div>
+        
+<div>
+    @Html.HifisTextBoxFor(model => model.Telephone2, new { @class = "phone", type = "tel" })
+</div>
+        
+<div>
+    @Html.HifisTextBoxFor(model => model.MobilePhone, new { @class = "phone", type = "tel" })
+</div>
+        
+<div>
+    @Html.HifisEditorFor(model => model.Email)
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            
+            $(document).ready(function () {
+                if ($('input[id="AddressDetails_isAddressRequired"]').val() == "True")
+                    $(".type-required").siblings(".glyphicon-star").removeClass("hide");
+
+                if ($('input[id="AddressDetails_isAddressRequired"]').val() == "False")
+                    $(".type-required").siblings(".glyphicon-star").addClass("hide");
+            });
+
+        </script>
+    );
+}

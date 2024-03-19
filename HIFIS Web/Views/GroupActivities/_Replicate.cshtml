@@ -1,0 +1,135 @@
+﻿@model GroupActivityViewModel
+
+    <div class="container-fluid">
+        <div class="col-lg-6">
+            <div class="row">
+                <div class="col-lg-4">
+                    <label class="autowidth mrgn-bttm-sm mrgn-rght-md">
+                        @Labels.KeepAttendees
+                    </label>
+                </div>
+                <div class="col-lg-6 align-text-center">
+                    <input id='keepAttendees' class='YesAndNo' type='checkbox' data-on-text='@Labels.Yes' data-off-text='@Labels.No'>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <label class="autowidth mrgn-bttm-sm mrgn-rght-md">
+                        @Labels.KeepOrganizers
+                    </label>
+                </div>
+                <div class="col-lg-6 align-text-center">
+                    <input id='keepOrganizers' class='YesAndNo' type='checkbox' data-on-text='@Labels.Yes' data-off-text='@Labels.No'>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <label class="autowidth mrgn-bttm-sm mrgn-rght-md">
+                        @Labels.KeepPrograms
+                    </label>
+                </div>
+                <div class="col-lg-6 align-text-center">
+                    <input id='keepPrograms' class='YesAndNo' type='checkbox' data-on-text='@Labels.Yes' data-off-text='@Labels.No'>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <label class="autowidth mrgn-bttm-sm mrgn-rght-md">
+                        @Labels.Dates
+                    </label>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-group date">
+                        @*<input type="hidden" id="hdnDates" />*@
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4"></div>
+                <div class="col-lg-6 align-text-center">
+                    <button id="replicateButton" type="button" class="duplicateButton">@Labels.Replicate</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="row">
+                <div class="col-lg-12">
+                    <textarea id="datesText" style="height:360px; width:150px; resize:none;" readonly="readonly"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript" defer>
+
+             var lang = '';
+             var loc = $('input[data-locale]').data('locale');
+             if (loc == 'en-CA') {
+                 lang = 'en';
+             }
+             else {
+                 lang = 'fr';
+             }
+
+
+             $('.input-group.date').datepicker({
+                 todayHighlight: true,
+                 language: lang,
+                 format: "dd/mm/yyyy",
+                 multidate: true,
+                 clearBtn: true,
+                 startDate: '@DateTime.Now',
+                 endDate: '@DateTime.Now.AddDays(30).ToString("dd/MM/yyyy")'
+             }).on('changeDate', function (e) {
+                 $('#datesText').text($(this).datepicker('getFormattedDate').replace(/,/g, "\n"));
+             });
+
+            $('#replicateButton').on('click', function () {
+
+                if ($('#datesText').val() === "") {
+                    displayNotification('alert', '', "<p>@Labels.NoDatesSelected</p>")
+                }
+                else {
+                    var aID = $('input[id=GroupActivityID]').val();
+
+                    //see Utilities.MultidateStringToDateTimes to convert to list of DateTime objects
+                    var ds = $('#datesText').text().replace(/\n/g, ",");
+                    var kAtt = false;
+                    var kOrg = false;
+                    var kPrg = false;
+
+                    if ($('.bootstrap-switch-id-keepAttendees').hasClass('bootstrap-switch-on')) {
+                        kAtt = true;
+                    }
+
+                    if ($('.bootstrap-switch-id-keepOrganizers').hasClass('bootstrap-switch-on')) {
+                        kOrg = true;
+                    }
+
+                    if ($('.bootstrap-switch-id-keepPrograms').hasClass('bootstrap-switch-on')) {
+                        kPrg = true;
+                    }
+
+                    $.ajax({
+                        url: "@Url.Action("ReplicateActivity", "GroupActivities")",
+                        type: "POST",
+                        data: { keepAttendees: kAtt, keepOrganizers: kOrg, keepPrograms: kPrg, activityID: aID, dates: ds },
+                    }).done(function (data) {
+                        displayNotification('success', '', "<p>@Labels.DefaultDataSavedMessage</p>");
+                        window.location.href = '@Url.Action("List", "GroupActivities", new { filterType = 4 })';
+                        $('#replicateButton').attr("disabled", true);
+                    }).fail(function (data) {
+                        displayNotification('error', '', "<p>@Labels.FailedToSave</p>");
+                    });
+                }
+             });
+
+
+</script>
+);
+}
+

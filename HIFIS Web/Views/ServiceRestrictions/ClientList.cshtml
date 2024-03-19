@@ -1,0 +1,136 @@
+﻿@model ClientBarListViewModel
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_ClientServiceRestrictionsList;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+    
+    int i = 1;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div  class="mrgn-bttm-md">    
+    <div id="radio" class="btn-group mrgn-bttm-md">
+        @{ string classlink1 = (!ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.All, "ClientList", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = classlink1, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+
+        @{ string classlink2 = (ViewBag.showAll ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+        @Html.ActionLink(Labels.Current, "ClientList", new { id = Model.ReadOnlyVitals.ClientID, showAll = true }, new { @class = classlink2, alt=Labels.Current, aria_label = Labels.Current, @role = "button" })
+        
+        <div class="clearfix"></div> 
+    </div>
+
+    <div class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.ServiceProviders</th>
+                    <th>@Labels.Modules</th>
+                    <th>@Labels.StartDate</th>
+                    <th>@Labels.EndDate</th>
+                    <th>@Labels.ReasonServiceRestricted</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bar in Model.ClientBarsList)
+                {
+                    <tr>
+                        <td class="col-xs-3">
+                            @if (bar.MultiOrgNames.Count > 1)
+                            {
+                                <div class="panel-default">
+                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                        <a data-toggle="collapse" data-parent="#accordion" href="#@i" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                            @bar.MultiOrgNames.Count() @Labels.Organizations 
+                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                        </a>
+                                    </div>
+                                    <div id="@i" class="panel-collapse collapse">
+                                            <ul class="pddng-lft-md">
+                                                @foreach (var orgNames in bar.MultiOrgNames)
+                                                {                            
+                                                    <li>@orgNames</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                i++;
+                            }
+                            else
+                            {
+                                foreach (var orgNames in bar.MultiOrgNames)
+                                {                            
+                                    @orgNames
+                                }
+                            }                          
+                        </td>
+                        <td class="col-xs-2">
+                            @if(bar.SelectedModules.Count() > 1)
+                            {
+                                <div class="panel-default">
+                                    <div class="pddng-lft-0 pddng-rght-15 pddng-tp-0 pddng-bttm-0">
+                                        <a data-toggle="collapse" data-parent="#accordion" href="#@i" class="btn btn-default btn-sm btn-block" style="text-align:left;"> 
+                                            @bar.SelectedModules.Count() - @Labels.Modules 
+                                            <span class="caret pull-right mrgn-tp-sm"></span>
+                                        </a>
+                                    </div>
+                                    <div id="@i" class="panel-collapse collapse">
+                                        <ul class="pddng-lft-md">
+                                                @foreach (var mod in bar.SelectedModules)
+                                                {
+                                                    <li>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceRestrictionsModuleTypes, Culture, mod)</li>
+                                                }
+                                        </ul>
+                                    </div>
+                                </div>
+                                i++;
+                            }
+                            else
+                            {
+                                foreach (var model in bar.SelectedModules)
+                                {                            
+                                    @WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ServiceRestrictionsModuleTypes, Culture, model)
+                                }
+                            }                 
+                        </td>
+                        <td class="col-xs-2">@DateHelper.DateTimeFormaterENFR(bar.DateStart, Labels.CurrentCulture)</td>
+                        <td class="col-xs-2">@DateHelper.DateTimeFormaterENFR(bar.DateEnd, Labels.CurrentCulture)</td>
+                        <td>@WebHelper.GetTextFromCache(CachedTableTypes.HIFIS_ReasonBarredTypes, Culture, bar.ReasonBarredTypeID)</td>
+                        <td class="col-xs-2">
+                            <div class="pull-right">
+                                @if (RightsHelper.HasRight(UserRights.Barred_Display, bar.MultiOrganizationIDs))
+                                {
+                                    @Html.ActionLink(Labels.Display, "Display", new { id = bar.ClientID, restrictedPeriodID = bar.ClientBarredPeriodID }, new { @class = "noText displayButton", alt=Labels.Display, aria_label = Labels.Display, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Barred_Edit, bar.MultiOrganizationIDs))
+                                {
+                                    @Html.ActionLink(Labels.Edit, "Edit", new { id = bar.ClientID, restrictedPeriodID = bar.ClientBarredPeriodID }, new { @class = "noText editButton", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                                }
+
+                                @if (RightsHelper.HasRight(UserRights.Barred_Delete, bar.MultiOrganizationIDs))
+                                {
+                                    @Html.ActionLink(Labels.Delete, "DeleteServiceRestriction", new { serviceRestrictionID = bar.ClientBarredPeriodID }, new { @class = "noText deleteButton", alt=Labels.Delete, aria_label = Labels.Delete, @role = "button" })
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="mrgn-tp-md">
+        @if (RightsHelper.HasRight(UserRights.Barred_Add))
+        {
+            @Html.ActionLink(Labels.NewServiceRestrictions, "New", "ServiceRestrictions", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "addButton", alt=Labels.NewServiceRestrictions, aria_label = Labels.NewServiceRestrictions, @role = "button" })
+        }        
+    </div>
+</div>

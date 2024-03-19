@@ -1,0 +1,25 @@
+﻿@model ProgramFixedCostViewModel
+@{
+    ViewBag.ViewTitle = Labels.AddNewFixedCost;
+
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@* TODO: Why is there a hidden field outside of this form? - JdV *@
+@Html.HiddenFor(model => model.ProgramID)
+
+@using (Html.BeginForm("NewFixedCost", "Programs", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.Partial("_EditFixedCost")
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="saveButton  ">@Labels.Save</button>
+            @*Changed Action from "Edit" to "Display"*@
+            @Html.ActionLink(Labels.Cancel, "Display", "Programs", new { @programID = Model.ProgramID }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+        </div>
+    </div>
+}

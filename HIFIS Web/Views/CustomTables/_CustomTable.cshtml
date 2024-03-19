@@ -1,0 +1,22 @@
+﻿@model CustomTableViewModel
+
+@Html.HiddenFor(model => model.CustomTableID)
+    
+<div class="row">
+    @Html.HifisEditorFor(model => model.ModuleTypeID, ViewBag.ModuleTypes as SelectList)
+</div>
+<div class="row">
+    @Html.HifisListBoxFor(m => m.SelectedOrganizationIDs, (ViewBag.Orgs != null ? ViewBag.Orgs as SelectList : Enumerable.Empty<SelectListItem>()))
+</div>
+<div class="row">
+    @Html.HifisEditorFor(model => model.NameE)
+</div>     
+<div class="row">
+    @Html.HifisEditorFor(model => model.NameF)
+</div>     
+<div class="row">
+    @Html.HifisEditorFor(model => model.One2Many, "YesNo")
+</div>
+<div class="row">
+    @Html.HifisEditorFor(model => model.IsActive, "YesNo")
+</div>

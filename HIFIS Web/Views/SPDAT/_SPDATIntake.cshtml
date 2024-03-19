@@ -1,0 +1,319 @@
+﻿@model SPDATIntakeViewModel
+
+@Html.HiddenFor(model => model.IntakeID)
+@Html.HiddenFor(model => model.IntakeTypeID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.ServiceTypeID)
+@Html.HiddenFor(model => model.OrganizationID)
+
+@for (int i = 0; i < Model.AssociatedProgramIDs.Count; i++)
+{
+    @Html.HiddenFor(model => model.AssociatedProgramIDs[i])
+}
+
+@* If the clientID doesn't exist, show the client search field. *@
+@if (Model.PrimaryClientID == null)
+{
+    <div>
+        @Html.HifisAutocompleteFor(
+            model => model.PrimaryClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.PrimaryClientName, new AutocompleteViewModelOptions
+            {
+                OnSelect = "callGetROVitals();"
+                ,
+                     HiddenValue = true
+            })
+    </div>
+}
+else if (ViewBag.IsEdit)
+{
+    @Html.HiddenFor(model => model.PrimaryClientID)
+
+    <div>
+        @Html.HifisAutocompleteFor(
+            model => model.PrimaryClientID
+            , Url.Content("~/ClientTombstone/AjaxGetClientList")
+            , Model.PrimaryClientName
+            , new AutocompleteViewModelOptions
+            {
+                    OnSelect = "callGetROVitals();"
+                    ,
+                     HiddenValue = true
+            }, new { disabled = true })
+    </div>
+}
+else
+{
+    @* Otherwise, retrieve the client profile from the hidden field *@
+
+    @Html.HiddenFor(model => model.PrimaryClientID)
+
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     //
+     // When document is ready, get the client details
+     //
+
+     $(function () {
+         getROVitals($("#PrimaryClientID").val());
+     })
+
+</script>
+);
+    }
+}
+
+
+@if (ViewBag.IsDisplay == null)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.CaseworkerID, ViewBag.CaseWorker as SelectList)
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+    </div>
+
+    @* Depending on the intake type, change the dropdown that is diaplayed *@
+
+    if (Model.IntakeTypeID == 1 || Model.IntakeTypeID == 2 || Model.IntakeTypeID == 7 || Model.IntakeTypeID == 8 || Model.IntakeTypeID == 9)
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.AssessmentPeriodTypeID, CachedTableTypes.HIFIS_SPDAT_AssessmentPeriodTypes)
+        </div>
+
+        <div id="PeriodTextDiv" style="display: none">
+            @Html.HifisEditorFor(model => model.AssessmentPeriodText)
+        </div>
+    }
+
+    if (Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_family_v3)
+    {
+        <div>
+            @Html.HifisEditorFor(model => model.IsSingleParent, "YesNo")
+        </div>
+    }
+    else
+    {
+        if (Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_youth_v2 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_family_v3 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_singleAdult_v3)
+        {
+            <div>
+                @Html.HifisEditorFor(model => model.PreScreenPeriodTypeID, CachedTableTypes.HIFIS_SPDAT_PreScreenPeriodTypes)
+            </div>
+        }
+
+        if (Model.IntakeTypeID == 4 || Model.IntakeTypeID == 6)
+        {
+            <div>
+                @Html.HifisEditorFor(model => model.PregnancyYN, "YesNo")
+            </div>
+        }
+
+        if (Model.IntakeTypeID == 11)
+        {
+            <div>
+                @Html.HifisEditorFor(model => model.LengthOfIncarceration)
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.ReleaseDate)
+            </div>
+        }
+    }
+
+    <div>
+        @Html.HifisEditorFor(model => model.ConsentYN, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.LGBTYN, "YesNo")
+    </div>
+
+    <div>
+        @Html.HifisEditorFor(model => model.PetsYN, "YesNo")
+    </div>
+
+    if (Model.IntakeID == null)
+    {
+        <div>
+            @Html.HifisListBoxFor(model => model.AssociatedProgramIDs, ViewBag.Programs as SelectList)
+        </div>
+    }
+    else
+    {
+        <div>
+            @Html.Partial("DisplayViewTemplates/_DisplayStringList",
+                                new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.AssociatedProgramIDs).ToString() })
+        </div>
+    }
+
+    <div>
+        @Html.Partial("Plugins/_TinyMCEScript")
+        @Html.HifisTextAreaFor(model => model.Description, new { @class = "mceEditor_Messaging" })
+    </div>
+}
+else
+{
+    <div class="displayView">
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.OrganizationID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                            new SingleItemSelectList
+                            {
+                                ID = Model.OrganizationID,
+                                List = ViewBag.OrgLists as SelectList
+                            })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.CaseworkerID, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.CaseworkerName)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.DateStart, new { @class = "autowidth" })
+            @Html.HifisDisplayFor(m => m.DateStart, null, true, "DateAndTime")
+        </div>
+
+        @* Depending on the intake type, change the dropdown that is diaplayed *@
+
+        @if (Model.IntakeTypeID == 1 || Model.IntakeTypeID == 2 || Model.IntakeTypeID == 7 || Model.IntakeTypeID == 8 || Model.IntakeTypeID == 9)
+        {
+            <div class="row">
+                @Html.HifisLabelFor(m => m.AssessmentPeriodTypeID, new { @class = "autowidth" })
+                @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                    new SingleItemSelectList
+                    {
+                        ID = Model.AssessmentPeriodTypeID,
+                        List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_SPDAT_AssessmentPeriodTypes, ViewBag.CurrentCulture)
+                    })
+            </div>
+            <div class="row">
+                @if (Model.AssessmentPeriodTypeID == (short)SPDATAssessmentPeriodTypes.After1YearMark)
+                {
+                    @Html.HifisDisplayFor(m => m.AssessmentPeriodText)
+                }
+                else
+                {
+                    @Html.HiddenFor(m => m.AssessmentPeriodText)
+                }
+            </div>
+        }
+        else
+        {
+            if (Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_youth_v2 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_family_v3 && Model.IntakeTypeID != (short)SPDATTypes.spdat_vi_singleAdult_v3)
+            {
+                <div class="row">
+                    @Html.HifisLabelFor(m => m.PreScreenPeriodTypeID, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_SingleItemSelectList",
+                                         new SingleItemSelectList
+                                         {
+                                             ID = Model.PreScreenPeriodTypeID,
+                                             List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_SPDAT_PreScreenPeriodTypes, ViewBag.CurrentCulture)
+                                         })
+                </div>
+            }
+
+            if (Model.IntakeTypeID == 4 || Model.IntakeTypeID == 6)
+            {
+                <div class="row">
+                    @Html.HifisLabelFor(m => m.PregnancyYN, new { @class = "autowidth" })
+                    @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.PregnancyYN)
+                </div>
+            }
+        }
+
+        @if (Model.IntakeTypeID == (short)SPDATTypes.spdat_vi_family_v3)
+        {
+            <div class="row">
+                @Html.HifisLabelFor(m => m.IsSingleParent, new { @class = "autowidth" })
+                @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.IsSingleParent)
+            </div>
+
+        }
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.ConsentYN, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ConsentYN)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.LGBTYN, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.LGBTYN)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(m => m.PetsYN, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.PetsYN)
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.AssociatedProgramIDs, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_MultipleItemSelectList",
+                                                    new MultipleItemSelectList
+                                                    {
+                                                        IDs = Model.AssociatedProgramIDs,
+                                                        List = ViewBag.Programs as SelectList
+                                                    })
+        </div>
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.Description, new { @class = "autowidth" })
+        </div>
+
+        <div>
+            @Html.EditorFor(model => model.Description, "TinyMCE_Print")
+        </div>
+    </div>
+}
+
+<!-- JavaScript -->
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     var requiredIf1 = function () {
+
+         var value = document.querySelector("#IntakeTypeID").getAttribute("value");
+         return value === "1" || value === "2" || value === "7" || value === "8" || value === "9";
+     }
+
+     var requiredIf2 = function () {
+
+         var value = document.querySelector("#IntakeTypeID").getAttribute("value");
+         return value === "3" || value === "4" || value === "5" || value === "6" || value === "10";
+     };
+
+     var requiredIf3 = function () {
+
+         var value = document.querySelector("#IntakeTypeID").getAttribute("value");
+         return value === "15";
+     };
+
+
+
+     // Show the specify box if the assessment period type is == 10
+     $(function () {
+         if ($('#AssessmentPeriodTypeID').val() == 10) {
+             $('#PeriodTextDiv').show();
+         }
+     })
+
+     $('#AssessmentPeriodTypeID').on("select2:select", function (e) {
+         // if the 'after 1 year mark' dropdown value is selected
+         if ($('#AssessmentPeriodTypeID').val() == 10) {
+             $('#PeriodTextDiv').show();
+         } else {
+             $('#PeriodTextDiv').hide();
+             $('#AssessmentPeriodText').val('')
+         }
+     });
+
+
+</script>
+);
+}

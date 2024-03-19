@@ -1,0 +1,16 @@
+﻿@model object
+@{
+    if (Model != null)
+    {
+         @Html.DropDownListFor(m => m, Model as SelectList)
+    }
+    else
+    {
+        IEnumerable<SelectListItem> list = new List<SelectListItem>()
+        {
+            new SelectListItem() { Text = Labels.EmptyList, Value = " " }
+        };
+        
+        @Html.DropDownList("", list)       
+    }
+}

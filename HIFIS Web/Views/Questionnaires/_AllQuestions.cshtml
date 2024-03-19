@@ -1,0 +1,88 @@
+﻿@model IEnumerable<QuestionnaireQuestionViewModel>
+
+<div>
+    @Html.AntiForgeryToken()
+    @if(ViewBag.Questionaire != null)
+    {
+        using (Html.BeginScriptContext())
+        {
+            Html.AddScriptBlock(
+		        @<script type="text/javascript">
+                    $(document).ready(function () {
+                        $("#allQuestions").addClass("");
+                    });
+                </script>);
+        }
+    }
+    <table id="allQuestions" class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+        <thead>
+            <tr>
+                <th>@Labels.NumberAbbr</th>
+                <th>@Labels.Question</th>
+                <th>@Labels.PossibleResponses</th>
+                <th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.IsEmptyOrNull())
+            {
+                foreach (var question in Model)
+                {
+                    <tr>
+                        <td>@question.QuestionNo</td>
+                        <td>@question.Question</td>
+                        <td>
+                            @if (question.IsDropdown())
+                            {
+                                foreach (var dropdown in question.DropdownValues)
+                                {
+                                    <text>@dropdown.Name</text>if (dropdown != question.DropdownValues.Last()) { <text>, </text> }
+                                }
+                            }
+                            else
+                            {
+                                @question.QuestionTypeName
+                            }
+                        </td>
+                        <td class="align-text-center">
+
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Edit))
+                            {
+                                if (ViewBag.Questionaire == null)
+                                {
+                                    @Html.ActionLink(Labels.EditQuestion, "EditQuestion", new { id = question.QuestionID }, new { @class = "  editButton", alt=Labels.EditQuestion, aria_label = Labels.EditQuestion, @role = "button" })
+
+                                }
+                                else
+                                {
+                                    @Html.ActionLink(Labels.EditQuestion, "EditQuestion", new { id = question.QuestionID, isNewQuestionaire = true }, new { @class = "  editButton", alt=Labels.EditQuestion, aria_label = Labels.EditQuestion, @role = "button" })
+                                }
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_DropDowns_Edit))
+                            {
+                                @((question.QuestionTypeID == (byte)QuestionTypes.DropdownSingle || question.QuestionTypeID == (byte)QuestionTypes.DropdownMultiple) ?
+                               Html.ActionLink(Labels.EditDropdown, "EditDropdowns", "Questionnaires", new { id = question.QuestionID }, new { @class = "editButton", alt=Labels.EditDropdown, aria_label = Labels.EditDropdown, @role = "button" }) : null)
+                            }
+
+                            @if (RightsHelper.HasRight(UserRights.Questionnaire_Questions_Delete))
+                            {
+                                if (question.QuestionAnswered)
+                                {
+                                    <span class="noText btn btn-default btn-sm" disabled="disabled" title="" data-toggle="tooltip" data-placement="top" data-trigger="hover" data-original-title="&nbsp;@Labels.msgRecordHasDependencies"><span class="glyphicon glyphicon-trash"></span></span>
+                                }
+                                else
+                                {
+                                    @Html.ActionLink(Labels.DeleteQuestion, "DeleteQuestion", "Questionnaires", new { questionid = question.QuestionID }, new { @class = "noText deleteButton", alt=Labels.DeleteQuestion, aria_label = Labels.DeleteQuestion })
+
+                                }
+                            }
+
+
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,41 @@
+﻿@model DispensingViewModel
+
+<div class="col-xs-12 mrgn-tp-md">
+
+    @Html.HiddenFor(model => model.NumberOfPills)
+    @Html.HiddenFor(model => model.RecurrenceTypeID)
+    @Html.HiddenFor(model => model.MedicationID)
+    @Html.HiddenFor(model => model.OrganizationID)
+
+
+    <div class="row">
+        @Html.HifisLabelFor(model => model.DispensingDate, new { @class = "col-xs-4 control-label" })
+        <div class="col-xs-8">
+            @Html.HifisEditorFor(model => model.DispensingDate, null, new { id = "DispensingDate", disabled = "readonly" }, true, null)
+        </div>
+    </div>
+
+    @if (RightsHelper.HasRight(UserRights.Health_Medication_Dispensing_Dispensing_Another_Behalf))
+    {
+        <div class="row">
+            @Html.HifisLabelFor(model => model.OnBehalfOfPersonID, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisAutocompleteFor(
+                        model => model.OnBehalfOfPersonID
+                        , Url.Content("~/Health/AjaxGetUserListWithPersonID")
+                        , Model.OnBehalfOfFullName
+                        , new AutocompleteViewModelOptions
+                        {
+                            ExcludeLabel = true,
+                            HiddenValue = true,
+                            SelectClientFieldType = SelectClientFieldTypes.Other
+                        })
+            </div>
+        </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.OnBehalfOfPersonID)
+    }
+
+</div>

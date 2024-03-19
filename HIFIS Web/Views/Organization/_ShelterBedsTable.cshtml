@@ -1,0 +1,29 @@
+﻿@model List<BedViewModel>
+
+<table id="bedsTable" class="wb-tables table table-striped table-hover"
+    data-wb-tables='{ "serverSide": true,
+                      "bFilter": false,
+                      "columns": [
+                        { "data": "bed", "orderable": false },
+                        { "data": "type", "orderable": false },
+                        { "data": "status", "orderable": false },
+                        { "data": "overflow", "orderable": false },
+                        { "data": "mobile", "orderable": false },
+                        { "data": "active", "orderable": false },
+                        { "data": "action", "orderable": false }
+                      ],                
+                      "ajax": "@Url.Content("~/Organization/BedsListJson?roomID=" + ViewBag.RoomID +  "&roomName=" + ViewBag.RoomName + "&shelterID=" + ViewBag.ShelterID + "&shelterName=" + ViewBag.ShelterName)"
+                }'>
+    <thead>
+        <tr>
+            <th class="align-text-center">@Labels.Bed</th>
+            <th class="align-text-center">@Labels.BedType</th>
+            <th class="align-text-center">@Labels.BedStatus</th>
+            <th class="align-text-center">@Labels.Overflow</th>
+            <th class="align-text-center">@Labels.Mobile</th>
+            <th class="align-text-center">@Labels.Active</th>
+            <th class="align-text-center">@Labels.Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>

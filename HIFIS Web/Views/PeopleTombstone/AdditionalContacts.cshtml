@@ -1,0 +1,38 @@
+﻿@model List<DigitalContactViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_PeopleAdditionalInformation;
+    
+    ViewBag.LayoutView = LayoutPage.People;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+<div> 
+
+    @if (RightsHelper.HasRight(UserRights.People_Contacts_Add))
+    { 
+        using (Html.BeginForm("AdditionalContacts", "PeopleTombstone", FormMethod.Post, new { @class = "form-horizontal", id = "contactForm" }))
+        {       
+            @Html.Hidden("PersonID", ViewBag.ReadOnlyVitals.PersonID as object)
+
+            <div>
+                @Html.Partial("_DigitalContact", new DigitalContactViewModel { PersonID = ViewBag.ReadOnlyVitals.PersonID })
+            </div>
+            
+            <div class="form-group">
+			    <div class="col-sm-offset-2 col-sm-10">
+				    <button class="saveButton" type="submit">@Labels.Save</button>
+			    </div>
+		    </div> 
+        }
+    }  
+      
+    <div class="clearfix"></div>
+        
+    <h4>@Labels.ExistingContactInfo</h4>
+
+    <div>
+        @Html.Partial("_DigitalContactTable", Model)
+    </div> 
+</div>

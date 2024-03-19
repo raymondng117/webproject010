@@ -1,0 +1,376 @@
+﻿<!DOCTYPE html>
+@{
+    string lang = ViewBag.CurrentCulture == Constants.Eng ? "en" : "fr";
+    bool isEULA = HttpContext.Current.Request.Url.AbsoluteUri.Contains("EULA");
+}
+
+<!--[if lt IE 9]><html class="no-js lt-ie9" lang="@lang" dir="ltr"><![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="@lang" dir="ltr">
+<!--<![endif]-->
+<head>
+    <style>
+
+@@font-face {
+	font-family: "TradeGothicLT20";
+	src: url("@Url.Content("~/Content/wet-boew/fonts/Trade-Gothic-LT-Bold-Condensed-No-20.ttf")") format("truetype");
+}
+    </style>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta name="description" content="" />
+    @*MPT: Moved to the Application_BeginRequest in Global.aspx.cs to avoid HTML validation error
+        <meta http-equiv="Content-Type" content="text/html;">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />*@
+    <meta name="hifis.viewmodel" content="@(ViewContext.ViewData.ModelMetadata != null ? ((ViewContext.ViewData.ModelMetadata).ModelType).FullName : String.Empty)" />
+    <meta name="hifis.view" content="@(((System.Web.Mvc.BuildManagerCompiledView)(ViewContext.View)).ViewPath)" />
+
+    <title>HIFIS / SISA - @Html.Raw(ViewBag.ViewTitle)</title>
+
+    <link href="@Url.Content("~/Content/wet-boew/assets/favicon.ico")" rel="icon" type="image/x-icon" />
+    <link href="@Url.Content("~/Content/wet-boew/css/wet-boew.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/wet-boew/css/theme.min.css")" rel="stylesheet" />
+
+    @Styles.Render("~/Content/Stylesheets/HifisStyles/stylescss")
+
+    <script type="text/javascript">
+        window.rootUrl = "@Url.Content("~/")";
+        window.helpURL = "@Url.Content("~/HifisHelp/GetFieldHelp")";
+    </script>
+
+    <script type="text/javascript">
+        function gettoken() {
+            var token = '@Html.AntiForgeryToken()';
+            token = $(token).val();
+            return token;
+       }
+    </script>
+
+    <noscript><link rel="stylesheet" href="~/Content/wet-boew/css/noscript.css" /></noscript>
+</head>
+
+<body>
+
+    <ul id="wb-tphp">
+        <li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-lng">Skip to Language Selection/ Passer à la sélection de la langue</a> </li>
+        <li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-srch">@Labels.SkipSearch </a> </li>
+        <li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-sm">@Labels.SkipMenu </a> </li>
+        <li class="wb-slc"><a class="wb-sl" href="#wb-cont">@Labels.SkipMain</a> </li>
+        <li class="wb-slc visible-sm visible-md visible-lg"><a class="wb-sl" href="#wb-info">@Labels.SkipFooter</a> </li>
+    </ul>
+    <header role="banner">
+        <div id="wb-bnr" class="@(isEULA ? "landing EULALanding" : "landing")">
+            <div id="wb-bar">
+                <div class="container">
+                    <div class="row">
+                        <section id="wb-lng" class="visible-md visible-lg">
+                            <h2>@Labels.LangSelect </h2>
+                            <ul>
+                                @if (User.Identity.IsAuthenticated && isEULA == false)
+                                {
+                                    <li>
+                                        @if (ViewBag.CurrentCulture == null || ViewBag.CurrentCulture == Constants.Fr)
+                                        {
+                                            @Html.ActionLink(Labels.LanguageSelection, "LanguageChange", "Language", new { strCulture = Constants.Eng, strReturnURL = this.Request.RawUrl }, new { alt = Labels.LanguageSelection, aria_label = Labels.LanguageSelection })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink(Labels.LanguageSelection, "LanguageChange", "Language", new { strCulture = Constants.Fr, strReturnURL = this.Request.RawUrl }, new { alt = Labels.LanguageSelection, aria_label = Labels.LanguageSelection })
+                                        }
+                                    </li>
+
+                                    <li>
+                                        @Html.ActionLink(ViewBag.CurrentOrgName != null ? (string)ViewBag.CurrentOrgName : Labels.ChangeOrg, "ChangeOrganization", "Account", new { changeOrg = true }, new { data_toggle = "modal", data_target = "#ChangeOrgModal", alt = ViewBag.CurrentOrgName != null ? (string)ViewBag.CurrentOrgName : Labels.ChangeOrg, aria_label = ViewBag.CurrentOrgName != null ? (string)ViewBag.CurrentOrgName : Labels.ChangeOrg })
+                                    </li>
+                                }
+                                else if (User.Identity.IsAuthenticated && isEULA)
+                                {
+                                    <li>
+                                        @if (ViewBag.CurrentCulture == null || ViewBag.CurrentCulture == Constants.Fr)
+                                        {
+                                            @Html.ActionLink(Labels.LoginEnglishBtn, ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString(), "License", new { currentCulture = Constants.Eng }, new { alt = Labels.LoginEnglishBtn, aria_label = Labels.LoginEnglishBtn })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink(Labels.LoginFrenchBtn, ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString(), "License", new { currentCulture = Constants.Fr }, new { alt = Labels.LoginFrenchBtn, aria_label = Labels.LoginFrenchBtn })
+                                        }
+                                    </li>
+                                    <li>
+                                        <label class="eulaLabel" aria-label="@ViewBag.CurrentOrgName">@ViewBag.CurrentOrgName</label>
+                                    </li>
+                                }
+                                else if (User.Identity.IsAuthenticated == false && isEULA)
+                                {
+                                    <li>
+                                        @if (ViewBag.CurrentCulture == null || ViewBag.CurrentCulture == Constants.Fr)
+                                        {
+                                            @Html.ActionLink(Labels.LoginEnglishBtn, ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString(), "License", new { currentCulture = Constants.Eng }, new { alt = Labels.LoginEnglishBtn, aria_label = Labels.LoginEnglishBtn })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink(Labels.LoginFrenchBtn, ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString(), "License", new { currentCulture = Constants.Fr }, new { alt = Labels.LoginFrenchBtn, aria_label = Labels.LoginFrenchBtn })
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </section>
+                        <section class="wb-mb-links col-xs-12 visible-sm visible-xs" id="wb-glb-mn">
+                            <h2>@Labels.MainMenu</h2>
+                            <ul class="pnl-btn list-inline text-right">
+                                <li><a href="#mb-pnl" title="Search and menus" aria-controls="mb-pnl" class="overlay-lnk btn btn-sm btn-default" role="button"><span class="glyphicon glyphicon-search"><span class="glyphicon glyphicon-th-list"><span class="wb-inv">Search and menus</span></span></span></a></li>
+                            </ul>
+                            <div id="mb-pnl"></div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+
+                    <div id="wb-sttl" class="col-md-8">
+                        <div id="login-banner">
+                            <a href="@Url.Content("~/")" lang="en" aria-label="HOMELESS INDIVIDUALS AND FAMILIES INFORMATION SYSTEM">
+                                <div class="en">
+                                    @*<h1>HIFIS</h1>*@
+                                    <span>HIFIS</span>
+                                    <small>HOMELESS&nbsp;INDIVIDUALS AND FAMILIES&nbsp;INFORMATION&nbsp;SYSTEM</small>
+                                </div>
+                            </a>
+                            <a href="@Url.Content("~/")" lang="en" aria-label="HOMELESS INDIVIDUALS AND FAMILIES INFORMATION SYSTEM/SYSTÈME D'INFORMATION SUR LES PERSONNES ET LES FAMILLES SANS ABRI">
+                                <div class="logo">
+                                    <img src="@Url.Content("~/Content/wet-boew/assets/logo_landing.png")" alt="HOMELESS INDIVIDUALS AND FAMILIES INFORMATION SYSTEM / SYSTÈME D'INFORMATION SUR LES PERSONNES ET LES FAMILLES SANS ABRI">
+                                </div>
+                            </a>
+                            <a href="@Url.Content("~/")" lang="en">
+                                <div class="en logo_alternate">
+                                    @*<h1>/</h1>*@
+                                    <span>/</span>
+                                </div>
+                            </a>
+                            <a href="@Url.Content("~/")" lang="fr" aria-label="SYSTÈME D'INFORMATION SUR LES PERSONNES ET LES FAMILLES SANS ABRI">
+                                <div class="fr">
+                                    @*<h1>SISA</h1>*@
+                                    <span>SISA</span>
+                                    <small>SYSTÈME&nbsp;D'INFORMATION SUR LES&nbsp;PERSONNES ET LES&nbsp;FAMILLES&nbsp;SANS&nbsp;ABRI</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+
+                    @*@if (User.Identity.IsAuthenticated)
+                        {
+                            <section id="wb-srch" class="col-md-4 visible-md visible-lg">
+
+                                    <h2>@Labels.SearchForAClient</h2>
+                                    @using (Html.BeginForm("ClientSearchProxy", "ClientTombstone", FormMethod.Get, new { @class = "form-inline", id = "GlobalSearchForm", role = "search" }))
+                                    {
+                                        <div class="form-group">
+                                            <div class="input-group">
+                                                <label for="wb-srch-q" class="control-label">@Labels.SearchClient</label>
+                                                @Html.TextBox("q", null, new { @class = "form-control", id = "wb-srch-q", type = "search", size = "27", maxlength = "150", placeholder = Labels.ClientSearch })
+                                                <span class="input-group-btn"><button class="btn btn-default" type="submit" value="Search" style="height: 37px; margin-left: 0px;"><span class="glyphicon glyphicon-search"></span></button></span>
+                                            </div>
+                                        </div>
+                                    }
+
+                            </section>
+                        }*@
+                </div>
+            </div>
+        </div>
+
+        @*<nav role="navigation" id="wb-sm" class="wb-menu visible-md visible-lg" data-trgt="mb-pnl" typeof="SiteNavigationElement">
+                <div class="pnl-strt container visible-md visible-lg nvbar">
+                    <h2>@Labels.MainMenu</h2>
+                    <div class="row">
+
+                        @Html.TopMenu()
+                    </div>
+                </div>
+            </nav>*@
+        @{
+            InstanceViewModel InstanceInfo = null;
+            if (ViewBag.InstanceInfoVM != null)
+            {
+                try
+                {
+                    InstanceInfo = (InstanceViewModel)ViewBag.InstanceInfoVM;
+                }
+                catch { }
+            }
+        }
+        @if (InstanceInfo != null && InstanceInfo.ShowBanner)
+        {
+            <div class="wb-bnr-ss" style="background:@InstanceInfo.BackgroundColour">
+                <div class="container">
+                    <div class="row col-md-12">
+                        <div class="wb-ss" style="color:@InstanceInfo.TextColour">
+                            @HttpUtility.HtmlEncode(InstanceInfo.BannerText)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </header>
+
+    @{ var layoutView = (LayoutPage)ViewBag.LayoutView; }
+    <main role="main" property="mainContentOfPage" class="container">
+        <div class="row">
+            @if (ViewBag.LayoutView != null)
+            {
+                <div class="col-md-3">
+                    <div id="thesidebar">
+                        @if (layoutView == LayoutPage.Client)
+                        {
+                            <div class="mrgn-tp-sm">
+                                @Html.Partial("_SideMenu")
+                            </div>
+                            <div id="hifis-client-profile" class="mrgn-tp-md">
+                                @Html.Partial("_ClientVitalsSideBar", (ViewBag.ReadOnlyVitals as ClientVitalsReadOnlyViewModel ?? Model.ReadOnlyVitals as ClientVitalsReadOnlyViewModel ?? new ClientVitalsReadOnlyViewModel()))
+                            </div>
+                        }
+                        else if (layoutView == LayoutPage.People)
+                        {
+                            <div class="mrgn-tp-sm">
+                                @Html.Partial("_SideMenu")
+                            </div>
+                            <div id="hifis-people-profile" class="mrgn-tp-md">
+                                @if (ViewBag.ReadOnlyVitals != null)
+                                {
+                                    @Html.Partial("_PeopleVitalsSideBar", new PeopleVitalsReadOnlyWrapperViewModel((PeopleVitalsReadOnlyViewModel)ViewBag.ReadOnlyVitals))
+                                }
+                                else if (Model.ReadOnlyVitals != null)
+                                {
+                                    @Html.Partial("_PeopleVitalsSideBar", new PeopleVitalsReadOnlyWrapperViewModel((PeopleVitalsReadOnlyViewModel)Model.ReadOnlyVitals))
+                                }
+                            </div>
+                        }
+                        else if (layoutView == LayoutPage.SecNav)
+                        {
+                            <div class="mrgn-tp-sm">
+                                @Html.Partial("_SideMenu")
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="@(ViewBag.LayoutView != null && (int)ViewBag.LayoutView != (int)LayoutPage.ContentOnly && (int)ViewBag.LayoutView != (int)LayoutPage.Help ? "col-md-9" : "col-md-12")">
+                <div class="row mrgn-lft-xs mrgn-rght-xs">
+                    @if (@ViewBag.ViewTitle != null && ViewBag.LayoutView != null
+                        && (int)ViewBag.LayoutView != (int)LayoutPage.Help)
+                    {
+                        if (ViewBag.HelpID != null)
+                        {
+                            @Html.Partial("LayoutParts/_HelpSlideout")
+                        }
+                        <div class="col-xs-10" style="padding-left:0px !important;">
+                            <h1 id="page-title" class="mrgn-bttm-0 mrgn-tp-md">@Html.Raw(ViewBag.ViewTitle)</h1>
+                        </div>
+                        <div class="col-xs-2" style="padding-right:0px !important;">
+                            <div class=" pull-right">
+                                <button id="helpToggle" aria-label="@Labels.ToggleFieldHelp.ToString()" class="mrgn-tp-sm helpButton noText" role="button">@Labels.ToggleFieldHelp</button>
+                                @if (ViewBag.HelpID != null)
+                                {
+                                    <a href="#help-panel" aria-controls="help-panel" aria-label="@Labels.GetHelp" class="mrgn-tp-sm helpInfoButton noText overlay-lnk" role="button">@Labels.GetHelp</a>
+                                }
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div id="wb-cont" class="mrgn-bttm-sm pddng-bttm-0"></div>
+                    }
+                </div>
+                <div class="row mrgn-lft-xs mrgn-rght-xs">
+                    @RenderBody()
+                </div>
+            </div>
+
+        </div>
+    </main>
+    @*required to render footer properly as bilingual*@
+    @Html.Hidden("CurrentCulture", "undefined")
+    @Html.Partial("LayoutParts/_Footer")
+
+    @*
+
+        <footer role="contentinfo" id="wb-info" class="visible-sm visible-md visible-lg wetFooter">
+            <div class="container footerNav">
+                <nav role="navigation" class="row">
+                    <h2>Site Footer</h2>
+                    <section class="col-sm-3">
+                        <h6 class="wet-col-head">
+                            <a>@Labels.FooterTitle1</a>
+                        </h6>
+                        <ul>
+                            <li><a>@Labels.Footer1Sub1</a></li>
+                            <li><a>@Labels.Footer1Sub2</a></li>
+                            <li><a>@Labels.Footer1Sub3</a></li>
+                        </ul>
+                    </section>
+                    <section class="col-sm-3">
+                        <h6 class="wet-col-head">
+                            <a>@Labels.FooterTitle2</a>
+                        </h6>
+                        <ul>
+                            <li><a>@Labels.Footer2Sub1</a></li>
+                            <li><a>@Labels.Footer2Sub2</a></li>
+                            <li><a>@Labels.Footer2Sub3</a></li>
+                        </ul>
+                    </section>
+                    <section class="col-sm-3">
+                        <h6 class="wet-col-head">
+                            <a>@Labels.FooterTitle3</a>
+                        </h6>
+                        <address>
+                            <ul>
+                                <li><a>@Labels.Footer3Sub1</a></li>
+                                <li><a>@Labels.Footer3Sub2</a></li>
+                                <li><a>@Labels.Footer3Sub3</a></li>
+                            </ul>
+                        </address>
+                    </section>
+                    <section class="col-sm-3">
+                        <h6 class="wet-col-head">
+                            <a>@Labels.FooterTitle4</a>
+                        </h6>
+                        <ul>
+                            <li><a>@Labels.Footer4Sub1</a></li>
+                            <li><a>@Labels.Footer4Sub2</a></li>
+                            <li><a>@Html.ActionLink(Labels.Footer4Sub3, "EULA", "License")</a></li>
+                        </ul>
+                    </section>
+                </nav>
+            </div>
+                <div class="row">
+                    <div id="updaterequireddate" class="col-sm-6">
+                        @ViewBag.HifisExpireDate
+                    </div>
+                    <div id="appversion" class="col-sm-6">
+                        @Labels.Build @ViewBag.HifisVersion (@ViewBag.HifisVersionDate)
+                </div>
+            </div>
+        </footer>  *@
+
+    <script src="~/Content/wet-boew/js/wet-boew.min.js" defer></script>
+    @Scripts.Render("~/Content/Plugins/javascripts")
+
+    @Html.RenderScripts()
+    @Html.Partial("Plugins/_Notify")
+    @Html.Partial("LayoutParts/_AdditionalScripts")
+
+    @Html.Hidden("DropdownPlaceholder", Labels.SelectAnOption)
+
+    <div class="modal fade OnTheFlyPanel" id="ChangeOrgModal" role="dialog" aria-hidden="true" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <img src="@Url.Content("~/Content/images/Loaders/loader.gif")" class="loading_circle" alt="loading icon" style=" display: block; margin-left: auto; margin-right: auto;" />
+                <p style="color:white; text-align:center;">@Labels.Loading</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

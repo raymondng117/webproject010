@@ -1,0 +1,113 @@
+﻿@model ClientHIFISServiceViewModel
+
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ClientID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.HifisRowVersion)
+@Html.HiddenFor(model => model.LastUpdatedBy)
+
+<div>    
+    <div class="clearfix"></div>   
+
+    <div class="form-color-white module-form-block">
+            <div>
+                @Html.HiddenFor(model => model.OrganizationID)
+                
+                @Html.Partial("DisplayViewTemplates/_DisplayStringList",
+                                new DisplayStringListViewModel { Label = Html.HifisLabelFor(m => m.ProgramIDs).ToString() })
+                <div>
+                    @Html.HifisEditorFor(model => model.ReasonForServiceTypeID, CachedTableTypes.HIFIS_ReasonForServiceTypes) 
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.ReferredByName)
+                </div>
+
+                @if (Model.isGeoRegionEnforced)
+                {
+                    <div>
+                        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.FromFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.FromReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferFrom })))
+                    </div>
+                    <div>
+                        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false, String.Format("<a href=\"{1}\" class=\"wb-lbx lbx-modal\" title=\"{0}\" aria-controls='Modal_EditItem' role='button'><span class='glyphicon glyphicon-filter'></span></a>", Labels.ToFilter, Url.Action("GeoRegionFilter", "Master", new { GeoRegionID = Model.ToReferrerGeoID, FilterType = (short)GeoFilterTypes.ReferTo })))
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        @Html.HifisEditorFor(model => model.FromReferrerPlaceID, ViewBag.fromPlaces as SelectList, null, new { id = "ddFrom" }, false)
+                    </div>
+                    <div>
+                        @Html.HifisEditorFor(model => model.ToReferrerPlaceID, ViewBag.toPlaces as SelectList, null, new { id = "ddTo" }, false)
+                    </div>
+                }
+
+            </div>
+
+            <div>
+                <div>
+                    @Html.HifisEditorFor(model => model.DateStart, "DateAndTime")
+                </div>
+                <div>
+                    @Html.HiddenFor(model => model.DateEnd)
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.SessionID, ViewBag.SessionList as SelectList)
+                    <img id="SessionSelectionLoader" alt="Loader animation" src="@Url.Content("~/Content/images/Loaders/loader-30.gif")" class="hide" />
+                </div>
+                <div>
+                    @Html.HifisEditorFor(model => model.NumberOfPeople)
+                </div>
+            </div>
+    </div>
+</div>
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            $(document).ready(function () {
+
+                $("#OrganizationID").change(function () {
+                    getPrograms();            
+                });
+        
+            }); //$(document).ready(function () {
+
+            function getPrograms() {
+                $('#ProgramSelectionLoader').show();
+    
+                success = function (jsonResultList) {//jsonResultList is a list of jsonResults.. great comment whoever this is!
+                    var multiSelect = $("#ProgramIDs");
+
+                    //Initialize the dropdown list to defaults
+                    multiSelect.empty();
+
+                    $.each(jsonResultList.Result, function () {//Appends all of the available options
+                        multiSelect.append($("<option />").val(this.Value).text(this.Text));
+                    });
+
+                    multiSelect.trigger('change'); //This is needed in order to display the updates
+                    $('#ProgramSelectionLoader').hide();
+                } //success
+
+                var params = { id: $('#OrganizationID').val(), dateOfRequest: $("#DateStart").val() };
+                $.getJSON("@Url.Action("GetProgramSPsByDate", "Programs")", params, success);
+            }
+
+        </script>);
+
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+            function ajax(url, data, success) {
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    dataType: 'json',
+                    data: data,
+                    success: success
+                }); //$.ajax({
+            }
+        </script>);
+}

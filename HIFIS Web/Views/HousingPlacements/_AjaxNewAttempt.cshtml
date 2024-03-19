@@ -1,0 +1,108 @@
+﻿@model HousingPlacementAttemptViewModel 
+
+<section id="Modal_NewAttempt" class="modal-dialog modal-content overlay-def" style="width:1100px;">
+	<header class="modal-header">
+		<h2 class="modal-title">@Labels.NewPlacementAttempt</h2>
+	</header>
+	<div class="modal-body">
+        <form id="newPlacementAttemptForm" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.HousingPlacementID)
+            @Html.HiddenFor(model => model.ClientID)
+            <div>
+                @Html.HifisEditorFor(model => model.AttemptedDate)
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.ReasonHousingNotSercuredID, CachedTableTypes.HIFIS_ReasonHousingNotSecuredTypes, new {  @class = "selectListMaxWidth" })
+            </div>
+
+            <div>
+                @Html.HifisEditorFor(model => model.CaseWorkerID, ViewBag.caseworkerList as SelectList)
+            </div>
+    
+            <div class="form-group">
+                <div class="col-sm-4">
+                    @Html.Label("")
+                </div>
+                <div class="col-sm-8">
+                    <span id="FinalAttemptWarning" class="text-danger hide">          
+                        <strong>@Labels.FinalAttemptWarning</strong>
+                    </span>
+                </div>
+            </div>
+            <div>
+                @Html.HifisEditorFor(model => model.IsFinalAttempt, "YesNo", new { @class = "mrgn-lft-xs" })
+            </div>
+
+            <div>
+                @Html.HifisTextAreaFor(model => model.Comment, new { @class="wdth-strct-500 hght-strct-150" })
+            </div>
+        </form>
+	</div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <button type="submit" id="newPlacementAttemptSaveBtn" class="saveButton">@Labels.Save</button>
+		<button id="newPlacementAttemptCloseBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Close</button>
+	</div>
+</section>
+
+<script> 
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_NewAttempt');
+
+    $(function () {
+        $("#newPlacementAttemptForm").hifisValidation();
+
+        if ($('#IsFinalAttempt').bootstrapSwitch('state') == true)
+            $('#FinalAttemptWarning').removeClass("hide");
+
+        //$("#newPlacementAttemptForm").removeData("validator");
+        //$("#newPlacementAttemptForm").removeData("unobtrusiveValidation");
+        //$.validator.unobtrusive.parse($("#newPlacementAttemptForm"));
+    });
+
+    $('input[name=IsFinalAttempt]').on('switchChange.bootstrapSwitch', function (event, state) {
+        if (state)
+            $('#FinalAttemptWarning').removeClass("hide");
+        else
+            $("#FinalAttemptWarning").addClass("hide");
+    });
+
+    $("#newPlacementAttemptSaveBtn").click(function () {
+
+        if ($("#newPlacementAttemptForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/HousingPlacements/NewAttempt")",
+                type: "POST",
+                data: $('#newPlacementAttemptForm').serialize()
+
+            }).done(function (data) {
+                
+                defaultNotify(data.Success); //display the default error or success message
+
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    if ($('#IsFinalAttempt').bootstrapSwitch('state') == true) {
+                        var url = '@Url.Action("ClientList", "HousingPlacements", new { id = "__id__"})';
+                        url = url.replace("__id__", '@Model.ClientID');
+                        window.location.href = url;
+                    }
+                    $("#newPlacementAttemptCloseBtn").click(); //Close the modal window on success
+                    //todo: Need to convert datatable to ajax and call reload after adding a placement attempt.
+                    $('#attemptsTable').DataTable().ajax.reload();
+                }
+            });
+        }
+    });
+    
+</script>
+
+

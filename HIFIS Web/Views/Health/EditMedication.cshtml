@@ -1,0 +1,35 @@
+﻿@model MedicationViewModel           
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_EditMedication;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div class="row">
+    @using (Html.BeginForm("EditMedication", "Health", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        <div class="row">
+            @Html.Partial("_Medication")
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-offset-3 col-sm-9">
+                <div class="form-group">
+                    <button type="submit" class="saveButton">@Labels.Save</button>
+                    @if (TempData["redirectToDisplay"] != null)
+                    {
+                        @Html.ActionLink(Labels.Cancel, "DisplayMedication", "Health", new { id = Model.ReadOnlyVitals.ClientID, medicationID = Model.MedicationID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink(Labels.Cancel, "HealthList", "Health", new { id = Model.ReadOnlyVitals.ClientID }, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+                    }
+                </div>
+            </div>
+        </div>      
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

@@ -1,0 +1,28 @@
+﻿@model ConsentDialogViewModel
+
+<div class="mfp-bg"></div>
+<div class="attestation-container">
+    <div id="consentDialog" class="modal mrgn-tp-10 attestation-modal">
+        <div class="modal-dialog whiteBackground">
+            <div id="consentModalContent" class="modal-content">
+                <div class="modal-header alert alert-danger">
+                    <h4 class="modal-title pull-left">@Labels.ConsentDialogTitle (@Model.ClientFullName)</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-offset-1 col-sm-10">
+                            <p>@Labels.ConsentModalText</p>
+                        </div>
+                    </div>
+                    <form id="consentForm" class="form-horizontal" enctype="multipart/form-data">
+                        @Html.Partial("Consent/_ConsentForm", Model.Consent)
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="cancel-button" class="btn btn-default">@Labels.Cancel</button>
+                    <button type="button" id="save-button" class="btn btn-primary">@Labels.Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

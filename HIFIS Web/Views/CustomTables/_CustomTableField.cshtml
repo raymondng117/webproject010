@@ -1,0 +1,212 @@
+﻿@model CustomTableFieldViewModel
+@Html.HiddenFor(model => model.CustomFieldID)
+<input type="hidden" name="Data.CustomTableFieldID" value="@Model.CustomFieldID" />
+@Html.HiddenFor(model => model.CustomTableID)
+@Html.HiddenFor(model => model.YCoordinate)
+@Html.HiddenFor(model => model.XCoordinate)
+@Html.HiddenFor(model => model.Position)
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+@if (ViewBag.IsEditView == null || ViewBag.IsEditView == false)
+{
+    <div>
+        @Html.HifisEditorFor(model => model.FieldTypeID, CachedTableTypes.HIFIS_CustomFieldTypes)
+    </div>
+
+    <div id="lookupTable">
+        @Html.HifisEditorFor(model => model.LookupTableID, ViewBag.LookupTablesList as SelectList)
+    </div>
+}
+else
+{
+    @Html.HiddenFor(model => model.FieldTypeID)
+    @Html.HiddenFor(model => model.LookupTableID)
+}
+<div>
+        @Html.HifisEditorFor(model => model.NameE)
+        @Html.HifisTextAreaFor(model => model.NameE, new { @class = "mceEditor_Messaging" })
+</div>
+
+<div>
+        @Html.HifisEditorFor(model => model.NameF)
+        @Html.HifisTextAreaFor(model => model.NameF, new { @class = "mceEditor_Messaging" })
+</div>
+<div>
+    @Html.HifisEditorFor(model => model.IsMandatory, "YesNo")
+</div>
+
+<div id="minmax">
+    <div class="minTextbox">
+        @Html.HifisTextBoxFor(model => model.Minimum)
+    </div>
+    <div class="maxTextbox">
+        @Html.HifisTextBoxFor(model => model.Maximum)
+    </div>
+</div>
+
+<div id="enableOther">
+    @Html.HifisEditorFor(model => model.IsOtherEnabled, "YesNo")
+</div>
+
+<div>
+    @Html.HifisEditorFor(model => model.IsActive, "YesNo")
+</div>
+
+@*
+TODO: ADD LATER
+<div>
+    @Html.HifisEditorFor(model => model.Mask)
+    <span class="glyphicon glyphicon-question-sign">&nbsp;</span>
+</div>*@
+
+@Html.Partial("Plugins/_TinyMCEScript")
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+		@<script type="text/javascript">
+            function toggleMaxMin() {
+                var fieldType = $('#FieldTypeID').val();
+                var minMaxDiv = $('#minmax');
+                var lookupDiv = $('#lookupTable');
+                var minLabel = minMaxDiv.find('.minTextbox label').text('@Labels.Minimum');
+                var maxLabel = minMaxDiv.find('.maxTextbox label').text('@Labels.Maximum');
+
+                switch(fieldType){
+                    case '@((byte)CustomTableFieldTypes.TextAreaBox)':
+                    case '@((byte)CustomTableFieldTypes.TextBox)':
+                        minLabel = minLabel.text(minLabel.text() + ' @Labels.Characters');
+                        maxLabel = maxLabel.text(maxLabel.text() + ' @Labels.Characters');
+                        minMaxDiv.show();
+                    break;
+
+                    case '@((byte)CustomTableFieldTypes.Decimal)':
+                    case '@((byte)CustomTableFieldTypes.Numeric)':
+                    case '@((byte)CustomTableFieldTypes.Currency)':
+                        minLabel = minLabel.text(minLabel.text() + ' @Labels.Value');
+                        maxLabel = maxLabel.text(maxLabel.text() + ' @Labels.Value');
+                        minMaxDiv.show();
+                    break;
+
+                    case '@((byte)CustomTableFieldTypes.MultiSelect)':
+                        minLabel = minLabel.text(minLabel.text() + ' @Labels.Choices');
+                        maxLabel = maxLabel.text(maxLabel.text() + ' @Labels.Choices');
+                    minMaxDiv.show();
+                    break;
+
+                case '@((byte)CustomTableFieldTypes.LookupTablesDropDown)':
+                    lookupDiv.show();
+                    break;
+
+                default:
+                    minMaxDiv.hide();
+                    lookupDiv.hide();
+                    $("#LookupTableID").val("").trigger('change');
+                    break;
+                };
+            }
+
+            function toggleEnableOther() {
+                var fieldType = $('#FieldTypeID').val();
+                var enableOtherDiv = $('#enableOther');
+
+                switch(fieldType){
+                    case '@((byte)CustomTableFieldTypes.DropDownList)':
+                        enableOtherDiv.show();
+                        break;
+
+                    default:
+                        enableOtherDiv.hide();
+                        break;
+                };
+
+            }
+
+            //disables Mandatory radio with display layer elements
+            function disableMandatoryForCustomLayout() {
+                var fieldType = $('#FieldTypeID').val();
+                switch (fieldType) {
+                    case '@((byte) CustomTableFieldTypes.Header1)':
+                    case '@((byte) CustomTableFieldTypes.Header2)':
+                    case '@((byte) CustomTableFieldTypes.Header3)':
+                    case '@((byte) CustomTableFieldTypes.Description)':
+                    case '@((byte) CustomTableFieldTypes.LineBreak)':
+                    case '@((byte) CustomTableFieldTypes.HorizontalRule)':
+                        $('#IsMandatory.YesAndNo').bootstrapSwitch('disabled', true);
+                        break;
+
+                    default:
+                        $('#IsMandatory.YesAndNo').bootstrapSwitch('disabled', false);
+                        break;
+                }
+            }
+
+            //custom field type descrption requires larger textarea - swith between text and textarea onchange
+            function changeTextToTextAreaForCustomLayout( previousFieldTypeID ) {
+                var fieldType = $('#FieldTypeID').val();
+                switch (fieldType) {
+                    case '@((byte) CustomTableFieldTypes.Description)':
+                        $('.form-group input:text#NameE').prop('disabled', true);
+                        $('.form-group input:text#NameE').parent().parent().parent().hide();
+                        $('.form-group input:text#NameF').prop('disabled', true);
+                        $('.form-group input:text#NameF').parent().parent().parent().hide();
+
+                        $('.form-group textarea#NameE').prop('disabled', false);
+                        $('.form-group textarea#NameE').val( $('.form-group input:text#NameE').val() );
+                        $('.form-group textarea#NameE').parent().parent().parent().show();
+                        $('.form-group textarea#NameF').prop('disabled', false);
+                        $('.form-group textarea#NameF').val($('.form-group input:text#NameF').val());
+                        $('.form-group textarea#NameF').parent().parent().parent().show();
+                        break;
+
+                    default:
+                        //determine if the value from the textarea needs to be copied into input text if coming from description type
+                        if (previousFieldTypeID == '@((byte) CustomTableFieldTypes.Description)' ) {
+                            $('.form-group input:text#NameE').val($('.form-group textarea#NameE').val());
+                            $('.form-group input:text#NameF').val($('.form-group textarea#NameF').val());
+                        }
+
+                        $('.form-group input:text#NameE').prop('disabled', false);
+                        $('.form-group input:text#NameE').parent().parent().parent().show();
+                        $('.form-group input:text#NameF').prop('disabled', false);
+                        $('.form-group input:text#NameF').parent().parent().parent().show();
+
+                        $('.form-group textarea#NameE').prop('disabled', true);
+                        $('.form-group textarea#NameE').parent().parent().parent().hide();
+                        $('.form-group textarea#NameF').prop('disabled', true);
+                        $('.form-group textarea#NameF').parent().parent().parent().hide();
+
+                        break;
+                }
+            }
+
+            function regexValidation(){
+                //TODO: Change the method to do proper regex validation when adding mask
+            }
+
+            function fieldToggles()
+            {
+                toggleEnableOther();
+                toggleMaxMin();
+            }
+
+            $(function () {
+                toggleMaxMin();
+                disableMandatoryForCustomLayout();
+                changeTextToTextAreaForCustomLayout();
+                $('#FieldTypeID').change(disableMandatoryForCustomLayout);
+
+                //storing the old value of fieldtype to compare against new selection
+                var previousFieldTypeID;
+                $('#FieldTypeID').on('select2:open', function () {
+                    previousFieldTypeID = $('#FieldTypeID').val();
+                }).change( function () {
+                    changeTextToTextAreaForCustomLayout(previousFieldTypeID);
+                });
+
+                toggleEnableOther();
+                $('#FieldTypeID').change(fieldToggles);
+                //$('#Mask').change(regexValidation);
+            });
+        </script>
+    );
+}

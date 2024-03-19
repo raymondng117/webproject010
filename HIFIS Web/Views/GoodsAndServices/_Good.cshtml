@@ -1,0 +1,145 @@
+﻿@model ClientGoodsViewModel
+
+@Html.Partial("_BaseHiddenFor")
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.ReadOnlyVitals.ClientID)
+@Html.HiddenFor(model => model.ServiceID)
+@Html.HiddenFor(model => model.GoodsActivitiesID)
+
+<div class="col-md-9">
+    <div class="row">
+        @*//Need to pass Enumerable.Empty<SelectListItem>() so GoodItemID is created as a 'select' element as opposed to an input element.*@
+        <div>
+            @Html.HifisEditorFor(model => model.GoodItemID, Enumerable.Empty<SelectListItem>())
+        </div>
+
+            @Html.HiddenFor(model => model.GoodTypeID, new { autocomplete = "off" })
+ 
+        <div>
+            @Html.HifisEditorFor(model => model.UnitOfMeasureTypeID, CachedTableTypes.HIFIS_UnitOfMeasureTypes)
+        </div> 
+                
+        <div>
+            @Html.HifisEditorFor(model => model.NoOfUnits)
+        </div>
+
+        <div>
+            @Html.HifisEditorFor(model => model.UnitCost, "Money", new { @class = "money" })
+        </div> 
+
+        <div>
+            @Html.HifisEditorFor(model => model.UnitPrice, "Money", new { @class = "money" })
+        </div>
+    </div>
+</div>
+
+@if (RightsHelper.HasRight(UserRights.Goods_Services__Express_Good_Add))
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+            @<script type="text/javascript">
+                 $(function () {
+                     $.ajax({
+                         url: "@Url.Action("GetGoodsItemsList", "GoodsAndServices")",
+                         type: "POST",
+                     }).done(function (data) {
+                         $('#GoodItemID').prepend('<optgroup label="@Labels.ExpressGoods">' + makeOptions(data.Result.data) + '</optgroup>');
+                     }).always(function () {
+                         reinitSelect2($('#GoodItemID'));
+                     });
+                 });
+             </script>
+        );
+    }
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+             $('#GoodItemID').append('<option value=""/>');
+
+             $("#addGood").on("shown.bs.collapse", function () {
+                 reinitSelect2($('#GoodItemID'));
+             });
+
+             $(function () {
+                 $.ajax({
+                     url: "@Url.Action("GetGoodsTypeListJson", "GoodsAndServices")?selectedID=@Model.GoodItemID",
+                     type: "POST",
+                 }).done(function (data) {
+                     $('#GoodItemID').append('<optgroup label="@Labels.StandardGoods">' + makeOptions(data.Result.data) + '</optgroup>');
+                 }).always(function () {
+                     reinitSelect2($('#GoodItemID'));
+                     if ($('#GoodTypeID').val() != 0) {
+                         var setVal = $('#GoodTypeID').val() + ",T";
+                         $('#GoodItemID').val(setVal);
+                         $('select').trigger('change');
+                     }
+                 });
+             });
+
+             function makeOptions(res) {
+                 var str = "";
+                 if (res.length > 0) {
+                     for (i = 0; i < res.length; i++) {
+                         str += '<option value="' + res[i].value + '">' + res[i].label + '</option>';
+                     }
+                 }
+                 else {
+                     str += '<option value="" disabled>@Labels.NoneToDisplay</option>';
+                 }
+                 return str;
+             };
+
+             function reinitSelect2(selector) {
+                 selector.select2('destroy');
+                 selector.select2({ width: 'resolve', allowClear: true, placeholder: $("#DropdownPlaceholder").val(), });
+             }
+
+             $('#GoodItemID').on("select2:unselect", function (e) {
+                 $('#innerListWrapper').hide("slow");
+                 $('#NoResultsDiv').show('slow');
+                 $('#GoodTypeID').val('');
+                 $('#UnitOfMeasureTypeID').val('', null);
+                 $('#NoOfUnits').val('');
+                 $('#UnitCost').val('');
+                 $('#UnitPrice').val('');
+                 $('select').trigger('change');
+             });
+
+             $('#GoodItemID').on("select2:select", function (e) {
+                 var substrings = $(this).val().split(',');
+
+                 var Details;
+
+                 if (substrings[1] == 'D') {
+                     $.ajax({
+                         url: "@Url.Action("GetGoodsItemInfo", "GoodsAndServices")",
+                         type: "POST",
+                         data: { "itemID": substrings[0] },
+                     }).done(function (data) {
+                         $('#GoodTypeID').val(data.Result.data[0].typeID);
+                         $('#UnitOfMeasureTypeID').val(data.Result.data[0].measurementID);
+                         $('#NoOfUnits').val(data.Result.data[0].quantity);
+                         $('#UnitCost').val(data.Result.data[0].unitCost);
+                         $('#UnitPrice').val(data.Result.data[0].unitPrice);
+                         $('select').trigger('change');
+                     }).fail(function () {
+                     }).always(function () {
+                     });
+                 }
+                 else {
+                     $('#GoodTypeID').val('');
+                     $('#UnitOfMeasureTypeID').val('', null);
+                     $('#NoOfUnits').val('');
+                     $('#UnitCost').val('');
+                     $('#UnitPrice').val('');
+                     $('select').trigger('change');
+                 }
+             });
+         </script>
+    );
+}

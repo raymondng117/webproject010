@@ -1,0 +1,15 @@
+﻿@model IdentificationViewModel 
+@{
+    ViewBag.ViewTitle = Labels.NewIdentification;
+    
+    ViewBag.LayoutView = LayoutPage.Client;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewIdentification", "Identification", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+    {  
+        @Html.Partial("_Identification")        
+    }
+</div>

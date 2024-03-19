@@ -1,0 +1,73 @@
+﻿@model ClientContributingBehaviouralFactorsViewModel
+
+<section id="Modal_EditCFactor" class="modal-dialog-800 modal-content overlay-def">
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditClientContributingFactor</h2>
+    </header>
+
+    <div class="modal-body">
+        <div>
+            @using (Html.BeginForm("EditContributingFactor", "ClientFactors", FormMethod.Post, new { @class = "form-horizontal", id = "contributingSaveForm" }))
+            {
+                @Html.Partial("_ContributingFactor", Model)
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-md">
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" id="contributingSaveBtn" class="saveButton  ">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_EditCFactor');
+
+    $(function () {
+        $("#contributingSaveForm").hifisValidation();
+
+    });
+
+
+    $("#contributingSaveBtn").click(function () {
+
+        if ($("#contributingSaveForm").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/ClientFactors/EditContributingFactor")",
+                type: "POST",
+                data: $('#contributingSaveForm').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success);
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#contributingTable').DataTable().ajax.reload();
+                } else {
+                    defaultNotify(data.Success);
+                }
+            });
+        }
+    });
+
+</script>
+
+
+
+
+

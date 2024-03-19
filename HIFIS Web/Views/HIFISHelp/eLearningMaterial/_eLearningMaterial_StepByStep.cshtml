@@ -1,0 +1,60 @@
+﻿@model ELearningMaterialModel
+@Html.HiddenFor(model => model.ContentTypeID)
+@Html.HiddenFor(model => model.ELearningMaterialID)
+@if (ViewBag.isTopic)
+{ 
+    @Html.HiddenFor(model => model.ELearningPageID)
+    @Html.HiddenFor(model => model.ELearningTopicID)
+	<div class="row">
+		<div class="col-sm-3"> 
+			@if (ViewBag.isEdit == true)
+			{ 
+				@Html.Label(Labels.HifisHelp_LayoutOrder) @:&nbsp
+				@Html.Partial("Common/_HelpMandatory")
+			}
+			else
+			{ 
+				@Html.Label(Labels.HifisHelp_LayoutOrder)<text>:</text> 
+			}  
+		</div>
+		<div class="col-sm-9"> 
+			@if (ViewBag.isEdit == true)
+			{ 
+				@Html.TextBoxFor(model => model.LayoutOrder)
+			}
+			else
+			{ 
+				@Html.HiddenFor(model => model.LayoutOrder)
+				@Model.LayoutOrder
+			}  
+		</div>
+	</div>         
+}
+<div class="row">
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_MaterialNameE) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.MaterialNameE) 
+	</div>
+	<div class="col-sm-3"> 
+		@Html.Label(Labels.HifisHelp_MaterialNameF) @Html.Partial("Common/_HelpMandatory")
+	</div>
+	<div class="col-sm-3"> 
+		@Html.TextBoxFor(model => model.MaterialNameF) 
+	</div>
+</div>     
+<div class="row">
+	<div class="col-sm-12"> 
+		@Html.Label(Labels.HifisHelp_StepE) @Html.Partial("Common/_HelpMandatory")
+		<br />
+		@Html.EditorFor(model => model.ContentE, "TinyMCE_MaterialHelp")
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-12"> 
+		@Html.Label(Labels.HifisHelp_StepF) @Html.Partial("Common/_HelpMandatory")
+		<br />
+		@Html.EditorFor(model => model.ContentF, "TinyMCE_MaterialHelp")
+	</div>
+</div>

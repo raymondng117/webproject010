@@ -1,0 +1,24 @@
+﻿@model PlaceViewModel           
+@{
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    ViewBag.ViewTitle = Labels.viewTitle_NewPlace;    
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("NewPlace", "Places", FormMethod.Post, new { @class = "form-horizontal", id = "myForm" }))
+    {
+        @Html.Partial("_Place", Model)
+        <span id="AddressFormFields">@Html.Partial("_AddressSearch", Model.Address, "Address.")</span>
+        
+        @Html.Partial("_BaseHiddenFor")
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "PlaceList", "Places", new { }, new { @class = "cancelButton  ", title = Labels.Cancel, alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+            </div>
+        </div>
+    }
+</div>

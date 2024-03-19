@@ -1,0 +1,177 @@
+﻿@model ClientListViewModel
+@{
+    if (ViewBag.ReadOnlyVitals == null)
+    {
+        ViewBag.LayoutView = LayoutPage.ContentOnly;
+    }
+    else
+    {
+        ViewBag.LayoutView = LayoutPage.Client;
+    }
+    ViewBag.ViewTitle = Labels.viewTitle_ClientList;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+
+
+<div>
+    @if (Model.PagingViewModel.SearchString != string.Empty)
+    { 
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+                <thead>
+                    <tr>
+                        <th>@Labels.PersonID</th>
+                        <th>@Labels.FullName</th>
+                        <th>@Labels.Gender</th>
+                        <th>@Labels.Aka1</th>
+                        <th>@Labels.DOB</th>
+                        <th>@Labels.Age</th>
+                        <th>@Labels.FileNumber</th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var viewModelItem in Model.ClientViewModels)
+                    {
+                        <tr>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.PersonID)</td>
+                            <td>@Html.ActionLink(viewModelItem.FullName, "DisplayVitals", new { controller = "ClientTombstone", id = viewModelItem.ClientID, alt=viewModelItem.FullName, aria_label = viewModelItem.FullName }) @Html.DisplayTextFor(ModelItem => viewModelItem.Status) </td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.Gender)</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.Aka1)</td>
+                            <td>@Html.DisplayFor(ModelItem => viewModelItem.DOB, "DateOnly")</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.AproximativeAge)</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.FileNumber)</td>
+                            <td>
+                                <div class="align-center">
+
+                                    @if (RightsHelper.HasRight(UserRights.Stays_Client_List))
+                                    {
+                                        @Html.ActionLink(Labels.Admissions, "ClientStaysList", "Stay", new { id = viewModelItem.ClientID }, new { @class = "homeButton", alt=Labels.Admissions, aria_label = Labels.Admissions, @role = "button"  }) 
+                                    }
+
+                                    @if (RightsHelper.HasRight(UserRights.Barred_Client_List))
+                                    {
+                                        @Html.ActionLink(Labels.Restrictions, "ClientList", "ServiceRestrictions", new { id = viewModelItem.ClientID }, new { @class = "alertButton", alt=Labels.Restrictions, aria_label = Labels.Restrictions, @role = "button"  }) 
+                                    }
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        OrderByDirection pToggleDirection = OrderByDirection.Ascending;
+        if (Model.LastOrderByDirection == OrderByDirection.Ascending) { pToggleDirection = OrderByDirection.Descending; }
+   
+        <div class="table-responsive">
+            <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false, "paging": false }'>
+                <thead>
+                    <tr>
+                        <th>
+                            @if (Model.LastOrderByClientList == OrderByClientList.PersonID)
+                            { 
+                                @Html.ActionLink((string)Labels.PersonID, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.PersonID, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.PersonID, aria_label = (string)Labels.PersonID})
+                            }
+                            else
+                            {
+                                @Html.ActionLink((string)Labels.PersonID, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.PersonID, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.PersonID, aria_label = (string)Labels.PersonID})
+                            }
+                        </th>
+                        <th>
+                            @if (Model.LastOrderByClientList == OrderByClientList.FullName)
+                            { 
+                                @Html.ActionLink((string)Labels.FullName, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.FullName, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.FullName, aria_label = (string)Labels.FullName})
+                            }
+                            else
+                            {
+                                @Html.ActionLink((string)Labels.FullName, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.FullName, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.FullName, aria_label = (string)Labels.FullName })
+                            }
+                        </th>
+                        <th>
+                            @if (Model.LastOrderByClientList == OrderByClientList.Gender)
+                            { 
+                                @Html.ActionLink((string)Labels.Gender, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Gender, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.Gender, aria_label = (string)Labels.Gender})
+                            }
+                            else
+                            {
+                                @Html.ActionLink((string)Labels.Gender, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Gender, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.Gender, aria_label = (string)Labels.Gender})
+                            }
+                        </th>
+                        <th>
+                            @if (Model.LastOrderByClientList == OrderByClientList.Aka1)
+                            { 
+                                @Html.ActionLink((string)Labels.Aka1, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Aka1, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.Aka1, aria_label = (string)Labels.Aka1})
+                            }
+                                else
+                                {
+                                    @Html.ActionLink((string)Labels.Aka1, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Aka1, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.Aka1, aria_label = (string)Labels.Aka1 })
+                                }
+                        </th>
+                        <th>
+                            @if (Model.LastOrderByClientList == OrderByClientList.DOB)
+                            { 
+                                @Html.ActionLink((string)Labels.DOB, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.DOB, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.DOB, aria_label = (string)Labels.DOB })
+                            }
+                            else
+                            {
+                                @Html.ActionLink((string)Labels.DOB, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.DOB, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.DOB, aria_label = (string)Labels.DOB })
+                            }
+                        </th>
+                        <th>@Labels.Age</th>
+                        <th>
+                            @if (Model.LastOrderByClientList == OrderByClientList.Filenumber)
+                            { 
+                                @Html.ActionLink((string)Labels.FileNumber, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Filenumber, pOrderByDirection = pToggleDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.FileNumber, aria_label = (string)Labels.FileNumber})
+                            }
+                            else
+                            {
+                                @Html.ActionLink((string)Labels.FileNumber, Model.PagingViewModel.GetMethodName, new { controller = Model.PagingViewModel.ControllerName, pSearchString = Model.PagingViewModel.SearchString, pOrderBy = OrderByClientList.Filenumber, pOrderByDirection = Model.LastOrderByDirection, pSelectedPageIndex = Model.PagingViewModel.FirstPageIndex }, new { alt = (string)Labels.FileNumber, aria_label = (string)Labels.FileNumber})
+                            }
+                        </th>
+                        <th>@Labels.Action</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    @foreach (var viewModelItem in Model.ClientViewModels)
+                    {
+                        <tr>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.PersonID)</td>
+                            <td>@Html.ActionLink(viewModelItem.FullName, "DisplayVitals", new { controller = "ClientTombstone", id = viewModelItem.ClientID }, new { alt = viewModelItem.FullName, aria_label = viewModelItem.FullName})</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.Gender)</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.Aka1)</td>
+                            <td>@Html.DisplayFor(ModelItem => viewModelItem.DOB, "DateOnly")</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.AproximativeAge)</td>
+                            <td>@Html.DisplayTextFor(ModelItem => viewModelItem.FileNumber)</td>
+                            <td>
+                                <div class="align-center">
+                                    @Html.ActionLink(Labels.Admissions, "ClientStaysList", "Stay", new { id = viewModelItem.ClientID }, new { @class = "homeButton", alt=Labels.Admissions, aria_label = Labels.Admissions, @role = "button"  })
+                                    @Html.ActionLink(Labels.Restrictions, "ClientList", "ServiceRestrictions", new { id = viewModelItem.ClientID }, new { @class = "alertButton", alt=Labels.Restrictions, aria_label = Labels.Restrictions, @role = "button"  })
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+	
+        @Html.Partial("_Paging", Model.PagingViewModel) 
+    }
+</div>
+
+<div class="mrgn-tp-md">
+    @if (RightsHelper.HasRight(UserRights.Client_Vitals_Add))
+    { 
+        @Html.ActionLink(Labels.AddNewClient, "NewVitals", "ClientTombstone", new { }, new { @class = "addButton  ", title = @Labels.AddNewClient, alt=Labels.AddNewClient, aria_label = Labels.AddNewClient, @role = "button"  })
+    }
+</div>
+
+

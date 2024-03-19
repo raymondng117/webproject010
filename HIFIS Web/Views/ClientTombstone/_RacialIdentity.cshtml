@@ -1,0 +1,428 @@
+﻿@model ClientVitalsViewModel
+
+@Html.HiddenFor(model => model.ClientID)
+
+@*@Html.HifisLabelFor("Do you identify with any of the racial identities listed?", new { @class = "col-sm-2 control-label" })*@
+<div class="row">
+
+    <span class = "col-xs-4 control-label" style="font-weight:bold">@Labels.RacialIdentityQuestion</span>
+</div>
+
+<div>
+
+    @if (Model.ClientID == null)
+    {
+
+        <div class="row">
+            @Html.HifisLabelFor(model => model.SelectedRacialIdentities, new { @class = "col-xs-4 control-label" })
+            <div class="col-xs-8">
+                @Html.HifisEditorFor(m => m.SelectedRacialIdentities, ViewBag.RacialIdentityList as SelectList, "DropDown", new { id = "ddlRacialIdentityTypeID", @class = "RacialIdentity" }, true, null)
+            </div>
+        </div>
+
+    }
+    else
+    {
+        @*if (Model.SelectedRacialID == "1")
+        {
+            <div class="row">
+                @Html.HifisLabelFor(model => model.SelectedRacialID, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    @Html.HifisEditorFor(m => m.SelectedRacialID, ViewBag.RacialIdentityList as SelectList, "DropDown", new { size = 6, @class = "selectOneListBox", id = "ddlRacialIdentityTypeIDEdit" }, true, null)
+                </div>
+            </div>
+        }
+        else
+        {*@
+            <div class="row">
+                @Html.HifisLabelFor(model => model.SelectedRacialID, new { @class = "col-xs-4 control-label" })
+                <div class="col-xs-8">
+                    @Html.HifisEditorFor(m => m.SelectedRacialID, ViewBag.RacialIdentityList as SelectList, "DropDown", new { size = 5, @class = "selectOneListBox", id = "ddlRacialIdentityTypeIDEdit" }, true, null)
+                </div>
+            </div>
+        @*}*@
+
+    }
+
+    <div style="visibility:hidden; color:red; " id="chk_option_error">
+       @Labels.RacialIdentityCheckboxErrorMessage
+    </div>
+
+    @*@Html.HifisListBoxFor(m => m.SelectedRacialIdentities, ViewBag.RacialIdentityList as SelectList, new { @class = "RacialIdentity", id = "ddlRacialIdentityTypeID" })*@
+</div>
+<div>
+    @Html.Label((@Labels.SelectAllThatApply), new { @class = "col-xs-4 control-label" })
+
+</div>
+
+<div id="divRacialIdentitiesList" class="checkbox-group required" data-question-answered="false" style="position: relative; left: 277px; display: inline-block; ">
+
+    @if (ViewBag.AllClientRacialIdentities != null)
+    {
+        foreach (var RIdentity in ViewBag.AllClientRacialIdentities)
+        {
+            var chkid = "racialIdentityCheckBox" + RIdentity.Value;
+            @*if (Model.ClientID != null && RIdentity.Value == 1)
+                {
+                    <div class="checkbox">
+                        <input type="checkbox" id=@chkid class="chkclass" name="SelectedRacialIdentities" value=@RIdentity.Value @if (Model.SelectedRacialIdentities.Contains(RIdentity.Value)) { <text> checked="checked" </text> } />
+                        <span for=@chkid> @RIdentity.Label</span>
+
+                    </div>
+                }
+                else*@
+            if (((RIdentity.Value != 1) && (RIdentity.Value != 13) && (RIdentity.Value != 14) && (RIdentity.Value != 15) && (RIdentity.Value != 12)))
+            {
+
+
+                <div class="checkbox">
+                    <input type="checkbox" id=@chkid class="chkclass" name="SelectedRacialIdentities" value=@RIdentity.Value @if (Model.SelectedRacialIdentities.Contains(RIdentity.Value)) { <text> checked="checked" </text> } />
+                    <span for=@chkid> @RIdentity.Label</span>
+
+                </div>
+            }
+        }
+    }
+
+    @if (ViewBag.NotListed != null)
+    {
+        var chkid = "racialIdentityCheckBox" + ViewBag.NotListed.Value;
+        <div class="checkbox">
+            <input type="checkbox" id=@chkid class="chkclass" name="SelectedRacialIdentities" value=@ViewBag.NotListed.Value @if (Model.SelectedRacialIdentities.Contains(ViewBag.NotListed.Value)) { <text> checked="checked" </text> } />
+            <span for=@chkid> @ViewBag.NotListed.Label</span>
+
+        </div>
+    }
+<br />
+</div>
+<br />
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+     $(document).ready(function () {
+
+
+         $(".RacialIdentity").change(function () {
+
+             var selectedOption = $('.RacialIdentity').val();
+
+             if (selectedOption == "0") {
+
+
+                 $(".chkclass").prop('disabled', false)
+
+
+             }
+             else {
+                 $(".chkclass").prop('disabled', true);
+                 // document.getElementById("chk_option_error").style.visibility = "hidden";
+             }
+
+         });
+
+         $(".selectOneListBox").ready(function () {
+             $(this).removeAttr('multiple');
+         });
+  
+     });
+    function validateCheckBoxes(selectedOption) {
+
+        if ((selectedOption == "0")) {
+            /*$("[data-question-answered]").each(function (index, element) {*/
+
+                // if the input type is a checkbox, get the value this way
+                // as input is within the selected element which is a div
+                var inputValue = $('div.checkbox-group.required :checkbox:checked').val();
+                if (inputValue !== "" && typeof inputValue != 'undefined') {
+
+                    return true;
+                }
+                else {
+                    return false;
+                }
+          /*  });*/
+           
+        }
+        else {
+            return true;
+
+        }
+      
+    }
+  
+    $(".saveButton").click(function (event) {
+       /* alert("hi");*/
+        var inputVal = $('.RacialIdentity').val();
+        if (inputVal == "" && typeof inputVal == 'undefined') {
+
+            return false;
+            event.preventDefault();//Don't submit for until it is complete
+        }
+        else if (!validateCheckBoxes(inputVal))
+        {
+            // alert("Please check atleast one checkbox");
+
+            document.getElementById("chk_option_error").style.visibility = "visible";
+
+            $('div.checkbox-group.required :checkbox').change(function () {
+                var checked = $('div.checkbox-group.required :checkbox:checked').length > 0
+                if ((checked > 0)) {
+                    document.getElementById("chk_option_error").style.visibility = "hidden";
+                    $('#divRacialIdentitiesList').removeClass("error");
+                    return true;
+                }
+                else {
+                    document.getElementById("chk_option_error").style.visibility = "visible";
+                    $('#divRacialIdentitiesList').addClass("error");
+                    return false;
+                }
+            });
+
+            event.preventDefault(); //Don't submit for until it is complete
+    
+            /*       return false;*/
+        }
+        else {
+           
+            return true;
+        }
+        
+      
+
+
+    });
+
+</script>
+);
+}
+
+@if (Model.ClientID != null)
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     $("#ddlRacialIdentityTypeIDEdit").change(function () {
+
+         var selectedOption = $("#ddlRacialIdentityTypeIDEdit").val();
+
+         if (selectedOption == "0") {
+
+
+             $(".chkclass").prop('disabled', false)
+         }
+         else {
+             $(".chkclass").prop('disabled', true);
+
+         }
+
+     });
+     $(".saveButton").click(function (event) {
+
+         var inputVal = $("#ddlRacialIdentityTypeIDEdit").val();
+         if (inputVal == "" && typeof inputVal =='undefined')
+        {
+             
+             return false;
+             event.preventDefault();//Don't submit for until it is complete
+        }
+         else if (!validateCheckBoxes(inputVal)) {
+             document.getElementById("chk_option_error").style.visibility = "visible";
+
+             $('div.checkbox-group.required :checkbox').change(function () {
+                 var checked = $('div.checkbox-group.required :checkbox:checked').length 
+                 if ((checked > 0)) {
+                     document.getElementById("chk_option_error").style.visibility = "hidden";
+                     $('#divRacialIdentitiesList').removeClass("error");
+                     return true;
+                 }
+                 else {
+                     document.getElementById("chk_option_error").style.visibility = "visible";
+                     $('#divRacialIdentitiesList').addClass("error");
+                     return false;
+                 }
+             });
+
+             event.preventDefault(); //Don't submit for until it is complete
+
+            
+         }
+         else {
+
+             return true;
+         }
+
+
+
+
+     });
+</script>
+);
+    }
+}
+
+@if (Model.SelectedRacialID != "0")
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+         var selectedOption = $("#ddlRacialIdentityTypeIDEdit").val();
+
+         if (selectedOption == "0") {
+
+
+             $(".chkclass").prop('disabled', false)
+         }
+         else
+         {
+             $(".chkclass").prop('disabled', true);
+
+         }
+         var selectedIndigenousOption = $(".Aboriginal").val();
+
+        if (selectedIndigenousOption ==@((byte)IndianStatusTypes.NonAboriginal)) {
+
+
+
+            $("#ddlRacialIdentityTypeIDEdit option[value='@((short)ClientRacialIdentityTypes.IdentifyAsIndigenousOnly)']").prop('disabled', true);
+        }
+        else {
+
+            $("#ddlRacialIdentityTypeIDEdit option[value='@((short)ClientRacialIdentityTypes.IdentifyAsIndigenousOnly)']").prop('disabled', false);
+        }
+
+
+
+</script>
+);
+    }
+}
+
+@if (Model.AboriginalIndicatorID != null)
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     /*$("#ddlRacialIdentityTypeIDEdit").change(function () {*/
+
+         var selectedIndigenousOption = $(".Aboriginal").val();
+
+        if (selectedIndigenousOption ==@((byte)IndianStatusTypes.NonAboriginal)) {
+
+
+
+            $("#ddlRacialIdentityTypeIDEdit option[value='@((short)ClientRacialIdentityTypes.IdentifyAsIndigenousOnly)']").prop('disabled', true);
+        }
+        else {
+
+            $("#ddlRacialIdentityTypeIDEdit option[value='@((short)ClientRacialIdentityTypes.IdentifyAsIndigenousOnly)']").prop('disabled', false);
+        }
+
+   /*  });*/
+</script>
+);
+    }
+}
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     $("#ddlRacialIdentityTypeIDEdit").change(function () {
+
+         var selectedOption = $("#ddlRacialIdentityTypeIDEdit").val();
+
+         if (selectedOption == "0") {
+
+
+             $(".chkclass").prop('disabled', false)
+         }
+         else {
+             $(".chkclass").prop('disabled', true);
+
+         }
+
+     });
+     $("#ClientVitalsIntakeForm").click(function (event) {
+
+
+         if (!validateCheckBoxes($("#ddlRacialIdentityTypeIDEdit").val())) {
+             document.getElementById("chk_option_error").style.visibility = "visible";
+
+             event.preventDefault(); //Don't submit for until it is complete
+         }
+         else {
+             $("#ClientVitalsIntakeForm").submit(function (event) {
+
+             });
+         }
+
+
+
+     });
+</script>
+);
+}
+@if(Model.ClientID == null)
+{
+    using (Html.BeginScriptContext())
+    {
+        Html.AddScriptBlock(
+@<script type="text/javascript">
+
+     //function validateCheckBoxes(selectedOption) {
+     //    alert("hi");
+     //    if (selectedOption == "0") {
+
+     //        $("[data-question-answered]").each(function (index, element) {
+
+     //            var inputVal;
+
+     //            // if the input type is a checkbox, get the value this way
+     //            // as input is within the selected element which is a div
+     //            if ($(element).hasClass("chkclass")) {
+     //                inputVal = $(element).find("input:checked").val();
+     //            }
+
+     //            // If the input is not na null value and it is not undefinded, set the question as answered
+     //            if (inputVal !== "" && typeof inputVal != 'undefined') {
+     //                //set the question as answered
+     //                $(element).attr("data-question-answered", true);
+
+     //            }
+     //            if ($('[data-question-answered="true"]').length > 0) {
+     //                return true;
+     //            }
+     //            else {
+     //                $(element).addClass("error");
+     //                return false;
+     //            }
+
+     //        });
+
+     //    }
+     //    else {
+     //        return true;
+
+     //    }
+
+         
+
+
+
+</script>
+);
+}
+
+
+
+}
+
+

@@ -1,0 +1,112 @@
+﻿@model ConsentViewModel
+@{
+    var appSettings = (HIFIS.CONTRACTS.WCFContracts.DataContracts.ApplicationSettings)ViewBag.AppSettings;
+}
+
+<div class="mrgn-tp-md">
+
+    @Html.Partial("_ClientVitalsRO_ext", new ClientVitalsReadOnlyWrapperViewModel(Model.ReadOnlyVitals))
+
+    @Html.HiddenFor(model => model.ConsentID)
+    @Html.HiddenFor(model => model.ClientID)
+    @Html.HiddenFor(model => model.OrganizationID)
+
+    <div>
+        @Html.HifisEditorFor(model => model.ConsentTypeID, Model.ClientConsentTypeList as SelectList)
+    </div>
+
+    <div id="dateFields">
+        <div class="row">
+            @Html.HifisEditorFor(model => model.StartDate)
+            @*@Html.HifisEditorFor(model => model.StartDate, null, new { disabled = "disabled" })*@
+        </div>
+    </div>
+
+    <div id="explicitConsentFields">
+        <div class="row">
+            @Html.HifisEditorFor(model => model.ExpiryDate)
+        </div>
+        <div class="row">
+            @Html.HifisEditorFor(model => model.UploadedFile, "File")
+        </div>
+    </div>
+
+    <div id="inheritedConsentFields">
+        <div id="familyFields">
+            <div class="row">
+                @Html.HifisAutocompleteFor(
+                    model => model.FamilyHeadClientID
+                    , Url.Content("~/ClientTombstone/AjaxGetFamilyHeadsWithActiveConsentList")
+                    , Model.FamilyHeadClientName
+                    , new AutocompleteViewModelOptions()
+                    {
+                        OnSelect = "",
+                        HiddenValue = true
+                    })
+            </div>
+        </div>
+    </div>
+
+    @*<div>
+        @Html.HifisEditorFor(model => model.AcceptYN, "YesNo")
+    </div>*@
+
+    <div class="row">
+        @Html.Partial("Plugins/_TinyMCEScript")
+        @Html.HifisTextAreaFor(model => model.Comment, new { @class = "mceEditor_Messaging" })
+    </div>
+
+</div>
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script>
+    var minTriggerConsentAge = @appSettings.GetMinTriggerConsentAge();
+    var clientsAge = $("#AproximativeAge").val();
+
+    $(function () {
+        $('#explicitConsentFields').hide();
+        $('#dateFields').hide();
+        $('#inheritedConsentFields').hide();
+
+        $('#ConsentTypeID').on('change', function (event) {
+            switch($(this).val()){
+                case "@((short)ConsentTypes.Explicit)":
+                case "@((short)ConsentTypes.CoordinatedAccess)":
+                case "@((short)ConsentTypes.CoordinatedAccessExplicit)":
+                    $('#explicitConsentFields').fadeIn('slow');
+                    $('#dateFields').fadeIn('slow');
+                    if($("#familyFields").length){
+                        $('#inheritedConsentFields').hide();
+                        $('#FamilyHeadClientID').val(null).trigger('change');
+                    }
+                    break;
+                case "@((short)ConsentTypes.Implied)":
+                    if($("#familyFields").length){
+                        $('#inheritedConsentFields').hide();
+                        $('#FamilyHeadClientID').val(null).trigger('change');
+                    }
+                    $('#explicitConsentFields').hide();
+                    break;
+                case "@((short)ConsentTypes.Inherited)":
+                    if(clientsAge >= minTriggerConsentAge){
+                        displayNotification('alert', '', "<p>@Labels.TriggerConsentAgeError</p>");
+                        $('#ConsentTypeID').val(null).trigger('change');
+                    }else{
+                        if($("#familyFields").length){
+                            $('#inheritedConsentFields').fadeIn('slow');
+                        }
+                        $('#dateFields').hide();
+                        $('#explicitConsentFields').hide();
+                    }
+                    break;
+                default:
+                    console.log('other consent type: ' + $(this).val());
+            }
+        });
+    });
+        </script>);
+
+}

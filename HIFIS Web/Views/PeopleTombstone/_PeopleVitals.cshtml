@@ -1,0 +1,161 @@
+﻿@model PeopleVitalsViewModel
+
+@Html.AntiForgeryToken()
+
+@Html.HiddenFor(model => model.PersonID, Model.PersonID)
+
+<div>
+    @Html.HifisEditorFor(m => m.LastName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.FirstName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.MiddleName)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.GenderID, CachedTableTypes.HIFIS_GenderTypes)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.Aka1)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.Aka2)
+</div>
+
+<div>
+    @Html.HifisEditorFor(m => m.DOBDateFirmYNbool, "YesNo")
+</div>
+
+<div>
+    <span id="DOBFlag">
+        @Html.HifisEditorFor(m => m.DOB)
+    </span>
+    <span id="AgeFlag">
+        @Html.HifisEditorFor(m => m.AproximativeAge)
+    </span>
+</div>
+
+@if (Model.SelectedRoles.Contains((short)PeopleRoleTypes.CaseWorker) || Model.SelectedRoles.Contains((short)PeopleRoleTypes.Staff))
+{
+    <div>
+        @Html.HifisListBoxFor(model => model.SelectedRoles, CachedTableTypes.HIFIS_PeopleRoleTypes)
+    </div>
+}
+else
+{
+    <div>
+
+        @* @Html.HifisListBoxFor(model => model.SelectedRoles, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, Culture, Model.SelectedRoles)
+            .Where(r => r.Value != ((short)PeopleRoleTypes.CaseWorker).ToString() && r.Value != ((short)PeopleRoleTypes.Staff).ToString()))*@
+
+        @Html.HifisListBoxFor(model => model.SelectedRoles, WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_PeopleRoleTypes, Culture, Model.SelectedRoles)
+        .Where(r => r.Value != "" && ((Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PeopleRoleTypes, short.Parse(r.Value)) != (short)PeopleRoleTypes.CaseWorker)
+        && (Utilities.EqualsOrRollsUpTo(CachedTableTypes.HIFIS_PeopleRoleTypes, short.Parse(r.Value)) != (short)PeopleRoleTypes.Staff))))
+
+
+    </div>
+}
+
+@if (ViewBag.IsEditView != null && ViewBag.IsEditView)
+{
+    if (RightsHelper.HasRight(UserRights.People_Delete) && Model.ActiveYN)
+    {
+        <div>
+            @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+        </div>
+    }
+    else if (!Model.ActiveYN)
+    {
+        <div>
+            @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <div class="control-label col-sm-3">
+                @Html.HifisLabelFor(model => model.ActiveYN)
+            </div>
+            <div class="col-sm-9">
+                @Html.Partial("DisplayViewTemplates/_YesNoDisplay", Model.ActiveYN)
+                @Html.HiddenFor(m => m.ActiveYN)
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div>
+        @Html.HifisEditorFor(m => m.ActiveYN, "YesNo")
+    </div>
+}
+
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+@<script type="text/javascript">
+                                         function setDateFromAge() {
+                                             var approxAge = parseInt($('#AproximativeAge').val());
+                                             var currentYear = new Date().getFullYear();
+                                             var date = new Date();
+                                             date.setMonth(0);
+                                             date.setDate(1);
+                                             date.setFullYear((currentYear - approxAge));
+
+                                             $('#DOB').val(date.toISOString().slice(0, 10));
+                                         }
+
+                                         function setAgeFromDate() {
+                                             var date = new Date($('#DOB').val());
+
+                                             if (isNaN(date) == false) {
+
+                                                 var currAge = Math.floor((new Date() - new Date($('#DOB').val()).getTime()) / 3.15576e+10);
+
+                                                 $('#AproximativeAge').val(currAge);
+                                             }
+                                             else {
+                                                 $('#AproximativeAge').val("");
+                                             }
+                                         }
+
+                                         $('input[name=DOBDateFirmYNbool]').on('switchChange.bootstrapSwitch', function (event, state) {
+
+                                             if (state) {
+                                                 $('#DOBFlag').show();
+                                                 $('#AgeFlag').hide()
+                                             }
+                                             else {
+                                                 $('#DOBFlag').hide();
+                                                 $('#AgeFlag').show();
+                                             }
+                                         });
+
+                                         $(function () {
+
+                                            @{
+                                                if (Model.DOBDateFirmYNbool)
+                                                {
+                                                    @:$('#DOBFlag').show();
+                                                                     @:$('#AgeFlag').hide();
+                                                }
+                                                else
+                                                {
+                                                    @:$('#DOBFlag').hide();
+                                                                     @:$('#AgeFlag').show();
+                                                }
+                                            }
+
+                                             $('#AproximativeAge').change(setDateFromAge);
+                                             $('#DOB').on("blur", setAgeFromDate);
+                                         });
+</script>
+);
+}

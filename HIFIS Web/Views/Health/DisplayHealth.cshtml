@@ -1,0 +1,16 @@
+﻿@model ClientHealthViewModel
+@{
+	ViewBag.ViewTitle = Labels.viewTitle_DisplayHealth;
+	
+	ViewBag.LayoutView = LayoutPage.Client;
+}
+
+<div class="col-xs-12">
+    <div>
+        @Html.Partial(Url.Content("~/Views/CustomTables/_CustomTableViewBuilder.cshtml"),
+            new CustomTableViewBuilder() { PartialName = Url.Content("~/Views/Health/_DisplayHealth.cshtml"), ViewModel = Model })
+    </div>
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>
+

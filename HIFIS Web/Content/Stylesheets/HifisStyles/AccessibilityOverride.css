@@ -1,0 +1,188 @@
+﻿
+/* You can use this file to override css on the application */
+
+:root {
+    --white: #ffffff;
+    --desert_storm_white: #f7f7f7;
+    --off_white: #eeeeee;
+    --platinum_white: #e4e4e4;
+    --gainsboro_white: #dddddd;
+    --pastel_grey: #cccccc;
+    --silver_chalice_grey: #aaaaaa;
+    --lemon_grass_grey: #999999;
+    --mountain_mist_grey: #949494;
+    --monsoon_grey: #888888;
+    --battleship_grey: #828282;
+    --grey: #808080;
+    --boulder_grey: #767676;
+    --smokey_grey: #707070;
+    --ironside_grey: #666666;
+    --davy_grey: #555555;
+    --black_eel_grey: #444444;
+    --dune_black: #333333;
+    --black: #000000;
+    --cornflower_blue: #5897fb;
+    --tealish_blue: #5493f8;
+    --windows_blue: #3875d7;
+    --darker_windows_blue: #3774d7;
+    --mariner_blue: #366ec9;
+    --downriver_blue: #0b2651;
+    --primary_blue: #2572b4;
+}
+
+/* 653745 - Override Dropdown style for contrast compliance */
+.select2-container *:focus {
+    outline: none;
+}
+
+/* 653735 - Override switch widget style for contrast compliance */
+.bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary, .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary {
+    background-color: var(--primary_blue);
+    color: var(--white);
+}
+
+/* 653745 - Override placeholder color on written search bar for contrast compliance */
+::placeholder {
+    color: var(--boulder_grey);
+}
+
+/* 653745 - Override dropdown border color for contrast compliance */
+.select2-dropdown {
+    border: 1px solid var(--mountain_mist_grey);
+}
+
+/* 653745 - Override container border color in single selection for contrast compliance */
+.select2-container--default .select2-selection--single {
+    border: 1px solid var(--mountain_mist_grey);
+}
+
+    /* 653745 - Override container default color in single selection on placeholder selection contrast compliance */
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: var(--boulder_grey);
+    }
+
+/* 653745 - Override container border color in multiple selections for contrast compliance */
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid var(--mountain_mist_grey);
+}
+
+    /* 653745 - Override container border color in multiple selections when chosen for contrast compliance */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        border: 1px solid var(--battleship_grey);
+    }
+
+    /* 653745 - Override container border color in multiple selections when choice is removed for contrast compliance */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: var(--ironside_grey);
+    }
+
+/* 653745 - Override dropdown search field border color for contrast compliance */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--monsoon_grey);
+}
+
+/* 653745 - Override container result color option when aria-disabled is true for contrast compliance */
+.select2-container--default .select2-results__option[aria-disabled=true] {
+    color: var(--ironside_grey);
+}
+
+/* 653745 - Override container result background color and color option when aria-selected is highlighted for contrast compliance */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--darker_windows_blue);
+    color: var(--white);
+}
+
+/* 653745 - Override container classic border color in single selection for contrast compliance */
+.select2-container--classic .select2-selection--single {
+    border: 1px solid var(--monsoon_grey);
+}
+
+    /* 653745 - Override container classic border color in single focused selection for contrast compliance */
+    .select2-container--classic .select2-selection--single:focus {
+        border: 1px solid var(--mariner_blue);
+    }
+
+    /* 653745 - Override container classic color for a placeholder for contrast compliance */
+    .select2-container--classic .select2-selection--single .select2-selection__placeholder {
+        color: var(--smokey_grey);
+    }
+
+/* 653745 - Override container default color for inline search in a search field with a placeholder for contrast compliance */
+.select2-container--default .select2-search--inline .select2-selection__placeholder .select2-search__field {
+    color: var(--smokey_grey);
+}
+
+/* 653745 - Override container classic border left color in single selection arrow for contrast compliance */
+.select2-container--classic .select2-selection--single .select2-selection__arrow {
+    border-left: 1px solid var(--boulder_grey);
+}
+
+    /* 653745 - Override container classic border color in single arrow b for contrast compliance */
+    .select2-container--classic .select2-selection--single .select2-selection__arrow b {
+        border-color: var(--boulder_grey) transparent transparent transparent;
+    }
+
+/* 653745 - Override container classic border right color with directory "rt1" in single selection arrow for contrast compliance */
+.select2-container--classic[dir="rtl"] .select2-selection--single .select2-selection__arrow {
+    border-right: 1px solid var(--boulder_grey);
+}
+
+/* 653745 - Override container class border color in open single selection for contrast compliance */
+.select2-container--classic.select2-container--open .select2-selection--single {
+    border: 1px solid var(--darker_windows_blue);
+}
+
+    /* 653745 - Override container classic open container border color in single arrow b for contrast compliance */
+    .select2-container--classic.select2-container--open .select2-selection--single .select2-selection__arrow b {
+        border-color: transparent transparent var(--boulder_grey) transparent;
+    }
+
+/* 653745 - Override container classic multiple selection for contrast compliance */
+.select2-container--classic .select2-selection--multiple {
+    border: 1px solid var(--mountain_mist_grey);
+}
+
+    /* 653745 - Override container classic border color multiple focused for contrast compliance */
+    .select2-container--classic .select2-selection--multiple:focus {
+        border: 1px solid var(--tealish_blue);
+    }
+
+    /* 653745 - Override container classic border color multiple choice seletion for contrast compliance */
+    .select2-container--classic .select2-selection--multiple .select2-selection__choice {
+        border: 1px solid var(--battleship_grey);
+    }
+
+    /* 653745 - Override container classic color multiple choice selection removed for contrast compliance */
+    .select2-container--classic .select2-selection--multiple .select2-selection__choice__remove {
+        color: var(--ironside_grey);
+    }
+
+        /* 653745 - Override container classic color multiple choice selection removed when hover for contrast compliance */
+        .select2-container--classic .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: var(--ironside_grey);
+        }
+
+/* 653745 - Override container classic border color open multiple selection for contrast compliance */
+.select2-container--classic.select2-container--open .select2-selection--multiple {
+    border: 1px solid var(--darker_windows_blue);
+}
+
+/* 653745 - Override container classic border color search dropdown in search field for contrast compliance */
+.select2-container--classic .select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--battleship_grey);
+}
+
+/* 653745 - Override container classic color option aria-disabled true for contrast compliance */
+.select2-container--classic .select2-results__option[aria-disabled=true] {
+    color: var(--boulder_grey);
+}
+
+/* 653745 - Override container classic background color option highlighted aria-selected for contrast compliance */
+.select2-container--classic .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--mariner_blue);
+}
+
+/* 653745 - Override container classic border color open dropdown for contrast compliance */
+.select2-container--classic.select2-container--open .select2-dropdown {
+    border-color: var(--downriver_blue);
+}

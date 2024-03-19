@@ -1,0 +1,75 @@
+﻿@model ExpenseViewModel
+
+<section id="Modal_EditExpense" class="modal-dialog modal-content overlay-def">
+
+    <header class="modal-header">
+        <h2 class="modal-title">@Labels.viewTitle_EditExpense</h2>
+    </header>
+
+    <div class="modal-body">
+        <div id="EditExpenseForm" class="row">
+            @using (Html.BeginForm("EditExpense", "Financials", new { id = Model.ClientID, expenseID = Model.ExpenseID }, FormMethod.Post, new { @class = "form-horizontal", id = "editExpense" }))
+            {
+                @Html.Partial("_Expense")
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer" style="background-color: white;">
+        <div class="mrgn-tp-xs">
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-10">
+                    <button type="submit" id="expenseSaveBtn" class="saveButton">@Labels.Save</button>
+                    <button id="closeBtn" class="btn btn-primary popup-modal-dismiss cancelButton" type="button">@Labels.Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    //Get everything to display correctly
+    init_hifis();
+    autoWidthBoot('#Modal_EditExpense');
+
+    $(function () {
+        $("#editExpense").hifisValidation();
+
+    });
+
+
+    $("#expenseSaveBtn").click(function () {
+
+        if ($("#editExpense").valid()) {
+
+            var btn = $(this);
+            btn.attr("disabled", true); //Disable the button so multiple request don't go through
+            $.ajax({
+
+                url: "@Url.Content("~/Financials/EditExpense")",
+                type: "POST",
+                data: $('#editExpense').serialize()
+
+            }).done(function (data) {
+                btn.attr("disabled", false); //Enable the button incase there was an error
+
+                if (data.Success) {
+                    defaultNotify(data.Success);
+                    updateTotals();
+                    $("#closeBtn").click(); //Close the modal window on success
+                    $('#expenseTable').DataTable().ajax.reload();
+
+                } else {
+                    defaultNotify(data.Success);
+                }
+            });
+        }
+    });
+
+</script>
+
+
+
+
+

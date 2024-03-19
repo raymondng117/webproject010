@@ -1,0 +1,69 @@
+﻿@model PitSurveyViewModel
+
+@Html.Partial("_BaseHiddenFor", (BaseViewModel)Model)
+
+<div>
+	@Html.HiddenFor(model => model.PitSurveyID)
+	@Html.HiddenFor(model => model.PitQuestionnaireID)
+	@Html.HiddenFor(model => model.PitScreenedIN)
+	@Html.HiddenFor(model => model.IsLive)
+	@Html.HiddenFor(model => model.Longitude)
+	@Html.HiddenFor(model => model.Latitude)
+	@Html.HiddenFor(model => model.IsComplete)
+
+	<div>
+		@if (Model.IsLive) {
+			@Html.HifisEditorFor(m => m.SurveyNo, null, new { @readonly = "readonly" })
+		}else{
+			@Html.HifisEditorFor(m => m.SurveyNo, null, new { @id = "surveyNumber"})
+		}
+	</div>
+
+	<div>
+		@Html.HifisEditorFor(m => m.ShiftID, ViewBag.EventShifts as SelectList, "DropDownList")
+	</div>
+
+	@if (ViewBag.isCreateLive != null && ViewBag.isCreateLive)
+	{
+		@Html.HiddenFor(model => model.ShiftTime)
+		<div class="form-group">
+			<div class="col-sm-3 control-label">
+				@Html.LabelFor(m => m.ShiftTime)
+			</div>
+			<div class="col-sm-8">
+                <div class="form-control pull-left form-control-disabled">
+                    @Html.HifisDisplayFor(m => m.ShiftTime, null, true, "DateAndTime")
+                </div>
+			</div>
+		</div>
+    }
+    else
+    {
+		<div>
+			@Html.HifisEditorFor(m => m.ShiftTime, "DateAndTime")
+		</div>
+	}
+
+	@if (Model.PitQuestionnaire.PeriodPrevalenceCountYN)
+	{
+		<div>
+			@Html.HifisEditorFor(m => m.SurveyDate)
+		</div>
+	}
+	<div>
+		@Html.HifisEditorFor(m => m.Location)
+	</div>
+
+	<div>
+		@Html.HifisEditorFor(m => m.Comment)
+	</div>
+
+
+    @if (Model.PitQuestionnaire.IntervieweeIdYN)
+    {
+        <div>
+            @Html.HifisEditorFor(m => m.SurveyIdentifier,null, new { popover = true },false,null)
+        </div>
+    }
+
+</div>

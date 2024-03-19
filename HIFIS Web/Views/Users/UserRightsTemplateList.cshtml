@@ -1,0 +1,70 @@
+﻿@model List<TemplateRightsViewModel>
+@{
+    ViewBag.ViewTitle = Labels.viewTitle_TemplateList;
+    
+    ViewBag.LayoutView = LayoutPage.ContentOnly;
+    
+    if (ViewBag.filterType == null)
+    {
+        ViewBag.filterType = (short)UserListFilterTypes.All;
+    }
+}
+
+<div id="radio" class="btn-group mrgn-bttm-md">
+    @{ string classlink1 = (ViewBag.filterType == (short)UserListFilterTypes.All ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.All, "UserRightsTemplateList", "Users", new { filterType = (short)UserListFilterTypes.All }, new { @class = classlink1, alt=Labels.All, aria_label = Labels.All, @role = "button" })
+
+    @{ string classlink2 = (ViewBag.filterType == (short)UserListFilterTypes.Active ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.Active, "UserRightsTemplateList", "Users", new { filterType = (short)UserListFilterTypes.Active }, new { @class = classlink2, alt = Labels.Active, aria_label = Labels.Active, @role = "button" })
+
+    @{ string classlink3 = (ViewBag.filterType == (short)UserListFilterTypes.Inactive ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+    @Html.ActionLink(Labels.Inactive, "UserRightsTemplateList", "Users", new { filterType = (short)UserListFilterTypes.Inactive }, new { @class = classlink3, alt=Labels.Inactive, aria_label = Labels.Inactive, @role = "button" })
+</div>
+
+<div class="clearfix"></div>
+
+<div>
+    <div style="margin-top:30px;" class="table-responsive">
+        <table class="wb-tables table table-striped table-hover" data-wb-tables='{ "info": false }'>
+            <thead>
+                <tr>
+                    <th>@Labels.TemplateName</th>
+                    <th>@Labels.OwnerOrg</th>
+                    <th>@Labels.Description</th>
+                    <th>@Labels.ActiveYN</th>
+                    <th>@Labels.Action</th>
+                </tr>
+            </thead>
+            <tbody>            
+                @foreach (var template in Model)
+                {
+                    <tr>
+                        <td>@template.Name</td>
+                        <td>@template.OwnerName</td>
+                        <td>@template.Description</td>
+                        <td class="align-text-center">@(template.ActiveYN ? Labels.Active : Labels.Inactive)</td>
+                        <td class="align-text-center">
+                        
+                            @if ((template.OwnerOrganizationID == null && RightsHelper.HasRight(UserRights.Users_Templates_Edit)) || (template.OwnerOrganizationID != null && RightsHelper.HasRight(UserRights.Users_Templates_Edit, template.OwnerOrganizationID)))
+                            {
+                                @Html.ActionLink(Labels.Edit, "EditUserTemplate", "Users", new { id = template.TemplateRightsID }, new { @class = "editButton noText", alt=Labels.Edit, aria_label = Labels.Edit, @role = "button" })
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clearfix"></div>
+       
+    <p>
+        @if (RightsHelper.HasRight(UserRights.Users_Templates_Add))
+        {
+            @Html.ActionLink(Labels.NewTemplate, "NewUserRightsTemplate", "Users", null, new { @class = "addButton", alt=Labels.NewTemplate, aria_label = Labels.NewTemplate, @role = "button" })
+        }        
+    </p>
+</div>

@@ -1,0 +1,26 @@
+﻿@model PitQuestionDropdownViewModel
+
+@Html.HiddenFor(m => m.SaveQuestion)
+@Html.HiddenFor(m => m.Sequence)
+@Html.HiddenFor(m => m.Name)
+@Html.HiddenFor(m => m.NameF)
+@Html.HiddenFor(m => m.ActiveYN)
+
+@if (!Model.QuestionID.IsEmptyOrNull())
+{
+    @Html.HiddenFor(m => m.PitTemplateID)
+    @Html.HiddenFor(m => m.PitQuestionnaireID)
+    @Html.HiddenFor(m => m.QuestionID)
+    @Html.HiddenFor(m => m.QuestionPickListID)
+    @Html.HiddenFor(m => m.PitDropDownName)
+    @Html.HiddenFor(m => m.RollupID)
+}
+
+@if (!Model.PitTemplateID.IsEmptyOrNull())
+{
+    @Html.HiddenFor(m => m.IsRollupTo)
+    @Html.HiddenFor(model => model.DropDownActionTypeID)
+    @Html.HiddenFor(model => model.AffectedQuestionsIDs)
+    @Html.HiddenFor(m => m.EmptyBehaviourYN)
+    @Html.HiddenFor(m => m.AnsweredBehaviourYN)
+}  

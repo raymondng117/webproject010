@@ -1,0 +1,185 @@
+﻿@model DashboardViewModel
+@{	
+	ViewBag.ViewTitle = Labels.viewTitle_Dashboard;
+	ViewBag.LayoutView = LayoutPage.ContentOnly;
+}
+
+@Html.Partial("_ValidationSummaryOuter")
+
+@if (RightsHelper.HasRight(UserRights.Bulletins_Home_Page))
+{
+	<h2>@Labels.YourBulletins</h2>
+
+	<div>
+		 <table id="userBulletinList" class="wb-tables table table-striped table-hover table-responsive" data-wb-tables='{ 
+					"ajax": "@Url.Action("GetBulletinListJson", "Dashboard")",
+					"order": [[ 3, "desc" ]],
+						"columns": [
+							{ "data": "subject" },
+							{ "data": "clients" },
+							{ "data": "priority" },
+							{ "data": "dateStart" },
+							{ "data": "dateEnd" },
+							{ "data": "action" }
+						] 
+			}'>
+			<thead>
+				<tr>
+					<th>@Labels.Subject</th>
+					<th>@Labels.Clients</th>
+					<th>@Labels.hdrPriority</th>
+					<th>@Labels.DateStart</th>
+					<th>@Labels.DateEnd</th>
+					<th>@Labels.Action</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</div>
+}
+else
+{
+    // What should be displayed on the initial screen when the user does not have significant rights
+    // Business has not determined what they want displayed and would rather have blank for now.
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            $(document).on('draw.dt', '#userBulletinList', function () {
+                //This re-init any lightboxes that are dynamically added via the datables reload call
+                $(".wb-lbx").trigger("wb-init.wb-lbx");
+            });
+        </script>
+     );
+}
+
+
+@*@if (RightsHelper.HasRight(UserRights.Bulletins_Home_Page))
+{
+	if (Model.BulletinList.Count > 0)
+	{
+		<div id="radio" class="btn-group">
+				<ul class="list-unstyled">
+					<li class="btn-group btn-group-sm">
+						@{ string classlink1 = (ViewBag.filterType == (short)BulletinsListSortTypes.DateDesc ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+						@Html.ActionLink(Labels.BulletinsByDate, "Dashboard", new { filterType = (short)BulletinsListSortTypes.DateDesc }, new { @class = classlink1 })
+
+						@{ string classlink2 = (ViewBag.filterType == (short)BulletinsListSortTypes.PriorityDesc ? "btn btn-primary btn-sm" : "btn btn-default btn-sm"); }
+
+						@Html.ActionLink(Labels.BulletinsByPriority, "Dashboard", new { filterType = (short)BulletinsListSortTypes.PriorityDesc }, new { @class = classlink2 })
+					</li>
+				</ul>
+		</div>
+	}
+
+	<div class="clearfix"></div>
+
+	<div class="panel-group mrgn-tp-md" id="accordion">
+	@if (Model.BulletinList.Count == 0)
+	{
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				@Labels.NoCurrentBulletins
+			</div>
+		</div>
+	}
+	else
+	{
+		if (Model.BulletinList.Count > 1)
+		{ @Html.Partial("Plugins/_ActiveAccordion") }
+
+		for (int i = 0; i < Model.BulletinList.Count; i++)
+		{
+			<div class="panel panel-default">
+				<div class="panel-heading">
+						<a data-toggle="collapse" data-parent="#accordion" href="#@(i)">
+							<div class="row">
+								<div class="col-md-4">
+									@(Model.BulletinList[i].Subject)
+								</div>
+								<div class="col-md-4">
+									@if (Model.BulletinList[i].OnBehalfOfID != null && !Model.BulletinList[i].OnBehalfOfName.Equals(Model.BulletinList[i].CreatedByName))
+									{
+										<span class="bulletins-color"><strong>&nbsp @Labels.OnBehalfOf:</strong></span>
+										@Model.BulletinList[i].OnBehalfOfName
+									}
+									else
+									{
+										<span class="bulletins-color"><strong>&nbsp @Labels.CreatedByName:</strong></span>
+										@Model.BulletinList[i].CreatedByName
+									}
+								</div>
+								<div class="col-md-4">
+									<div class="pull-right">
+										<span class="bulletinPriority">@Labels.BulletinPriorityTypeID: </span>
+										@Model.BulletinList[i].BulletinPriorityName
+									</div>
+								</div>
+							</div>
+						</a>
+				</div>
+				<div id="@(i)" class="panel-collapse collapse">
+					<div class="panel-body">
+						<div>
+							<div>
+								@Html.Raw(HttpUtility.HtmlDecode(Model.BulletinList[i].Description))
+							</div>
+						</div>
+						<div>
+							<hr />
+						</div>
+						<div>
+							<div class="form-group">
+								@Html.Label(Labels._EffectiveDate, new { @class = "control-label" })
+								@Html.DisplayFor(model => model.BulletinList[i].DateStart) @Labels.To.ToLower() @Html.DisplayFor(model => model.BulletinList[i].DateEnd)
+							</div>
+						</div>
+						<div>
+							<hr />
+						</div>
+						<div class="control-label">@Labels.BulletinsServiceProviders:</div>
+						<div>
+							<ul>
+								@for (int j = 0; j < Model.BulletinList[i].BulletinsOrganizations.Count; j++)
+								{
+									<li>@Model.BulletinList[i].BulletinsOrganizations[j].OrganizationName</li>
+								}
+							</ul>
+						</div>
+						<div class="clearfix"></div>
+						@if (!Model.BulletinList[i].BulletinsClients.IsEmptyOrNull())
+						{
+							<div class="control-label">@Labels.ClientsAppliesTo:</div>
+						}
+						<div>
+							<ul>
+								@foreach (var client in Model.BulletinList[i].BulletinsClients)
+								{
+									if (Model.BulletinList[i].BulletinsClients != null)
+									{
+										<li>@Html.ActionLink(client.FullName, "DisplayVitals", "ClientTombstone", new { id = client.ClientID }, null)</li>
+									}
+								}
+							</ul>
+						</div>
+						<div class="align-text-right">
+							@if (Model.BulletinList[i].BulletinPriorityTypeID != 1)
+							{
+								@Html.ActionLink(Labels.Acknowledge, "Acknowledge", "Bulletins", new { bulletinID = Model.BulletinList[i].BulletinID }, new { @class = "btn btn-default" })
+							}
+							@if (RightsHelper.HasRight(UserRights.Bulletins_Print))
+							{
+								@Html.ActionLink(Labels.Print, "Display", "Bulletins", new { id = Model.BulletinList[i].BulletinID }, new { @class = "printButton  " })
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	}
+	</div>
+}*@ 

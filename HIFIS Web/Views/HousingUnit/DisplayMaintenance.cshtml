@@ -1,0 +1,91 @@
+﻿@model HousingMaintenanceViewModel
+
+@{
+    ViewBag.LayoutView = LayoutPage.SecNav;
+    ViewBag.ViewTitle = Labels.Edit+" "+ Labels.MaintenanceWork; 
+}
+
+ 
+<div  id="view">
+    <div id="housingMaintenanceForm">
+    
+        <div>
+
+            @Html.HifisLabelFor(model => model.MaintenanceTypeID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.MaintenanceTypeID,
+                            List = WebHelper.GetSelectListFromCache(CachedTableTypes.HIFIS_MaintenanceTypes, ViewBag.CurrentCulture, Model.MaintenanceTypeID)
+                        })
+        </div>
+
+        <div>
+            @Html.HifisTextAreaFor(model => model.Description, new { @readonly = "readonly" }) 
+        </div>
+
+        <div>
+
+            @Html.HifisLabelFor(model => model.ContractorPersonID, new { @class = "autowidth" })
+            @Html.Partial("DisplayViewTemplates/_SingleItemSelectList", 
+                        new SingleItemSelectList 
+                        {
+                            ID = Model.ContractorPersonID,
+                            List = ViewBag.contractorList as SelectList
+                        })
+        </div>
+
+        <div>
+            @Html.HifisLabelFor(model => model.WorkCompleted, new { @class = "autowidth" })
+            @Html.CheckBoxFor(model => model.WorkCompleted, new { disabled = "disabled" })
+        </div>
+
+        <div>
+
+            @Html.HifisLabelFor(model => model.Company, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.Company)
+        </div>
+
+        <div>
+            @Html.HifisTextAreaFor(model => model.Comments, new { @class = "wdth-strct-400 hght-strct-50", @readonly = "readonly" }) 
+        </div>
+
+        <div>
+
+            @Html.HifisLabelFor(model => model.ScheduledFrom, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.ScheduledFrom)
+        </div>
+
+        <div>
+
+            @Html.HifisLabelFor(model => model.ScheduledTo, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.ScheduledTo)
+        </div>
+
+        <div>
+            @Html.HifisLabelFor(model => model.EstimatedCost, new { @class = "autowidth" })
+            $@Html.DisplayFor(model => model.EstimatedCost)    
+        </div>
+
+        <div>
+
+            @Html.HifisLabelFor(model => model.ActualFrom, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.ActualFrom)
+        </div>
+
+        <div>
+
+            @Html.HifisLabelFor(model => model.ActualTo, new { @class = "autowidth" })
+            @Html.DisplayFor(model => model.ActualTo)
+        </div>
+
+        <div>
+            @Html.HifisLabelFor(model => model.ActualCost, new { @class = "autowidth" })
+            $@Html.DisplayFor(model => model.ActualCost)     
+        </div>
+    
+    </div>
+</div>
+<div>
+    @Html.ActionLink(Labels.Cancel, "Display", "HousingUnit", new { id = Model.HouseID}, new { @class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button" })
+</div>

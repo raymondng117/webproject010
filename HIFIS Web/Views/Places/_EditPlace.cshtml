@@ -1,0 +1,31 @@
+﻿@model PlaceViewModel   
+
+@Html.Partial("_ValidationSummaryOuter")
+
+<div>
+    @using (Html.BeginForm("PlaceDetails", "Places", FormMethod.Post, new {@class = "form-horizontal"}))
+    {
+        @Html.Partial("_BaseHiddenFor", (BaseViewModel) Model)
+        @Html.HiddenFor(m => m.PlaceID)
+        @Html.HiddenFor(m => m.AddressID)
+
+        <div class="clearfix"></div>
+
+        @Html.Partial("_Place")
+        <span id="AddressFormFields">@Html.Partial("_AddressSearch", Model.Address, "Address.")</span>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="saveButton  ">@Labels.Save</button>
+                @Html.ActionLink(Labels.Cancel, "PlaceList", "Places", new {}, new {@class = "cancelButton", alt=Labels.Cancel, aria_label = Labels.Cancel, @role = "button"})
+                @if (Model.Address == null)
+                {
+                    @Html.ActionLink(Labels.Address, "AddressSearch", "Places", new {id = Model.PlaceID}, new {@class = "addButton", alt=Labels.Address, aria_label = Labels.Address, @role = "button"})
+                    ;
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<div>@Html.Partial("_BaseFooter", (BaseViewModel)Model)</div>

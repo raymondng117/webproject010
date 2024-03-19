@@ -1,0 +1,84 @@
+﻿@model ClientHousingViewModel
+
+@{
+    MvcHtmlString NewHousingFollowUp = null;
+    string housingAjaxUrl = null;
+
+    housingAjaxUrl = "~/FollowUps/PlacementFollowUpListJson?serviceID=" + Model.HousePlacementServiceID;
+
+    if (!Model.HasActiveHousingRetention) { 
+        NewHousingFollowUp = Html.ActionLink(Labels.NewFollowUp, "GetPlacementFollowUpNew", "FollowUps", new { placementID = Model.HousePlacementID, serviceID = Model.HousePlacementServiceID }, new { @class = "wb-lbx lbx-modal addButton", alt=Labels.NewFollowUp, aria_label=Labels.NewFollowUp, @role = "button" });
+    }
+    else
+    {
+        NewHousingFollowUp = Html.ActionLink(Labels.NewFollowUp, "GetRetentionFollowUpNew", "FollowUps", 
+            new { retentionID = Model.HousePlacementID, 
+                  serviceID = Model.HousePlacementServiceID,
+                  clientHouseID = Model.ClientHouseID,
+                  clientID = Model.ClientID        }, 
+            new { @class = "wb-lbx lbx-modal addButton", alt=Labels.NewFollowUp, aria_label=Labels.NewFollowUp, @role = "button" });
+    }
+}
+
+<div class="table-responsive" >
+    <table id="followUpsTable" class="wb-tables table table-striped" data-wb-tables='{ "columns": [
+                                                        { "width": "20%", "data": "date"},
+                                                        { "width": "25%", "data": "organization"},
+                                                        { "width": "20%", "data": "caseworker"},
+                                                        { "width": "15%", "data": "monthsElapsed", "name" : "monthsElapsed", "visible" : false},
+                                                        { "width": "15%", "data": "action"}
+                                                    ],
+                                                    "order": [[3, "asc"], [0, "asc"]],
+                                                    "ajax": "@Url.Content(housingAjaxUrl)"
+                                                }'>
+        <thead>
+            <tr>
+	    	    <th>@Labels.DateOfCheck</th>
+                <th>@Labels.Organization</th>
+                <th>@Labels.CaseWorker</th>
+		        <th>@Labels.MonthsElapsed</th>
+				<th>@Labels.Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+@if (RightsHelper.HasRight(UserRights.FollowUp_Add) && !Model.HousePlacementFollowUpCompleted)
+{
+    <p>
+        @NewHousingFollowUp
+    </p>
+}
+
+@using (Html.BeginScriptContext())
+{
+    Html.AddScriptBlock(
+        @<script type="text/javascript">
+
+            var showMonthsElapsed = false;
+            var housePlacementID = "@Model.HousePlacementID";
+
+            if (housePlacementID != "")
+                showMonthsElapsed = true;
+
+            $('#followUpsTable').on('draw.dt', function () {
+                init_hifis();
+                $('.wb-lbx').trigger("wb-init.wb-lbx");
+
+                if (showMonthsElapsed) {
+                    var table = $(this).DataTable();
+                    table.column("monthsElapsed:name").visible(true);
+                }
+            });
+
+            //resizes the data table columns when you switch tabs, hidden tabs break table width. 
+            $(document).ready(function () {
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    if (jQuery().DataTable) {
+                        $('.dataTable').DataTable().columns.adjust();
+                    }
+                });
+            });
+        </script>);
+}
